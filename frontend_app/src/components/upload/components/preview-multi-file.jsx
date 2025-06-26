@@ -27,19 +27,12 @@ export function MultiFilePreview({
   firstNode,
   files = [],
   className,
-  listPermissions,
-  isProject = true,
-  isService = false,
-  moduleType,
   customWidth = 80,
   customHeight = 80,
   ...other
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-
-  const module = isProject ? CONFIG.permissions.moduleProjects :
-    isService ? CONFIG.permissions.moduleServices : CONFIG.permissions.moduleTasks;
 
   const renderFirstNode = firstNode && (
     <Box
@@ -95,27 +88,11 @@ export function MultiFilePreview({
                 imageView
                 file={file}
                 onRemove={
-                  (verifyPermissions(
-                    listPermissions,
-                    CONFIG.permissions.system,
-                    module,
-                    CONFIG.permissions.operationRemoveFile
-                  ) || listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)
-                    || (moduleType && moduleType === 'issued' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.serviceStaff))
-                    || (moduleType && moduleType === 'repair' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.installer))
-                  ) ?
+                  (listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)) ?
                     () => onRemove?.(file) : null
                 }
                 onDownload={
-                  (verifyPermissions(
-                    listPermissions,
-                    CONFIG.permissions.system,
-                    module,
-                    CONFIG.permissions.operationDownloadFile
-                  ) || listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)
-                    || (moduleType && moduleType === 'issued' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.serviceStaff))
-                    || (moduleType && moduleType === 'repair' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.installer))
-                  ) ?
+                  (listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)) ?
                     () => onDownload?.(file) : null
                 }
                 sx={{
@@ -157,25 +134,12 @@ export function MultiFilePreview({
               }}
             />
 
-            {(onRemove && (verifyPermissions(
-              listPermissions,
-              CONFIG.permissions.system,
-              module,
-              CONFIG.permissions.operationRemoveFile
-            ) || listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)
-              || (moduleType && moduleType === 'issued' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.serviceStaff)))) && (
+            {(onRemove && (listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator))) && (
                 <IconButton size="small" onClick={() => onRemove(file)}>
                   <Iconify icon="mingcute:close-line" width={16} />
                 </IconButton>
               )}
-            {(onDownload && (verifyPermissions(
-              listPermissions,
-              CONFIG.permissions.system,
-              module,
-              CONFIG.permissions.operationDownloadFile
-            ) || listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator)
-              || (moduleType && moduleType === 'issued' && listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.serviceStaff))
-            )) && (
+            {(onDownload && (listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.administrator))) && (
                 <IconButton size="small" onClick={() => onDownload(file)}>
                   <Iconify icon="ic:outline-cloud-download" width={16} />
                 </IconButton>

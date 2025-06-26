@@ -1,5 +1,6 @@
 import graphene
 import orjson
+from bson import ObjectId
 from datetime import datetime
 # from api_projects.data_util import serialize_datetime
 from datetime import datetime, timezone as dt_timezone
@@ -15,7 +16,8 @@ class JSONDateTime(graphene.Scalar):
     def serialize(value):
         dumped = orjson.dumps(
             value,
-            default=lambda obj: datetime_to_timezone(obj)
+            default=lambda obj: serialize_all(obj) if isinstance(obj, (datetime, dict, list, tuple, set)) else str(obj),
+            option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS | orjson.OPT_UTC_Z | orjson.OPT_INDENT_2
         )
         return orjson.loads(dumped)
 
@@ -26,6 +28,34 @@ class JSONDateTime(graphene.Scalar):
     @staticmethod
     def parse_literal(ast, variables=None):
         return ast.value
+    
+def serialize_all(value):
+    """
+    Serializes a value, converting datetime objects to strings
+    in the format 'YYYY-MM-DD HH:MM:SS'.
+    """
+    if isinstance(value, datetime):
+        return datetime_to_timezone(value)
+    elif isinstance(value, dict):
+        return {key: serialize_all(val) for key, val in value.items()}
+    elif isinstance(value, list):
+        return [serialize_all(item) for item in value]
+    elif isinstance(value, tuple):
+        return tuple(serialize_all(item) for item in value)
+    elif isinstance(value, set):
+        return {serialize_all(item) for item in value}
+    elif isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value)
+            return datetime_to_timezone(dt)
+        except ValueError:
+            return value
+    elif isinstance(value, (int, float, bool)):
+        return value
+    elif isinstance(value, ObjectId):
+        return str(value)
+    else:
+        return value
     
 
 def datetime_to_timezone(dt):

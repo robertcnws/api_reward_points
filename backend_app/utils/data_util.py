@@ -4,7 +4,8 @@ from datetime import timezone as dt_timezone
 from datetime import datetime
 from dateutil import parser
 from phonenumbers import NumberParseException
-# from .models import ProjectNotification, ProjectNotificationUser
+from api_users.models import Notification, NotificationUser
+from api_authorization.models import LoginUser
 from api_reward_points.models import RewardPointsSettings
 import phonenumbers
 import json
@@ -96,35 +97,35 @@ def to_aware(dt):
     return dt
 
 
-# def create_notification(module, info_id, info, type, username):
-#     notification = ProjectNotification(
-#         module=module,
-#         info_id=str(info_id),
-#         info=info,
-#         type=type,
-#         created_time=timezone.now(),
-#         last_modified_time=timezone.now(),
-#     )
+def create_notification(module, info_id, info, type, username):
+    notification = Notification(
+        module=module,
+        info_id=str(info_id),
+        info=info,
+        type=type,
+        created_time=timezone.now(),
+        last_modified_time=timezone.now(),
+    )
     
-#     notification.save()
+    notification.save()
     
-#     user = LoginUser.objects(username=username).first()
+    user = LoginUser.objects(username=username).first()
     
-#     username = user.username if user else 'System Job'
+    username = user.username if user else 'System Job'
     
-#     all_users = LoginUser.objects.all()
+    all_users = LoginUser.objects(username__ne=username, is_active=True, is_verified=True).all()
     
-#     for user in all_users:
-#         user_notification = ProjectNotificationUser(
-#             notification=transform_data_to_mongo(notification),
-#             username=username,
-#             user=transform_data_to_mongo(user, exclude_fields=['password']),
-#             created_time=timezone.now(),
-#             last_modified_time=timezone.now(),
-#         )
-#         user_notification.save()
-    
-#     return notification
+    if notification:
+        for user in all_users:
+            user_notification = NotificationUser(
+                notification=notification,
+                username=username,
+                user=user,
+                created_time=timezone.now(),
+                last_modified_time=timezone.now(),
+            )
+            user_notification.save()
+
 
 def get_national_phone_number(raw_number: str) -> str:
     try:
@@ -141,6 +142,23 @@ def calculate_reward_points(total_amount) -> int:
         while total_amount >= setting.amount and total_amount >= 0:
             total_amount -= setting.amount
             points += setting.points
+    return points
+
+
+def assign_points_to_item(rate) -> int:
+    lowest_setting = RewardPointsSettings.objects().order_by('amount').only('amount', 'points').first()
+    points = 0
+    if not lowest_setting:
+        return 0
+    if rate is None or rate <= 0:
+        return 0
+    if rate < lowest_setting.amount:
+        return points + 1
+    while rate >= lowest_setting.amount and rate >= 0:
+        rate -= lowest_setting.amount
+        points += lowest_setting.points
+    if rate > 0:
+        points += 1
     return points
 
 

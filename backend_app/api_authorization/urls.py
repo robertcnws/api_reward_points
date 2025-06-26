@@ -1,7 +1,16 @@
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
+from graphene_django.views import GraphQLView
 from . import views
+import api_authorization.schema as schema
+import graphene
 
 urlpatterns = [
+    path(
+        "graphql/", 
+        csrf_exempt(GraphQLView.as_view(schema=graphene.Schema(query=schema.Query), graphiql=True)), 
+        name="graphql"
+    ),
     path("is_user_verified/", views.is_user_verified, name="is_user_verified"),
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),

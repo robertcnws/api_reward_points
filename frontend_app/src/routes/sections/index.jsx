@@ -6,7 +6,6 @@ import { AuthSplitLayout } from 'src/layouts/auth-split';
 import { SplashScreen } from 'src/components/loading-screen';
 
 import { GuestGuard } from 'src/auth/guard';
-import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { authRoutes } from './auth';
 import { mainRoutes } from './main';
@@ -22,8 +21,6 @@ const Jwt = {
 };
 
 export function Router() {
-
-  const { listPermissions } = useDataContext();
 
   // console.log('listPermissions', listPermissions);
 
@@ -71,7 +68,7 @@ export function Router() {
     ...authRoutes,
 
     // Dashboard
-    ...dashboardRoutes(listPermissions, userLogged?.data),
+    ...dashboardRoutes(userLogged?.data),
 
     // Main
     ...mainRoutes,

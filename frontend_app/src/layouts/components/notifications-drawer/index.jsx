@@ -15,7 +15,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { isInstaller } from 'src/utils/check-permissions';
+import { isClient } from 'src/utils/check-permissions';
 
 import { CONFIG } from 'src/config-global';
 
@@ -36,27 +36,27 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
-  const filterNotifications = (notifications, projects, services, measurements, user) => {
-    const projectsIds = projects?.map((project) => project?.id);
+  // const filterNotifications = (notifications, projects, services, measurements, user) => {
+  //   const projectsIds = projects?.map((project) => project?.id);
 
-    const servicesIds = services?.map((service) => service?.id);
+  //   const servicesIds = services?.map((service) => service?.id);
 
-    const measurementsIds = measurements?.map((measurement) => measurement?.id);
+  //   const measurementsIds = measurements?.map((measurement) => measurement?.id);
 
-    const allIds = [...projectsIds, ...servicesIds, ...measurementsIds];
+  //   const allIds = [...projectsIds, ...servicesIds, ...measurementsIds];
 
-    const isInstallerRole = isInstaller(user?.data?.user_role?.name);
-    if (!notifications || !allIds?.length) return [];
+  //   const isInstallerRole = isClient(user?.data?.user_role?.name);
+  //   if (!notifications || !allIds?.length) return [];
 
-    if (!isInstallerRole && !user) return notifications;
+  //   if (!isInstallerRole && !user) return notifications;
     
-    return notifications?.filter((notification) => {
-      const itemId = notification?.notification?.info_id;
-      if (!itemId || !allIds?.includes(itemId)) return false;
-      return true;
-    });
+  //   return notifications?.filter((notification) => {
+  //     const itemId = notification?.notification?.info_id;
+  //     if (!itemId || !allIds?.includes(itemId)) return false;
+  //     return true;
+  //   });
 
-  }
+  // }
 
   const {
     loadedNotifications: userNotifications,
@@ -83,44 +83,45 @@ export function NotificationsDrawer({ sx, ...other }) {
     }
   }, [userNotifications, userLogged]);
 
-  // useEffect(() => {
-  //   const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/projects/ws/project-notification-users/`);
-  //   socket.onerror = (errorEvent) => {
-  //     console.dir(errorEvent);
-  //     console.error('WebSocket error (toString):', errorEvent.toString());
-  //   };
-  //   socket.onmessage = (event) => {
-  //     const message = JSON.parse(event.data);
-  //     if (message.type === 'created' || message.type === 'updated') {
-  //       setNotifications((prevData) => {
-  //         const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-  //         if (existingItemIndex !== -1) {
-  //           const updatedData = [...prevData];
-  //           updatedData[existingItemIndex] = message.item;
-  //           return updatedData;
-  //         }
-  //         const pData = prevData?.filter((notif) => notif.user.username === userLogged?.data.username && String(notif.id) !== String(message.item.id));
-  //         const updatedNotifications = [message.item, ...pData];
-  //         return updatedNotifications;
-  //       });
-  //       setWebsocketChange(true);
-  //     }
-  //     else if (message.type === 'deleted') {
-  //       setNotifications((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
-  //       setWebsocketChange(true);
-  //     }
-  //   };
-  //   return () => {
-  //     if (socket && socket.readyState === WebSocket.OPEN) {
-  //       socket.close();
-  //     }
-  //   };
-  // }, [userLogged, projects, services, measurements]);
+  useEffect(() => {
+    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated') {
+        setNotifications((prevData) => {
+          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
+          if (existingItemIndex !== -1) {
+            const updatedData = [...prevData];
+            updatedData[existingItemIndex] = message.item;
+            return updatedData;
+          }
+          const pData = prevData?.filter((notif) => notif.user.username === userLogged?.data.username && String(notif.id) !== String(message.item.id));
+          const updatedNotifications = [message.item, ...pData];
+          return updatedNotifications;
+        });
+        setWebsocketChange(true);
+      }
+      else if (message.type === 'deleted') {
+        setNotifications((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
+        setWebsocketChange(true);
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [userLogged, projects, services, measurements]);
 
   useEffect(() => {
     if (websocketChange) {
       setNotifications(
-        filterNotifications(userNotifications, projects, services, measurements, userLogged)
+        userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []
+        // filterNotifications(userNotifications, projects, services, measurements, userLogged)
       );
       setWebsocketChange(false);
     }

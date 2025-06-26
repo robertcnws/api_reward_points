@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { isInstaller } from 'src/utils/check-permissions';
+import { isClient } from 'src/utils/check-permissions';
 
 export function useFilteredNotifications(notifications, projects, services, measurements, userLogged) {
   const projectsIds = useMemo(() => projects.map((project) => project.id), [projects]);
@@ -16,7 +16,7 @@ export function useFilteredNotifications(notifications, projects, services, meas
   
   // console.log('allIds', allIds);
 
-  const isInstallerRole = isInstaller(userLogged?.data?.user_role?.name);
+  const isInstallerRole = isClient(userLogged?.data?.user_role?.name);
 
   const filteredNotifications = useMemo(() => {
     if (!notifications || !allIds.length) return [];

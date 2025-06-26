@@ -15,6 +15,8 @@ import {
 
 import dayjs from 'dayjs';
 
+import { useDataContext } from 'src/auth/context/data/data-context';
+
 import { fCurrency } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
 
@@ -31,6 +33,7 @@ import { EcommerceLatestProducts } from '../ecommerce-latest-products';
 import { EcommerceCurrentBalance } from '../ecommerce-current-balance';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
+import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 
 
 
@@ -38,7 +41,19 @@ import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
 
 // ----------------------------------------------------------------------
 
-export function OverviewEcommerceView({ loadedRewardPoints }) {
+export function OverviewEcommerceView({
+  loadedRewardPoints,
+  refetchRewardPoints,
+  loadingRewardPoints,
+  errorRewardPoints,
+}) {
+
+  const {
+    loadedRewardPointsHistory,
+    refetchRewardPointsHistory,
+    loadingRewardPointsHistory,
+    errorRewardPointsHistory,
+  } = useDataContext();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
   const displayFirstName = useMemo(() => userLogged?.data?.first_name, [userLogged]);
@@ -72,6 +87,20 @@ export function OverviewEcommerceView({ loadedRewardPoints }) {
       })) || []
     );
   }, [sortedInvoices]);
+
+  const sortedRewardPointsHistory = useMemo(() => {
+    if (!loadedRewardPointsHistory || !Array.isArray(loadedRewardPointsHistory)) {
+      return [];
+    }
+    const rewardPointsHistory = loadedRewardPointsHistory ?? [];
+    const pointsHistory = [...rewardPointsHistory].sort((a, b) => {
+      if (a.createdTime && b.createdTime) return dayjs(b.createdTime).diff(dayjs(a.createdTime));
+      if (!a.createdTime && b.createdTime) return 1;
+      if (a.createdTime && !b.createdTime) return -1;
+      return 0;
+    });
+    return pointsHistory || [];
+  }, [loadedRewardPointsHistory]);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -263,21 +292,27 @@ export function OverviewEcommerceView({ loadedRewardPoints }) {
 
           <Grid xs={12} md={6} lg={8}>
             <EcommerceInvoicesListItems
-              title="Products purchased"
-              tableData={listItems}
+              title="Purchases History"
+              tableData={sortedInvoices}
               headLabel={[
                 { id: 'date', label: 'Date', align: 'left' },
-                { id: 'name', label: 'Name' },
-                { id: 'sku', label: 'SKU' },
-                { id: 'quantity', label: 'QTY', align: 'center' },
-                { id: 'rate', label: 'Rate', align: 'right' },
-                { id: 'itemTotal', label: 'TOTAL', align: 'right' },
+                { id: 'order', label: 'Order' },
+                { id: 'totalItems', label: 'Qty of Items', align: 'center' },
+                { id: 'paymentMade', label: 'Payment', align: 'right' },
               ]}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={4}>
-            <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} />
+            {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
+            <EcommerceRewardPointsHistoryList
+              title='Reward Points History'
+              subheader='Latest reward points history'
+              list={sortedRewardPointsHistory}
+              loading={loadingRewardPointsHistory}
+              error={errorRewardPointsHistory}
+              refetch={refetchRewardPointsHistory}
+            />
           </Grid>
         </Grid>
       )}

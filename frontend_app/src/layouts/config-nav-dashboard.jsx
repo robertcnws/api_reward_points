@@ -1,9 +1,16 @@
 
 import { paths } from 'src/routes/paths';
 
+import { isClient } from 'src/utils/check-permissions';
+
 import { CONFIG } from 'src/config-global';
 
 import { SvgColor } from 'src/components/svg-color';
+import { useMemo } from 'react';
+import { Box, Typography } from '@mui/material';
+import { Label } from 'src/components/label';
+import { Iconify } from 'src/components/iconify';
+
 
 
 // ----------------------------------------------------------------------
@@ -60,11 +67,13 @@ const ICONS = {
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
 
+const userRole = userLogged?.data?.user_role?.name;
+
 // const { countLostItems } = useDataContext();
 
 // ----------------------------------------------------------------------
 
-export const navData = () => [
+export const navData = (loadedPendingUsers, isNavMini) => [
   // export const navData = (countLostItems) => [
   /**
    * Overview
@@ -72,7 +81,167 @@ export const navData = () => [
   {
     subheader: 'Overview',
     items: [
-      { title: 'Analytics', path: paths.dashboard.general.analytics, icon: ICONS.analytics },
+      {
+        title: 'Analytics',
+        path: paths.dashboard.general.analytics,
+        icon: ICONS.analytics
+      },
+      ...(userLogged && isClient(userRole) ? [
+        {
+          title: 'Store Products',
+          path: paths.dashboard.storeProduct.root,
+          icon: ICONS.item,
+          children: [
+            {
+              title: 'List',
+              path: paths.dashboard.storeProduct.list,
+            },
+          ],
+        },
+      ] : []),
     ],
   },
+  ...(userLogged && !isClient(userRole) ? [
+    {
+      subheader: 'Management',
+      items: [
+        ...(userLogged && !isClient(userRole) ? [
+          {
+            title: (
+              <>
+                <Box component="span"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: isNavMini ? 'center' : 'flex-start',
+                  }}
+                >
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Users
+                  </Typography>
+                  {(loadedPendingUsers?.length > 0 && !isNavMini) && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+                      <Label color="error" sx={{ ml: 1, gap: 0 }}>
+                        {loadedPendingUsers?.length}
+                        <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
+                        <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                          Pending
+                        </Typography>
+                      </Label>
+                    </Box>
+                  )}
+                </Box>
+              </>
+            ),
+            path: paths.dashboard.user.root,
+            icon: ICONS.user,
+            children: [
+              {
+                title: (
+                  <>
+                    <Box component="span" sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          mr: 1,
+                          color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
+                        }}
+                      >
+                        Pending
+                      </Typography>
+                      {loadedPendingUsers?.length > 0 && (
+                        <Label color="error" sx={{ ml: 1 }}>
+                          {loadedPendingUsers?.length}
+                        </Label>
+                      )}
+                    </Box>
+                  </>
+                ),
+                path: paths.dashboard.user.pending,
+              },
+              {
+                title: 'List',
+                path: paths.dashboard.user.list,
+              },
+              {
+                title: 'Create',
+                path: paths.dashboard.user.new,
+              },
+            ],
+          },
+          // {
+          //   title: 'Items',
+          //   path: paths.dashboard.item.root,
+          //   icon: ICONS.item,
+          //   children: [
+          //     {
+          //       title: 'List',
+          //       path: paths.dashboard.item.list,
+          //     },
+          //     ...((userLogged && !isClient(userLogged?.data?.user_role?.name)) ? [
+          //       {
+          //         title: 'Attachments',
+          //         path: paths.dashboard.item.attachments,
+          //       },
+          //     ] : []),
+          //   ],
+          // },
+        ] : []),
+      ]
+    },
+  ] : []),
+  ...(userLogged && !isClient(userRole) ? [
+    {
+      subheader: 'Settings',
+      items: [
+        ...(userLogged && !isClient(userRole) ? [
+          {
+            title: 'Store Products',
+            path: paths.dashboard.storeProduct.root,
+            icon: ICONS.item,
+            children: [
+              {
+                title: 'List',
+                path: paths.dashboard.storeProduct.list,
+              },
+              {
+                title: 'Attachments',
+                path: paths.dashboard.storeProduct.attachments,
+              },
+              {
+                title: 'Create',
+                path: paths.dashboard.storeProduct.new,
+              },
+            ],
+          },
+          ...(userLogged && !isClient(userRole) ? [
+            {
+              title: 'Roles',
+              path: paths.dashboard.role.root,
+              icon: ICONS.access,
+              children: [
+                {
+                  title: 'List',
+                  path: paths.dashboard.role.list,
+                },
+                {
+                  title: 'Create',
+                  path: paths.dashboard.role.new,
+                },
+              ],
+            },
+          ] : []),
+        ] : []),
+      ]
+    }
+  ] : []),
 ];

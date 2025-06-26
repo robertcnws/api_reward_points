@@ -37,6 +37,9 @@ export function OverviewAnalyticsView() {
       ) : (
         <OverviewEcommerceView
           loadedRewardPoints={loadedRewardPoints}
+          refetchRewardPoints={refetchRewardPoints}
+          loadingRewardPoints={loadingRewardPoints}
+          errorRewardPoints={errorRewardPoints}
         />
       )}
     </>

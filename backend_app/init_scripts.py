@@ -53,6 +53,7 @@ def create_superuser():
             first_name='Admin',
             last_name='NWS Reward Points',
             is_verified=True,
+            is_approved=True,
         )
         superuser.set_password(password)
         superuser.save()

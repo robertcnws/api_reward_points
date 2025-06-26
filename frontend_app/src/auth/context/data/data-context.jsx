@@ -1,86 +1,144 @@
 import React, { useMemo, useContext, createContext } from 'react';
 
 import { useRewardPoints, RewardPointsProvider } from './contexts/reward-points-context';
+import { RewardStoreProductsProvider, useRewardStoreProducts } from './contexts/reward-store-products-context';
+import { RewardUserRolesProvider, useRewardUserRoles } from './contexts/reward-user-roles-context';
+import { RewardNotificationUsersProvider, useRewardNotificationUsers } from './contexts/reward-notification-users-context';
+import { RewardLoginUsersProvider, useRewardLoginUsers } from './contexts/reward-login-users-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
   return (
-    // <UserProvider>
-    //   <UserRolesProvider>
-    //       <ProjectsProvider>
-    //         <ServicesProvider>
-    //           <MeasurementsProvider>
-    //             <NotificationsProvider>
-    //               <StagesProvider>
-    //                 <StageTasksProvider>
-    //                   <ProjectPermissionsProvider>
-    //                     <ProjectRemindersProvider>
-    //                       <DefaultTasksProvider>
-    //                         <DefaultGuideProductsProvider>
-    //                           <DefaultMaterialsProvider>
-    //                             <ServiceStagesProvider>
-    //                               <ServiceDefaultTasksProvider>
-    //                                 <ServiceIssuesProvider>
-    //                                   <TracksProvider>
-    //                                     <IntegrationProvider>
-    <RewardPointsProvider>
-                                          <CombineProviders>{children}</CombineProviders>
-    </RewardPointsProvider>
-    //                                     </IntegrationProvider>
-    //                                   </TracksProvider>
-    //                                 </ServiceIssuesProvider>
-    //                               </ServiceDefaultTasksProvider>
-    //                             </ServiceStagesProvider>
-    //                           </DefaultMaterialsProvider>
-    //                         </DefaultGuideProductsProvider>
-    //                       </DefaultTasksProvider>
-    //                     </ProjectRemindersProvider>
-    //                   </ProjectPermissionsProvider>
-    //                 </StageTasksProvider>
-    //               </StagesProvider> 
-    //             </NotificationsProvider>
-    //           </MeasurementsProvider>
-    //         </ServicesProvider>
-    //       </ProjectsProvider>
-    //   </UserRolesProvider>
-    // </UserProvider>
+    // <RewardItemsProvider>
+    <RewardNotificationUsersProvider>
+      <RewardUserRolesProvider>
+        <RewardLoginUsersProvider>
+          <RewardStoreProductsProvider>
+            <RewardPointsProvider>
+              <CombineProviders>{children}</CombineProviders>
+            </RewardPointsProvider>
+          </RewardStoreProductsProvider>
+        </RewardLoginUsersProvider>
+      </RewardUserRolesProvider>
+    </RewardNotificationUsersProvider>
+    // </RewardItemsProvider>
   );
 }
 
 function CombineProviders({ children }) {
-  const { loadedRewardPoints, refetchRewardPoints, loadingRewardPoints, errorRewardPoints } = useRewardPoints();
-  // const { userLogged, loadedUsers, refetchUsers, loadingUsers, errorUsers, loadedSuperadminUsers } = useAuth();
-  // const { loadedUserRoles, refetchUserRoles, loadingUserRoles, errorUserRoles } = useUserRoles();
-  // const { loadedNotifications, refetchNotifications, loadingNotifications, errorNotifications } = useNotifications();
-  // const { loadedProjects, refetchProjects, loadingProjects, errorProjects, hasMoreProjects, loadMoreProjects } = useProjects();
-  // const { loadedServices, refetchServices, loadingServices, errorServices } = useServices();
-  // const { loadedPermissions, listPermissions, refetchPermissions, loadedSalesOrders, setLoadedSalesOrders, isLoadingSalesOrders } = useIntegration();
-  // const { loadedMeasurements, refetchMeasurements, loadingMeasurements, errorMeasurements } = useMeasurements();
-  // const { loadedProjectPermissions, loadingProjectPermissions, errorProjectPermissions } = useProjectPermissions();
-  // const { loadedTracks, refetchTracks, loadingTracks, errorTracks } = useTracks();
-  // const { loadedStages, refetchStages, loadingStages, errorStages } = useStages();
-  // const { loadedStagesTask, refetchStagesTask, loadingStagesTask, errorStagesTask } = useStageTasks();
-  // const { loadedProjectReminders, refetchProjectReminders } = useProjectReminders();
-  // const { loadedDefaultTasks, refetchDefaultTasks, loadingDefaultTasks, errorDefaultTasks } = useDefaultTasks();
-  // const { loadedDefaultGuideProducts, refetchDefaultGuideProducts, loadingDefaultGuideProducts, errorDefaultGuideProducts } = useDefaultGuideProducts();
-  // const { loadedServiceStages, refetchServiceStages } = useServiceStages();
-  // const { loadedServiceDefaultTasks, refetchServiceDefaultTasks } = useServiceDefaultTasks();
-  // const { loadedServiceIssues, refetchServiceIssues } = useServiceIssues();
-  // const { loadedDefaultMaterials, refetchDefaultMaterials, loadingDefaultMaterials, errorDefaultMaterials } = useDefaultMaterials();
+  const { 
+    loadedRewardPoints, 
+    refetchRewardPoints, 
+    loadingRewardPoints, 
+    errorRewardPoints,
+    loadedRewardPointsHistory,
+    refetchRewardPointsHistory,
+    loadingRewardPointsHistory,
+    errorRewardPointsHistory, 
+  } = useRewardPoints();
 
-  // console.log('loadedPermissions', loadedPermissions);
+  const {
+    loadedAllRewardStoreProducts: loadedStoreProducts,
+    refetchAllRewardStoreProducts: refetchStoreProducts,
+    loadingAllRewardStoreProducts: loadingStoreProducts,
+    errorRewardStoreProducts: errorStoreProducts,
+  } = useRewardStoreProducts();
+
+  const {
+    loadedAllRewardUserRoles: loadedUserRoles,
+    refetchAllRewardUserRoles: refetchUserRoles,
+    loadingAllRewardUserRoles: loadingUserRoles,
+    errorRewardUserRoles: errorUserRoles,
+  } = useRewardUserRoles();
+
+  const {
+    loadedNotifications,
+    refetchNotifications,
+    loadingNotifications,
+    errorNotifications
+  } = useRewardNotificationUsers();
+
+  const {
+    loadedAllRewardLoginUsers: loadedUsers,
+    loadedPendingRewardLoginUsers: loadedPendingUsers,
+    refetchAllRewardLoginUsers: refetchUsers,
+    loadingAllRewardLoginUsers: loadingUsers,
+    errorRewardLoginUsers: errorUsers,
+  } = useRewardLoginUsers();
+
+  // const {
+  //   loadedAllRewardItems,
+  //   loadedFilteredRewardItems,
+  //   refetchAllRewardItems,
+  //   loadingAllRewardItems,
+  //   errorRewardItems,
+  // } = useRewardItems();
+
+  // console.log('loadedAllRewardItems', loadedAllRewardItems);
   
   const value = useMemo(() => ({
     loadedRewardPoints,
     refetchRewardPoints,
     loadingRewardPoints,
     errorRewardPoints,
+    loadedRewardPointsHistory,
+    refetchRewardPointsHistory,
+    loadingRewardPointsHistory,
+    errorRewardPointsHistory,
+    loadedStoreProducts,
+    refetchStoreProducts,
+    loadingStoreProducts,
+    errorStoreProducts,
+    loadedUserRoles,
+    refetchUserRoles,
+    loadingUserRoles,
+    errorUserRoles,
+    loadedNotifications,
+    refetchNotifications,
+    loadingNotifications,
+    errorNotifications,
+    loadedUsers,
+    loadedPendingUsers,
+    refetchUsers,
+    loadingUsers,
+    errorUsers,
+    // loadedAllRewardItems,
+    // loadedFilteredRewardItems,
+    // refetchAllRewardItems,
+    // loadingAllRewardItems,
+    // errorRewardItems,
   }), [
     loadedRewardPoints,
     refetchRewardPoints,
     loadingRewardPoints,
     errorRewardPoints,
+    loadedRewardPointsHistory,
+    refetchRewardPointsHistory,
+    loadingRewardPointsHistory,
+    errorRewardPointsHistory,
+    loadedStoreProducts,
+    refetchStoreProducts,
+    loadingStoreProducts,
+    errorStoreProducts,
+    loadedUserRoles,
+    refetchUserRoles,
+    loadingUserRoles,
+    errorUserRoles,
+    loadedNotifications,
+    refetchNotifications,
+    loadingNotifications,
+    errorNotifications,
+    loadedUsers,
+    loadedPendingUsers,
+    refetchUsers,
+    loadingUsers,
+    errorUsers,
+    // loadedAllRewardItems,
+    // loadedFilteredRewardItems,
+    // refetchAllRewardItems,
+    // loadingAllRewardItems,
+    // errorRewardItems,
   ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

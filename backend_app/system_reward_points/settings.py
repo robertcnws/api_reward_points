@@ -66,6 +66,7 @@ LOGGING = {
 
 # DANGO VARS
 DJANGO_REGISTER_USER_ROLE = env('DJANGO_REGISTER_USER_ROLE', default='client')
+DJANGO_LIST_ADMIN_EMAIL_RECEIPTS = env.list('DJANGO_LIST_ADMIN_EMAIL_RECEIPTS', default=[])
 
 
 # Quick-start development settings - unsuitable for production
@@ -140,6 +141,7 @@ INSTALLED_APPS = [
     'api_authorization',
     # 'api_projects',
     'api_reward_points.apps.ApiRewardPointsConfig',
+    'api_users.apps.ApiUsersConfig',
     'api_reward_points_async_task_sequence',
 ]
 
@@ -323,7 +325,7 @@ CELERY_TIMEZONE = 'America/New_York'
 CELERY_ENABLE_UTC = False
 
 # Celery Beat Schedule
-CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/2')
+CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/30')  # Every 30 minutes
 CELERY_TASK_REVIEW_USER_POINTS_HOUR = env('CELERY_TASK_REVIEW_USER_POINTS_HOUR', default='7-17')
 CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK = env('CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK', default='*')
 
@@ -356,5 +358,3 @@ MONGO_DB = env('MONGO_DB', default='')
 MONGO_URI = f"mongodb://{MONGO_USER}:{urllib.parse.quote_plus(MONGO_PASSWORD)}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB}?authSource=admin&authMechanism=SCRAM-SHA-1"
 
 connect_mongo()
-
-

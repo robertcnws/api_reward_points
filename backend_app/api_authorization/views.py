@@ -78,6 +78,16 @@ def is_user_verified(request):
                     'error_phone_number': user.phone_number
                 }, status=400)
                 
+            if not user.is_approved:
+                return JsonResponse({
+                    'error': 'User not approved', 
+                    'description': 'User is not approved by admin',
+                    'error_name': 'user_not_approved',
+                    'error_username': user.username,
+                    'error_email': user.email,
+                    'error_phone_number': user.phone_number
+                }, status=403)
+                
             return JsonResponse({
                     'username': user.username,
                     'is_verified': user.is_verified
@@ -111,25 +121,36 @@ def login(request):
                 current_user = LoginUser.objects(username=username).first()
                 current_user.last_login = timezone.now()
                 current_user.save()
+                
+                    
+                tracking = Tracking(
+                    user_reporter=current_user,
+                    action='login',
+                    created_time=timezone.now(),
+                    managed_data={
+                        'data': 'User logged in successfully',
+                    }
+                )
+                tracking.save()
+                
                 user = transform_data_to_mongo(current_user, exclude_fields=['password'])
                 user_role = user.get('user_role', None)
                 if user_role:
                     user_role = UserRole.objects(id=user_role).first()
                     user['user_role'] = transform_data_to_mongo(user_role)
-                    
-                tracking = Tracking(
-                    user_reporter=user,
-                    action='login',
-                    created_time=timezone.now(),
-                    managed_data={
-                        'data': user,
-                    }
-                )
-                tracking.save()
                 
                 return JsonResponse({'data': user}, status=200)
             login_user = LoginUser.objects(username=username).first()
-            if login_user:
+            if login_user and not login_user.is_approved:
+                return JsonResponse({
+                    'error': 'User not approved', 
+                    'description': 'User is not approved by admin',
+                    'error_name': 'user_not_approved',
+                    'error_username': login_user.username,
+                    'error_email': login_user.email,
+                    'error_phone_number': login_user.phone_number
+                }, status=403)
+            elif login_user:
                 return JsonResponse({
                     'error': 'Invalid credentials', 
                     'description' : 'Incorrect Password',
@@ -159,12 +180,16 @@ def logout(request):
     if user_reporter:
         request.session.flush()
         logger.info(f'User {user_reporter["username"]} logged out')
+        current_user = LoginUser.objects(username=user_reporter['username']).first()
+        if current_user:
+            current_user.last_login = timezone.now()
+            current_user.save()
         tracking = Tracking(
-            user_reporter=user_reporter,
+            user_reporter=current_user,
             action='logout',
             created_time=timezone.now(),
             managed_data={
-                'data': user_reporter,
+                'data': 'User logged out successfully',
             }
         )
         tracking.save()
@@ -252,14 +277,14 @@ def register(request):
             logger.info(f'Email sent to {email} with code {code}')
             print(f'Email sent to {email} with code {code}')
             
-            tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+            # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
             
             tracking = Tracking(
-                user_reporter=tracking_info,
+                user_reporter=user,
                 action='register',
                 created_time=timezone.now(),
                 managed_data={
-                    'data': tracking_info,
+                    'data': 'User registered successfully',
                 }
             )
             tracking.save()
@@ -307,6 +332,26 @@ def verify_user(request):
             user.save()
             verification_code.delete()
             logger.info(f'User {username} verified successfully')
+            reward_points = RewardPoints.objects(user=user).first()
+            if reward_points:
+                points = reward_points.total_gained_points
+                if points > 0:
+                    send_email_pending_approval(
+                        points=points,
+                        username=user.username,
+                        first_name=user.first_name,
+                        last_name=user.last_name,
+                        list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
+                    )
+            tracking = Tracking(
+                user_reporter=user,
+                action='verify_user',
+                created_time=timezone.now(),
+                managed_data={
+                    'data': 'User verified successfully',
+                }
+            )
+            tracking.save()
             return JsonResponse({'data': 'User verified successfully'}, status=200)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
@@ -382,22 +427,45 @@ def send_email_verification_code(email, code):
             "api_authorization/email_send_verification_code.html",  
             {"code": code}, 
         )
+        message = "Verification code sent successfully."
+        return send_generic_email(
+            [email], 
+            email_html_message, 
+            "Verification Code for Reward Points System", 
+            message_response=message
+        )
+        
+
+def send_email_pending_approval(points, username, first_name, last_name, list_receivers):
+    email_html_message = render_to_string(
+            "api_authorization/email_send_pending_approval_user.html",  
+            {"username": username, "first_name": first_name, "last_name": last_name, "points": points}, 
+    )
+    message = "Pending approval email sent successfully."
+    return send_generic_email(
+        list_receivers, 
+        email_html_message, 
+        f"Pending Approval (user: {username}) for Reward Points System",
+        message_response=message
+    )
+    
+    
+def send_generic_email(list_receivers, email_html_message, subject, sender=settings.EMAIL_HOST_USER, message_response=None):
         email_msg = EmailMessage(
-            "Verification Code for Reward Points Portal",
+            subject,
             email_html_message,
-            f'New Window System <{settings.EMAIL_HOST_USER}>',
-            [email],
+            f'New Window System <{sender}>',
+            list_receivers,
         )
         email_msg.content_subtype = "html"  
         email_msg.send(fail_silently=False)
-        message = "Verification code sent successfully."
+        message = message_response or "Email sent successfully."
         return JsonResponse({"message": message}, status=200)
 
     
 def generate_verification_code():
     import random
     return str(random.randint(100000, 999999)) 
-
 
 
 def get_rewards_points(user):

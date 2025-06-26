@@ -10,10 +10,26 @@ const httpLinkUsers = new HttpLink({
   uri: `${CONFIG.apiUrl}/users/graphql/`,
 });
 
+const httpLinkRewardIntegration = new HttpLink({
+  uri: `${CONFIG.apiUrl}/integration/graphql/`,
+});
+
+const httpLinkRewardAuthorization = new HttpLink({
+  uri: `${CONFIG.apiUrl}/authorization/graphql/`,
+});
+
 const splitLink = split(
   (operation) => operation.getContext().clientName === 'RewardPoints',
   httpLinkRewardPoints,
-  httpLinkUsers
+  split(
+    (operation) => operation.getContext().clientName === 'RewardIntegration',
+    httpLinkRewardIntegration,
+    split(
+      (operation) => operation.getContext().clientName === 'RewardAuthorization',
+      httpLinkRewardAuthorization,
+      httpLinkUsers
+    )
+  )
 );
 
 const client = new ApolloClient({

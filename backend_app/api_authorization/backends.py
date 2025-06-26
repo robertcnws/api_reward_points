@@ -8,7 +8,7 @@ class MongoDBBackend(BaseBackend):
         if username is None or password is None:
             return None
         try:
-            user = LoginUser.objects(username=username, is_verified=True).first()
+            user = LoginUser.objects(username=username, is_verified=True, is_approved=True).first()
         except LoginUser.DoesNotExist:
             return None
 

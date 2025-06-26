@@ -7,11 +7,29 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 import { LoadingScreen } from 'src/components/loading-screen';
 
 import { AuthGuard } from 'src/auth/guard';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
 // Overview
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
+// Item
+const ItemPage = lazy(() => import('src/pages/dashboard/items'));
+// User Roles
+const UserRoleDefaultListPage = lazy(() => import('src/pages/dashboard/user-role/list'));
+const UserRoleDefaultCreatePage = lazy(() => import('src/pages/dashboard/user-role/new'));
+// User
+const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
+const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
+const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
+const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
+const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
+const UserPendingListPage = lazy(() => import('src/pages/dashboard/user/pending-list'));
+// Store Product
+const StoreProductPage = lazy(() => import('src/pages/dashboard/store-product'));
+const StoreProductCreatePage = lazy(() => import('src/pages/dashboard/store-product/new'));
+// Error
+const Page403 = lazy(() => import('src/pages/error/403'));
 
 // ----------------------------------------------------------------------
 
@@ -24,7 +42,7 @@ const layoutContent = (
 );
 
 
-export const dashboardRoutes = () => [
+export const dashboardRoutes = (user) => [
   {
     path: 'dashboard',
     element: CONFIG.auth.skip ? <OverviewAnalyticsPage /> : <AuthGuard>{layoutContent}</AuthGuard>,
@@ -35,8 +53,154 @@ export const dashboardRoutes = () => [
       },
       {
         path: 'analytics',
-        element: <OverviewAnalyticsPage /> 
-      }
+        element: <OverviewAnalyticsPage />
+      },
+      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+        [
+          {
+            path: 'config/role',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <UserRoleDefaultListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <UserRoleDefaultListPage /> : <Page403 />
+              },
+              {
+                path: 'new',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+              },
+              {
+                path: ':id/edit',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+              },
+            ],
+          },
+        ] : [],
+      {
+        path: 'config/store-product',
+        children: [
+          {
+            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductPage /> : <Page403 />,
+            index: true
+          },
+          {
+            path: 'list',
+            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductPage /> : <Page403 />
+          },
+          ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
+            {
+              path: 'new',
+              element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductCreatePage /> : <Page403 />
+            },
+          ] : [],
+          // {
+          //   path: 'attachments',
+          //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectAttachmentsPage /> : <Page403 />
+          // },
+          // {
+          //   path: ':id/edit',
+          //   element: <ProjectEditPage />,
+          // },
+          // {
+          //   path: ':id/details',
+          //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectDetailsPage /> : <Page403 />,
+          // }
+
+        ],
+      },
+      // {
+      //   path: 'item',
+      //   children: [
+      //     {
+      //       element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <ItemPage /> : <Page403 />,
+      //       index: true
+      //     },
+      //     {
+      //       path: 'list',
+      //       element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <ItemPage /> : <Page403 />
+      //     },
+      //     // {
+      //     //   path: 'attachments',
+      //     //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectAttachmentsPage /> : <Page403 />
+      //     // },
+      //     // {
+      //     //   path: ':id/edit',
+      //     //   element: <ProjectEditPage />,
+      //     // },
+      //     // {
+      //     //   path: ':id/details',
+      //     //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectDetailsPage /> : <Page403 />,
+      //     // }
+
+      //   ],
+      // },
+      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+        [
+          {
+            path: 'user',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <UserListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <UserListPage /> : <Page403 />
+              },
+              {
+                path: 'pending',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <UserPendingListPage /> : <Page403 />
+              },
+              {
+                path: 'new',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <UserCreatePage /> : <Page403 />
+              },
+              // {
+              //   path: ':id/edit',
+              //   element: listRolesAndSubroles(
+              //     user?.user_role?.name
+              //   ).includes(
+              //     CONFIG.roles.superadmin
+              //   ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+              // },
+            ],
+          },
+        ] : [],
     ]
   },
 ];

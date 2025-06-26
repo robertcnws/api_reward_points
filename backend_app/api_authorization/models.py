@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 
 class UserRole(Document):
     name = StringField(max_length=50, unique=True, required=True)
+    description = StringField(required=False)
+    is_active = BooleanField(default=True, required=False)
     created_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
     last_modified_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
 
@@ -45,6 +47,7 @@ class LoginUser(Document):
     user_role = ReferenceField(UserRole, required=False, reverse_delete_rule=2) 
     avatar_url = StringField(max_length=255, required=False)
     is_verified = BooleanField(default=False, required=False)
+    is_approved = BooleanField(default=False, required=False)
 
     meta = {
         'collection': 'login_users',

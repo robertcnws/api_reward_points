@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -11,6 +11,8 @@ import { allLangs } from 'src/locales';
 
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
@@ -29,6 +31,7 @@ import { SettingsButton } from '../components/settings-button';
 import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
+
 
 
 
@@ -57,11 +60,27 @@ export function DashboardLayout({ sx, children, header, data }) {
   const layoutQuery = 'lg';
 
   // const navData = data?.nav ?? dashboardNavData(countLostItems);
-  const navData = data?.nav ?? dashboardNavData();
 
   const isNavMini = settings.navLayout === 'mini';
   const isNavHorizontal = settings.navLayout === 'horizontal';
   const isNavVertical = isNavMini || settings.navLayout === 'vertical';
+
+
+  const {
+    loadedPendingUsers,
+    refetchUsers,
+    refetchRewardPoints,
+  } = useDataContext();
+
+  const [pendingUsers, setPendingUsers] = useState(loadedPendingUsers);
+
+  useEffect(() => {
+    refetchUsers?.();
+    setPendingUsers(loadedPendingUsers);
+    refetchRewardPoints?.();
+  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints]);
+
+  const navData = data?.nav ?? dashboardNavData(pendingUsers, isNavMini);
 
   return (
     <LayoutSection

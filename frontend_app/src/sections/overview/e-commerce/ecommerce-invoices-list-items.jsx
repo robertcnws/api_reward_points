@@ -40,20 +40,17 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
 // ----------------------------------------------------------------------
 
 function RowItem({ row }) {
+  
   return (
     <TableRow>
 
       <TableCell align="left">{fDate(row?.date)}</TableCell>
 
-      <TableCell width={300}>{row?.name}</TableCell>
+      <TableCell width={300}>{row?.invoiceNumber}</TableCell>
 
-      <TableCell>{row?.sku}</TableCell>
+      <TableCell align="center">{fNumber(row?.lineItems?.length)}</TableCell>
 
-      <TableCell align="center">{fNumber(row?.quantity)}</TableCell>
-
-      <TableCell align="right">{fCurrency(row?.rate)}</TableCell>
-
-      <TableCell align="right">{fCurrency(row?.itemTotal)}</TableCell>
+      <TableCell align="right">{fCurrency(row?.paymentMade)}</TableCell>
 
 
       {/* <TableCell>
