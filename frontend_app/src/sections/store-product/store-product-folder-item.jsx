@@ -39,6 +39,7 @@ export function StoreProductFolderItem({
   onSelect,
   onDelete,
   onViewRow,
+  onEditRow,
   setTableData,
   refetchStoreProducts,
   ...other }) {

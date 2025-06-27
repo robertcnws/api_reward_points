@@ -28,6 +28,7 @@ const UserPendingListPage = lazy(() => import('src/pages/dashboard/user/pending-
 // Store Product
 const StoreProductPage = lazy(() => import('src/pages/dashboard/store-product'));
 const StoreProductCreatePage = lazy(() => import('src/pages/dashboard/store-product/new'));
+const StoreProductEditPage = lazy(() => import('src/pages/dashboard/store-product/edit'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -110,6 +111,12 @@ export const dashboardRoutes = (user) => [
             {
               path: 'new',
               element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductCreatePage /> : <Page403 />
+            },
+          ] : [],
+          ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
+            {
+              path: ':id/edit',
+              element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductEditPage /> : <Page403 />
             },
           ] : [],
           // {

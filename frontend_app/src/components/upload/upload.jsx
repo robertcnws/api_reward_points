@@ -33,6 +33,7 @@ export function Upload({
   disabled,
   onDelete,
   onUpload,
+  onDownload,
   onRemove,
   thumbnail,
   helperText,
@@ -58,7 +59,13 @@ export function Upload({
 
   const renderMultiPreview = hasFiles && (
     <>
-      <MultiFilePreview files={value} thumbnail={thumbnail} onRemove={onRemove} sx={{ my: 1 }} />
+      <MultiFilePreview
+        files={value}
+        thumbnail={thumbnail}
+        onRemove={onRemove}
+        onDownload={onDownload}
+        sx={{ my: 1 }}
+      />
 
       {(onRemoveAll || onUpload) && (
         <Box gap={1} display="flex" justifyContent="flex-end">

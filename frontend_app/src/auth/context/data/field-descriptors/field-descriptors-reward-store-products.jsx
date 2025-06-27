@@ -1,9 +1,27 @@
 export const fieldsRewardStoreProducts = [
     'assignedPoints',
-    'attachments',
     'createdTime',
     'description',
     'id',
     'lastModifiedTime',
     'name',
+    {
+        name: 'attachments',
+        fields: [
+            'id',
+            'file',
+            'description',
+            'name',
+            {
+                name: 'userUpload',
+                fields: [
+                    'id',
+                    'email',
+                    'firstName',
+                    'lastName',
+                    'username'
+                ]
+            }
+        ]
+    }
 ];

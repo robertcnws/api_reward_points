@@ -3,10 +3,10 @@ from graphene_mongo import MongoengineObjectType
 from graphene_mongo.converter import convert_mongoengine_field
 from mongoengine.fields import DynamicField
 from api_reward_points.models import (
-    RewardStoreProduct,
+    RewardAttachment,
 )
+from api_authorization.schema import LoginUserType
 from utils.json_datetime import datetime_to_timezone
-from api_reward_points.schema_types.reward_attachment_type import RewardAttachmentType
 
 
 @convert_mongoengine_field.register(DynamicField)
@@ -16,16 +16,16 @@ def convert_dynamic_field(field, registry=None, executor=None):
         required=field.required
     )
     
-class RewardStoreProductType(MongoengineObjectType):
+class RewardAttachmentType(MongoengineObjectType):
+    user_upload = graphene.Field(LoginUserType)
     created_time = graphene.String()
     last_modified_time = graphene.String()
-    attachments = graphene.List(RewardAttachmentType, description="List of attachments related to the store product")
     
     class Meta:
-        model = RewardStoreProduct
+        model = RewardAttachment
         
-    def resolve_attachments(self, info):
-        return self.attachments if self.attachments else []
+    def resolve_user_upload(self, info):
+        return self.user_upload if self.user_upload else None
     
     def resolve_created_time(self, info):
         return datetime_to_timezone(self.created_time) if self.created_time else None

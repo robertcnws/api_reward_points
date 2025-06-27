@@ -151,12 +151,34 @@ class RewardPointsSettings(Document):
     def __str__(self):
         return f"Reward Points Settings - Amount: {self.amount}, Points: {self.points}, Created: {self.created_time.strftime('%Y-%m-%d %H:%M:%S')}"
     
+
+class RewardAttachment(Document):
+    name = StringField(max_length=255, required=True)
+    description = StringField(max_length=255, null=True)
+    file = StringField(max_length=255, null=True)
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    user_upload = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    is_active = BooleanField(default=True)
+    
+    meta = {
+        'collection': 'reward_attachment',
+        'indexes': [
+            'name', 'file', 'created_time', 'last_modified_time', 'is_active'
+        ],
+        'verbose_name': 'Reward Attachment',
+        'verbose_name_plural': 'Reward Attachments'
+    }
+
+    def __str__(self):
+        return self.name
+    
     
 class RewardStoreProduct(Document):
     name = StringField(required=True)
     description = StringField(null=True, blank=True)
     assigned_points = IntField(required=True, default=0)
-    attachments = ListField(DynamicField(), null=True, blank=True, default=list)
+    attachments = ListField(ReferenceField(RewardAttachment, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
 

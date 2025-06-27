@@ -1,4 +1,6 @@
 from bson.objectid import ObjectId
+from mongoengine import Document
+from mongoengine.fields import ReferenceField, ListField
 from django.utils import timezone
 from datetime import timezone as dt_timezone
 from datetime import datetime
@@ -10,26 +12,105 @@ from api_reward_points.models import RewardPointsSettings
 import phonenumbers
 import json
 
-def transform_data_to_mongo(data, exclude_fields=None, include_fields=None):
-    if isinstance(data, dict):
-        for key, value in data.items():
-            data[key] = transform_data_to_mongo(str(value) if isinstance(value, ObjectId) else value)
-        if not 'id' in data and '_id' in data:
-            data['id'] = data.get('_id', None)
+def transform_data_to_mongo(obj, exclude_fields=None, include_fields=None, _seen=None):
+    """
+    Serializa cualquier Document de MongoEngine o estructuras anidadas,
+    convierte ObjectId a str, y para ReferenceFields y ListField<ReferenceField>
+    recupera y serializa el documento referenciado.
+    """
+    if _seen is None:
+        _seen = set()
+
+    # 1) Si nos pasaron un Document, arrancamos desde ahí
+    if isinstance(obj, Document):
+        pk = obj.pk
+        # evitar ciclos
+        if pk in _seen:
+            return str(pk)
+        _seen.add(pk)
+        data = obj.to_mongo().to_dict()
+        parent = obj
+
+    # 2) Si es un dict plano
+    elif isinstance(obj, dict):
+        data = obj
+        parent = None
+
+    # 3) Si es una lista, la procesamos por ítem
+    elif isinstance(obj, list):
+        return [transform_data_to_mongo(item, exclude_fields, include_fields, _seen)
+                for item in obj]
+
+    # 4) Cualquier otro tipo (string, número, etc.)
     else:
-        data = data.to_mongo().to_dict()
-        if '_id' in data and isinstance(data['_id'], ObjectId):
-            data['_id'] = str(data['_id'])
-            data['id'] = data['_id']
+        return obj
+
+    out = {}
+    for key, val in data.items():
+        # ———— ObjectId suelto ————
+        if isinstance(val, ObjectId):
+            # ¿Es ReferenceField en el modelo padre?
+            field = getattr(parent, '_fields', {}).get(key)
+            if isinstance(field, ReferenceField):
+                # cargo el documento apuntado
+                ref_cls = field.document_type
+                ref_doc = ref_cls.objects(id=val).first()
+                out[key] = transform_data_to_mongo(ref_doc, exclude_fields, include_fields, _seen)
+            else:
+                out[key] = str(val)
+
+        # ———— Lista ————
+        elif isinstance(val, list):
+            field = getattr(parent, '_fields', {}).get(key)
+            # ¿es ListField de ReferenceField?
+            if isinstance(field, ListField) and isinstance(field.field, ReferenceField):
+                ref_cls = field.field.document_type
+                out[key] = [
+                    transform_data_to_mongo(ref_cls.objects(id=v).first(), exclude_fields, include_fields, _seen)
+                    if isinstance(v, ObjectId) else transform_data_to_mongo(v, exclude_fields, include_fields, _seen)
+                    for v in val
+                ]
+            else:
+                # lista de otros tipos
+                out[key] = [transform_data_to_mongo(item, exclude_fields, include_fields, _seen) for item in val]
+
+        # ———— Sub‐dict anidado ————
+        elif isinstance(val, dict):
+            out[key] = transform_data_to_mongo(val, exclude_fields, include_fields, _seen)
+
+        # ———— Cualquier otro ————
+        else:
+            out[key] = val
+
+    # Aplicar exclude/include
     if exclude_fields:
-        for field in exclude_fields:
-            if field in data:
-                del data[field]
+        for f in exclude_fields:
+            out.pop(f, None)
     if include_fields:
-        for field in list(data.keys()):
-            if field not in include_fields:
-                del data[field]
-    return data
+        out = {k: out[k] for k in include_fields if k in out}
+
+    return out
+
+# def transform_data_to_mongo(data, exclude_fields=None, include_fields=None):
+#     if isinstance(data, dict):
+#         for key, value in data.items():
+#             data[key] = transform_data_to_mongo(str(value) if isinstance(value, ObjectId) else value)
+#         if not 'id' in data and '_id' in data:
+#             data['id'] = data.get('_id', None)
+#     else:
+#         data = data.to_mongo().to_dict()
+#         if '_id' in data and isinstance(data['_id'], ObjectId):
+#             data['_id'] = str(data['_id'])
+#             data['id'] = data['_id']
+#     if exclude_fields:
+#         for field in exclude_fields:
+#             if field in data:
+#                 del data[field]
+#     if include_fields:
+#         for field in list(data.keys()):
+#             if field not in include_fields:
+#                 del data[field]
+#     return data
 
 
 def transform_dict_to_camelcase(data):

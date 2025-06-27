@@ -43,7 +43,19 @@ def create_user_role(request):
         
         user_role.save()
         
-        tracking_info = transform_data_to_mongo(user_role)
+        tracking_info = transform_data_to_mongo(
+            user_role,
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -103,7 +115,19 @@ def edit_user_role(request, id):
         user_role.last_modified_time = timezone.now()
         user_role.save()
         
-        tracking_info = transform_data_to_mongo(user_role)
+        tracking_info = transform_data_to_mongo(
+            user_role,
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -155,7 +179,19 @@ def delete_user_role(request, id):
         if existing_user_with_role:
             return Response({'error': f'User role {existing_user_with_role.name} is in use'}, status=400)
         
-        tracking_info = transform_data_to_mongo(user_role)
+        tracking_info = transform_data_to_mongo(
+            user_role,
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -211,7 +247,21 @@ def delete_user_roles(request):
             if users:
                 return Response({'error': 'User role(s) in use'}, status=400)
         
-        tracking_info = [transform_data_to_mongo(user_role) for user_role in user_roles]
+        tracking_info = [
+            transform_data_to_mongo(
+                user_role,
+                exclude_fields=[
+                    'password', 
+                    'is_staff', 
+                    'is_active', 
+                    'is_verified', 
+                    'last_login', 
+                    'date_joined',
+                    'last_modified_time', 
+                    'created_time'
+                ]
+            ) for user_role in user_roles
+        ]
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -291,7 +341,19 @@ def create_user(request):
         user.set_password(password)
         user.save()
         
-        tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+        tracking_info = transform_data_to_mongo(
+            user, 
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -320,7 +382,6 @@ def create_user(request):
     
     except Exception as e:
         return Response({'error': str(e)}, status=500)
-    
     
     
 #############################################
@@ -367,7 +428,19 @@ def edit_user(request, id):
             user.set_password(password)
         user.save()
         
-        tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+        tracking_info = transform_data_to_mongo(
+            user, 
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -425,7 +498,19 @@ def change_password(request, id):
     user.set_password(new_password)
     user.save()
     
-    tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+    tracking_info = transform_data_to_mongo(
+        user, 
+        exclude_fields=[
+            'password', 
+            'is_staff', 
+            'is_active', 
+            'is_verified', 
+            'last_login', 
+            'date_joined',
+            'last_modified_time', 
+            'created_time'
+        ]
+    )
     
     if user:
     
@@ -462,7 +547,19 @@ def delete_user(request, id):
         if user.username == user_reporter['username']:
             return Response({'error': 'You cannot delete your own account'}, status=400)
         
-        tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+        tracking_info = transform_data_to_mongo(
+            user, 
+            exclude_fields=[
+                'password', 
+                'is_staff', 
+                'is_active', 
+                'is_verified', 
+                'last_login', 
+                'date_joined',
+                'last_modified_time', 
+                'created_time'
+            ]
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -513,7 +610,21 @@ def delete_users(request):
         if not users:
             return Response({'error': 'You cannot delete your own account'}, status=400)
         
-        tracking_info = [transform_data_to_mongo(user, exclude_fields=['password']) for user in users]
+        tracking_info = [
+            transform_data_to_mongo(
+                user, 
+                exclude_fields=[
+                    'password', 
+                    'is_staff', 
+                    'is_active', 
+                    'is_verified', 
+                    'last_login', 
+                    'date_joined',
+                    'last_modified_time', 
+                    'created_time'
+                ]
+            ) for user in users
+        ]
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
@@ -562,7 +673,10 @@ def change_approval_user(request, id):
         user.is_approved = not user.is_approved
         user.save()
         
-        tracking_info = transform_data_to_mongo(user, include_fields=['is_approved', 'username', 'id'])
+        tracking_info = transform_data_to_mongo(
+            user, 
+            include_fields=['is_approved', 'username', 'id']
+        )
         
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         

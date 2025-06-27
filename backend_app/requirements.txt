@@ -31,6 +31,7 @@ mongoengine
 orjson
 packaging
 phonenumbers
+Pillow
 prompt_toolkit
 pymongo
 psycopg2

@@ -250,11 +250,27 @@ export function StoreProductView() {
             const listData = dataFiltered.map((item) => ({
                 id: item.id,
                 name: item.name,
-                number: item.number,
-                startDate: item.startDate,
+                // number: item.number,
+                // startDate: item.startDate,
             }));
             localStorage.setItem('storeProductFilteredList', JSON.stringify(listData));
             router.push(paths.dashboard.storeProduct.details(id));
+        },
+        [router, dataFiltered]
+    );
+
+    const handleEditView = useCallback(
+        (id) => {
+            localStorage.setItem('storeProductId', id);
+            localStorage.setItem('backFromStoreProductDetails', 'storeProducts');
+            const listData = dataFiltered.map((item) => ({
+                id: item.id,
+                name: item.name,
+                // number: item.number,
+                // startDate: item.startDate,
+            }));
+            localStorage.setItem('storeProductFilteredList', JSON.stringify(listData));
+            router.push(paths.dashboard.storeProduct.edit(id));
         },
         [router, dataFiltered]
     );
@@ -382,6 +398,7 @@ export function StoreProductView() {
                                             dataFiltered={dataFiltered}
                                             onDeleteRow={handleDeleteItem}
                                             onViewRow={handleDetailsView}
+                                            onEditRow={handleEditView}
                                             notFound={notFound}
                                             onOpenConfirm={confirm.onTrue}
                                             setTableData={setTableData}
@@ -395,6 +412,7 @@ export function StoreProductView() {
                                             dataFiltered={dataFiltered}
                                             onDeleteItem={handleDeleteItem}
                                             onViewRow={handleDetailsView}
+                                            onEditRow={handleEditView}
                                             onOpenConfirm={confirm.onTrue}
                                             setTableData={setTableData}
                                             refetchStoreProducts={refetchStoreProducts}

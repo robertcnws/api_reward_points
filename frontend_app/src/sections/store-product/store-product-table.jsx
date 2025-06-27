@@ -32,6 +32,7 @@ export function StoreProductTable({
   dataFiltered,
   onDeleteRow,
   onViewRow,
+  onEditRow,
   notFound,
   onOpenConfirm,
   setTableData,
@@ -62,6 +63,7 @@ export function StoreProductTable({
   const TABLE_HEAD = [
     { id: 'name', label: 'Item' },
     { id: 'assignedPoints', label: 'Value in Points' },
+    { id: 'attachments', label: 'Files' },
     { id: 'description', label: 'Description' },
     { id: '', width: 88 },
   ];
@@ -69,6 +71,7 @@ export function StoreProductTable({
   const TABLE_HEAD_MOBILE = [
     { id: 'name', label: 'Item' },
     { id: 'assignedPoints', label: 'Value in Points' },
+    { id: 'attachments', label: 'Files' },
     { id: 'description', label: 'Description' },
     { id: '' },
   ];
@@ -164,6 +167,7 @@ export function StoreProductTable({
                     onSelectRow={() => onSelectRow(row.id)}
                     onDeleteRow={() => onDeleteRow(row.id)}
                     onViewRow={() => onViewRow(row.id)}
+                    onEditRow={() => onEditRow(row.id)}
                     setTableData={setTableData}
                     refetchStoreProducts={refetchStoreProducts}
                     loadedStoreProducts={loadedStoreProducts}

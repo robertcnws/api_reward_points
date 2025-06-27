@@ -133,13 +133,22 @@ def login(request):
                 )
                 tracking.save()
                 
-                user = transform_data_to_mongo(current_user, exclude_fields=['password'])
-                user_role = user.get('user_role', None)
-                if user_role:
-                    user_role = UserRole.objects(id=user_role).first()
-                    user['user_role'] = transform_data_to_mongo(user_role)
+                user = transform_data_to_mongo(
+                    current_user, 
+                    exclude_fields=[
+                        'password', 
+                        'is_staff', 
+                        'is_active', 
+                        'is_verified', 
+                        'last_login', 
+                        'date_joined',
+                        'last_modified_time', 
+                        'created_time'
+                    ]
+                )
                 
                 return JsonResponse({'data': user}, status=200)
+            
             login_user = LoginUser.objects(username=username).first()
             if login_user and not login_user.is_approved:
                 return JsonResponse({

@@ -33,6 +33,7 @@ export function StoreProductTableRow({
   onSelectRow,
   onDeleteRow,
   onViewRow,
+  onEditRow,
   setTableData,
   refetchStoreProducts,
   loadedStoreProducts,
@@ -100,7 +101,7 @@ export function StoreProductTableRow({
           // onClick={handleClick} 
           onClick={() => {
             localStorage.removeItem('storeProductReminderTab');
-            onViewRow();
+            onEditRow();
           }}
           sx={{
             whiteSpace: 'nowrap',
@@ -128,7 +129,7 @@ export function StoreProductTableRow({
         <TableCell
           onClick={() => {
             localStorage.removeItem('storeProductReminderTab');
-            onViewRow();
+            onEditRow();
           }}
           sx={{
             whiteSpace: 'nowrap',
@@ -151,7 +152,23 @@ export function StoreProductTableRow({
         <TableCell
           onClick={() => {
             localStorage.removeItem('storeProductReminderTab');
-            onViewRow();
+            onEditRow();
+          }}
+          sx={{
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            fontWeight: 'inherit',
+          }}
+        >
+          <Label color="default" sx={{ alignItems: 'center' }}>
+            {row?.attachments?.length || 0} file(s)
+          </Label>
+        </TableCell>
+
+        <TableCell
+          onClick={() => {
+            localStorage.removeItem('storeProductReminderTab');
+            onEditRow();
           }}
           sx={{
             whiteSpace: 'nowrap',
@@ -188,6 +205,17 @@ export function StoreProductTableRow({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
+          <MenuItem
+            onClick={() => {
+              popover.onClose();
+              localStorage.removeItem('itemReminderTab');
+              onEditRow();
+            }}
+          >
+            <Iconify icon="flowbite:edit-outline" />
+            Edit Store Product
+          </MenuItem>
+
           <MenuItem
             onClick={() => {
               popover.onClose();

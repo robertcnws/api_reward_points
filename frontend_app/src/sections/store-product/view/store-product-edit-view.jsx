@@ -11,21 +11,32 @@ import { StoreProductNewEditForm } from '../store-product-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function StoreProductCreateView() {
+export function StoreProductEditView() {
+
+  const storeProductId = localStorage.getItem('storeProductId');
+  
+  const {
+    loadedStoreProducts,
+  } = useDataContext();
+
+  const currentStoreProduct = loadedStoreProducts.find((item) => item.id === storeProductId);
 
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="Create a new store product"
+        heading="Edit store product"
         links={[
           { name: 'Dashboard', href: paths.dashboard.general.analytics },
           { name: 'Store Product', href: paths.dashboard.storeProduct.list },
-          { name: 'New store product' },
+          { name: 'Edit store product' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <StoreProductNewEditForm />
+      <StoreProductNewEditForm
+        currentStoreProduct={currentStoreProduct}
+      />
+
     </DashboardContent>
   );
 }

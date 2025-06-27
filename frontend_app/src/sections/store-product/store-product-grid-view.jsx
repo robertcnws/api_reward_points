@@ -20,6 +20,7 @@ export function StoreProductGridView({
   dataFiltered,
   onDeleteItem,
   onViewRow,
+  onEditRow,
   onOpenConfirm,
   setTableData,
   refetchStoreProducts,
@@ -62,6 +63,7 @@ export function StoreProductGridView({
                   onSelect={() => onSelectItem(folder.id)}
                   onDelete={() => onDeleteItem(folder.id)}
                   onViewRow={() => onViewRow(folder.id)}
+                  onEditRow={() => onEditRow(folder.id)}
                   setTableData={setTableData}
                   refetchStoreProducts={refetchStoreProducts}
                   sx={{ maxWidth: 'auto' }}
