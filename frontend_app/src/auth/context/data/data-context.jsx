@@ -5,6 +5,11 @@ import { RewardStoreProductsProvider, useRewardStoreProducts } from './contexts/
 import { RewardUserRolesProvider, useRewardUserRoles } from './contexts/reward-user-roles-context';
 import { RewardNotificationUsersProvider, useRewardNotificationUsers } from './contexts/reward-notification-users-context';
 import { RewardLoginUsersProvider, useRewardLoginUsers } from './contexts/reward-login-users-context';
+import { RewardPointsSettingsProvider, useRewardPointsSettings } from './contexts/reward-points-settings';
+import { 
+  RewardStoreProductSelectionCartProvider,
+  useRewardStoreProductSelectionCart 
+} from './contexts/reward-store-product-selection-cart-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
@@ -12,15 +17,19 @@ export function DataProvider({ children }) {
   return (
     // <RewardItemsProvider>
     <RewardNotificationUsersProvider>
-      <RewardUserRolesProvider>
-        <RewardLoginUsersProvider>
-          <RewardStoreProductsProvider>
-            <RewardPointsProvider>
-              <CombineProviders>{children}</CombineProviders>
-            </RewardPointsProvider>
-          </RewardStoreProductsProvider>
-        </RewardLoginUsersProvider>
-      </RewardUserRolesProvider>
+      <RewardStoreProductSelectionCartProvider>
+        <RewardPointsSettingsProvider>
+          <RewardUserRolesProvider>
+            <RewardLoginUsersProvider>
+              <RewardStoreProductsProvider>
+                <RewardPointsProvider>
+                  <CombineProviders>{children}</CombineProviders>
+                </RewardPointsProvider>
+              </RewardStoreProductsProvider>
+            </RewardLoginUsersProvider>
+          </RewardUserRolesProvider>
+        </RewardPointsSettingsProvider>
+      </RewardStoreProductSelectionCartProvider>
     </RewardNotificationUsersProvider>
     // </RewardItemsProvider>
   );
@@ -60,12 +69,27 @@ function CombineProviders({ children }) {
   } = useRewardNotificationUsers();
 
   const {
+    listAllRewardLoginUsers: loadedAllUsers,
     loadedAllRewardLoginUsers: loadedUsers,
     loadedPendingRewardLoginUsers: loadedPendingUsers,
     refetchAllRewardLoginUsers: refetchUsers,
     loadingAllRewardLoginUsers: loadingUsers,
     errorRewardLoginUsers: errorUsers,
   } = useRewardLoginUsers();
+
+  const {
+    loadedAllRewardPointsSettings: loadedPointsSettings,
+    refetchAllRewardPointsSettings: refetchPointsSettings,
+    loadingAllRewardPointsSettings: loadingPointsSettings,
+    errorRewardPointsSettings: errorPointsSettings,
+  } = useRewardPointsSettings();
+
+  const {
+    loadedAll: loadedStoreProductSelectionCarts,
+    refetchAll: refetchStoreProductSelectionCarts,
+    loadingAll: loadingStoreProductSelectionCarts,
+    errorAll: errorStoreProductSelectionCarts,
+  } = useRewardStoreProductSelectionCart();
 
   // const {
   //   loadedAllRewardItems,
@@ -98,11 +122,20 @@ function CombineProviders({ children }) {
     refetchNotifications,
     loadingNotifications,
     errorNotifications,
+    loadedAllUsers,
     loadedUsers,
     loadedPendingUsers,
     refetchUsers,
     loadingUsers,
     errorUsers,
+    loadedPointsSettings,
+    refetchPointsSettings,
+    loadingPointsSettings,
+    errorPointsSettings,
+    loadedStoreProductSelectionCarts,
+    refetchStoreProductSelectionCarts,
+    loadingStoreProductSelectionCarts,
+    errorStoreProductSelectionCarts,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
@@ -129,11 +162,20 @@ function CombineProviders({ children }) {
     refetchNotifications,
     loadingNotifications,
     errorNotifications,
+    loadedAllUsers,
     loadedUsers,
     loadedPendingUsers,
     refetchUsers,
     loadingUsers,
     errorUsers,
+    loadedPointsSettings,
+    refetchPointsSettings,
+    loadingPointsSettings,
+    errorPointsSettings,
+    loadedStoreProductSelectionCarts,
+    refetchStoreProductSelectionCarts,
+    loadingStoreProductSelectionCarts,
+    errorStoreProductSelectionCarts,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,

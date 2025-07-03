@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 from mongoengine import Document
 from mongoengine.fields import ReferenceField, ListField
+from mongoengine.queryset import QuerySet
 from django.utils import timezone
 from datetime import timezone as dt_timezone
 from datetime import datetime
@@ -8,7 +9,7 @@ from dateutil import parser
 from phonenumbers import NumberParseException
 from api_users.models import Notification, NotificationUser
 from api_authorization.models import LoginUser
-from api_reward_points.models import RewardPointsSettings
+from api_reward_points.models import RewardPointsSettings, Tracking
 import phonenumbers
 import json
 
@@ -20,9 +21,12 @@ def transform_data_to_mongo(obj, exclude_fields=None, include_fields=None, _seen
     """
     if _seen is None:
         _seen = set()
+    
+    if isinstance(obj, QuerySet):
+        return transform_data_to_mongo(list(obj), exclude_fields, include_fields, _seen)
 
     # 1) Si nos pasaron un Document, arrancamos desde ahí
-    if isinstance(obj, Document):
+    elif isinstance(obj, Document):
         pk = obj.pk
         # evitar ciclos
         if pk in _seen:
@@ -206,6 +210,19 @@ def create_notification(module, info_id, info, type, username):
                 last_modified_time=timezone.now(),
             )
             user_notification.save()
+            
+            
+def create_tracking(user_reporter, action, object_id=None, object_type=None, object_name=None, managed_data=None):
+    tracking = Tracking(
+        user_reporter=user_reporter,
+        action=action,
+        object_id=object_id if object_id and isinstance(object_id, str) else str(object_id),
+        object_type=object_type,
+        object_name=object_name,
+        created_time=timezone.now(),
+        managed_data=managed_data
+    )
+    tracking.save()
 
 
 def get_national_phone_number(raw_number: str) -> str:

@@ -1,0 +1,403 @@
+import axios from 'axios';
+import { useMemo, useCallback } from 'react';
+
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import { toast } from 'src/components/snackbar';
+
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { fDateTime, fToNow } from 'src/utils/format-time';
+
+import { CONFIG } from 'src/config-global';
+
+import { Label } from 'src/components/label';
+import { FileThumbnail } from 'src/components/file-thumbnail';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
+import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
+import { Iconify } from 'src/components/iconify';
+import { IconButton, Tooltip } from '@mui/material';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+
+// ----------------------------------------------------------------------
+
+export function CartItem({ cart, drawer }) {
+
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const router = useRouter();
+
+  const points = useMemo(() => cart?.storeProductSelection?.storeProduct?.assignedPoints || 0,
+    [cart?.storeProductSelection?.storeProduct?.assignedPoints]
+  );
+
+  const totalPoints = useMemo(() =>
+    points * (cart?.storeProductSelection?.quantity || 0),
+    [points, cart?.storeProductSelection?.quantity]
+  );
+
+  const confirmDelete = useBoolean();
+
+  const handleViewDetailsCart = useCallback(
+    async () => {
+      if (cart?.storeProductSelection?.storeProduct) {
+        const storeProductId = cart?.storeProductSelection?.storeProduct?.id;
+        localStorage.setItem('storeProductId', storeProductId);
+        router.push(paths.dashboard.storeProduct.details(storeProductId));
+      }
+    },
+    [cart?.storeProductSelection?.storeProduct, router]
+  );
+
+  const handleDeleteCart = useCallback(async () => {
+    if (cart?.storeProductSelection && cart?.storeProductSelection?.id) {
+      try {
+        const payload = {
+          userReporter: JSON.stringify(userLogged?.data),
+        };
+
+        const url = `${CONFIG.apiUrl}/reward-points/delete/store-product-selection-cart/${cart?.id}/`;
+
+        const promise = axios.delete(url, {
+          data: payload
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        toast.promise(promise, {
+          loading: 'Loading...',
+          success: `Store product removed from cart successfully!`,
+          error: `Store product removed from cart error!`,
+        });
+
+        await promise;
+
+
+      } catch (err) {
+        console.error('Error adding product to cart:', err);
+      }
+    }
+  }, [userLogged, cart]);
+
+  const renderAvatar = (
+    <ListItemAvatar>
+      <Stack
+        alignItems="center"
+        justifyContent="center"
+        sx={{
+          p: 1,
+          mt: 4,
+          mr: 2,
+          ml: 2,
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          bgcolor: 'background.neutral'
+        }}
+      >
+        <StoreProductFolderItemCarousel images={cart?.storeProductSelection?.storeProduct?.attachments} />
+      </Stack>
+    </ListItemAvatar>
+  );
+
+  const renderText = (
+    <ListItemText
+      disableTypography
+      primary={
+        <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1, mt: -1 }}>
+          {points > 0 && (
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+              <Label color="success" sx={{ alignItems: 'center' }}>
+                <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
+                {points}
+              </Label>
+            </Box>
+          )}
+          {reader(`${cart.storeProductSelection.storeProduct.name}`)}
+        </Box>
+      }
+      secondary={
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={{ typography: 'caption', color: 'text.disabled' }}
+          divider={
+            <Box
+              sx={{
+                width: 2,
+                height: 2,
+                bgcolor: 'currentColor',
+                mx: 0.5,
+                borderRadius: '50%',
+              }}
+            />
+          }
+        >
+          <Box sx={{
+            color: 'text.disabled',
+            ml: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+              Created at {fDateTime(cart.createdTime)}
+            </Typography>
+            <Box sx={{
+              color: 'text.disabled',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+              <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
+                Qty: <b>{cart?.storeProductSelection?.quantity}</b>
+              </Typography>
+              {totalPoints > 0 ? (
+                <Label color="info" sx={{ alignItems: 'center' }}>
+                  <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
+                  TOTAL: {totalPoints}
+                </Label>
+              ) : (
+                <Label color="error">
+                  0
+                </Label>
+              )}
+            </Box>
+          </Box>
+          {/* {notification.notification.module} */}
+        </Stack>
+      }
+    />
+  );
+
+  const renderUnReadBadge = (
+    <Box
+      sx={{
+        top: 26,
+        width: 8,
+        height: 8,
+        right: 20,
+        borderRadius: '50%',
+        bgcolor: 'info.main',
+        position: 'absolute',
+      }}
+    />
+  );
+
+  const friendAction = (
+    <Stack spacing={1} direction="row" sx={{ mt: 1.5 }}>
+      <Button size="small" variant="contained">
+        Accept
+      </Button>
+      <Button size="small" variant="outlined">
+        Decline
+      </Button>
+    </Stack>
+  );
+
+  const projectAction = (
+    <Stack alignItems="flex-start">
+      <Box
+        sx={{
+          p: 1.5,
+          my: 1.5,
+          borderRadius: 1.5,
+          color: 'text.secondary',
+          bgcolor: 'background.neutral',
+        }}
+      >
+        {reader(
+          `<p><strong>@Jaydon Frankie</strong> feedback by asking questions or just leave a note of appreciation.</p>`
+        )}
+      </Box>
+
+      <Button size="small" variant="contained">
+        Reply
+      </Button>
+    </Stack>
+  );
+
+  const fileAction = (
+    <Stack
+      spacing={1}
+      direction="row"
+      sx={{
+        pl: 1,
+        p: 1.5,
+        mt: 1.5,
+        borderRadius: 1.5,
+        bgcolor: 'background.neutral',
+      }}
+    >
+      <FileThumbnail file="http://localhost:8080/httpsdesign-suriname-2015.mp3" />
+
+      <Stack spacing={1} direction={{ xs: 'column', sm: 'row' }} flexGrow={1} sx={{ minWidth: 0 }}>
+        <ListItemText
+          disableTypography
+          primary={
+            <Typography variant="subtitle2" component="div" sx={{ color: 'text.secondary' }} noWrap>
+              design-suriname-2015.mp3
+            </Typography>
+          }
+          secondary={
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{ typography: 'caption', color: 'text.disabled' }}
+              divider={
+                <Box
+                  sx={{
+                    mx: 0.5,
+                    width: 2,
+                    height: 2,
+                    borderRadius: '50%',
+                    bgcolor: 'currentColor',
+                  }}
+                />
+              }
+            >
+              <span>2.3 GB</span>
+              <span>30 min ago</span>
+            </Stack>
+          }
+        />
+
+        <Button size="small" variant="outlined">
+          Download
+        </Button>
+      </Stack>
+    </Stack>
+  );
+
+  const tagsAction = (
+    <Stack direction="row" spacing={0.75} flexWrap="wrap" sx={{ mt: 1.5 }}>
+      <Label variant="outlined" color="info">
+        Design
+      </Label>
+      <Label variant="outlined" color="warning">
+        Dashboard
+      </Label>
+      <Label variant="outlined">
+        Design system
+      </Label>
+    </Stack>
+  );
+
+  const paymentAction = (
+    <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+      <Button size="small" variant="contained">
+        Pay
+      </Button>
+      <Button size="small" variant="outlined">
+        Decline
+      </Button>
+    </Stack>
+  );
+
+  const notificationAction = (
+    <Stack direction="column" spacing={0} sx={{ mt: 0.2 }}>
+      {/* <Label variant="outlined" color='info' sx={{ cursor: 'pointer' }}
+      // onClick={() => handleLink(
+      //   notification.notification.module, notification.notification.info_id, notification.notification.type
+      // )}
+      >
+        See in Details
+      </Label> */}
+      <IconButton color='success'>
+        <Tooltip title="Buy now" arrow placement='top' sx={{ width: 45, height: 45 }}>
+          <Iconify icon="streamline-freehand-color:e-commerce-click-buy" width={45} height={45} />
+        </Tooltip>
+      </IconButton>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+        <IconButton onClick={handleViewDetailsCart}>
+          <Tooltip title="View details" arrow placement='top' sx={{ width: 25, height: 25 }}>
+            <Iconify icon="streamline-freehand-color:view-eye-1" width={25} height={25} />
+          </Tooltip>
+        </IconButton>
+        <IconButton color='error' onClick={confirmDelete.onTrue}>
+          <Tooltip title="Delete cart" arrow placement='top' sx={{ width: 20, height: 20 }}>
+            <Iconify icon="streamline-freehand-color:delete-bin-2" width={20} height={20} color='error' />
+          </Tooltip>
+        </IconButton>
+      </Box>
+    </Stack>
+  );
+
+  return (
+    <>
+      <ListItemButton
+        disableRipple
+        sx={{
+          p: 2.5,
+          alignItems: 'flex-start',
+          borderBottom: (theme) => `dashed 1px ${theme.vars.palette.divider}`,
+        }}
+      >
+        {/* {paymentAction} */}
+
+        {renderAvatar}
+
+        <Stack sx={{ flexGrow: 1 }} direction="column">
+          {renderText}
+          {/* {notificationAction} */}
+          {/* {notification.type === 'friend' && friendAction}
+        {notification.type === 'project' && projectAction}
+        {notification.type === 'file' && fileAction}
+        {notification.type === 'tags' && tagsAction}
+        {notification.type === 'payment' && paymentAction} */}
+        </Stack>
+        {notificationAction}
+      </ListItemButton>
+      <ConfirmDialog
+        open={confirmDelete.value}
+        onClose={confirmDelete.onFalse}
+        title={`Delete Cart: ${cart?.storeProductSelection?.storeProduct?.name}`}
+        content={
+          <>
+            Are you sure want to delete <strong> {cart?.storeProductSelection?.storeProduct?.name} </strong>,
+            with quantity <strong> {cart?.storeProductSelection?.quantity} </strong>?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              handleDeleteCart();
+              confirmDelete.onFalse();
+            }}
+          >
+            Delete
+          </Button>
+        }
+      />
+    </>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function reader(data) {
+  return (
+    <Box
+      dangerouslySetInnerHTML={{ __html: data }}
+      sx={{
+        ml: 0,
+        mr: 1,
+        mb: 0.5,
+        '& p': { typography: 'body2', m: 0 },
+        '& a': { color: 'inherit', textDecoration: 'none' },
+        '& strong': { typography: 'body2' },
+      }}
+    />
+  );
+}

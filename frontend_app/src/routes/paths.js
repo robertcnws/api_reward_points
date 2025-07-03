@@ -73,6 +73,7 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/user/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
       pending: `${ROOTS.DASHBOARD}/user/pending`,
+      client: `${ROOTS.DASHBOARD}/user/client`,
       cards: `${ROOTS.DASHBOARD}/user/cards`,
       profile: `${ROOTS.DASHBOARD}/user/profile`,
       edit: (id) => `${ROOTS.DASHBOARD}/user/${id}/edit`,
@@ -95,7 +96,7 @@ export const paths = {
       list: `${ROOTS.DASHBOARD_CONFIG}/store-product/list`,
       attachments: `${ROOTS.DASHBOARD_CONFIG}/store-product/attachments`,
       new: `${ROOTS.DASHBOARD_CONFIG}/store-product/new`,
-      details: (id) => `${ROOTS.DASHBOARD_CONFIG}/store-product/${id}`,
+      details: (id) => `${ROOTS.DASHBOARD_CONFIG}/store-product/${id}/details`,
       edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/store-product/${id}/edit`,
     },
     role: {
@@ -104,6 +105,13 @@ export const paths = {
       new: `${ROOTS.DASHBOARD_CONFIG}/role/new`,
       details: (id) => `${ROOTS.DASHBOARD_CONFIG}/role/${id}`,
       edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/role/${id}/edit`,
+    },
+    pointsSettings: {
+      root: `${ROOTS.DASHBOARD_CONFIG}/points-settings`,
+      list: `${ROOTS.DASHBOARD_CONFIG}/points-settings/list`,
+      new: `${ROOTS.DASHBOARD_CONFIG}/points-settings/new`,
+      details: (id) => `${ROOTS.DASHBOARD_CONFIG}/points-settings/${id}`,
+      edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/points-settings/${id}/edit`,
     },
   },
 };

@@ -63,6 +63,7 @@ const ICONS = {
   calendarOverview: icon('ic-calendar-overview'),
   measurement: icon('ic-measurements'),
   defaultMaterial: icon('ic-material'),
+  pointsSettings: icon('ic-points-settings'),
 };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -156,7 +157,7 @@ export const navData = (loadedPendingUsers, isNavMini) => [
                           color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
                         }}
                       >
-                        Pending
+                        Pending Approval
                       </Typography>
                       {loadedPendingUsers?.length > 0 && (
                         <Label color="error" sx={{ ml: 1 }}>
@@ -169,7 +170,11 @@ export const navData = (loadedPendingUsers, isNavMini) => [
                 path: paths.dashboard.user.pending,
               },
               {
-                title: 'List',
+                title: 'All Clients',
+                path: paths.dashboard.user.client,
+              },
+              {
+                title: 'Approved Users',
                 path: paths.dashboard.user.list,
               },
               {
@@ -224,6 +229,21 @@ export const navData = (loadedPendingUsers, isNavMini) => [
             ],
           },
           ...(userLogged && !isClient(userRole) ? [
+            {
+              title: 'Points Settings',
+              path: paths.dashboard.pointsSettings.root,
+              icon: ICONS.pointsSettings,
+              children: [
+                {
+                  title: 'List',
+                  path: paths.dashboard.pointsSettings.list,
+                },
+                {
+                  title: 'Create',
+                  path: paths.dashboard.pointsSettings.new,
+                },
+              ],
+            },
             {
               title: 'Roles',
               path: paths.dashboard.role.root,

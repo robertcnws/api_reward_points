@@ -25,10 +25,15 @@ const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
 const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
 const UserPendingListPage = lazy(() => import('src/pages/dashboard/user/pending-list'));
+const UserClientListPage = lazy(() => import('src/pages/dashboard/user/client-list'));
 // Store Product
 const StoreProductPage = lazy(() => import('src/pages/dashboard/store-product'));
 const StoreProductCreatePage = lazy(() => import('src/pages/dashboard/store-product/new'));
 const StoreProductEditPage = lazy(() => import('src/pages/dashboard/store-product/edit'));
+const StoreProductDetailsPage = lazy(() => import('src/pages/dashboard/store-product/details'));
+// Points Settings
+const PointsSettingsListPage = lazy(() => import('src/pages/dashboard/points-settings/list'));
+const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-settings/new'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -95,6 +100,43 @@ export const dashboardRoutes = (user) => [
               },
             ],
           },
+          {
+            path: 'config/points-settings',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <PointsSettingsListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <PointsSettingsListPage /> : <Page403 />
+              },
+              {
+                path: 'new',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <PointsSettingsCreatePage /> : <Page403 />
+              },
+              {
+                path: ':id/edit',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <PointsSettingsCreatePage /> : <Page403 />
+              },
+            ],
+          },
         ] : [],
       {
         path: 'config/store-product',
@@ -127,10 +169,10 @@ export const dashboardRoutes = (user) => [
           //   path: ':id/edit',
           //   element: <ProjectEditPage />,
           // },
-          // {
-          //   path: ':id/details',
-          //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectDetailsPage /> : <Page403 />,
-          // }
+          {
+            path: ':id/details',
+            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductDetailsPage /> : <Page403 />,
+          }
 
         ],
       },
@@ -188,6 +230,14 @@ export const dashboardRoutes = (user) => [
                 ).includes(
                   CONFIG.roles.administrator
                 ) ? <UserPendingListPage /> : <Page403 />
+              },
+              {
+                path: 'client',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <UserClientListPage /> : <Page403 />
               },
               {
                 path: 'new',

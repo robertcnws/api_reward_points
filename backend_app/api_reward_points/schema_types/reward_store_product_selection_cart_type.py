@@ -1,0 +1,25 @@
+import graphene
+import api_reward_points.schema_types.converters
+from graphene_mongo import MongoengineObjectType
+from api_reward_points.models import (
+    RewardStoreProductSelectionCart
+)
+from utils.json_datetime import datetime_to_timezone
+from api_reward_points.schema_types.reward_store_product_selection_type import RewardStoreProductSelectionType
+    
+class RewardStoreProductSelectionCartType(MongoengineObjectType):
+    created_time = graphene.String()
+    last_modified_time = graphene.String()
+    store_product_selection = graphene.Field(RewardStoreProductSelectionType)
+    
+    class Meta:
+        model = RewardStoreProductSelectionCart
+    
+    def resolve_store_product_selection(self, info):
+        return self.store_product_selection if self.store_product_selection else None
+    
+    def resolve_created_time(self, info):
+        return datetime_to_timezone(self.created_time) if self.created_time else None
+    
+    def resolve_last_modified_time(self, info):
+        return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None

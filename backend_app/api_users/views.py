@@ -5,9 +5,9 @@ from django.utils import timezone
 from utils.data_util import (
     transform_data_to_mongo,
     create_notification,
+    create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole
-from api_reward_points.models import Tracking
 import logging
 
 logging.basicConfig(level=logging.WARNING)
@@ -60,17 +60,15 @@ def create_user_role(request):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
-                user_reporter=user_reporter,
-                action=f'create rol user ({user_role.id} - {user_role.name})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
-            )
             
-            project_tracking.save()
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'create user role',
+                object_id=user_role.id,
+                object_type='UserRole',
+                object_name=user_role.name,
+                managed_data=tracking_info
+            )
             
             module='user_roles'
             info=f'has created a new user role ({user_role.name})'
@@ -133,16 +131,14 @@ def edit_user_role(request, id):
         
         if user_reporter:
             
-            project_tracking = Tracking(
+            create_tracking(
                 user_reporter=user_reporter,
-                action=f'edit rol user ({user_role.id} - {user_role.name})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
+                action=f'update user role',
+                object_id=user_role.id,
+                object_type='UserRole',
+                object_name=user_role.name,
+                managed_data=tracking_info
             )
-            
-            project_tracking.save()
         
         
             module='user_roles'
@@ -196,17 +192,15 @@ def delete_user_role(request, id):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
-                user_reporter=user_reporter,
-                action=f'delete rol user ({user_role.id} - {user_role.name})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
-            )
             
-            project_tracking.save()
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'delete user role',
+                object_id=user_role.id,
+                object_type='UserRole',
+                object_name=user_role.name,
+                managed_data=tracking_info
+            )
             
             module='user_roles'
             info=f'has deleted a user role ({user_role.name})'
@@ -266,20 +260,20 @@ def delete_user_roles(request):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
-                user_reporter=user_reporter,
-                action=f'delete user roles ({", ".join([user_role.name for user_role in user_roles])})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
-            )
             
-            project_tracking.save()
+            list_names = [user_role.name for user_role in user_roles]
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'delete list of {len(user_roles)} user roles',
+                object_id=','.join([str(user_role.id) for user_role in user_roles]),
+                object_type='UserRole',
+                object_name=','.join(list_names),
+                managed_data=tracking_info
+            )
         
             module='user_roles'
-            info=f'has deleted {len(user_roles)} user roles'
+            info=f'has deleted list of {len(user_roles)} user roles ({", ".join(list_names)})'
             info_id='list'
             type='delete_user_roles'
             create_notification(module, info_id, info, type, user_reporter['username'])
@@ -358,17 +352,15 @@ def create_user(request):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
-                user_reporter=user_reporter,
-                action=f'create user ({user.id} - {user.username})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
-            )
             
-            project_tracking.save()
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'create user',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
                 
             module='users'
             info=f'has created a new user ({user.username})'
@@ -445,16 +437,15 @@ def edit_user(request, id):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-                
-            project_tracking = Tracking(
+            
+            create_tracking(
                 user_reporter=user_reporter,
-                action=f'edit user ({user.id} - {user.username})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
+                action=f'update user',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
             )
-            project_tracking.save()
                 
             module='users'
             info=f'has updated a user ({user.username})'
@@ -513,17 +504,15 @@ def change_password(request, id):
     )
     
     if user:
-    
-        project_tracking = Tracking(
-            user_reporter=user,
-            action=f'change password user ({user.id} - {user.username})',
-            created_time=timezone.now(),
-            managed_data={
-                'data': tracking_info
-            },
-        )
         
-        project_tracking.save()
+        create_tracking(
+            user_reporter=user,
+            action=f'change password',
+            object_id=user.id,
+            object_type='LoginUser',
+            object_name=user.username,
+            managed_data=tracking_info
+        )
     
         return Response({'message': 'Password updated successfully'}, status=200)
     
@@ -564,16 +553,15 @@ def delete_user(request, id):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
+            
+            create_tracking(
                 user_reporter=user_reporter,
-                action=f'delete user ({user.id} - {user.username})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
+                action=f'delete user',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
             )
-            project_tracking.save()
                 
             module='users'
             info=f'has deleted a user ({user.username})'
@@ -629,16 +617,15 @@ def delete_users(request):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-        
-            project_tracking = Tracking(
+            
+            create_tracking(
                 user_reporter=user_reporter,
-                action=f'delete users ({", ".join([user.username for user in users])})',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
+                action=f'delete list of {len(users)} users',
+                object_id=','.join([str(user.id) for user in users]),
+                object_type='LoginUser',
+                object_name=','.join([user.username for user in users]),
+                managed_data=tracking_info
             )
-            project_tracking.save()
                 
             module='users'
             info=f'has deleted {len(users)} users'
@@ -681,15 +668,15 @@ def change_approval_user(request, id):
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
         
         if user_reporter:
-            project_tracking = Tracking(
+            
+            create_tracking(
                 user_reporter=user_reporter,
-                action=f'change approval ({user.id} - {user.username}) to {"approved" if user.is_approved else "not approved"}',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': tracking_info
-                },
+                action=f'change to {"approved" if user.is_approved else "NOT approved"}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
             )
-            project_tracking.save()
                 
             module='users'
             info=f'has change approval user ({user.username}) to {"approved" if user.is_approved else "not approved"}'
@@ -698,6 +685,55 @@ def change_approval_user(request, id):
             create_notification(module, info_id, info, type, user_reporter['username'])
             
             return Response({'message': 'User approval change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE VERIFY USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_verify_user(request, id):
+    data = request.data
+    user_reporter = data.get('userReporter')
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.is_verified = not user.is_verified
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user, 
+            include_fields=['is_verified', 'username', 'id']
+        )
+        
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+        
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change to {"verified" if user.is_verified else "NOT verified"}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change verify user ({user.username}) to {"verified" if user.is_verified else "not verified"}'
+            info_id=user.id
+            type='change_verify_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User verify change successfully'}, status=200)
         
         return Response({'error': 'User reporter not found'}, status=404)
     

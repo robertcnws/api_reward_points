@@ -54,12 +54,11 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
       requireFiles: false,
     }),
   });
+  
 
   useEffect(() => {
 
     const projectAttachments = currentStoreProduct?.attachments || [];
-
-    console.log('projectAttachments', projectAttachments);
 
     const attachments = [...projectAttachments] || [];
 
@@ -166,8 +165,14 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
       }
     });
 
+    const url = currentStoreProduct
+      ? `${CONFIG.apiUrl}/reward-points/update/store-product/${currentStoreProduct.id}/`
+      : `${CONFIG.apiUrl}/reward-points/create/store-product/`;
 
-    const promise = axios.post(`${CONFIG.apiUrl}/reward-points/create/store-product/`, formData, {
+    const action = currentStoreProduct ? 'update' : 'create';
+
+
+    const promise = axios.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -177,8 +182,8 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
 
       toast.promise(promise, {
         loading: 'Loading...',
-        success: 'Store product created successfully!',
-        error: 'Store product creation error!',
+        success: `Store product ${action}d successfully!`,
+        error: `Store product ${action} error!`,
       });
 
       await promise;
@@ -232,17 +237,26 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
     refetchStoreProducts?.();
   }, [confirm, initialFiles, newFiles, userLogged, currentStoreProduct, fileToRemove, refetchStoreProducts]);
 
-  const handleConfirmRemoveAll = useCallback(() => {
-    currentAttachments().forEach((file) => {
-      if (file instanceof File) {
-        URL.revokeObjectURL(file.fileUrl); // Free up memory for local files
-      }
-      else if (file.fileUrl) {
-        handleClickRemoveFile(file);
-      }
-    });
-    setValue('attachments', [], { shouldValidate: true });
-  }, [setValue, currentAttachments, handleClickRemoveFile]);
+  const handleConfirmRemoveAll = useCallback(async () => {
+    try {
+      const url = `${CONFIG.apiUrl}/reward-points/delete/files/${currentStoreProduct?.id}/store-product/store_products/`;
+      await axios.delete(url, {
+        data: {
+          userReporter: userLogged?.data,
+        },
+      });
+      toast.success('Files deleted successfully');
+      setValue('attachments', [], { shouldValidate: true });
+      setInitialFiles([]);
+      setNewFiles([]);
+      confirmAll.onFalse();
+      setFileToRemove(null);
+      refetchStoreProducts?.();
+    } catch (error) {
+      console.error('Error deleting file', error);
+      toast.error('Error deleting file');
+    }
+  }, [setValue, userLogged, currentStoreProduct, confirmAll, refetchStoreProducts]);
 
   const handleUploadFiles = useCallback(
     (files) => {

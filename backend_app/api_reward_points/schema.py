@@ -5,7 +5,11 @@ from api_reward_points.models import (
     RewardPoints,
     RewardStoreProduct,
     RewardStoreProductUser,
-    RewardStoreProductUserHistory
+    RewardStoreProductUserHistory,
+    RewardPointsSettings,
+    RewardStoreProductSelection,
+    RewardStoreProductSelectionCart,
+    RewardStoreProductSelectionBuy,
 )
 from api_authorization.models import LoginUser
 from api_reward_points.schema_types.reward_points_type import RewardPointsType
@@ -13,7 +17,10 @@ from api_reward_points.schema_types.reward_invoice_type import RewardInvoiceType
 from api_reward_points.schema_types.reward_points_history_type import RewardPointsHistoryType
 from api_reward_points.schema_types.reward_store_product_user_history_type import RewardStoreProductUserHistoryType
 from api_reward_points.schema_types.reward_store_product_user_type import RewardStoreProductUserType
-from api_reward_points.schema_types.reward_store_product_type import RewardStoreProductType   
+from api_reward_points.schema_types.reward_store_product_type import RewardStoreProductType, RewardStoreProductDetailsType
+from api_reward_points.schema_types.reward_points_settings_type import RewardPointsSettingsType  
+from api_reward_points.schema_types.reward_store_product_selection_cart_type import RewardStoreProductSelectionCartType
+from api_reward_points.schema_types.reward_store_product_selection_buy_type import RewardStoreProductSelectionBuyType
      
 class Query(graphene.ObjectType):
     all_reward_points = graphene.List(
@@ -74,6 +81,37 @@ class Query(graphene.ObjectType):
         RewardStoreProductUserHistoryType, 
         username=graphene.String(required=True), 
         product_id=graphene.String(required=True)
+    )
+    
+    all_reward_points_settings = graphene.List(
+        RewardPointsSettingsType
+    )
+    
+    reward_store_product_details_by_id = graphene.Field(
+        RewardStoreProductDetailsType, 
+        store_product_id=graphene.String(required=True)
+    )
+    
+    all_reward_store_product_details = graphene.List(
+        RewardStoreProductDetailsType
+    )
+    
+    all_reward_store_product_selection_carts = graphene.List(
+        RewardStoreProductSelectionCartType
+    )
+    
+    reward_store_product_selection_cart_by_username = graphene.List(
+        RewardStoreProductSelectionCartType, 
+        username=graphene.String(required=True)
+    )
+    
+    all_reward_store_product_selection_buys = graphene.List(
+        RewardStoreProductSelectionBuyType
+    )
+
+    reward_store_product_selection_buy_by_username = graphene.List(
+        RewardStoreProductSelectionBuyType,
+        username=graphene.String(required=True)
     )
 
     def resolve_all_reward_points(self, info):
@@ -145,3 +183,50 @@ class Query(graphene.ObjectType):
             if user_product:
                 return RewardStoreProductUserHistory.objects(user_product=user_product).all()
         return None
+    
+    def resolve_all_reward_points_settings(self, info):
+        return RewardPointsSettings.objects.order_by('-amount').all()
+    
+    def resolve_reward_store_product_details_by_id(self, info, store_product_id):
+        return RewardStoreProduct.objects.get(id=store_product_id) if store_product_id else None
+    
+    def resolve_all_reward_store_product_details(self, info):
+        return RewardStoreProduct.objects.all() if RewardStoreProduct.objects else []
+    
+    def resolve_all_reward_store_product_selection_carts(self, info):
+        return RewardStoreProductSelectionCart.objects.all() if RewardStoreProductSelectionCart.objects else []
+    
+    def resolve_reward_store_product_selection_cart_by_username(self, info, username):
+        user = LoginUser.objects(username=username).first()
+        if not user:
+            return None
+        
+        selections = RewardStoreProductSelection.objects(user=user).all()
+        if not selections:
+            return [] 
+        
+        carts = RewardStoreProductSelectionCart.objects(
+            store_product_selection__in=selections
+        ).all()
+
+        return list(carts) if carts else []
+    
+    def resolve_all_reward_store_product_selection_buys(self, info):
+        return RewardStoreProductSelectionBuy.objects.all() if RewardStoreProductSelectionBuy.objects else []
+
+    def resolve_reward_store_product_selection_buy_by_username(self, info, username):
+        user = LoginUser.objects(username=username).first()
+        if not user:
+            return None
+        
+        selections = RewardStoreProductSelection.objects(user=user).all()
+        if not selections:
+            return [] 
+
+        buys = RewardStoreProductSelectionBuy.objects(
+            store_product_selection__in=selections
+        ).all()
+
+        return list(buys) if buys else []
+
+    

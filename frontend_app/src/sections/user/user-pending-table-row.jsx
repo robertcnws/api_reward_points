@@ -1,4 +1,5 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { CONFIG } from 'src/config-global';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -28,8 +29,6 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
 
-
-
 // ----------------------------------------------------------------------
 
 export function UserPendingTableRow({
@@ -44,6 +43,8 @@ export function UserPendingTableRow({
 
   const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
 
+  const [currentRowRewardPoints, setCurrentRowRewardPoints] = useState(null);
+
   const { isMobile } = useContext(LoadingContext)
 
   const confirm = useBoolean();
@@ -55,6 +56,45 @@ export function UserPendingTableRow({
   const quickChangePassword = useBoolean();
 
   const confirmApproval = useBoolean();
+
+  useEffect(() => {
+    if (rowRewardPoints) {
+      setCurrentRowRewardPoints(rowRewardPoints);
+    } 
+  }, [rowRewardPoints]);
+
+  useEffect(() => {
+        const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/${rowRewardPoints?.id}/`);
+        socket.onerror = (errorEvent) => {
+            console.dir(errorEvent);
+            console.error('WebSocket error (toString):', errorEvent.toString());
+        };
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            // console.log("WebSocket message:", message);
+            if (message.type === 'created' || message.type === 'updated') {
+                setCurrentRowRewardPoints((prevData) => {
+                    if (prevData?.id === message.item.id) {
+                        return message.item;
+                    }
+                    return prevData;
+                });
+            }
+            else if (message.type === 'deleted') {
+                setCurrentRowRewardPoints((prevData) => {
+                    if (prevData?.id === message.item.id) {
+                        return null;
+                    }
+                    return prevData;
+                });
+            }
+        };
+        return () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.close();
+            }
+        };
+    }, [rowRewardPoints]);
 
   return (
     <>
@@ -90,10 +130,10 @@ export function UserPendingTableRow({
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.phoneNumber}</TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
-            {rowRewardPoints?.totalGainedPoints > 0 ? (
+            {currentRowRewardPoints?.totalGainedPoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {rowRewardPoints?.totalGainedPoints || 0}
+                {currentRowRewardPoints?.totalGainedPoints || 0}
               </Label>
             ) : (
               <Label color="error">
@@ -159,9 +199,9 @@ export function UserPendingTableRow({
             Company: {row.companyName}<br />
             Name: {row.firstName} {row.lastName}<br />
             Phone: {row.phoneNumber}<br />
-            Reward Points: {rowRewardPoints ? (
+            Reward Points: {currentRowRewardPoints ? (
               <Label color="success">
-                {rowRewardPoints?.totalGainedPoints || 0}
+                {currentRowRewardPoints?.totalGainedPoints || 0}
               </Label>
             ) : (
               <Label color="error">

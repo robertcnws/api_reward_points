@@ -87,42 +87,35 @@ export function StoreProductView() {
         }
     }, [loadedStoreProducts]);
 
-    // useEffect(() => {
-    //     const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/projects/ws/projects/`);
-    //     socket.onerror = (errorEvent) => {
-    //         console.dir(errorEvent);
-    //         console.error('WebSocket error (toString):', errorEvent.toString());
-    //     };
-    //     socket.onmessage = (event) => {
-    //         const message = JSON.parse(event.data);
-    //         if (message.type === 'created' || message.type === 'updated') {
-    //             setTableData((prevData) => {
-    //                 const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-    //                 if (existingItemIndex !== -1) {
-    //                     const updatedData = [...prevData];
-    //                     updatedData[existingItemIndex] = message.item;
-    //                     return updatedData;
-    //                 }
-    //                 const isInstallerRole = isInstaller(userLogged?.data?.user_role?.name);
-    //                 if (isInstallerRole) {
-    //                     const projInstaller = getProjectInstaller(message.item, CONFIG);
-    //                     if (projInstaller && projInstaller.id && projInstaller.username && projInstaller.username !== userLogged?.data?.username) {
-    //                         return [...prevData];
-    //                     }
-    //                 }
-    //                 return [message.item, ...prevData];
-    //             });
-    //         }
-    //         else if (message.type === 'deleted') {
-    //             setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
-    //         }
-    //     };
-    //     return () => {
-    //         if (socket && socket.readyState === WebSocket.OPEN) {
-    //             socket.close();
-    //         }
-    //     };
-    // }, [userLogged?.data?.user_role?.name, userLogged?.data?.username]);
+    useEffect(() => {
+        const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/`);
+        socket.onerror = (errorEvent) => {
+            console.dir(errorEvent);
+            console.error('WebSocket error (toString):', errorEvent.toString());
+        };
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === 'created' || message.type === 'updated') {
+                setTableData((prevData) => {
+                    const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
+                    if (existingItemIndex !== -1) {
+                        const updatedData = [...prevData];
+                        updatedData[existingItemIndex] = message.item;
+                        return updatedData;
+                    }
+                    return [message.item, ...prevData];
+                });
+            }
+            else if (message.type === 'deleted') {
+                setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
+            }
+        };
+        return () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.close();
+            }
+        };
+    }, [userLogged?.data?.user_role?.name, userLogged?.data?.username]);
 
     const filters = useSetState({
         // list: localStorage.getItem('projectFilterList') || 'in progress',
@@ -199,9 +192,9 @@ export function StoreProductView() {
     const handleDeleteItem = useCallback(
         async (id) => {
 
-            const promise = axios.delete(`${CONFIG.apiUrl}/store-products/delete/store-product/${id}/`, {
+            const promise = axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product/${id}/`, {
                 data: {
-                    userReporter: userLogged?.data,
+                    userReporter: JSON.stringify(userLogged?.data),
                 }
             });
 
@@ -223,10 +216,10 @@ export function StoreProductView() {
         async () => {
             const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
 
-            const promise = axios.delete(`${CONFIG.apiUrl}/store-products/delete/store-products/`, {
+            const promise = axios.delete(`${CONFIG.apiUrl}/reward-points/delete/list/store-product/`, {
                 data: {
                     ids: table.selected,
-                    userReporter: userLogged?.data,
+                    userReporter: JSON.stringify(userLogged?.data),
                 },
             });
 
@@ -247,16 +240,9 @@ export function StoreProductView() {
         (id) => {
             localStorage.setItem('storeProductId', id);
             localStorage.setItem('backFromStoreProductDetails', 'storeProducts');
-            const listData = dataFiltered.map((item) => ({
-                id: item.id,
-                name: item.name,
-                // number: item.number,
-                // startDate: item.startDate,
-            }));
-            localStorage.setItem('storeProductFilteredList', JSON.stringify(listData));
             router.push(paths.dashboard.storeProduct.details(id));
         },
-        [router, dataFiltered]
+        [router]
     );
 
     const handleEditView = useCallback(

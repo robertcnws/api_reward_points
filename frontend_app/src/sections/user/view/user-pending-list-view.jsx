@@ -93,6 +93,8 @@ export function UserPendingListView() {
 
   const [tableData, setTableData] = useState([]);
 
+  const [rewardPointsData, setRewardPointsData] = useState([]);
+
   const filters = useSetState({ name: '', role: [], status: 'all' });
 
   // console.log('loadedRewardPoints', loadedRewardPoints);
@@ -100,10 +102,13 @@ export function UserPendingListView() {
   useEffect(() => {
     if (refetchUsers) {
       refetchUsers();
-      refetchRewardPoints?.();
+    }
+    if (refetchRewardPoints) {
+      refetchRewardPoints();
     }
     setTableData(loadedPendingUsers || []);
-  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints]);
+    setRewardPointsData(loadedRewardPoints || []);
+  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints, loadedRewardPoints]);
 
   useEffect(() => {
     if (loadedPendingUsers) {
@@ -112,17 +117,18 @@ export function UserPendingListView() {
   }, [loadedPendingUsers]);
 
   useEffect(() => {
+    if (loadedRewardPoints) {
+      setRewardPointsData(loadedRewardPoints);
+    }
+  }, [loadedRewardPoints]);
+
+
+  useEffect(() => {
     const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`);
-    // socket.onopen = () => {
-    //   console.log('WebSocket connected');
-    // };
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
     };
-    // socket.onclose = (e) => {
-    //   console.log('WebSocket closed', e);
-    // };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'created' || message.type === 'updated') {
@@ -139,14 +145,44 @@ export function UserPendingListView() {
       else if (message.type === 'deleted') {
         setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
       }
-      refetchRewardPoints?.();
     };
     return () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     };
-  }, [refetchRewardPoints]);
+  }, []);
+
+
+  // useEffect(() => {
+  //   const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/`);
+  //   socket.onerror = (errorEvent) => {
+  //     console.dir(errorEvent);
+  //     console.error('WebSocket error (toString):', errorEvent.toString());
+  //   };
+  //   socket.onmessage = (event) => {
+  //     const message = JSON.parse(event.data);
+  //     if (message.type === 'created' || message.type === 'updated') {
+  //       setRewardPointsData((prevData) => {
+  //         const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
+  //         if (existingItemIndex !== -1) {
+  //           const updatedData = [...prevData];
+  //           updatedData[existingItemIndex] = message.item;
+  //           return updatedData;
+  //         }
+  //         return [message.item, ...prevData];
+  //       });
+  //     }
+  //     else if (message.type === 'deleted') {
+  //       setRewardPointsData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
+  //     }
+  //   };
+  //   return () => {
+  //     if (socket && socket.readyState === WebSocket.OPEN) {
+  //       socket.close();
+  //     }
+  //   };
+  // }, []);
 
 
   const dataFiltered = useMemo(() => applyFilter({
@@ -380,7 +416,7 @@ export function UserPendingListView() {
                       <UserPendingTableRow
                         key={row.id}
                         row={row}
-                        rowRewardPoints={loadedRewardPoints?.find((reward) => reward?.user?.id === row.id)}
+                        rowRewardPoints={rewardPointsData?.find((reward) => reward?.user?.id === row.id)}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}

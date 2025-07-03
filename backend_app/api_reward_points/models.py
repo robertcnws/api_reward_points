@@ -10,11 +10,15 @@ from mongoengine import (
     IntField,
     FloatField,
     BooleanField,
+    PULL,
 )
 
 # Create your models here.
 class Tracking(Document):
     user_reporter = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    object_id = StringField(required=True, null=True, blank=True)  # Optional field for object ID
+    object_type = StringField(required=True, null=True, blank=True)  # Optional field
+    object_name = StringField(required=True, null=True, blank=True)  # Optional field for object name
     action = StringField(required=True)
     created_time = DateTimeField(default=timezone.now, null=True)
     managed_data = DynamicField(null=True)
@@ -22,7 +26,7 @@ class Tracking(Document):
     meta = {
         'collection': 'tracking',
         'indexes': [
-            'user_reporter', 'action', 'created_time'
+            'user_reporter', 'action', 'created_time', 'object_id', 'object_type', 'object_name'
         ],
         'verbose_name': 'Tracking',
         'verbose_name_plural': 'Trackings'
@@ -114,7 +118,7 @@ class RewardPoints(Document):
 class RewardPointsHistory(Document):
     created_time = DateTimeField(default=timezone.now, null=True)
     reward_points = ReferenceField(RewardPoints, required=True, reverse_delete_rule=2)  # CASCADE
-    action = StringField(required=True)  # e.g., 'gained', 'spent'
+    action = StringField(default='gained', choices=['gained', 'spent'], required=True)
     gained_points = IntField(default=0)
     spent_points = IntField(default=0)
     info = DynamicField(null=True, blank=True)
@@ -136,6 +140,8 @@ class RewardPointsHistory(Document):
 class RewardPointsSettings(Document):
     amount = FloatField(default=0.0)
     points = IntField(default=0)
+    description = StringField(null=True, blank=True)
+    is_active = BooleanField(default=True)
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
     
@@ -178,7 +184,7 @@ class RewardStoreProduct(Document):
     name = StringField(required=True)
     description = StringField(null=True, blank=True)
     assigned_points = IntField(required=True, default=0)
-    attachments = ListField(ReferenceField(RewardAttachment, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
+    attachments = ListField(ReferenceField(RewardAttachment, reverse_delete_rule=PULL), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
 
@@ -234,3 +240,108 @@ class RewardStoreProductUserHistory(Document):
     def __str__(self):
         return f"{self.user.username} - {self.product.name} - {self.status}"
     
+    
+class RewardStoreProductReview(Document):
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=PULL)  # CASCADE
+    store_product = ReferenceField(RewardStoreProduct, required=True, reverse_delete_rule=PULL)  # CASCADE
+    rating = IntField(required=True, default=0)
+    comment = StringField(null=True, blank=True)
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+
+    meta = {
+        'collection': 'reward_store_product_review',
+        'indexes': [
+            'user', 'store_product', 'rating'
+        ],
+        'verbose_name': 'Reward Store Product Review',
+        'verbose_name_plural': 'Reward Store Product Reviews'
+    }
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name} - {self.rating} stars"
+    
+    
+class RewardStoreProductReviewReaction(Document):
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=PULL)  # CASCADE
+    store_product_review = ReferenceField(RewardStoreProductReview, required=True, reverse_delete_rule=PULL)  # CASCADE
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    reaction_type = StringField(
+        required=True,
+        choices=['like', 'dislike', 'love', 'angry', 'sad', 'funny', 'care'],
+        default='like'
+    )
+
+    meta = {
+        'collection': 'reward_store_product_review_reaction',
+        'indexes': [
+            'user', 'store_product_review'
+        ],
+        'verbose_name': 'Reward Store Product Review Reaction',
+        'verbose_name_plural': 'Reward Store Product Review Reactions'
+    }
+
+    def __str__(self):
+        return f"{self.user.username} - {self.store_product_review.store_product.name} - {self.reaction_type}"
+    
+
+class RewardStoreProductSelection(Document):
+    store_product = ReferenceField(RewardStoreProduct, required=True, reverse_delete_rule=PULL)  # CASCADE
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=PULL)  # CASCADE
+    quantity = IntField(default=1)
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    
+    meta = {
+        'collection': 'reward_store_product_selection',
+        'indexes': [
+            'store_product', 'user'
+        ],
+        'verbose_name': 'Reward Store Product Selection',
+        'verbose_name_plural': 'Reward Store Product Selections'
+    }
+
+    def __str__(self):
+        return f"{self.user.username} - {self.store_product.name} - {self.quantity}"    
+    
+    
+class RewardStoreProductSelectionCart(Document):
+    store_product_selection = ReferenceField(RewardStoreProductSelection, required=True, reverse_delete_rule=PULL)  # CASCADE
+    is_bought = BooleanField(default=False)
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+
+    meta = {
+        'collection': 'reward_store_product_selection_cart',
+        'indexes': [
+            'store_product_selection', 'is_bought'
+        ],
+        'verbose_name': 'Reward Store Product Selection Cart',
+        'verbose_name_plural': 'Reward Store Product Selection Carts'
+    }
+
+    def __str__(self):
+        return f"{self.store_product_selection.user.username} - {self.store_product_selection.store_product.name} - {self.is_bought}"
+    
+    @property
+    def username(self):
+        return self.store_product_selection.user.username
+    
+class RewardStoreProductSelectionBuy(Document):
+    store_product_selection = ReferenceField(RewardStoreProductSelection, required=True, reverse_delete_rule=PULL)  # CASCADE
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    has_been_used = BooleanField(default=False)
+    
+    meta = {
+        'collection': 'reward_store_product_selection_buy',
+        'indexes': [
+            'store_product_selection', 'created_time', 'has_been_used'
+        ],
+        'verbose_name': 'Reward Store Product Selection Buy',
+        'verbose_name_plural': 'Reward Store Product Selection Buys'
+    }
+    
+    def __str__(self):
+        return f"{self.store_product_selection.user.username} - {self.store_product_selection.store_product.name} - {self.created_time.strftime('%Y-%m-%d %H:%M:%S')}"

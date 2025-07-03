@@ -11,6 +11,7 @@ import { allLangs } from 'src/locales';
 
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
+import { isClient } from 'src/utils/check-permissions';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 
@@ -31,17 +32,15 @@ import { SettingsButton } from '../components/settings-button';
 import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
-
-
-
-
-
+import { CartsDrawer } from '../components/cart-drawer';
 
 // ----------------------------------------------------------------------
 
 export function DashboardLayout({ sx, children, header, data }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
   // const {
   //   countLostItems,
@@ -180,6 +179,10 @@ export function DashboardLayout({ sx, children, header, data }) {
                 <Searchbar data={navData} />
                 {/* -- Language popover -- */}
                 <LanguagePopover data={allLangs} />
+                {/* -- Cart popover -- */}
+                {isClient(roleName) && (
+                  <CartsDrawer />
+                )}
                 {/* -- Notifications popover -- */}
                 <NotificationsDrawer />
                 {/* -- Contacts popover -- */}

@@ -29,9 +29,9 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5000000,
       },
       manifest: {
-        name: 'NWS Home App',
-        short_name: 'NWS Home',
-        description: 'NWS Home',
+        name: 'NWS Reward Points App',
+        short_name: 'NWS Reward Points',
+        description: 'NWS Reward Points Application',
         theme_color: '#ffffff',
         icons: [
           {

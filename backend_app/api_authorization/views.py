@@ -15,7 +15,7 @@ from api_reward_points.models import Tracking, RewardPoints, RewardPointsHistory
 from api_integration.views import fetch_client_invoices
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import MyTokenObtainPairSerializer, RevocationCheckTokenRefreshSerializer
-from utils.data_util import transform_data_to_mongo, get_national_phone_number, calculate_reward_points
+from utils.data_util import transform_data_to_mongo, get_national_phone_number, calculate_reward_points, create_tracking
 from utils.model_util import create_reward_invoice_instance
 import json
 import logging
@@ -122,16 +122,14 @@ def login(request):
                 current_user.last_login = timezone.now()
                 current_user.save()
                 
-                    
-                tracking = Tracking(
-                    user_reporter=current_user,
-                    action='login',
-                    created_time=timezone.now(),
-                    managed_data={
-                        'data': 'User logged in successfully',
-                    }
+                create_tracking(
+                    current_user, 
+                    'login', 
+                    object_id=str(current_user.id), 
+                    object_type='LoginUser', 
+                    object_name=current_user.username, 
+                    managed_data='User logged in successfully'
                 )
-                tracking.save()
                 
                 user = transform_data_to_mongo(
                     current_user, 
@@ -193,16 +191,16 @@ def logout(request):
         if current_user:
             current_user.last_login = timezone.now()
             current_user.save()
-        tracking = Tracking(
-            user_reporter=current_user,
-            action='logout',
-            created_time=timezone.now(),
-            managed_data={
-                'data': 'User logged out successfully',
-            }
-        )
-        tracking.save()
-        return JsonResponse({'data': 'User logged out'}, status=200)
+            create_tracking(
+                current_user, 
+                'logout', 
+                object_id=str(current_user.id), 
+                object_type='LoginUser', 
+                object_name=current_user.username, 
+                managed_data='User logged out successfully'
+            )
+            return JsonResponse({'data': 'User logged out'}, status=200)
+        return JsonResponse({'error': 'User not found', 'description': 'User does not exist'}, status=404)
     return JsonResponse({'error': 'User not logged in', 'description': 'User not logged in'}, status=400)
 
 
@@ -288,15 +286,14 @@ def register(request):
             
             # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
             
-            tracking = Tracking(
-                user_reporter=user,
-                action='register',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': 'User registered successfully',
-                }
+            create_tracking(
+                user, 
+                'register', 
+                object_id=str(user.id), 
+                object_type='LoginUser', 
+                object_name=user.username, 
+                managed_data='User registered successfully'
             )
-            tracking.save()
             
             return JsonResponse({'data': {'username': user.username}}, status=201)
         except json.JSONDecodeError:
@@ -352,15 +349,14 @@ def verify_user(request):
                         last_name=user.last_name,
                         list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
                     )
-            tracking = Tracking(
-                user_reporter=user,
-                action='verify_user',
-                created_time=timezone.now(),
-                managed_data={
-                    'data': 'User verified successfully',
-                }
+            create_tracking(
+                user, 
+                'verify_user', 
+                object_id=str(user.id), 
+                object_type='LoginUser', 
+                object_name=user.username, 
+                managed_data='User verified successfully'
             )
-            tracking.save()
             return JsonResponse({'data': 'User verified successfully'}, status=200)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
@@ -477,7 +473,7 @@ def generate_verification_code():
     return str(random.randint(100000, 999999)) 
 
 
-def get_rewards_points(user):
+def get_rewards_points(user, description=None):
     if not user:
         raise ValueError("User is required to create initial reward points")
     data = {
@@ -515,7 +511,8 @@ def get_rewards_points(user):
                     last_modified_time=timezone.now()
                 )
             else:
-                reward_points.total_gained_points = total_gained_points
+                spent_points = reward_points.total_spent_points
+                reward_points.total_gained_points = total_gained_points - spent_points
                 reward_points.total_amount_invoices = total_amount_invoices
                 reward_points.invoices = final_invoices
                 reward_points.last_modified = timezone.now()
@@ -536,7 +533,7 @@ def get_rewards_points(user):
                     action='gained',
                     gained_points=total_gained_points,
                     spent_points=0,
-                    description='Initial reward points created based on invoices',
+                    description='Initial reward points created based on invoices' if not description else description,
                     info=[transform_data_to_mongo(inv) for inv in final_invoices]
                 )
             else:
@@ -549,7 +546,7 @@ def get_rewards_points(user):
                     action='gained',
                     gained_points=total_gained_points - total_history_gained,
                     spent_points=0,
-                    description='Additional reward points created based on invoices',
+                    description='Additional reward points created based on invoices' if not description else description,
                     info=[transform_data_to_mongo(inv) for inv in final_invoices]
                 )
             history.save()

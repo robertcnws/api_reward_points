@@ -50,6 +50,7 @@ export function RewardLoginUsersProvider({ children }) {
 
   const value = useMemo(
     () => ({
+      listAllRewardLoginUsers,
       loadedAllRewardLoginUsers,
       loadedPendingRewardLoginUsers,
       refetchAllRewardLoginUsers,
@@ -57,6 +58,7 @@ export function RewardLoginUsersProvider({ children }) {
       errorRewardLoginUsers,
     }),
     [
+      listAllRewardLoginUsers,
       loadedAllRewardLoginUsers,
       loadedPendingRewardLoginUsers,
       refetchAllRewardLoginUsers,
