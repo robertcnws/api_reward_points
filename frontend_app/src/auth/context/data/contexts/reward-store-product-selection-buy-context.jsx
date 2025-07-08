@@ -1,12 +1,12 @@
 import React, { useMemo, useContext, createContext } from 'react';
-import { useAllRewardStoreProductSelectionCarts } from 'src/_mock/__reward-store-product-selection-carts';
-import { fieldsRewardStoreProductSelectionCarts } from '../field-descriptors/field-descriptors-reward-store-product-selection';
+import { useAllRewardStoreProductSelectionBuys } from 'src/_mock/__reward-store-product-selection-buys';
+import { fieldsRewardStoreProductSelectionBuys } from '../field-descriptors/field-descriptors-reward-store-product-selection';
 
 
-const RewardStoreProductSelectionCartContext = createContext();
-export const useRewardStoreProductSelectionCart = () => useContext(RewardStoreProductSelectionCartContext);
+const RewardStoreProductSelectionBuyContext = createContext();
+export const useRewardStoreProductSelectionBuy = () => useContext(RewardStoreProductSelectionBuyContext);
 
-export function RewardStoreProductSelectionCartProvider({ children }) {
+export function RewardStoreProductSelectionBuyProvider({ children }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
   
@@ -15,9 +15,9 @@ export function RewardStoreProductSelectionCartProvider({ children }) {
       return user?.user_role ? user.user_role.name : '';
     }, [userLogged]);
 
-  const fields = useMemo(() => fieldsRewardStoreProductSelectionCarts, []);
+  const fields = useMemo(() => fieldsRewardStoreProductSelectionBuys, []);
 
-  const allQuery = useAllRewardStoreProductSelectionCarts(fields);
+  const allQuery = useAllRewardStoreProductSelectionBuys(fields);
 
   const loadedAll = useMemo(
     () => roleName === 'admin' || roleName === 'superadmin' ?
@@ -52,8 +52,8 @@ export function RewardStoreProductSelectionCartProvider({ children }) {
   );
 
   return (
-    <RewardStoreProductSelectionCartContext.Provider value={value}>
+    <RewardStoreProductSelectionBuyContext.Provider value={value}>
       {children}
-    </RewardStoreProductSelectionCartContext.Provider>
+    </RewardStoreProductSelectionBuyContext.Provider>
   );
 }

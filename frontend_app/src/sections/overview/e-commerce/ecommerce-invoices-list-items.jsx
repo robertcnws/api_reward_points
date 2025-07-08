@@ -14,6 +14,7 @@ import { FlagIcon } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
 import { fDate } from 'src/utils/format-time';
+import { TableFooter } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -31,6 +32,7 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
               <RowItem key={`${row.id}-${index}`} row={row} />
             ))}
           </TableBody>
+          
         </Table>
       </Scrollbar>
     </Card>
@@ -40,7 +42,7 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
 // ----------------------------------------------------------------------
 
 function RowItem({ row }) {
-  
+
   return (
     <TableRow>
 
@@ -50,7 +52,11 @@ function RowItem({ row }) {
 
       <TableCell align="center">{fNumber(row?.lineItems?.length)}</TableCell>
 
-      <TableCell align="right">{fCurrency(row?.paymentMade)}</TableCell>
+      <TableCell align="right">
+        <Label color="success">
+          {fCurrency(row?.paymentMade)}
+        </Label>
+      </TableCell>
 
 
       {/* <TableCell>

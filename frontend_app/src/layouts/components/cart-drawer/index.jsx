@@ -30,10 +30,11 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { CustomTabs } from 'src/components/custom-tabs';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { fNumber } from 'src/utils/format-number';
 
 // import { NotificationItem } from './cart-item';
 import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
-import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection-carts';
+import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 import { CartItem } from './cart-item';
 
 // ----------------------------------------------------------------------
@@ -61,11 +62,30 @@ export function CartsDrawer({ sx, ...other }) {
 
   const [currentStoreProductSelectionCart, setCurrentStoreProductSelectionCart] = useState([]);
 
+  const [selectedCart, setSelectedCart] = useState(null);
+
+  const selectedQuantity = useMemo(() => {
+    if (selectedCart) {
+      return selectedCart?.storeProductSelection?.quantity || 0;
+    }
+    return 0;
+  }, [selectedCart]);
+
+  const selectedPoints = useMemo(() => {
+    if (selectedCart) {
+      const assignedPoints = selectedCart?.storeProductSelection?.storeProduct?.assignedPoints || 0;
+      return assignedPoints * selectedQuantity || 0;
+    }
+    return 0;
+  }, [selectedCart, selectedQuantity]);
+
   const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
 
   useEffect(() => {
     if (!loadingStoreProductSelectionCarts && !errorStoreProductSelectionCarts) {
-      setCurrentStoreProductSelectionCart(storeProductSelectionCarts);
+      setCurrentStoreProductSelectionCart(
+        storeProductSelectionCarts.filter(c => !c?.isBought)
+      );
     }
   }, [storeProductSelectionCarts, loadingStoreProductSelectionCarts, errorStoreProductSelectionCarts]);
 
@@ -92,6 +112,10 @@ export function CartsDrawer({ sx, ...other }) {
   const drawer = useBoolean();
 
   const confirmDeleteAll = useBoolean();
+
+  const confirmBuy = useBoolean(false);
+
+  const confirmCheckout = useBoolean(false);
 
   const totalCartPoints = useMemo(() =>
     currentStoreProductSelectionCart?.reduce((total, cart) => {
@@ -133,6 +157,51 @@ export function CartsDrawer({ sx, ...other }) {
       }
     }
   }, [userLogged, currentStoreProductSelectionCart]);
+
+  const onClickBuy = useCallback((cart) => {
+    if (cart) {
+      setSelectedCart(cart);
+      confirmBuy.onTrue();
+    }
+  }, [confirmBuy]);
+
+  const onAddBuy = useCallback(async (cart) => {
+    if (cart) {
+      try {
+        const payload = {
+          userReporter: JSON.stringify(userLogged?.data),
+        };
+
+        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart-buy/${cart?.id}/`;
+
+        const promise = axios.post(url, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        toast.promise(promise, {
+          loading: 'Loading...',
+          success: `Store product purchased successfully!`,
+          error: `Store product purchase error!`,
+        });
+
+        refetchStoreProductSelectionCarts?.().catch((err) => console.error('Error fetching product data:', err));
+
+        refetchRewardPoints?.().catch((err) => console.error('Error fetching reward points:', err));
+
+        await promise;
+
+
+      } catch (err) {
+        console.error('Error purchasing product:', err);
+      }
+    }
+  }, [
+    userLogged,
+    refetchStoreProductSelectionCarts,
+    refetchRewardPoints,
+  ]);
 
   const renderHead = (
     <Stack
@@ -201,7 +270,7 @@ export function CartsDrawer({ sx, ...other }) {
       <Box component="ul">
         {currentStoreProductSelectionCart?.map((cart) => (
           <Box component="li" key={cart.id} sx={{ display: 'flex' }}>
-            <CartItem cart={cart} drawer={drawer} />
+            <CartItem cart={cart} drawer={drawer} onClickBuy={onClickBuy} totalGainedPoints={totalGainedPoints} />
             {/* {cart?.storeProductSelection?.storeProduct?.name} */}
           </Box>
         ))}
@@ -271,6 +340,59 @@ export function CartsDrawer({ sx, ...other }) {
             }}
           >
             Delete
+          </Button>
+        }
+      />
+      <ConfirmDialog
+        open={confirmBuy.value}
+        onClose={confirmBuy.onFalse}
+        title={`Buying Cart: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
+        content={
+          <>
+            Are you sure want to buy <strong> {selectedCart?.storeProductSelection?.storeProduct?.name} </strong>,
+            with quantity <strong> {selectedQuantity} </strong>
+            spending <strong>{
+              fNumber(selectedPoints)
+            }</strong> point(s)?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              confirmBuy.onFalse();
+              confirmCheckout.onTrue();
+            }}
+          >
+            Buy
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmCheckout.value}
+        onClose={confirmCheckout.onFalse}
+        title={`Checking out: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
+        content={
+          <>
+            You are going to checkout a product <strong> {
+              selectedCart?.storeProductSelection?.storeProduct?.name
+            } </strong>,
+            spending <strong>{
+              fNumber(selectedPoints)}</strong> point(s) ... Are you sure?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              confirmCheckout.onFalse();
+              onAddBuy(selectedCart);
+            }}
+          >
+            Confirm Checkout
           </Button>
         }
       />

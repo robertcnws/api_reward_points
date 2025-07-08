@@ -17,7 +17,7 @@ export function NavContent({ data, slotProps, singleList }) {
   return (
     <>
       {singleList ? (
-        <NavUl>
+        <NavUl key='nav-content-ul'>
           <NavSubList data={data.children} slotProps={slotProps} />
         </NavUl>
       ) : (

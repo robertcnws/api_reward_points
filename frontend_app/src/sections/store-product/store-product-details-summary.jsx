@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useMemo } from 'react';
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 import Box from '@mui/material/Box';
@@ -104,7 +104,7 @@ export function StoreProductDetailsSummary({
 
   const values = watch();
 
-  const isMaxQuantity = useMemo(() => values.quantity >= available, [values.quantity, available]);
+  const isMaxQuantity = useMemo(() => values.quantity > available, [values.quantity, available]);
 
   useEffect(() => {
     if (product) {
@@ -318,18 +318,23 @@ export function StoreProductDetailsSummary({
             {renderSubDescription}
           </Stack>
 
-          <Divider sx={{ borderStyle: 'dashed' }} />
+          {roleName === 'client' && (
+            <React.Fragment key="client-quantity">
+              <Divider sx={{ borderStyle: 'dashed' }} />
 
-          {/* {renderColorOptions} */}
+              {/* {renderColorOptions} */}
 
-          {/* {renderSizeOptions} */}
+              {/* {renderSizeOptions} */}
 
-          {renderQuantity}
-
-          <Divider sx={{ borderStyle: 'dashed' }} />
-
-          {renderActions}
-
+              {renderQuantity}
+            </React.Fragment>
+          )}
+          {roleName === 'client' && (
+            <React.Fragment key="client-actions">
+              <Divider sx={{ borderStyle: 'dashed' }} />
+              {renderActions}
+            </React.Fragment>
+          )}
           {/* {renderShare} */}
         </Stack>
       </Form>
@@ -378,7 +383,7 @@ export function StoreProductDetailsSummary({
               onAddBuy?.(values.quantity);
               refetchUserLoggedRewardPoints?.();
               reset();
-              router.push(paths.storeProductFolder.root);
+              router.push(paths.dashboard.storeProduct.root);
             }}
           >
             Confirm Checkout

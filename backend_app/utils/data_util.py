@@ -13,6 +13,21 @@ from api_reward_points.models import RewardPointsSettings, Tracking
 import phonenumbers
 import json
 
+def to_camel(snake_str: str) -> str:
+    parts = snake_str.split('_')
+    return parts[0] + ''.join(p.title() for p in parts[1:])
+
+def camelize(obj):
+    if isinstance(obj, dict):
+        new = {}
+        for k, v in obj.items():
+            new_key = to_camel(k.lstrip('_'))
+            new[new_key] = camelize(v)
+        return new
+    if isinstance(obj, list):
+        return [camelize(item) for item in obj]
+    return obj
+
 def transform_data_to_mongo(obj, exclude_fields=None, include_fields=None, _seen=None):
     """
     Serializa cualquier Document de MongoEngine o estructuras anidadas,

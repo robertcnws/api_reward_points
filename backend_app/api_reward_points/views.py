@@ -202,6 +202,16 @@ def delete_all_store_product_selection_carts(request):
 
 
 #############################################
+# CREATE STORE PRODUCT SELECTION BUY FROM CARD
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_store_product_selection_cart_buy(request, id):
+    return repository_store_product_selections.create_store_product_selection_cart_buy(request, id)
+
+
+#############################################
 # CREATE STORE PRODUCT SELECTION BUY
 #############################################
 
@@ -209,3 +219,23 @@ def delete_all_store_product_selection_carts(request):
 @permission_classes([AllowAny])
 def create_store_product_selection_buy(request, id):
     return repository_store_product_selections.create_store_product_selection_buy(request, id)
+
+
+#############################################
+# DELETE STORE PRODUCT SELECTION BUY
+#############################################
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_store_product_selection_buy(request, id):
+    return repository_store_product_selections.delete_store_product_selection_buy(request, id)
+
+
+#############################################
+# DELETE LIST OF STORE PRODUCT SELECTION BUY
+#############################################
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_list_store_product_selection_buys(request):
+    return repository_store_product_selections.delete_list_store_product_selection_buys(request)

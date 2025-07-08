@@ -157,3 +157,81 @@ class RewardStoreProductSelectionCartByUsernameConsumer(AsyncJsonWebsocketConsum
 
     async def store_product_selection_cart_update(self, event):
         await self.send_json(event["message"])
+        
+        
+######################################################
+# RewardStoreProductSelectionBuy BY username
+######################################################
+
+class RewardStoreProductSelectionBuyByUsernameConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.username = self.scope["url_route"]["kwargs"]["username"]
+        self.group_name = f"store_product_selection_buy_{self.username}"
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+        await self.send_json({
+            "type": "connection_established",
+            "message": f"Connected to store product selection buy for user {self.username}"
+        })
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive_json(self, content, **kwargs):
+        pass
+
+    async def store_product_selection_buy_update(self, event):
+        await self.send_json(event["message"])
+        
+##########################################################################
+# StoreProductSelectionBuy
+##########################################################################
+
+class RewardStoreProductSelectionBuyConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.channel_layer.group_add(
+            "store_product_selection_buy",
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            "store_product_selection_buy",
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        pass
+
+    async def store_product_selection_buy_update(self, event):
+        await self.send(text_data=json.dumps(event["message"]))
+        
+        
+######################################################
+# RewardPointHistory BY username
+######################################################
+
+class RewardPointHistoryByUsernameConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.username = self.scope["url_route"]["kwargs"]["username"]
+        self.group_name = f"point_history_{self.username}"
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+        await self.send_json({
+            "type": "connection_established",
+            "message": f"Connected to point history for user {self.username}"
+        })
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive_json(self, content, **kwargs):
+        pass
+
+    async def point_history_update(self, event):
+        await self.send_json(event["message"])

@@ -30,3 +30,14 @@ export const fieldsRewardStoreProductSelectionCarts = [
         fields: fieldDesctiptorsRewardStoreProductSelection
     }
 ]
+
+export const fieldsRewardStoreProductSelectionBuys = [
+    'createdTime',
+    'id',
+    'hasBeenUsed',
+    'lastModifiedTime',
+    {
+        name: 'storeProductSelection',
+        fields: fieldDesctiptorsRewardStoreProductSelection
+    }
+]

@@ -14,6 +14,10 @@ import { useSettingsContext } from 'src/components/settings';
 import { isClient } from 'src/utils/check-permissions';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
+import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
+import { CONFIG } from 'src/config-global';
+import dayjs from 'dayjs';
 
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
@@ -33,6 +37,7 @@ import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
 import { CartsDrawer } from '../components/cart-drawer';
+
 
 // ----------------------------------------------------------------------
 
@@ -71,7 +76,34 @@ export function DashboardLayout({ sx, children, header, data }) {
     refetchRewardPoints,
   } = useDataContext();
 
+  const rewardHook = useRewardStoreProductSelectionBuyByUsername(
+    userLogged?.data?.username,
+    fieldsRewardStoreProductSelectionBuys
+  );
+  const dataContextHook = useDataContext();
+
+  const {
+    data: clientData,
+    loading: clientLoading,
+    error: clientError,
+    refetch: clientRefetch
+  } = rewardHook;
+
+  const {
+    loadedStoreProductSelectionBuys: otherData,
+    loadingStoreProductSelectionBuys: otherLoading,
+    errorStoreProductSelectionBuys: otherError,
+    refetchStoreProductSelectionBuys: otherRefetch
+  } = dataContextHook;
+
+  const loadedPurchases = roleName === 'client' ? clientData : otherData;
+  const loadingPurchases = roleName === 'client' ? clientLoading : otherLoading;
+  const errorPurchases = roleName === 'client' ? clientError : otherError;
+  const refetchPurchases = roleName === 'client' ? clientRefetch : otherRefetch;
+
   const [pendingUsers, setPendingUsers] = useState(loadedPendingUsers);
+
+  const [purchases, setPurchases] = useState(loadedPurchases);
 
   useEffect(() => {
     refetchUsers?.();
@@ -79,7 +111,68 @@ export function DashboardLayout({ sx, children, header, data }) {
     refetchRewardPoints?.();
   }, [refetchUsers, loadedPendingUsers, refetchRewardPoints]);
 
-  const navData = data?.nav ?? dashboardNavData(pendingUsers, isNavMini);
+  useEffect(() => {
+    if (loadedPurchases && Array.isArray(loadedPurchases) && loadedPurchases.length > 0) {
+      setPurchases(loadedPurchases);
+    }
+  }, [loadedPurchases]);
+
+  useEffect(() => {
+    const url = !isClient(roleName) ?
+      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/` :
+      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${userLogged?.data?.username}/`;
+    const socket = new WebSocket(url);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated') {
+        setPurchases((prevData) => {
+          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
+          if (existingItemIndex !== -1) {
+            const updatedData = [...prevData];
+            updatedData[existingItemIndex] = message.item;
+            return updatedData;
+          }
+          return [message.item, ...prevData];
+        });
+      }
+      else if (message.type === 'deleted') {
+        setPurchases((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [userLogged?.data?.username, roleName]);
+
+  const newPurchases = useMemo(
+    () => {
+      const today = dayjs().format('YYYY-MM-DD');
+      return purchases?.filter(p => {
+        const purchaseDate = dayjs(p.createdTime, 'YYYY-MM-DD');
+        return purchaseDate.isSame(today, 'day');
+      }) || [];
+    },
+    [purchases]
+  );
+
+  const oldPurchases = useMemo(
+    () => {
+      const today = dayjs().format('YYYY-MM-DD');
+      return purchases?.filter(p => {
+        const purchaseDate = dayjs(p.createdTime, 'YYYY-MM-DD');
+        return !purchaseDate.isSame(today, 'day');
+      }) || [];
+    },
+    [purchases]
+  );
+
+  const navData = data?.nav ?? dashboardNavData(pendingUsers, newPurchases, oldPurchases, isNavMini);
 
   return (
     <LayoutSection

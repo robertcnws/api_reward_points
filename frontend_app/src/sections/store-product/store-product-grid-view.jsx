@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -6,6 +6,10 @@ import Divider from '@mui/material/Divider';
 import Collapse from '@mui/material/Collapse';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
+import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
+import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -26,10 +30,40 @@ export function StoreProductGridView({
   refetchStoreProducts,
 }) {
   const { selected, onSelectRow: onSelectItem, onSelectAllRows: onSelectAllItems } = table;
-  
+
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
   const folders = useBoolean();
 
   const containerRef = useRef(null);
+
+  const {
+      loadedRewardPoints,
+      refetchRewardPoints,
+      loadingRewardPoints,
+      errorRewardPoints
+    } = useDataContext();
+  
+
+  const {
+    loading: loadingStoreProductSelectionCarts,
+    error: errorStoreProductSelectionCarts,
+    data: storeProductSelectionCarts,
+    refetch: refetchStoreProductSelectionCarts
+  } = useRewardStoreProductSelectionCartByUsername(
+    userLogged?.data?.username,
+    fieldsRewardStoreProductSelectionCarts
+  );
+
+  const {
+    loading: loadingStoreProductSelectionBuys,
+    error: errorStoreProductSelectionBuys,
+    data: storeProductSelectionBuys,
+    refetch: refetchStoreProductSelectionBuys
+  } = useRewardStoreProductSelectionBuyByUsername(
+    userLogged?.data?.username,
+    fieldsRewardStoreProductSelectionBuys
+  );
 
   return (
     <>
@@ -66,6 +100,18 @@ export function StoreProductGridView({
                   onEditRow={() => onEditRow(folder.id)}
                   setTableData={setTableData}
                   refetchStoreProducts={refetchStoreProducts}
+                  storeProductSelectionCarts={storeProductSelectionCarts}
+                  storeProductSelectionBuys={storeProductSelectionBuys}
+                  loadingStoreProductSelectionCarts={loadingStoreProductSelectionCarts}
+                  loadingStoreProductSelectionBuys={loadingStoreProductSelectionBuys}
+                  errorStoreProductSelectionCarts={errorStoreProductSelectionCarts}
+                  errorStoreProductSelectionBuys={errorStoreProductSelectionBuys}
+                  refetchStoreProductSelectionCarts={refetchStoreProductSelectionCarts}
+                  refetchStoreProductSelectionBuys={refetchStoreProductSelectionBuys}
+                  loadedRewardPoints={loadedRewardPoints}
+                  refetchRewardPoints={refetchRewardPoints}
+                  loadingRewardPoints={loadingRewardPoints}
+                  errorRewardPoints={errorRewardPoints}
                   sx={{ maxWidth: 'auto' }}
                 />
               ))}

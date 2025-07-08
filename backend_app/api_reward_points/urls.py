@@ -12,27 +12,110 @@ urlpatterns = [
         name="graphql"
     ),
     # STORE PRODUCTS
-    path('delete/file/<str:id>/store-product/<str:folder>/<str:file>/', views.delete_store_product_file, name='delete_store_product_file'),
-    path('delete/files/<str:id>/store-product/<str:folder>/', views.delete_all_store_product_files, name='delete_all_store_product_files'),
-    path('create/store-product/', views.create_store_product, name='create_store_product'),
-    path('update/store-product/<str:id>/', views.update_store_product, name='update_store_product'),
-    path('delete/store-product/<str:id>/', views.delete_store_product, name='delete_store_product'),
-    path('delete/list/store-product/', views.delete_list_store_products, name='delete_list_store_products'),
+    path(
+        'delete/file/<str:id>/store-product/<str:folder>/<str:file>/', 
+        views.delete_store_product_file, 
+        name='delete_store_product_file'
+    ),
+    path(
+        'delete/files/<str:id>/store-product/<str:folder>/', 
+        views.delete_all_store_product_files, 
+        name='delete_all_store_product_files'
+    ),
+    path(
+        'create/store-product/',
+        views.create_store_product,
+        name='create_store_product'
+    ),
+    path(
+        'update/store-product/<str:id>/',
+        views.update_store_product,
+        name='update_store_product'
+    ),
+    path(
+        'delete/store-product/<str:id>/',
+        views.delete_store_product,
+        name='delete_store_product'
+    ),
+    path(
+        'delete/list/store-product/',
+        views.delete_list_store_products,
+        name='delete_list_store_products'
+    ),
     # POINTS SETTINGS
-    path('create/points-settings/', views.create_points_settings, name='create_points_settings'),
-    path('update/points-settings/<str:id>/', views.update_points_settings, name='update_points_settings'),
-    path('delete/points-settings/<str:id>/', views.delete_points_settings, name='delete_points_settings'),
-    path('delete/list/points-settings/', views.delete_list_points_settings, name='delete_list_points_settings'),
+    path(
+        'create/points-settings/',
+        views.create_points_settings,
+        name='create_points_settings'
+    ),
+    path(
+        'update/points-settings/<str:id>/',
+        views.update_points_settings,
+        name='update_points_settings'
+    ),
+    path(
+        'delete/points-settings/<str:id>/',
+        views.delete_points_settings,
+        name='delete_points_settings'
+    ),
+    path(
+        'delete/list/points-settings/',
+        views.delete_list_points_settings,
+        name='delete_list_points_settings'
+    ),
     # STORE PRODUCT REVIEWS
-    path('create/store-product-review/<str:id>/', views.create_store_product_review, name='create_store_product_review'),
+    path(
+        'create/store-product-review/<str:id>/',
+        views.create_store_product_review,
+        name='create_store_product_review'
+    ),
     # STORE PRODUCT REVIEW REACTIONS
-    path('manage/store-product-review-reaction/<str:review_id>/', views.manage_store_product_review_reaction, name='manage_store_product_review_reaction'),
+    path(
+        'manage/store-product-review-reaction/<str:review_id>/',
+        views.manage_store_product_review_reaction,
+        name='manage_store_product_review_reaction'
+    ),
     # STORE PRODUCT SELECTION CARTS
-    path('create/store-product-selection-cart/<str:id>/', views.create_store_product_selection_cart, name='create_store_product_selection_cart'),
-    path('delete/store-product-selection-cart/<str:id>/', views.delete_store_product_selection_cart, name='delete_store_product_selection_cart'),
-    path('delete/list/store-product-selection-carts/', views.delete_all_store_product_selection_carts, name='delete_all_store_product_selection_carts'),
+    path(
+        'create/store-product-selection-cart/<str:id>/',
+        views.create_store_product_selection_cart,
+        name='create_store_product_selection_cart'
+    ),
+    path(
+        'delete/store-product-selection-cart/<str:id>/',
+        views.delete_store_product_selection_cart,
+        name='delete_store_product_selection_cart'
+    ),
+    path(
+        'delete/list/store-product-selection-carts/',
+        views.delete_all_store_product_selection_carts,
+        name='delete_all_store_product_selection_carts'
+    ),
     # STORE PRODUCT SELECTION BUY
-    path('create/store-product-selection-buy/<str:id>/', views.create_store_product_selection_buy, name='create_store_product_selection_buy'),
+    path(
+        'create/store-product-selection-cart-buy/<str:id>/',
+        views.create_store_product_selection_cart_buy,
+        name='create_store_product_selection_cart_buy'
+    ),
+    path(
+        'create/store-product-selection-buy/<str:id>/',
+        views.create_store_product_selection_buy,
+        name='create_store_product_selection_buy'
+    ),
+    path(
+        'delete/store-product-selection-buy/<str:id>/',
+        views.delete_store_product_selection_buy,
+        name='delete_store_product_selection_buy'
+    ),
+    path(
+        'delete/list/store-product-selection-buys/',
+        views.delete_list_store_product_selection_buys,
+        name='delete_list_store_product_selection_buys'
+    ),
     # GET FILE URL FROM AWS S3
-    path('get-file-url/', views.get_default_file_url, name='get_file_url'),
+    path(
+        'get-file-url/',
+        views.get_default_file_url,
+        name='get_file_url'
+    ),
 ]

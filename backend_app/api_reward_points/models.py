@@ -118,7 +118,7 @@ class RewardPoints(Document):
 class RewardPointsHistory(Document):
     created_time = DateTimeField(default=timezone.now, null=True)
     reward_points = ReferenceField(RewardPoints, required=True, reverse_delete_rule=2)  # CASCADE
-    action = StringField(default='gained', choices=['gained', 'spent'], required=True)
+    action = StringField(default='gained', choices=['gained', 'spent', 'refunded'], required=True)
     gained_points = IntField(default=0)
     spent_points = IntField(default=0)
     info = DynamicField(null=True, blank=True)

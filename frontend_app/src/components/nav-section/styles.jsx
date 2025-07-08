@@ -152,9 +152,10 @@ export function NavCollapse({ sx, depth, children, ...other }) {
 
 // ----------------------------------------------------------------------
 
-export function NavLi({ sx, children, disabled, ...other }) {
+export function NavLi({ sx, key, children, disabled, ...other }) {
   return (
     <Box
+      key={key}
       component="li"
       className={navSectionClasses.li}
       sx={{
@@ -172,9 +173,10 @@ export function NavLi({ sx, children, disabled, ...other }) {
 
 // ----------------------------------------------------------------------
 
-export function NavUl({ children, sx, ...other }) {
+export function NavUl({ key, children, sx, ...other }) {
   return (
     <Box
+      key={key}
       component="ul"
       className={navSectionClasses.ul}
       sx={{

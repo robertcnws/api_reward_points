@@ -1,5 +1,9 @@
 from mongoengine import signals
-from utils.data_util import serialize_datetime
+from utils.data_util import (
+    serialize_datetime, 
+    transform_data_to_mongo,
+    camelize
+)
 
 from api_reward_points.models import (
     RewardPointsSettings,
@@ -8,10 +12,187 @@ from api_reward_points.models import (
     RewardStoreProductReview,
     RewardStoreProductReviewReaction,
     RewardStoreProductSelectionCart,
+    RewardStoreProductSelectionBuy,
+    RewardPointsHistory,
 )
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
+
+##########################################################################
+# PointHistory by username
+##########################################################################    
+
+def point_history_by_username_saved(sender, document, **kwargs):
+    created = kwargs.get('created', False)
+    channel_layer = get_channel_layer()
+    group_name = f"point_history_{document.reward_points.user.username}" if document.reward_points and document.reward_points.user else None
+    if not group_name:
+        return
+    full_selection = transform_data_to_mongo(
+        document.reward_points,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'point_history_update',
+        'message': {
+            'type': 'created' if created else 'updated',
+            "item": {
+                "id": str(document.id),
+                "rewardPoints": full_selection if document.reward_points else None,
+                "action": document.action,
+                "gainedPoints": document.gained_points,
+                "spentPoints": document.spent_points,
+                "info": document.info,
+                "description": document.description,
+            }
+
+        }
+    }
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+
+
+def point_history_by_username_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    group_name = f"point_history_{document.reward_points.user.username}" \
+        if document.reward_points and document.reward_points.user \
+        else f"point_history_{document.username}"
+    if not group_name:
+        return
+    full_selection = transform_data_to_mongo(
+        document.reward_points,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'point_history_update',
+        'message': {
+            'type': 'deleted',
+            "item": {
+                "id": str(document.id),
+                "rewardPoints": full_selection if document.reward_points else None,
+                "action": document.action,
+                "gainedPoints": document.gained_points,
+                "spentPoints": document.spent_points,
+                "info": document.info,
+                "description": document.description,
+            }
+        }
+    }
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+
+###########################################################################
+# StoreProductSelectionBuy all
+###########################################################################
+
+def store_product_selection_buy_saved(sender, document, **kwargs):
+    created = kwargs.get('created', False)
+    channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.store_product_selection,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'store_product_selection_buy_update',
+        'message': {
+            'type': 'created' if created else 'updated',
+            "item": {
+                "id": str(document.id),
+                "storeProductSelection": full_selection if document.store_product_selection else None,
+                "hasBeenUsed": document.has_been_used,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+
+        }
+    }
+    async_to_sync(channel_layer.group_send)('store_product_selection_buy', serialize_datetime(event))
+
+
+def store_product_selection_buy_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.store_product_selection,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'store_product_selection_buy_update',
+        'message': {
+            'type': 'deleted',
+            "item": {
+                "id": str(document.id),
+                "storeProductSelection": full_selection if document.store_product_selection else None,
+                "hasBeenUsed": document.has_been_used,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+        }
+    }
+    async_to_sync(channel_layer.group_send)('store_product_selection_buy', serialize_datetime(event))
+
+##########################################################################
+# StoreProductSelectionBuy by username
+##########################################################################    
+
+def store_product_selection_buy_by_username_saved(sender, document, **kwargs):
+    created = kwargs.get('created', False)
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_selection_buy_{document.store_product_selection.user.username}" \
+        if document.store_product_selection and document.store_product_selection.user \
+        else f"store_product_selection_buy_{document.username}"
+    if not group_name:
+        return
+    full_selection = transform_data_to_mongo(
+        document.store_product_selection,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'store_product_selection_buy_update',
+        'message': {
+            'type': 'created' if created else 'updated',
+            "item": {
+                "id": str(document.id),
+                "storeProductSelection": full_selection if document.store_product_selection else None,
+                "hasBeenUsed": document.has_been_used,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+
+        }
+    }
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+
+
+def store_product_selection_buy_by_username_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_selection_buy_{document.store_product_selection.user.username}" \
+        if document.store_product_selection and document.store_product_selection.user \
+        else f"store_product_selection_buy_{document.username}"
+    if not group_name:
+        return
+    full_selection = transform_data_to_mongo(
+        document.store_product_selection,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = {
+        'type': 'store_product_selection_buy_update',
+        'message': {
+            'type': 'deleted',
+            "item": {
+                "id": str(document.id),
+                "storeProductSelection": full_selection if document.store_product_selection else None,
+                "hasBeenUsed": document.has_been_used,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+        }
+    }
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
 ##########################################################################
@@ -79,12 +260,19 @@ def store_product_by_id_saved(sender, document, **kwargs):
         'message': {
             'type': 'created' if created else 'updated',
             "item": {
+                # "id": str(document.id),
+                # "user": str(document.user.id) if document.user else None,
+                # "totalGainedPoints": document.total_gained_points,
+                # "totalSpentPoints": document.total_spent_points,
+                # "totalAmountInvoices": document.total_amount_invoices,
+                # "invoices": [str(invoice.id) for invoice in document.invoices],
+                # "createdTime": document.created_time,
+                # "lastModifiedTime": document.last_modified_time,
                 "id": str(document.id),
-                "user": str(document.user.id) if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": [str(invoice.id) for invoice in document.invoices],
+                "name": document.name,
+                "description": document.description,
+                "assignedPoints": document.assigned_points,
+                "attachments": [str(a.id) for a in document.attachments],
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }
@@ -102,12 +290,19 @@ def store_product_by_id_deleted(sender, document, **kwargs):
         'message': {
             'type': 'deleted',
             "item": {
+                # "id": str(document.id),
+                # "user": str(document.user.id) if document.user else None,
+                # "totalGainedPoints": document.total_gained_points,
+                # "totalSpentPoints": document.total_spent_points,
+                # "totalAmountInvoices": document.total_amount_invoices,
+                # "invoices": [str(invoice.id) for invoice in document.invoices],
+                # "createdTime": document.created_time,
+                # "lastModifiedTime": document.last_modified_time,
                 "id": str(document.id),
-                "user": str(document.user.id) if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": [str(invoice.id) for invoice in document.invoices],
+                "name": document.name,
+                "description": document.description,
+                "assignedPoints": document.assigned_points,
+                "attachments": [str(a.id) for a in document.attachments],
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }
@@ -401,3 +596,9 @@ signals.post_save.connect(store_product_review_reaction_saved, sender=RewardStor
 signals.post_delete.connect(store_product_review_reaction_deleted, sender=RewardStoreProductReviewReaction)
 signals.post_save.connect(store_product_selection_cart_by_username_saved, sender=RewardStoreProductSelectionCart)
 signals.post_delete.connect(store_product_selection_cart_by_username_deleted, sender=RewardStoreProductSelectionCart)
+signals.post_save.connect(store_product_selection_buy_saved, sender=RewardStoreProductSelectionBuy)
+signals.post_delete.connect(store_product_selection_buy_deleted, sender=RewardStoreProductSelectionBuy)
+signals.post_save.connect(store_product_selection_buy_by_username_saved, sender=RewardStoreProductSelectionBuy)
+signals.post_delete.connect(store_product_selection_buy_by_username_deleted, sender=RewardStoreProductSelectionBuy)
+signals.post_save.connect(point_history_by_username_saved, sender=RewardPointsHistory)
+signals.post_delete.connect(point_history_by_username_deleted, sender=RewardPointsHistory)

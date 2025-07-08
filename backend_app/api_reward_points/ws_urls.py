@@ -7,6 +7,9 @@ from .consumers import (
     StoreProductConsumer,
     RewardStoreProductByIdConsumer,
     RewardStoreProductSelectionCartByUsernameConsumer,
+    RewardStoreProductSelectionBuyByUsernameConsumer,
+    RewardStoreProductSelectionBuyConsumer,
+    RewardPointHistoryByUsernameConsumer,
 )
 
 websocket_urlpatterns = [
@@ -39,5 +42,20 @@ websocket_urlpatterns = [
         'api/reward-points/ws/store-product-selection-cart/<str:username>/', 
         RewardStoreProductSelectionCartByUsernameConsumer.as_asgi(), 
         name='ws_store_product_selection_cart_by_username'
+    ),
+    path(
+        'api/reward-points/ws/store-product-selection-buy/<str:username>/',
+        RewardStoreProductSelectionBuyByUsernameConsumer.as_asgi(),
+        name='ws_store_product_selection_buy_by_username'
+    ),
+    path(
+        'api/reward-points/ws/store-product-selection-buy/',
+        RewardStoreProductSelectionBuyConsumer.as_asgi(),
+        name='ws_store_product_selection_buy'
+    ),
+    path(
+        'api/reward-points/ws/reward-point-history/<str:username>/',
+        RewardPointHistoryByUsernameConsumer.as_asgi(),
+        name='ws_reward_point_history_by_username'
     ),
 ]

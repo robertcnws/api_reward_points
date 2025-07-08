@@ -75,13 +75,6 @@ export function StoreProductView() {
     const [tableData, setTableData] = useState([]);
 
     useEffect(() => {
-        if (refetchStoreProducts) {
-            refetchStoreProducts?.();
-        }
-        setTableData(loadedStoreProducts || []);
-    }, [refetchStoreProducts, loadedStoreProducts]);
-
-    useEffect(() => {
         if (loadedStoreProducts && loadedStoreProducts.length > 0) {
             setTableData(loadedStoreProducts);
         }

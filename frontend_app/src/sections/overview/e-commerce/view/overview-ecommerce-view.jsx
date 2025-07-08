@@ -13,30 +13,21 @@ import {
   _ecommerceLatestProducts,
 } from 'src/_mock';
 
+import { paths } from 'src/routes/paths';
+
 import dayjs from 'dayjs';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 
-import { fCurrency } from 'src/utils/format-number';
-import { fDate } from 'src/utils/format-time';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useRouter } from 'src/routes/hooks';
+
 
 import { EcommerceWelcome } from '../ecommerce-welcome';
-import { EcommerceNewProducts } from '../ecommerce-new-products';
-import { EcommerceYearlySales } from '../ecommerce-yearly-sales';
-import { EcommerceBestSalesman } from '../ecommerce-best-salesman';
-import { EcommerceSaleByGender } from '../ecommerce-sale-by-gender';
-import { EcommerceSalesOverview } from '../ecommerce-sales-overview';
-import { EcommerceWidgetSummary } from '../ecommerce-widget-summary';
-import { EcommerceLatestProducts } from '../ecommerce-latest-products';
-import { EcommerceCurrentBalance } from '../ecommerce-current-balance';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
-
-
-
+import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 
 
 // ----------------------------------------------------------------------
@@ -49,18 +40,17 @@ export function OverviewEcommerceView({
 }) {
 
   const {
-    loadedRewardPointsHistory,
-    refetchRewardPointsHistory,
-    loadingRewardPointsHistory,
-    errorRewardPointsHistory,
+    loadedStoreProducts,
   } = useDataContext();
+
+  const router = useRouter();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
   const displayFirstName = useMemo(() => userLogged?.data?.first_name, [userLogged]);
   const displayLastName = useMemo(() => userLogged?.data?.last_name, [userLogged]);
 
   const theme = useTheme();
-
+  
   const totalAmountInvoices = useMemo(() => loadedRewardPoints?.totalAmountInvoices || 0, [loadedRewardPoints]);
   const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
   const totalSpentPoints = useMemo(() => loadedRewardPoints?.totalSpentPoints || 0, [loadedRewardPoints]);
@@ -87,20 +77,6 @@ export function OverviewEcommerceView({
       })) || []
     );
   }, [sortedInvoices]);
-
-  const sortedRewardPointsHistory = useMemo(() => {
-    if (!loadedRewardPointsHistory || !Array.isArray(loadedRewardPointsHistory)) {
-      return [];
-    }
-    const rewardPointsHistory = loadedRewardPointsHistory ?? [];
-    const pointsHistory = [...rewardPointsHistory].sort((a, b) => {
-      if (a.createdTime && b.createdTime) return dayjs(b.createdTime).diff(dayjs(a.createdTime));
-      if (!a.createdTime && b.createdTime) return 1;
-      if (a.createdTime && !b.createdTime) return -1;
-      return 0;
-    });
-    return pointsHistory || [];
-  }, [loadedRewardPointsHistory]);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -157,7 +133,13 @@ export function OverviewEcommerceView({
               }
               img={<MotivationIllustration hideBackground />}
               action={
-                <Button variant="contained" color="primary">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    router.push(paths.dashboard.storeProduct.root);
+                  }}
+                >
                   Go now
                 </Button>
               }
@@ -165,7 +147,7 @@ export function OverviewEcommerceView({
           </Grid>
 
           <Grid xs={12} md={4}>
-            <EcommerceNewProducts list={_ecommerceNewProducts} />
+            <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
           </Grid>
 
           <Grid xs={12} md={4}>
@@ -308,10 +290,8 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsHistoryList
               title='Reward Points History'
               subheader='Latest reward points history'
-              list={sortedRewardPointsHistory}
-              loading={loadingRewardPointsHistory}
-              error={errorRewardPointsHistory}
-              refetch={refetchRewardPointsHistory}
+              loadedRewardPoints={loadedRewardPoints}
+              refetchRewardPoints={refetchRewardPoints}
             />
           </Grid>
         </Grid>

@@ -31,7 +31,7 @@ export function NavSectionVertical({
       <NavUl sx={{ flex: '1 1 auto', gap: 'var(--nav-item-gap)' }}>
         {data.map((group) => (
           <Group
-            key={group.subheader ?? group.items[0].title}
+            key={group.subheader ?? (group.items[0].key || group.items[0].path)}
             subheader={group.subheader}
             items={group.items}
             render={render}
@@ -57,7 +57,7 @@ function Group({ items, render, subheader, slotProps, enabledRootRedirect }) {
     <NavUl sx={{ gap: 'var(--nav-item-gap)' }}>
       {items.map((list) => (
         <NavList
-          key={list.title}
+          key={list.key || list.path}
           data={list}
           render={render}
           depth={1}

@@ -11,6 +11,11 @@ import {
   useRewardStoreProductSelectionCart 
 } from './contexts/reward-store-product-selection-cart-context';
 
+import { 
+  RewardStoreProductSelectionBuyProvider,
+  useRewardStoreProductSelectionBuy
+} from './contexts/reward-store-product-selection-buy-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
@@ -18,17 +23,19 @@ export function DataProvider({ children }) {
     // <RewardItemsProvider>
     <RewardNotificationUsersProvider>
       <RewardStoreProductSelectionCartProvider>
-        <RewardPointsSettingsProvider>
-          <RewardUserRolesProvider>
-            <RewardLoginUsersProvider>
-              <RewardStoreProductsProvider>
-                <RewardPointsProvider>
-                  <CombineProviders>{children}</CombineProviders>
-                </RewardPointsProvider>
-              </RewardStoreProductsProvider>
-            </RewardLoginUsersProvider>
-          </RewardUserRolesProvider>
-        </RewardPointsSettingsProvider>
+        <RewardStoreProductSelectionBuyProvider>
+          <RewardPointsSettingsProvider>
+            <RewardUserRolesProvider>
+              <RewardLoginUsersProvider>
+                <RewardStoreProductsProvider>
+                  <RewardPointsProvider>
+                    <CombineProviders>{children}</CombineProviders>
+                  </RewardPointsProvider>
+                </RewardStoreProductsProvider>
+              </RewardLoginUsersProvider>
+            </RewardUserRolesProvider>
+          </RewardPointsSettingsProvider>
+        </RewardStoreProductSelectionBuyProvider>
       </RewardStoreProductSelectionCartProvider>
     </RewardNotificationUsersProvider>
     // </RewardItemsProvider>
@@ -91,6 +98,13 @@ function CombineProviders({ children }) {
     errorAll: errorStoreProductSelectionCarts,
   } = useRewardStoreProductSelectionCart();
 
+  const {
+    loadedAll: loadedStoreProductSelectionBuys,
+    refetchAll: refetchStoreProductSelectionBuys,
+    loadingAll: loadingStoreProductSelectionBuys,
+    errorAll: errorStoreProductSelectionBuys,
+  } = useRewardStoreProductSelectionBuy();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -136,6 +150,10 @@ function CombineProviders({ children }) {
     refetchStoreProductSelectionCarts,
     loadingStoreProductSelectionCarts,
     errorStoreProductSelectionCarts,
+    loadedStoreProductSelectionBuys,
+    refetchStoreProductSelectionBuys,
+    loadingStoreProductSelectionBuys,
+    errorStoreProductSelectionBuys,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
@@ -176,6 +194,10 @@ function CombineProviders({ children }) {
     refetchStoreProductSelectionCarts,
     loadingStoreProductSelectionCarts,
     errorStoreProductSelectionCarts,
+    loadedStoreProductSelectionBuys,
+    refetchStoreProductSelectionBuys,
+    loadingStoreProductSelectionBuys,
+    errorStoreProductSelectionBuys,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,

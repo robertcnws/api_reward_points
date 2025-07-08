@@ -85,9 +85,15 @@ def create_store_product_selection_cart(request, id):
                     'data': tracking_info
                 }
             )
+            
+            info = f'has created new store product selection cart of \
+                {cart.store_product_selection.store_product.name} \
+                with quantity {cart.store_product_selection.quantity} \
+                and total points \
+                {cart.store_product_selection.store_product.assigned_points * cart.store_product_selection.quantity}'
 
             module='store_product_selection_carts'
-            info=f'has created new store product selection cart ({cart.id})'
+            info=info
             info_id=cart.id
             type='create_store_product_selection_cart'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -153,10 +159,16 @@ def delete_store_product_selection_cart(request, id):
             }
         )
         
+        info = f'has deleted store product selection cart of \
+                {cart.store_product_selection.store_product.name} \
+                with quantity {cart.store_product_selection.quantity} \
+                and total points \
+                {cart.store_product_selection.store_product.assigned_points * cart.store_product_selection.quantity}'
+        
         create_notification(
             module='store_product_selection_carts',
             info_id=cart.id,
-            info=f'has deleted store product selection cart ({cart.id})',
+            info=info,
             type='delete_store_product_selection_cart',
             username=user_reporter.username
         )
@@ -216,7 +228,7 @@ def delete_all_store_product_selection_carts(request):
         
         create_tracking(
             user_reporter=user_reporter,
-            action=f'delete store product selection cart',
+            action=f'delete list of {len(carts)} store product selection cart',
             object_id=",".join([str(cart.id) for cart in carts]),
             object_type='RewardStoreProductSelectionCart',
             object_name=','.join([cart.store_product_selection.store_product.name for cart in carts]),
@@ -229,7 +241,7 @@ def delete_all_store_product_selection_carts(request):
             module='store_product_selection_carts',
             info_id='list',
             info=f'has deleted a list of {len(carts)} store product selection carts for user {user_reporter.username}',
-            type='delete_store_product_selection_cart',
+            type='delete_list_store_product_selection_cart',
             username=user_reporter.username
         )
         
@@ -245,6 +257,126 @@ def delete_all_store_product_selection_carts(request):
     except Exception as e:
         logger.error(f"Error deleting store product selection carts: {str(e)}")
         return Response({'error': str(e)}, status=500)
+    
+    
+#############################################
+# CREATE STORE PRODUCT SELECTION BUY FROM CART
+#############################################
+
+def create_store_product_selection_cart_buy(request, id):         
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            
+            reward_points = RewardPoints.objects(user=user_reporter).first()
+            
+            if not reward_points:
+                return Response({'error': 'Reward points not found for the user'}, status=404)
+            
+            cart = RewardStoreProductSelectionCart.objects(
+                id=id,
+                is_bought=False
+            ).first()
+            
+            if not cart:
+                return Response({'error': 'Store product selection cart not found or already bought'}, status=404)
+            
+            selection = cart.store_product_selection
+            if not selection:
+                return Response({'error': 'Store product selection not found in cart'}, status=404)
+
+            buy = RewardStoreProductSelectionBuy(
+                store_product_selection=selection,
+                created_time=to_aware(timezone.now()),
+                last_modified_time=to_aware(timezone.now()),
+                has_been_used=False,
+            )
+            buy.save()
+                
+            cart.is_bought = True
+            cart.last_modified_time = to_aware(timezone.now())
+            cart.save()
+            
+            store_product = selection.store_product
+            if not store_product:
+                return Response({'error': 'Store product not found in selection'}, status=404)
+                
+            purchased_points = store_product.assigned_points * selection.quantity
+                
+            gained_points = reward_points.total_gained_points
+            spent_points = reward_points.total_spent_points + purchased_points
+            reward_points.total_gained_points = gained_points - purchased_points
+            reward_points.total_spent_points = spent_points
+            reward_points.last_modified = timezone.now()
+            
+            reward_points.save()
+
+            tracking_info = transform_data_to_mongo(
+                buy,
+                exclude_fields=[
+                    'password', 
+                    'is_staff', 
+                    'is_active', 
+                    'is_verified', 
+                    'last_login', 
+                    'date_joined',
+                    'last_modified_time', 
+                    'created_time'
+                ]
+            )
+            
+            description = f'Used {purchased_points} points to buy {selection.quantity} of {store_product.name}'
+            
+            history = RewardPointsHistory(
+                created_time=timezone.now(),
+                reward_points=reward_points,
+                action='spent',
+                gained_points=0,
+                spent_points=purchased_points,
+                description=description,
+                info=tracking_info,
+            )
+            
+            history.save()
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'create store product selection buy',
+                object_id=buy.id,
+                object_type='RewardStoreProductSelectionBuy',
+                object_name=buy.store_product_selection.store_product.name,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+
+            info = f'has created new store product selection buy of \
+                {buy.store_product_selection.store_product.name} \
+                with quantity {buy.store_product_selection.quantity} \
+                and total points \
+                {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
+
+            module='store_product_selection_buys'
+            info=info
+            info_id=buy.id
+            type='create_store_product_selection_buy'
+            create_notification(module, info_id, info, type, user_reporter.username)
+                        
+            return Response({
+                'message': 'Store product selection buy created successfully',
+                'data': json.loads(buy.to_json())
+            }, status=201)
+        
+        except Exception as e:
+            logger.error(f"Error creating store product selection buy: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)
     
 
 #############################################
@@ -305,7 +437,8 @@ def create_store_product_selection_buy(request, id):
                 
             gained_points = reward_points.total_gained_points
             spent_points = reward_points.total_spent_points + purchased_points
-            reward_points.total_gained_points = gained_points - spent_points
+            reward_points.total_gained_points = gained_points - purchased_points
+            reward_points.total_spent_points = spent_points
             reward_points.last_modified = timezone.now()
             
             reward_points.save()
@@ -331,7 +464,7 @@ def create_store_product_selection_buy(request, id):
                 reward_points=reward_points,
                 action='spent',
                 gained_points=0,
-                spent_points=spent_points,
+                spent_points=purchased_points,
                 description=description,
                 info=tracking_info,
             )
@@ -349,12 +482,268 @@ def create_store_product_selection_buy(request, id):
                 }
             )
 
+            info = f'has created new store product selection buy of \
+                {buy.store_product_selection.store_product.name} \
+                with quantity {buy.store_product_selection.quantity} \
+                and total points \
+                {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
+
             module='store_product_selection_buys'
-            info=f'has created new store product selection buy ({buy.id})'
+            info=info
             info_id=buy.id
             type='create_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
                         
+            return Response({
+                'message': 'Store product selection buy created successfully',
+                'data': json.loads(buy.to_json())
+            }, status=201)
+        
+        except Exception as e:
+            logger.error(f"Error creating store product selection buy: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)
+
+
+#############################################
+# DELETE STORE PRODUCT SELECTION BUY
+#############################################
+
+def delete_store_product_selection_buy(request, id):
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            
+            buy = RewardStoreProductSelectionBuy.objects(id=id).first()
+            if not buy:
+                return Response({'error': 'Store product selection buy not found'}, status=404)
+            
+            selection_id = buy.store_product_selection.id
+            selection = RewardStoreProductSelection.objects(id=selection_id).first()
+            if not selection:
+                return Response({'error': 'Store product selection not found'}, status=404)
+            
+            cart = RewardStoreProductSelectionCart.objects(
+                store_product_selection=selection,
+                is_bought=True
+            ).first()
+            
+            if cart:
+                cart.delete()
+                
+            user = selection.user
+            if not user:
+                return Response({'error': 'User not found for the store product selection'}, status=404)
+                
+            reward_points = RewardPoints.objects(user=user).first()
+            if not reward_points:
+                return Response({'error': 'User reward points not found'}, status=404)
+            
+            store_product = buy.store_product_selection.store_product
+            if not store_product:
+                return Response({'error': 'Store product not found in buy selection'}, status=404)
+            
+            purchased_points = store_product.assigned_points * selection.quantity
+            
+            gained_points = reward_points.total_gained_points + purchased_points
+            spent_points = reward_points.total_spent_points - purchased_points
+            
+            reward_points.total_gained_points = gained_points
+            reward_points.total_spent_points = spent_points
+            reward_points.last_modified = timezone.now()
+            reward_points.save()
+            
+            tracking_info = transform_data_to_mongo(
+                buy,
+                exclude_fields=[
+                    'password', 
+                    'is_staff', 
+                    'is_active', 
+                    'is_verified', 
+                    'last_login', 
+                    'date_joined',
+                    'last_modified_time', 
+                    'created_time'
+                ]
+            )
+            
+            description = f'Refunded {purchased_points} points from buy {selection.quantity} of {store_product.name}'
+            
+            history = RewardPointsHistory(
+                created_time=timezone.now(),
+                reward_points=reward_points,
+                action='refunded',
+                gained_points=purchased_points,
+                spent_points=0,
+                description=description,
+                info=tracking_info,
+            )
+            
+            history.save()
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'delete store product selection buy',
+                object_id=buy.id,
+                object_type='RewardStoreProductSelectionBuy',
+                object_name=buy.store_product_selection.store_product.name,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+            
+            info = f'has deleted store product selection buy of \
+                {buy.store_product_selection.store_product.name} \
+                with quantity {buy.store_product_selection.quantity} \
+                and total points \
+                {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
+
+            module='store_product_selection_buys'
+            info=info
+            info_id=buy.id
+            type='delete_store_product_selection_buy'
+            create_notification(module, info_id, info, type, user_reporter.username)
+            
+            # DELETING THE BUY
+            buy.delete()
+            selection.delete()
+                        
+            return Response({
+                'message': 'Store product selection buy created successfully',
+                'data': json.loads(buy.to_json())
+            }, status=201)
+        
+        except Exception as e:
+            logger.error(f"Error creating store product selection buy: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)
+
+
+#############################################
+# DELETE LIST OF STORE PRODUCT SELECTION BUY
+#############################################
+
+def delete_list_store_product_selection_buys(request):
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            
+            ids = data.get('ids', None)
+            if not ids or not isinstance(ids, list):
+                return Response({'error': 'IDs list is required'}, status=400)
+
+            buys = RewardStoreProductSelectionBuy.objects(id__in=ids)
+            if not buys:
+                return Response({'error': 'No store product selection buys found'}, status=404)
+            
+            list_tracking_info = []
+            
+            for buy in buys:
+                if not buy:
+                    continue
+
+                selection_id = buy.store_product_selection.id
+                selection = RewardStoreProductSelection.objects(id=selection_id).first()
+                if not selection:
+                    return Response({'error': 'Store product selection not found'}, status=404)
+                
+                cart = RewardStoreProductSelectionCart.objects(
+                    store_product_selection=selection,
+                    is_bought=True
+                ).first()
+                
+                if cart:
+                    cart.delete()
+                    
+                user = selection.user
+                if not user:
+                    return Response({'error': 'User not found for the store product selection'}, status=404)
+                    
+                reward_points = RewardPoints.objects(user=user).first()
+                if not reward_points:
+                    return Response({'error': 'User reward points not found'}, status=404)
+                
+                store_product = buy.store_product_selection.store_product
+                if not store_product:
+                    return Response({'error': 'Store product not found in buy selection'}, status=404)
+                
+                purchased_points = store_product.assigned_points * selection.quantity
+                
+                gained_points = reward_points.total_gained_points + purchased_points
+                spent_points = reward_points.total_spent_points - purchased_points
+                
+                reward_points.total_gained_points = gained_points
+                reward_points.total_spent_points = spent_points
+                reward_points.last_modified = timezone.now()
+                reward_points.save()
+                
+                tracking_info = transform_data_to_mongo(
+                    buy,
+                    exclude_fields=[
+                        'password', 
+                        'is_staff', 
+                        'is_active', 
+                        'is_verified', 
+                        'last_login', 
+                        'date_joined',
+                        'last_modified_time', 
+                        'created_time'
+                    ]
+                )
+                
+                description = f'Refunded {purchased_points} points from buy {selection.quantity} of {store_product.name}'
+                
+                history = RewardPointsHistory(
+                    created_time=timezone.now(),
+                    reward_points=reward_points,
+                    action='refunded',
+                    gained_points=purchased_points,
+                    spent_points=0,
+                    description=description,
+                    info=tracking_info,
+                )
+                
+                history.save()
+
+                list_tracking_info.append(tracking_info)
+
+                # DELETING THE BUY
+                buy.delete()
+                selection.delete()
+
+            # Create a single tracking entry for all deleted buys
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'delete list of {len(buys)} store product selection buys',
+                object_id=",".join([str(buy.id) for buy in buys]),
+                object_type='RewardStoreProductSelectionBuy',
+                object_name=None,
+                managed_data={
+                    'data': list_tracking_info
+                }
+            )
+            
+            info = f'has deleted a list of {len(buys)} store product selection buys for user {user_reporter.username}'
+            create_notification(
+                module='store_product_selection_buys',
+                info_id='list',
+                info=info,
+                type='delete_list_store_product_selection_buy',
+                username=user_reporter.username
+            )
+
             return Response({
                 'message': 'Store product selection buy created successfully',
                 'data': json.loads(buy.to_json())

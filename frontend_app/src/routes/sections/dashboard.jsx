@@ -7,7 +7,7 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 import { LoadingScreen } from 'src/components/loading-screen';
 
 import { AuthGuard } from 'src/auth/guard';
-import { listRolesAndSubroles } from 'src/utils/check-permissions';
+import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -34,6 +34,8 @@ const StoreProductDetailsPage = lazy(() => import('src/pages/dashboard/store-pro
 // Points Settings
 const PointsSettingsListPage = lazy(() => import('src/pages/dashboard/points-settings/list'));
 const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-settings/new'));
+// Purchases
+const PurchaseListPage = lazy(() => import('src/pages/dashboard/purchase/list'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -61,6 +63,12 @@ export const dashboardRoutes = (user) => [
         path: 'analytics',
         element: <OverviewAnalyticsPage />
       },
+      ...isClient(user?.user_role?.name) ? [
+        {
+          path: 'purchase',
+          element: <PurchaseListPage />
+        },
+      ] : [],
       ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
         [
           {
@@ -255,6 +263,30 @@ export const dashboardRoutes = (user) => [
               //     CONFIG.roles.superadmin
               //   ) ? <UserRoleDefaultCreatePage /> : <Page403 />
               // },
+            ],
+          },
+        ] : [],
+      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+        [
+          {
+            path: 'purchase',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PurchaseListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PurchaseListPage /> : <Page403 />
+              },
             ],
           },
         ] : [],

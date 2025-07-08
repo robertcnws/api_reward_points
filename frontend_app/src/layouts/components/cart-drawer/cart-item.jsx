@@ -26,10 +26,16 @@ import { Iconify } from 'src/components/iconify';
 import { IconButton, Tooltip } from '@mui/material';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { fNumber } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
-export function CartItem({ cart, drawer }) {
+export function CartItem({
+  cart,
+  drawer,
+  onClickBuy,
+  totalGainedPoints,
+}) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -127,54 +133,64 @@ export function CartItem({ cart, drawer }) {
         </Box>
       }
       secondary={
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{ typography: 'caption', color: 'text.disabled' }}
-          divider={
-            <Box
-              sx={{
-                width: 2,
-                height: 2,
-                bgcolor: 'currentColor',
-                mx: 0.5,
-                borderRadius: '50%',
-              }}
-            />
-          }
-        >
-          <Box sx={{
-            color: 'text.disabled',
-            ml: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
-            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-              Created at {fDateTime(cart.createdTime)}
-            </Typography>
+        <>
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{ typography: 'caption', color: 'text.disabled' }}
+            divider={
+              <Box
+                sx={{
+                  width: 2,
+                  height: 2,
+                  bgcolor: 'currentColor',
+                  mx: 0.5,
+                  borderRadius: '50%',
+                }}
+              />
+            }
+          >
             <Box sx={{
               color: 'text.disabled',
+              ml: 1,
               display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
+              flexDirection: 'column',
             }}>
-              <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
-                Qty: <b>{cart?.storeProductSelection?.quantity}</b>
-              </Typography>
-              {totalPoints > 0 ? (
-                <Label color="info" sx={{ alignItems: 'center' }}>
-                  <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
-                  TOTAL: {totalPoints}
-                </Label>
-              ) : (
-                <Label color="error">
-                  0
-                </Label>
+
+              {totalPoints > totalGainedPoints && (
+                <Box>
+                  <Label color="error" >
+                    You need at least {fNumber(totalPoints - totalGainedPoints)} more points
+                  </Label>
+                </Box>
               )}
+              <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                Created at {fDateTime(cart.createdTime)}
+              </Typography>
+              <Box sx={{
+                color: 'text.disabled',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+                <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
+                  Qty: <b>{cart?.storeProductSelection?.quantity}</b>
+                </Typography>
+                {totalPoints > 0 ? (
+                  <Label color="info" sx={{ alignItems: 'center' }}>
+                    <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
+                    TOTAL: {totalPoints}
+                  </Label>
+                ) : (
+                  <Label color="error">
+                    0
+                  </Label>
+                )}
+              </Box>
             </Box>
-          </Box>
-          {/* {notification.notification.module} */}
-        </Stack>
+            {/* {notification.notification.module} */}
+          </Stack>
+        </>
       }
     />
   );
@@ -312,9 +328,34 @@ export function CartItem({ cart, drawer }) {
       >
         See in Details
       </Label> */}
-      <IconButton color='success'>
-        <Tooltip title="Buy now" arrow placement='top' sx={{ width: 45, height: 45 }}>
-          <Iconify icon="streamline-freehand-color:e-commerce-click-buy" width={45} height={45} />
+      <IconButton
+        color='success'
+        disabled={totalPoints > totalGainedPoints}
+        onClick={() => onClickBuy(cart)}
+        sx={{
+          cursor: totalPoints > totalGainedPoints ? 'not-allowed' : 'pointer',
+          '&.Mui-disabled': {
+            cursor: 'not-allowed !important',
+            pointerEvents: 'auto',
+          }
+        }}
+      >
+        <Tooltip
+          title={totalPoints > totalGainedPoints ?
+            `You need at least ${fNumber(totalPoints - totalGainedPoints)} more points to buy this product` :
+            "Click to buy this product"
+          }
+          arrow
+          placement='top'
+          sx={{ width: 45, height: 45 }}
+        >
+          <Iconify
+            icon={totalPoints > totalGainedPoints ?
+              "streamline-freehand:e-commerce-click-buy" :
+              "streamline-freehand-color:e-commerce-click-buy"
+            }
+            width={45} height={45}
+          />
         </Tooltip>
       </IconButton>
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>

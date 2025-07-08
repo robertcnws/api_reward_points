@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 
 import Box from '@mui/material/Box';
@@ -22,11 +22,16 @@ import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 
 import { fDate } from 'src/utils/format-time';
 import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
-import { fShortenNumber } from 'src/utils/format-number';
+import { fNumber, fShortenNumber } from 'src/utils/format-number';
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/config-global';
 import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
-import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection-carts';
+import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
+import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
+import { useRewardStoreProductDetailsById } from 'src/_mock/__reward-store-products';
+import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
@@ -34,7 +39,6 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { IncrementerButton } from './components/incrementer-button';
 import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
-
 
 // ----------------------------------------------------------------------
 
@@ -48,19 +52,36 @@ export function StoreProductFolderItem({
   onEditRow,
   setTableData,
   refetchStoreProducts,
+  storeProductSelectionCarts,
+  storeProductSelectionBuys,
+  loadingStoreProductSelectionCarts,
+  loadingStoreProductSelectionBuys,
+  errorStoreProductSelectionCarts,
+  errorStoreProductSelectionBuys,
+  refetchStoreProductSelectionCarts,
+  refetchStoreProductSelectionBuys,
+  loadedRewardPoints,
+  refetchRewardPoints,
+  loadingRewardPoints,
+  errorRewardPoints,
   ...other }) {
 
+  const router = useRouter();
+
+  const confirmBuy = useBoolean(false);
+
+  const confirmCheckout = useBoolean(false);
+
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+  const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
 
   const {
-    loading: loadingStoreProductSelectionCarts,
-    error: errorStoreProductSelectionCarts,
-    data: storeProductSelectionCarts,
-    refetch: refetchStoreProductSelectionCarts
-  } = useRewardStoreProductSelectionCartByUsername(
-    userLogged?.data?.username,
-    fieldsRewardStoreProductSelectionCarts
-  );
+    loading: productLoading,
+    error: productError,
+    data: product,
+    refetch: refetchProductDetails
+  } = useRewardStoreProductDetailsById(folder?.id, fieldsRewardStoreProductDetails);
 
   const popover = usePopover();
 
@@ -70,47 +91,131 @@ export function StoreProductFolderItem({
 
   const [favorite, setFavorite] = useState(false);
 
+  const [currentProduct, setCurrentProduct] = useState(null);
+
+  const folderPoints = useMemo(() => currentProduct?.assignedPoints || 0, [currentProduct]);
+
+  const [folderName, setFolderName] = useState(currentProduct?.name);
+
   const [purchased, setPurchased] = useState(false);
 
-  const [folderName, setFolderName] = useState(folder?.name);
+  useEffect(() => {
+    if (product) {
+      setCurrentProduct(product);
+      setFolderName(product.name);
+    }
+  }, [product]);
+
+
+  useEffect(() => {
+    let socket;
+    if (product && !productLoading && !productError) {
+      socket = new WebSocket(
+        `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/${product.id}/`
+      );
+
+      socket.onerror = (errorEvent) => {
+        console.error('WebSocket error:', errorEvent);
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (
+          message.type === 'created' ||
+          message.type === 'updated' ||
+          message.type === 'deleted'
+        ) {
+          refetchProductDetails()
+            .then((data) => {
+              if (data?.rewardStoreProductDetailsById) {
+                setCurrentProduct(data.rewardStoreProductDetailsById);
+              }
+            })
+            .catch((err) => console.error('Error fetching product data:', err));
+        }
+      };
+    }
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [product, productLoading, productError, refetchProductDetails]);
+
+  useEffect(() => {
+    let socket;
+    if (userLogged) {
+      const username = userLogged?.data?.username;
+      const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${username}/`;
+      socket = new WebSocket(url);
+
+      socket.onerror = (errorEvent) => {
+        console.error('WebSocket error:', errorEvent);
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (
+          message.type === 'created' ||
+          message.type === 'updated' ||
+          message.type === 'deleted'
+        ) {
+          refetchStoreProductSelectionBuys().catch((err) => console.error('Error fetching product data:', err));
+          refetchRewardPoints().catch((err) => console.error('Error fetching reward points:', err));
+          refetchStoreProducts?.().catch((err) => console.error('Error fetching store products:', err));
+        }
+      };
+    }
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [userLogged, refetchStoreProductSelectionBuys, refetchRewardPoints, refetchStoreProducts]);
 
   const [values, setValue] = useState({
     quantity: 1,
-    available: folder?.stock_on_hand || 0,
+    available: currentProduct?.stock_on_hand || 0,
   });
 
   const totalReviews = useMemo(
-    () => folder?.reviews?.length || 0,
-    [folder]
+    () => currentProduct?.reviews?.length || 0,
+    [currentProduct]
   );
 
 
   const totalRatings = useMemo(
-    () => (folder?.reviews?.reduce((total, review) => total + review.rating, 0) || 0) / (folder?.reviews?.length || 1),
-    [folder]
+    () => (currentProduct?.reviews?.reduce((total, review) => total + review.rating, 0) || 0) / (currentProduct?.reviews?.length || 1),
+    [currentProduct]
   );
 
   useEffect(() => {
-    if (folder) {
+    if (currentProduct) {
       const isSelected = storeProductSelectionCarts?.some(
-        (cart) => cart.storeProductSelection?.storeProduct?.id === folder.id &&
-          cart.storeProductSelection?.user?.username === userLogged?.data?.username
+        (cart) => cart.storeProductSelection?.storeProduct?.id === currentProduct.id &&
+          cart.storeProductSelection?.user?.username === userLogged?.data?.username &&
+          !cart.isBought
       );
       setFavorite(isSelected || false);
+      const isPurchased = storeProductSelectionBuys?.some(
+        (buy) => buy.storeProductSelection?.storeProduct?.id === currentProduct.id &&
+          buy.storeProductSelection?.user?.username === userLogged?.data?.username
+      );
+      setPurchased(isPurchased || false);
     }
-  }, [folder, storeProductSelectionCarts, userLogged?.data?.username]);
+  }, [currentProduct, storeProductSelectionCarts, userLogged?.data?.username, storeProductSelectionBuys]);
 
 
   const handleAddCart = useCallback(async () => {
     const quantity = 1;
-    if (folder) {
+    if (currentProduct) {
       try {
         const payload = {
           quantity,
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart/${folder?.id}/`;
+        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart/${currentProduct?.id}/`;
 
         const promise = axios.post(url, payload, {
           headers: {
@@ -131,13 +236,13 @@ export function StoreProductFolderItem({
         console.error('Error adding product to cart:', err);
       }
     }
-  }, [folder, userLogged]);
+  }, [currentProduct, userLogged]);
 
 
   const handleDeleteCart = useCallback(async () => {
-    if (folder) {
+    if (currentProduct) {
       const cart = storeProductSelectionCarts?.find(
-        (c) => c.storeProductSelection?.storeProduct?.id === folder.id &&
+        (c) => c.storeProductSelection?.storeProduct?.id === currentProduct.id &&
           c.storeProductSelection?.user?.username === userLogged?.data?.username
       );
       if (cart) {
@@ -170,7 +275,53 @@ export function StoreProductFolderItem({
         }
       }
     }
-  }, [userLogged, folder, storeProductSelectionCarts]);
+  }, [userLogged, currentProduct, storeProductSelectionCarts]);
+
+  const onAddBuy = useCallback(async () => {
+    if (currentProduct) {
+      try {
+        const payload = {
+          quantity: 1,
+          userReporter: JSON.stringify(userLogged?.data),
+        };
+
+        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-buy/${currentProduct?.id}/`;
+
+        const promise = axios.post(url, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        toast.promise(promise, {
+          loading: 'Loading...',
+          success: `Store product purchased successfully!`,
+          error: `Store product purchase error!`,
+        });
+
+        refetchProductDetails?.().catch((err) => console.error('Error fetching product data:', err));
+
+        refetchStoreProductSelectionBuys?.().catch((err) => console.error('Error fetching store product selection buys:', err));
+
+        refetchRewardPoints?.().catch((err) => console.error('Error fetching reward points:', err));
+
+        refetchStoreProducts?.().catch((err) => console.error('Error fetching store products:', err));
+
+        await promise;
+
+
+      } catch (err) {
+        console.error('Error purchasing product:', err);
+      }
+    }
+  }, [
+    currentProduct, 
+    userLogged, 
+    refetchProductDetails, 
+    refetchStoreProductSelectionBuys, 
+    refetchRewardPoints, 
+    refetchStoreProducts
+  ]);
 
   const renderQuantity = (
     <Stack direction="row">
@@ -200,50 +351,79 @@ export function StoreProductFolderItem({
 
   const renderAction = (
     <Stack direction="row" alignItems="center" sx={{ top: 8, right: 8, position: 'absolute' }}>
-      <Tooltip
-        title={favorite ?
-          `Remove ${folder?.name} from cart` :
-          `Add ${folder?.name} to cart with quantity 1`
-        }
-        arrow
-        placement="top"
-      >
-        <Checkbox
-          color="secondary"
-          icon={<Iconify icon="solar:cart-check-bold-duotone" color="default" width={30} height={30} />}
-          checkedIcon={<Iconify icon="solar:cart-check-bold-duotone" color="info" width={35} height={35} />}
-          checked={favorite}
-          onChange={() => {
-            if (!favorite) {
-              handleAddCart();
-            } else {
-              handleDeleteCart();
+      {roleName === 'client' && (
+        <React.Fragment key='client'>
+          <Tooltip
+            title={favorite ?
+              `Remove ${currentProduct?.name} from cart` :
+              `Add ${currentProduct?.name} to cart with quantity 1`
             }
-          }}
-          inputProps={{
-            name: 'checkbox-favorite',
-            'aria-label': 'Checkbox favorite',
-          }}
-        />
-      </Tooltip>
+            arrow
+            placement="top"
+          >
+            <Checkbox
+              color="secondary"
+              icon={<Iconify icon="solar:cart-check-bold-duotone" color="default" width={30} height={30} />}
+              checkedIcon={<Iconify icon="solar:cart-check-bold-duotone" color="info" width={35} height={35} />}
+              checked={favorite}
+              onChange={() => {
+                if (!favorite) {
+                  handleAddCart();
+                } else {
+                  handleDeleteCart();
+                }
+              }}
+              inputProps={{
+                name: 'checkbox-favorite',
+                'aria-label': 'Checkbox favorite',
+              }}
+            />
+          </Tooltip>
 
-      <Tooltip
-        title={purchased ?
-          `${folder?.name} already purchased` :
-          `Make new purchase of ${folder?.name} with quantity 1`
-        }
-        arrow
-        placement="top"
-      >
-        <IconButton color={!purchased ? 'default' : 'success'}>
-          <Iconify
-            icon="bxs:purchase-tag"
-            color={!purchased ? "default" : "success"}
-            width={!purchased ? 25 : 30}
-            height={!purchased ? 25 : 30}
-          />
-        </IconButton>
-      </Tooltip>
+          <Tooltip
+            title={purchased ?
+              (totalGainedPoints < folderPoints ?
+                `You need ${folderPoints - totalGainedPoints} more points to purchase ${currentProduct?.name}` :
+                `${currentProduct?.name} already purchased`
+              ) :
+              (totalGainedPoints < folderPoints ?
+                `You need ${folderPoints - totalGainedPoints} more points to purchase ${currentProduct?.name}` :
+                `Make new purchase of ${currentProduct?.name} with quantity 1`
+              )
+            }
+            arrow
+            placement="top"
+          >
+            <span>
+              <IconButton
+                color={!purchased ? 'default' : 'success'}
+                disabled={totalGainedPoints < folderPoints}
+                sx={{
+                  cursor: totalGainedPoints < folderPoints ? 'not-allowed' : 'pointer',
+                  '&.Mui-disabled': {
+                    cursor: 'not-allowed !important',
+                    pointerEvents: 'auto',
+                  }
+                }}
+                onClick={() => {
+                  if (!purchased) {
+                    confirmBuy.onTrue();
+                  } else {
+                    toast.info(`${currentProduct?.name} already purchased`);
+                  }
+                }}
+              >
+                <Iconify
+                  icon="bxs:purchase-tag"
+                  color={!purchased ? "default" : "success"}
+                  width={!purchased ? 25 : 30}
+                  height={!purchased ? 25 : 30}
+                />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </React.Fragment>
+      )}
 
       <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
         <Iconify icon="eva:more-vertical-fill" />
@@ -281,13 +461,18 @@ export function StoreProductFolderItem({
         //   }
         // /> */}
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 2 }}>
-        <StoreProductFolderItemCarousel images={folder?.attachments ?? []} />
+        <StoreProductFolderItemCarousel images={currentProduct?.attachments ?? []} />
         <Tooltip title={`Rating ${totalRatings.toFixed(2)}`} arrow placement="top">
           <Box sx={{ display: 'flex', flexDirection: 'column' }} onClick={onViewRow}>
             <Rating readOnly value={totalRatings} precision={0.1} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               ({fShortenNumber(totalReviews)} reviews)
             </Typography>
+            {totalGainedPoints < folderPoints && (
+              <Typography variant="caption" sx={{ color: 'error.main' }}>
+                You need <b>{folderPoints - totalGainedPoints}</b> more points to purchase
+              </Typography>
+            )}
           </Box>
         </Tooltip>
       </Box>
@@ -303,7 +488,7 @@ export function StoreProductFolderItem({
         localStorage.removeItem('storeProductReminderTab');
         onViewRow();
       }}
-      primary={folder?.name}
+      primary={currentProduct?.name}
       secondary={
         <>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -320,7 +505,7 @@ export function StoreProductFolderItem({
                 bgcolor: 'currentColor',
               }}
             />
-            <b>{folder.assignedPoints}</b>{'  '}point(s)
+            <b>{currentProduct?.assignedPoints}</b>{'  '}point(s)
           </Box>
         </>
       }
@@ -366,7 +551,7 @@ export function StoreProductFolderItem({
 
         {renderText}
 
-        {/* {(!!folder?.usersAssignees?.length && !isInstaller(userLogged?.data?.user_role?.name)) && renderAvatar} */}
+        {/* {(!!currentProduct?.usersAssignees?.length && !isInstaller(userLogged?.data?.user_role?.name)) && renderAvatar} */}
 
       </Paper>
 
@@ -414,6 +599,55 @@ export function StoreProductFolderItem({
         action={
           <Button variant="contained" color="error" onClick={onDelete}>
             Delete
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmBuy.value}
+        onClose={confirmBuy.onFalse}
+        title={`Buying Cart: ${folderName}`}
+        content={
+          <>
+            Are you sure want to buy <strong> {folderName} </strong>,
+            with quantity <strong> 1 </strong>
+            spending <strong>{fNumber(folderPoints)}</strong> point(s)?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              confirmBuy.onFalse();
+              confirmCheckout.onTrue();
+            }}
+          >
+            Buy
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmCheckout.value}
+        onClose={confirmCheckout.onFalse}
+        title={`Checking out: ${product?.name}`}
+        content={
+          <>
+            You are going to checkout a product <strong> {folderName} </strong>,
+            spending <strong>{fNumber(folderPoints)}</strong> point(s) ... Are you sure?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              confirmCheckout.onFalse();
+              onAddBuy();
+            }}
+          >
+            Confirm Checkout
           </Button>
         }
       />

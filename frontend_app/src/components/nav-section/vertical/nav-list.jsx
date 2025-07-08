@@ -102,7 +102,7 @@ function NavSubList({ data, render, depth, slotProps, enabledRootRedirect }) {
     <NavUl sx={{ gap: 'var(--nav-item-gap)' }}>
       {data.map((list) => (
         <NavList
-          key={list.title}
+          key={list.key || list.path}
           data={list}
           render={render}
           depth={depth + 1}

@@ -15,12 +15,14 @@ import { NavLi, NavUl } from '../../nav-section';
 export function NavSubList({ data, slotProps, ...other }) {
   const pathname = usePathname();
 
+  console.log('NavSubList data:', data);
+
   return (
     <>
-      {data.map((list) => (
+      {data.map((list, index) => (
         <Stack
           component={NavLi}
-          key={list?.subheader ?? list.items[0].title}
+          key={`${list?.subheader ?? list.items[0].title}-${index}`}
           spacing={1}
           {...other}
         >
@@ -30,10 +32,10 @@ export function NavSubList({ data, slotProps, ...other }) {
             </Typography>
           )}
 
-          <NavUl sx={{ gap: 1 }}>
-            {list.items.map((item) => (
+          <NavUl sx={{ gap: 1 }} key={`${list?.subheader ?? list.items[0].title}-${index}-navUl`}>
+            {list.items.map((item, index2) => (
               <NavSubItem
-                key={item.title}
+                key={`${item.title}-${index2}-${index}`}
                 title={item.title}
                 path={item.path}
                 active={item.path === removeLastSlash(pathname)}
@@ -49,8 +51,8 @@ export function NavSubList({ data, slotProps, ...other }) {
 
 // ----------------------------------------------------------------------
 
-export const NavSubItem = forwardRef(({ title, path, active, slotProps }, ref) => (
-  <NavLi key={title}>
+export const NavSubItem = forwardRef(({ key, title, path, active, slotProps }, ref) => (
+  <NavLi key={key}>
     <Link
       ref={ref}
       component={RouterLink}
