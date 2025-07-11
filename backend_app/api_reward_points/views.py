@@ -7,6 +7,7 @@ from .repository import (
     repository_store_product_reviews,
     repository_store_product_review_reactions,
     repository_store_product_selections,
+    repository_points,
 )
 
 
@@ -76,6 +77,16 @@ def delete_store_product(request, id):
 @permission_classes([AllowAny])
 def delete_list_store_products(request):
     return repository_store_products.delete_list_store_products(request)
+
+
+###############################################
+# MANAGE ACTIVE STORE PRODUCT
+###############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def manage_active_store_product(request, id):
+    return repository_store_products.manage_active_store_product(request, id)
 
 
 #############################################
@@ -202,13 +213,18 @@ def delete_all_store_product_selection_carts(request):
 
 
 #############################################
-# CREATE STORE PRODUCT SELECTION BUY FROM CARD
+# CREATE STORE PRODUCT SELECTION BUY FROM CART
 #############################################
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_store_product_selection_cart_buy(request, id):
     return repository_store_product_selections.create_store_product_selection_cart_buy(request, id)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_all_store_product_selection_cart_buy(request):
+    return repository_store_product_selections.create_all_store_product_selection_cart_buy(request)
 
 
 #############################################
@@ -239,3 +255,40 @@ def delete_store_product_selection_buy(request, id):
 @permission_classes([AllowAny])
 def delete_list_store_product_selection_buys(request):
     return repository_store_product_selections.delete_list_store_product_selection_buys(request)
+
+
+#############################################
+# MANAGE STORE PRODUCT SELECTION BUY REFUND
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def manage_refund_store_product_selection_buy(request, id):
+    return repository_store_product_selections.manage_refund_store_product_selection_buy(request, id)
+
+
+#############################################
+# MANAGE STORE PRODUCT SELECTION BUY USE
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def manage_use_store_product_selection_buy(request, id):
+    return repository_store_product_selections.manage_use_store_product_selection_buy(request, id)
+
+
+#*******************************************#   
+#*******************************************#   
+# REWARD POINTS API
+#*******************************************#
+#*******************************************#
+
+
+#############################################
+# MANAGE REWARD POINTS
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def manage_points(request, user_id):
+    return repository_points.manage_points(request, user_id)

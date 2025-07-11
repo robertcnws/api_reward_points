@@ -398,6 +398,7 @@ def edit_user(request, id):
         role = data.get('role')
         password = data.get('password')
         user_reporter = data.get('userReporter')
+        status = data.get('status', 'active')
     
     
         check_user = LoginUser.objects.filter(username=username).first()
@@ -415,6 +416,7 @@ def edit_user(request, id):
         user.last_name = last_name if last_name else user.last_name
         user.phone_number = phone_number if phone_number else user.phone_number
         user.user_role = role if role else user.user_role
+        user.is_active = True if status == 'active' else False
         user.last_modified_time = timezone.now()
         if password:
             user.set_password(password)
@@ -424,8 +426,7 @@ def edit_user(request, id):
             user, 
             exclude_fields=[
                 'password', 
-                'is_staff', 
-                'is_active', 
+                'is_staff',
                 'is_verified', 
                 'last_login', 
                 'date_joined',

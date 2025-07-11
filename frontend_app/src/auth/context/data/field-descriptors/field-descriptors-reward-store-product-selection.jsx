@@ -35,6 +35,11 @@ export const fieldsRewardStoreProductSelectionBuys = [
     'createdTime',
     'id',
     'hasBeenUsed',
+    'hasRequestedRefund',
+    'quantityUsed',
+    'orderNumber',
+    'confirmationNumber',
+    'notes',
     'lastModifiedTime',
     {
         name: 'storeProductSelection',

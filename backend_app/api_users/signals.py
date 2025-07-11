@@ -1,5 +1,9 @@
 from mongoengine import signals
-from utils.data_util import serialize_datetime
+from utils.data_util import (
+    serialize_datetime,
+    transform_data_to_mongo,
+    camelize,
+)
 from api_authorization.models import (
     UserRole, 
     LoginUser,
@@ -63,6 +67,11 @@ def user_role_deleted(sender, document, **kwargs):
 def user_saved(sender, document, **kwargs):
     created = kwargs.get('created', False)
     channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.user_role,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
     event = {
         'type': 'user_update',
         'message': {
@@ -83,7 +92,7 @@ def user_saved(sender, document, **kwargs):
                 "lastLogin": document.last_login,
                 "dateJoined": document.date_joined,
                 "token": document.token,
-                "userRole": str(document.user_role.id) if document.user_role else None,
+                "userRole": full_selection if document.user_role else None,
                 "avatarUrl": document.avatar_url,
                 "isVerified": document.is_verified,
                 "isApproved": document.is_approved,
@@ -95,6 +104,11 @@ def user_saved(sender, document, **kwargs):
     
 def user_deleted(sender, document, **kwargs):
     channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.user_role,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
     event = {
         'type': 'user_update',
         'message': {
@@ -115,7 +129,7 @@ def user_deleted(sender, document, **kwargs):
                 "lastLogin": document.last_login,
                 "dateJoined": document.date_joined,
                 "token": document.token,
-                "userRole": str(document.user_role.id) if document.user_role else None,
+                "userRole": full_selection if document.user_role else None,
                 "avatarUrl": document.avatar_url,
                 "isVerified": document.is_verified,
                 "isApproved": document.is_approved,
@@ -132,15 +146,27 @@ def user_deleted(sender, document, **kwargs):
 def notification_user_saved(sender, document, **kwargs):
     created = kwargs.get('created', False)
     channel_layer = get_channel_layer()
+    full_selection_notification = transform_data_to_mongo(
+        document.notification,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_notification = camelize(full_selection_notification)
+    
+    full_selection_user = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_user = camelize(full_selection_user)
+    
     event = {
         'type': 'notification_user_update',
         'message': {
             'type': 'created' if created else 'updated',
             "item": {
                 "id": str(document.id),
-                "notification": str(document.notification.id) if document.notification else None,
+                "notification": full_selection_notification if document.notification else None,
                 "username": document.username,
-                "user": str(document.user.id) if document.user else None,
+                "user": full_selection_user if document.user else None,
                 "read": document.read,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
@@ -153,15 +179,26 @@ def notification_user_saved(sender, document, **kwargs):
 
 def notification_user_deleted(sender, document, **kwargs):
     channel_layer = get_channel_layer()
+    full_selection_notification = transform_data_to_mongo(
+        document.notification,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_notification = camelize(full_selection_notification)
+    
+    full_selection_user = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_user = camelize(full_selection_user)
     event = {
         'type': 'notification_user_update',
         'message': {
             'type': 'deleted',
             "item": {
                 "id": str(document.id),
-                "notification": str(document.notification.id) if document.notification else None,
+                "notification": full_selection_notification if document.notification else None,
                 "username": document.username,
-                "user": str(document.user.id) if document.user else None,
+                "user": full_selection_user if document.user else None,
                 "read": document.read,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,

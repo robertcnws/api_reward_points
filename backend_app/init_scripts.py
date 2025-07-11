@@ -4,7 +4,7 @@ import django
 from mongoengine import connection as mongo_connection
 from datetime import datetime
 from api_authorization.models import LoginUser, UserRole
-from api_reward_points.models import RewardPointsSettings
+from api_reward_points.models import RewardPointsSettings, RewardStoreProduct
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'system_reward_points.settings')
 django.setup()
@@ -80,6 +80,18 @@ def create_reward_points_settings():
         print("Default reward points settings created.")
     else:
         print("Reward points settings already exist.")
+        
+        
+def set_active_products():
+    products = RewardStoreProduct.objects.all()
+    if products:
+        print(f"Setting {len(products)} inactive products to active...")
+        for product in products:
+            product.is_active = True
+            product.save()
+        print("Inactive products set to active.")
+    else:
+        print("No inactive products found.")
 
 
 if __name__ == "__main__":
@@ -87,4 +99,5 @@ if __name__ == "__main__":
     create_initials_user_role()
     create_superuser()
     create_reward_points_settings()
+    # set_active_products()
     print("Initialization script executed successfully.")

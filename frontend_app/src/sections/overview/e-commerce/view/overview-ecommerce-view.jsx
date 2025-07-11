@@ -50,10 +50,14 @@ export function OverviewEcommerceView({
   const displayLastName = useMemo(() => userLogged?.data?.last_name, [userLogged]);
 
   const theme = useTheme();
-  
+
   const totalAmountInvoices = useMemo(() => loadedRewardPoints?.totalAmountInvoices || 0, [loadedRewardPoints]);
   const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
+  const totalAssignedPoints = useMemo(() => loadedRewardPoints?.totalAssignedPoints || 0, [loadedRewardPoints]);
   const totalSpentPoints = useMemo(() => loadedRewardPoints?.totalSpentPoints || 0, [loadedRewardPoints]);
+  const totalSubstractedPoints = useMemo(() => loadedRewardPoints?.totalSubstractedPoints || 0, [loadedRewardPoints]);
+  const totalAvailablePoints = useMemo(() => loadedRewardPoints?.totalAvailablePoints || 0, [loadedRewardPoints]);
+
   const sortedInvoices = useMemo(() => {
     const invoices = loadedRewardPoints?.invoices ?? [];
     return [...invoices].sort((a, b) => {
@@ -80,7 +84,7 @@ export function OverviewEcommerceView({
 
   return (
     <DashboardContent maxWidth="xl">
-      {!loadedRewardPoints?.totalGainedPoints ? (
+      {!loadedRewardPoints ? (
         <Box
           sx={{
             width: 350,
@@ -120,10 +124,12 @@ export function OverviewEcommerceView({
                     gap: -1,
                   }}>
                     <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
-                      You have earned a TOTAL of {' '}
+                      You currently have a TOTAL of {' '}
                     </Typography>
                     <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
-                      <strong>{loadedRewardPoints?.totalGainedPoints}</strong>{' '}reward points
+                      <strong>
+                        {totalAvailablePoints || 0}
+                      </strong>{' '}reward points
                     </Alert>
                     <Typography variant="body2" sx={{ opacity: 0.64 }}>
                       You can use them to get discounts on your next purchases.
@@ -150,9 +156,10 @@ export function OverviewEcommerceView({
             <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
           </Grid>
 
-          <Grid xs={12} md={4}>
+          <Grid xs={12} md={2.4}>
             <EcommerceRewardPointsAttribute
-              title="Total amount spent (USD)"
+              title="Spent Amount (USD)"
+              icon='noto:money-with-wings'
               percent={2.6}
               total={totalAmountInvoices}
               bgcolor='info.lighter'
@@ -164,12 +171,12 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={4}>
+          <Grid xs={12} md={2.4}>
             <EcommerceRewardPointsAttribute
-              title="Total gained points"
-              icon='fluent-color:reward-24'
+              title="Current Points"
+              icon='streamline-stickies-color:star'
               percent={-0.1}
-              total={totalGainedPoints}
+              total={totalAvailablePoints}
               bgcolor='success.lighter'
               chart={{
                 colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
@@ -179,11 +186,42 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={4}>
+          <Grid xs={12} md={2.4}>
             <EcommerceRewardPointsAttribute
-              title="Total spent points"
+              title="Assigned Points"
+              icon='fluent-color:reward-24'
+              percent={-0.1}
+              total={totalAssignedPoints}
+              bgcolor='secondary.lighter'
+              chart={{
+                colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                series: [56, 47, 40, 62, 73, 30, 23, 54],
+              }}
+            />
+          </Grid>
+
+          <Grid xs={12} md={2.4}>
+            <EcommerceRewardPointsAttribute
+              title="Spent Points"
+              icon='streamline-ultimate-color:warehouse-cart-package-ribbon'
               percent={0.6}
               total={totalSpentPoints}
+              bgcolor='warning.lighter'
+              chart={{
+                colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                series: [40, 70, 75, 70, 50, 28, 7, 64],
+              }}
+            />
+          </Grid>
+
+          <Grid xs={12} md={2.4}>
+            <EcommerceRewardPointsAttribute
+              title="Substracted Points"
+              icon='fluent-color:error-circle-16'
+              percent={0.6}
+              total={totalSubstractedPoints}
               bgcolor='error.lighter'
               chart={{
                 colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
@@ -274,7 +312,7 @@ export function OverviewEcommerceView({
 
           <Grid xs={12} md={6} lg={8}>
             <EcommerceInvoicesListItems
-              title="Purchases History"
+              title="Invoices History"
               tableData={sortedInvoices}
               headLabel={[
                 { id: 'date', label: 'Date', align: 'left' },

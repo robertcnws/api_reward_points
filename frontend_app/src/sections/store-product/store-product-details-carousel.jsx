@@ -16,7 +16,7 @@ import { FormatAlignJustify } from '@mui/icons-material';
 
 // ----------------------------------------------------------------------
 
-export function StoreProductDetailsCarousel({ images }) {
+export function StoreProductDetailsCarousel({ images, predefinedSize = null }) {
   const carousel = useCarousel({
     thumbs: {
       slidesToShow: 'auto',
@@ -98,7 +98,11 @@ export function StoreProductDetailsCarousel({ images }) {
               options={carousel.options}
               totalSlides={carousel.dots.dotCount}
               selectedIndex={carousel.dots.selectedIndex + 1}
-              sx={{ right: 16, bottom: 16, position: 'absolute' }}
+              sx={{ 
+                right: predefinedSize ? 100 : 16, 
+                bottom: 16, 
+                position: 'absolute' 
+              }}
             />
           )}
 
@@ -122,9 +126,9 @@ export function StoreProductDetailsCarousel({ images }) {
                   onClick={() => lightbox.onOpen(slide.src)}
                   sx={{
                     cursor: 'zoom-in',
-                    minWidth: 420,
-                    maxWidth: 420,
-                    maxHeight: 420,
+                    minWidth: predefinedSize || 420,
+                    maxWidth: predefinedSize || 420,
+                    maxHeight: predefinedSize || 420,
                     justifyContent: 'flex-end',
                     display: 'flex',
                     alignItems: 'center',
@@ -142,7 +146,7 @@ export function StoreProductDetailsCarousel({ images }) {
             ref={carousel.thumbs.thumbsRef}
             options={carousel.options?.thumbs}
             slotProps={{ disableMask: true }}
-            sx={{ width: 420 }}
+            sx={{ width: predefinedSize || 420, }}
           >
             {slides.map((item, index) => (
               <Box sx={{

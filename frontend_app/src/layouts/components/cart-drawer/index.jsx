@@ -81,6 +81,10 @@ export function CartsDrawer({ sx, ...other }) {
 
   const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
 
+  const totalAssignedPoints = useMemo(() => loadedRewardPoints?.totalAssignedPoints || 0, [loadedRewardPoints]);
+
+  const totalAvailablePoints = useMemo(() => loadedRewardPoints?.totalAvailablePoints || 0, [loadedRewardPoints]);
+
   useEffect(() => {
     if (!loadingStoreProductSelectionCarts && !errorStoreProductSelectionCarts) {
       setCurrentStoreProductSelectionCart(
@@ -116,6 +120,10 @@ export function CartsDrawer({ sx, ...other }) {
   const confirmBuy = useBoolean(false);
 
   const confirmCheckout = useBoolean(false);
+
+  const confirmBuyAll = useBoolean(false);
+
+  const confirmCheckoutAll = useBoolean(false);
 
   const totalCartPoints = useMemo(() =>
     currentStoreProductSelectionCart?.reduce((total, cart) => {
@@ -203,6 +211,44 @@ export function CartsDrawer({ sx, ...other }) {
     refetchRewardPoints,
   ]);
 
+  const onBuyAll = useCallback(async () => {
+    if (currentStoreProductSelectionCart && currentStoreProductSelectionCart.length > 0) {
+      try {
+        const payload = {
+          userReporter: JSON.stringify(userLogged?.data),
+        };
+
+        const url = `${CONFIG.apiUrl}/reward-points/create-all/store-product-selection-cart-buy/`;
+
+        const promise = axios.post(url, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        toast.promise(promise, {
+          loading: 'Loading...',
+          success: `All store products purchased successfully!`,
+          error: `All store products purchase error!`,
+        });
+
+        refetchStoreProductSelectionCarts?.().catch((err) => console.error('Error fetching product data:', err));
+
+        refetchRewardPoints?.().catch((err) => console.error('Error fetching reward points:', err));
+
+        await promise;
+
+      } catch (err) {
+        console.error('Error purchasing all products:', err);
+      }
+    }
+  }, [
+    userLogged,
+    refetchStoreProductSelectionCarts,
+    refetchRewardPoints,
+    currentStoreProductSelectionCart
+  ]);
+
   const renderHead = (
     <Stack
       direction="row"
@@ -227,10 +273,10 @@ export function CartsDrawer({ sx, ...other }) {
           <Typography variant="subtitle2" sx={{ color: 'text.secondary', mr: 1 }}>
             Available Points:
           </Typography>
-          {totalGainedPoints > 0 ? (
+          {totalAvailablePoints > 0 ? (
             <Label color="success" sx={{ alignItems: 'center' }}>
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
-              {totalGainedPoints}
+              {totalAvailablePoints}
             </Label>
           ) : (
             <Label color="error">
@@ -242,14 +288,14 @@ export function CartsDrawer({ sx, ...other }) {
           <Typography
             variant="subtitle2"
             sx={{
-              color: totalCartPoints <= totalGainedPoints ? 'text.secondary' : 'error.main',
+              color: totalCartPoints <= totalAvailablePoints ? 'text.secondary' : 'error.main',
               mr: 1
             }}>
             Total Cart Points:
           </Typography>
           {totalCartPoints > 0 ? (
             <Label
-              color={totalCartPoints <= totalGainedPoints ? "success" : "error"}
+              color={totalCartPoints <= totalAvailablePoints ? "success" : "error"}
               sx={{ alignItems: 'center' }}
             >
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
@@ -270,7 +316,14 @@ export function CartsDrawer({ sx, ...other }) {
       <Box component="ul">
         {currentStoreProductSelectionCart?.map((cart) => (
           <Box component="li" key={cart.id} sx={{ display: 'flex' }}>
-            <CartItem cart={cart} drawer={drawer} onClickBuy={onClickBuy} totalGainedPoints={totalGainedPoints} />
+            <CartItem
+              cart={cart}
+              drawer={drawer}
+              onClickBuy={onClickBuy}
+              totalAvailablePoints={totalAvailablePoints}
+              storeProductSelectionCarts={currentStoreProductSelectionCart}
+              refetchStoreProductSelectionCarts={refetchStoreProductSelectionCarts}
+            />
             {/* {cart?.storeProductSelection?.storeProduct?.name} */}
           </Box>
         ))}
@@ -307,7 +360,17 @@ export function CartsDrawer({ sx, ...other }) {
 
         {currentStoreProductSelectionCart?.length > 0 && renderList}
 
-        <Box sx={{ p: 1 }}>
+        <Box sx={{ p: 1, display: 'flex', flexDirection: 'row', gap: 1 }}>
+          <Button
+            fullWidth
+            size="large"
+            color='primary'
+            variant="outlined"
+            onClick={confirmBuyAll.onTrue}
+            disabled={currentStoreProductSelectionCart?.length === 0}
+          >
+            Buy all Carts
+          </Button>
           <Button
             fullWidth
             size="large"
@@ -371,6 +434,38 @@ export function CartsDrawer({ sx, ...other }) {
       />
 
       <ConfirmDialog
+        open={confirmBuyAll.value}
+        onClose={confirmBuyAll.onFalse}
+        title='Buying All Carts'
+        content={
+          <>
+            Are you sure want to buy all products in the cart: <br /><br />
+            <ul>
+              {currentStoreProductSelectionCart.map((item, index) => (
+                <li key={item.id}>
+                  # {index + 1} - {item.storeProductSelection.storeProduct.name} (Qty: x<strong>{item.storeProductSelection.quantity}</strong>)
+                </li>
+              ))}
+            </ul>
+            <br />
+            with total points <strong>{fNumber(totalCartPoints)}</strong>?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              confirmBuyAll.onFalse();
+              confirmCheckoutAll.onTrue();
+            }}
+          >
+            Buy All
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
         open={confirmCheckout.value}
         onClose={confirmCheckout.onFalse}
         title={`Checking out: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
@@ -393,6 +488,31 @@ export function CartsDrawer({ sx, ...other }) {
             }}
           >
             Confirm Checkout
+          </Button>
+        }
+      />
+      
+      <ConfirmDialog
+        open={confirmCheckoutAll.value}
+        onClose={confirmCheckoutAll.onFalse}
+        title='Checking out All Carts'
+        content={
+          <>
+            Are you sure want to checkout all products in the cart with total points <strong>
+              {fNumber(totalCartPoints)}
+            </strong>?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={async() => {
+              await onBuyAll();
+              confirmCheckoutAll.onFalse();
+            }}
+          >
+            Confirm Checkout All
           </Button>
         }
       />

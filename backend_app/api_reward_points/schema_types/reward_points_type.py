@@ -13,6 +13,7 @@ class RewardPointsType(MongoengineObjectType):
     invoices = graphene.List(RewardInvoiceType)
     created_time = graphene.String()
     last_modified_time = graphene.String()
+    total_available_points = graphene.Int()
     
     class Meta:
         model = RewardPoints
@@ -28,3 +29,10 @@ class RewardPointsType(MongoengineObjectType):
     
     def resolve_last_modified_time(self, info):
         return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
+    
+    def resolve_total_available_points(self, info):
+        total_assigned_points = self.total_assigned_points or 0.0
+        total_gained_points = self.total_gained_points or 0.0
+        total_substracted_points = self.total_substracted_points or 0.0
+        
+        return int(total_assigned_points + total_gained_points - total_substracted_points)

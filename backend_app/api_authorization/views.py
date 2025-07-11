@@ -157,6 +157,24 @@ def login(request):
                     'error_email': login_user.email,
                     'error_phone_number': login_user.phone_number
                 }, status=403)
+            elif login_user and not login_user.is_active:
+                return JsonResponse({
+                    'error': 'User not active',
+                    'description': 'User is not active',
+                    'error_name': 'user_not_active',
+                    'error_username': login_user.username,
+                    'error_email': login_user.email,
+                    'error_phone_number': login_user.phone_number
+                }, status=403)
+            elif login_user and not login_user.is_verified:
+                return JsonResponse({
+                    'error': 'User not verified', 
+                    'description': 'User is not verified',
+                    'error_name': 'user_not_verified',
+                    'error_username': login_user.username,
+                    'error_email': login_user.email,
+                    'error_phone_number': login_user.phone_number
+                }, status=403)
             elif login_user:
                 return JsonResponse({
                     'error': 'Invalid credentials', 
@@ -261,6 +279,20 @@ def register(request):
             user.set_password(password)
             user.save()
             
+            reward_points = RewardPoints(
+                user=user,
+                total_gained_points=0,
+                total_spent_points=0,
+                total_assigned_points=0,
+                total_substracted_points=0,
+                total_amount_invoices=0,
+                invoices=[],
+                created_time=timezone.now(),
+                last_modified_time=timezone.now()
+            )
+
+            reward_points.save()
+
             get_rewards_points(user)
             
             logger.info(f'User {username} registered successfully')
@@ -489,9 +521,12 @@ def get_rewards_points(user, description=None):
     if not response or 'count' not in response or 'results' not in response:
         return None
     
+    reward_points = RewardPoints.objects(user=user).first()
+    
     if response.get('count', 0) > 0:
         final_invoices = []
         invoices = response.get('results', [])
+        new_points = 0
         for invoice in invoices:
             inv = create_reward_invoice_instance(invoice)
             if inv and inv.payment_made > 0:
@@ -499,8 +534,9 @@ def get_rewards_points(user, description=None):
         if final_invoices:
             total_amount_invoices = sum(inv.payment_made for inv in final_invoices)
             total_gained_points = calculate_reward_points(total_amount_invoices)
-            reward_points = RewardPoints.objects(user=user).first()
+            
             if not reward_points:
+                new_points = total_gained_points
                 reward_points = RewardPoints(
                     user=user,
                     total_gained_points=total_gained_points,
@@ -511,43 +547,56 @@ def get_rewards_points(user, description=None):
                     last_modified_time=timezone.now()
                 )
             else:
-                spent_points = reward_points.total_spent_points
-                reward_points.total_gained_points = total_gained_points - spent_points
+                current_cumulate_points = reward_points.total_gained_points + reward_points.total_spent_points
+                new_points = total_gained_points - current_cumulate_points
+                reward_points.total_gained_points += new_points
                 reward_points.total_amount_invoices = total_amount_invoices
                 reward_points.invoices = final_invoices
                 reward_points.last_modified = timezone.now()
-                
-            reward_points.save()
             
             all_history = RewardPointsHistory.objects(
                 reward_points=reward_points, 
-                action='gained'
+                # action__in=['gained', 'assigned', 'refunded']
             ).only('gained_points')
             
-            total_history_gained = sum(history.gained_points for history in all_history)
+            history = None
             
-            if total_history_gained == 0:
+            if new_points > 0 and all_history.count() == 0:
                 history = RewardPointsHistory(
                     created_time=timezone.now(),
                     reward_points=reward_points,
                     action='gained',
-                    gained_points=total_gained_points,
+                    gained_points=new_points,
                     spent_points=0,
                     description='Initial reward points created based on invoices' if not description else description,
                     info=[transform_data_to_mongo(inv) for inv in final_invoices]
                 )
-            else:
-                new_points_gained = total_gained_points - total_history_gained
-                if new_points_gained <= 0:
-                    return reward_points
+            elif new_points > 0:
                 history = RewardPointsHistory(
                     created_time=timezone.now(),
                     reward_points=reward_points,
                     action='gained',
-                    gained_points=total_gained_points - total_history_gained,
+                    gained_points=new_points,
                     spent_points=0,
                     description='Additional reward points created based on invoices' if not description else description,
                     info=[transform_data_to_mongo(inv) for inv in final_invoices]
                 )
-            history.save()
+            elif new_points < 0:
+                history = RewardPointsHistory(
+                    created_time=timezone.now(),
+                    reward_points=reward_points,
+                    action='substracted',
+                    gained_points=0,
+                    spent_points=-new_points,
+                    description='Reward points substracted based on new configuration' if not description else description,
+                    info=[transform_data_to_mongo(inv) for inv in final_invoices]
+                )
+                
+                # reward_points.total_substracted_points += -new_points
+                # reward_points.last_modified = timezone.now()
+                
+            reward_points.save()
+            
+            if history:
+                history.save()
             return reward_points

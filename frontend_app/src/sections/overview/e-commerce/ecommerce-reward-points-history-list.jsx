@@ -156,7 +156,11 @@ function Item({ item, sx, ...other }) {
             'streamline-stickies-color:reward' :
             item?.action === 'refunded' ?
               'streamline-stickies-color:money-briefcase' :
-              'streamline-ultimate-color:warehouse-cart-packages-2'
+              item?.action === 'assigned' ?
+                'fluent-color:reward-24' :
+                item?.action === 'substracted' ?
+                  'fluent-color:error-circle-16' :
+                  'streamline-ultimate-color:warehouse-cart-packages-2'
         }
         width={48}
         height={48}

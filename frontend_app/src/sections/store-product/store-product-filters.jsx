@@ -46,7 +46,7 @@ export function StoreProductFilters({
 
 
   const createCustomFilterName = useCallback(() => {
-    const name = filters.state.list === 'in progress' ? 'In progress' : 'Finished';
+    const name = 'Store';
     const active = [];
     // if (custom.hasPermission) active.push('Need permission');
     // if (custom.isPreparation?.value) active.push('In preparation stage');
@@ -58,7 +58,7 @@ export function StoreProductFilters({
     // if (filters.state.startDate && filters.state.endDate) active.push(fDateRangeShortLabel(filters.state.startDate, filters.state.endDate));
     if (filters.state.name) active.push(`Matches: ${filters.state.name}`);
     // if (filters.state.installer.id) active.push(`Installer: ${filters.state.installer.name}`);
-    return active.length > 0 ? `${name} Items (${active.join(', ')})` : `${name} Items`;
+    return active.length > 0 ? `${name} Products (${active.join(', ')})` : `${name} Products`;
   }, [
     filters,
     // custom,
@@ -289,66 +289,34 @@ export function StoreProductFilters({
           p: 0.5,
         }}
       >
-        <Typography variant="h6" sx={{ color: 'text.secondary', fontWeight: 'fontWeightBold' }} onClick={!isClient(userLogged?.data?.user_role?.name) ?
-          (e) => {
-            setCustomMarginTypeList(-5);
-            popoverTypeList.onOpen(e);
-            setIsTypeListOpen((prev) => !prev);
-          } : null
-        }>
+        <Typography
+          variant="h6"
+          sx={{ color: 'text.secondary', fontWeight: 'fontWeightBold' }}
+        >
           {customFilterName}
         </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 2, ml: 1 }}>
+          <IconButton
+            sx={{
+              ml: 1,
+              color: 'default.lighter',
+              '&:hover': {
+                boxShadow: 'none',
+                backgroundColor: 'transparent',
+              },
+            }}
+            variant="text"
+            onClick={
+              (e) => {
+                popoverCustom.onOpen(e);
+                setIsCustomOpen((prev) => !prev);
+              }
+            }
+          >
+            <Iconify icon={isCustomOpen ? 'lsicon:filter-filled' : 'uil:filter'} sx={{ mr: 1 }} />
+          </IconButton>
+        </Box>
       </Box>
-      <CustomPopover
-        open={popoverTypeList.open}
-        anchorEl={popoverTypeList.anchorEl}
-        onClose={(e) => {
-          popoverTypeList.onClose(e);
-          setIsTypeListOpen(false);
-        }}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        slotProps={{ paper: { sx: { p: 0, width: 260, ml: !isMobile ? customMarginTypeList : 0, mt: 2 } } }}
-        sx={{ maxHeight: 800, overflowY: 'auto', overflowX: 'hidden' }}
-      >
-        <Stack spacing={0} sx={{ py: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: 500, p: 1 }}>
-            <MenuList sx={{ p: 1 }}>
-
-              <MenuItem sx={{ py: 1 }} onClick={(e) => {
-                handleFilterTypeList('in progress');
-                popoverTypeList.onClose(e);
-                setIsTypeListOpen(false);
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <ListItemIcon>
-                    <Iconify icon="grommet-icons:in-progress" sx={{ color: 'text.disabled' }} />
-                  </ListItemIcon>
-                  <ListItemText primary="In progress installations" />
-                </Box>
-              </MenuItem>
-              <MenuItem sx={{ py: 1 }} onClick={(e) => {
-                handleFilterTypeList('finished');
-                popoverTypeList.onClose(e);
-                setIsTypeListOpen(false);
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <ListItemIcon>
-                    <Iconify icon="octicon:tracked-by-closed-completed-16" sx={{ color: 'text.disabled' }} />
-                  </ListItemIcon>
-                  <ListItemText primary="Finished installations" />
-                </Box>
-              </MenuItem>
-            </MenuList>
-          </Box>
-        </Stack>
-      </CustomPopover>
       <CustomPopover
         open={popoverCustom.open}
         anchorEl={popoverCustom.anchorEl}
@@ -364,19 +332,53 @@ export function StoreProductFilters({
           vertical: 'top',
           horizontal: 'left',
         }}
-        slotProps={{ paper: { sx: { p: 0, width: 302, ml: !isMobile ? -35 : 0, mt: 2 } } }}
-        sx={{ maxHeight: 800, overflowY: 'auto', overflowX: 'hidden' }}
-      >
-        <Stack spacing={0} sx={{ py: -1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: 500, p: 0 }}>
-            <MenuList sx={{ p: 0 }}>
-              <MenuItem sx={{ p: 0.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 0, mt: 1, ml: 1 }}>
-                  <Tooltip title="Search item(s) by NAME or SKU...">
+        slotProps={{
+          paper: {
+            sx: {
+              p: 0,
+              width: 502,
+              ml: !isMobile ? -20 : 0,
+              mt: 2
+            }
+          }
+        }}
+        sx={{
+          maxHeight: 800,
+          overflowY: 'auto',
+          overflowX: 'hidden'
+        }}>
+        <Stack
+          spacing={0}
+          sx={{
+            width: 500,
+            minWidth: 500
+          }}>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            width: 800,
+            p: 0
+          }}>
+            <MenuList sx={{
+              p: 0,
+              width: 500,
+              minWidth: 500
+            }}>
+              <MenuItem sx={{
+                width: '100%'
+              }}>
+                <Box sx={{
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 0.5,
+                  width: '100%',
+                }}>
+                  <Tooltip title="Search product(s) by NAME or DESCRIPTION...">
                     <TextField
                       value={filters.state.name}
                       onChange={handleFilterName}
-                      placeholder="Search item(s) by NAME or SKU..."
+                      placeholder="Search product(s) by NAME or DESCRIPTION..."
                       onKeyDown={(e) => e.stopPropagation()}
                       InputProps={{
                         startAdornment: (
@@ -399,7 +401,7 @@ export function StoreProductFilters({
                           </InputAdornment>
                         ),
                       }}
-                      sx={{ width: '100%' }}
+                      sx={{ minWidth: '100%' }}
                     />
                   </Tooltip>
                 </Box>

@@ -33,6 +33,7 @@ export function StoreProductTable({
   onDeleteRow,
   onViewRow,
   onEditRow,
+  onManageActiveRow,
   notFound,
   onOpenConfirm,
   setTableData,
@@ -65,6 +66,7 @@ export function StoreProductTable({
     { id: 'assignedPoints', label: 'Value in Points' },
     { id: 'attachments', label: 'Files' },
     { id: 'description', label: 'Description' },
+    { id: 'status', label: 'Status' },
     { id: '', width: 88 },
   ];
 
@@ -73,6 +75,7 @@ export function StoreProductTable({
     { id: 'assignedPoints', label: 'Value in Points' },
     { id: 'attachments', label: 'Files' },
     { id: 'description', label: 'Description' },
+    { id: 'status', label: 'Status' },
     { id: '' },
   ];
 
@@ -168,6 +171,7 @@ export function StoreProductTable({
                     onDeleteRow={() => onDeleteRow(row.id)}
                     onViewRow={() => onViewRow(row.id)}
                     onEditRow={() => onEditRow(row.id)}
+                    onManageActiveRow={() => onManageActiveRow(row.id)}
                     setTableData={setTableData}
                     refetchStoreProducts={refetchStoreProducts}
                     loadedStoreProducts={loadedStoreProducts}

@@ -1,6 +1,8 @@
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
+import { Chip } from '@mui/material';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -25,6 +27,7 @@ import { Form, Field } from 'src/components/hook-form';
 import { ColorPicker } from 'src/components/color-utils';
 
 import { IncrementerButton } from './components/incrementer-button';
+
 
 // ----------------------------------------------------------------------
 
@@ -63,17 +66,17 @@ export function StoreProductDetailsSummary({
 
   const confirmCheckout = useBoolean(false);
 
-  const totalGainedPoints = useMemo(() => {
+  const totalAvailablePoints = useMemo(() => {
     if (userLoggedRewardPointsLoading || userLoggedRewardPointsError) {
       return 0;
     }
-    return userLoggedRewardPoints?.totalGainedPoints || 0;
+    return userLoggedRewardPoints?.totalAvailablePoints || 0;
   }, [userLoggedRewardPoints, userLoggedRewardPointsLoading, userLoggedRewardPointsError]);
 
   const valueInPoints = useMemo(() => product.assignedPoints || 0, [product]);
 
   const available = roleName === 'client'
-    ? Math.floor(totalGainedPoints / valueInPoints)
+    ? Math.floor(totalAvailablePoints / valueInPoints)
     : 100;
 
 
@@ -309,7 +312,25 @@ export function StoreProductDetailsSummary({
 
             {renderInventoryType}
 
-            <Typography variant="h5">{name}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+              <Typography
+                variant="h5"
+                noWrap
+                sx={{
+                  fontWeight: 'fontWeightBold',
+                  color: 'text.primary',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                {product?.name}
+              </Typography>
+              {!product?.isActive && (
+                <Chip label="Inactive" color="error" size="small" />
+              )}
+            </Box>
 
             {renderRating}
 
@@ -326,10 +347,10 @@ export function StoreProductDetailsSummary({
 
               {/* {renderSizeOptions} */}
 
-              {renderQuantity}
+              {product?.isActive && renderQuantity}
             </React.Fragment>
           )}
-          {roleName === 'client' && (
+          {(roleName === 'client' && product?.isActive) && (
             <React.Fragment key="client-actions">
               <Divider sx={{ borderStyle: 'dashed' }} />
               {renderActions}

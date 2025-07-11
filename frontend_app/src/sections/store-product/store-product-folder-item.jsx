@@ -5,7 +5,7 @@ import axios from 'axios';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { Rating, Tooltip, Typography } from '@mui/material';
+import { Chip, Rating, Tooltip, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
@@ -50,6 +50,7 @@ export function StoreProductFolderItem({
   onDelete,
   onViewRow,
   onEditRow,
+  onManageActiveRow,
   setTableData,
   refetchStoreProducts,
   storeProductSelectionCarts,
@@ -75,6 +76,8 @@ export function StoreProductFolderItem({
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
   const totalGainedPoints = useMemo(() => loadedRewardPoints?.totalGainedPoints || 0, [loadedRewardPoints]);
+  const totalAssignedPoints = useMemo(() => loadedRewardPoints?.totalAssignedPoints || 0, [loadedRewardPoints]);
+  const totalAvailablePoints = useMemo(() => loadedRewardPoints?.totalAvailablePoints || 0, [loadedRewardPoints]);
 
   const {
     loading: productLoading,
@@ -86,6 +89,8 @@ export function StoreProductFolderItem({
   const popover = usePopover();
 
   const confirm = useBoolean();
+
+  const confirmActivation = useBoolean();
 
   const checkbox = useBoolean();
 
@@ -315,11 +320,11 @@ export function StoreProductFolderItem({
       }
     }
   }, [
-    currentProduct, 
-    userLogged, 
-    refetchProductDetails, 
-    refetchStoreProductSelectionBuys, 
-    refetchRewardPoints, 
+    currentProduct,
+    userLogged,
+    refetchProductDetails,
+    refetchStoreProductSelectionBuys,
+    refetchRewardPoints,
     refetchStoreProducts
   ]);
 
@@ -382,12 +387,12 @@ export function StoreProductFolderItem({
 
           <Tooltip
             title={purchased ?
-              (totalGainedPoints < folderPoints ?
-                `You need ${folderPoints - totalGainedPoints} more points to purchase ${currentProduct?.name}` :
+              ((totalAvailablePoints < folderPoints && isClient(roleName)) ?
+                `You need ${folderPoints - totalAvailablePoints} more points to purchase ${currentProduct?.name}` :
                 `${currentProduct?.name} already purchased`
               ) :
-              (totalGainedPoints < folderPoints ?
-                `You need ${folderPoints - totalGainedPoints} more points to purchase ${currentProduct?.name}` :
+              ((totalAvailablePoints < folderPoints && isClient(roleName)) ?
+                `You need ${folderPoints - totalAvailablePoints} more points to purchase ${currentProduct?.name}` :
                 `Make new purchase of ${currentProduct?.name} with quantity 1`
               )
             }
@@ -397,9 +402,9 @@ export function StoreProductFolderItem({
             <span>
               <IconButton
                 color={!purchased ? 'default' : 'success'}
-                disabled={totalGainedPoints < folderPoints}
+                disabled={totalAvailablePoints < folderPoints}
                 sx={{
-                  cursor: totalGainedPoints < folderPoints ? 'not-allowed' : 'pointer',
+                  cursor: totalAvailablePoints < folderPoints ? 'not-allowed' : 'pointer',
                   '&.Mui-disabled': {
                     cursor: 'not-allowed !important',
                     pointerEvents: 'auto',
@@ -468,9 +473,9 @@ export function StoreProductFolderItem({
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               ({fShortenNumber(totalReviews)} reviews)
             </Typography>
-            {totalGainedPoints < folderPoints && (
+            {(totalAvailablePoints < folderPoints && isClient(roleName)) && (
               <Typography variant="caption" sx={{ color: 'error.main' }}>
-                You need <b>{folderPoints - totalGainedPoints}</b> more points to purchase
+                You need <b>{folderPoints - totalAvailablePoints}</b> more points to purchase
               </Typography>
             )}
           </Box>
@@ -488,7 +493,27 @@ export function StoreProductFolderItem({
         localStorage.removeItem('storeProductReminderTab');
         onViewRow();
       }}
-      primary={currentProduct?.name}
+      primary={
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+          <Typography
+            variant="subtitle1"
+            noWrap
+            sx={{
+              fontWeight: 'fontWeightBold',
+              color: 'text.primary',
+              cursor: 'pointer',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            {currentProduct?.name}
+          </Typography>
+          {!currentProduct?.isActive && (
+            <Chip label="Inactive" color="error" size="small" />
+          )}
+        </Box>
+      }
       secondary={
         <>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -534,7 +559,9 @@ export function StoreProductFolderItem({
           borderRadius: 2,
           cursor: 'pointer',
           position: 'relative',
-          bgcolor: purchased ? 'success.lighter' : !favorite ? 'transparent' : 'secondary.lighter',
+          bgcolor: !currentProduct?.isActive ? 'error.lighter' :
+            purchased ? 'success.lighter' :
+              !favorite ? 'transparent' : 'secondary.lighter',
           flexDirection: 'column',
           alignItems: 'flex-start',
           ...((checkbox.value || selected) && {
@@ -577,6 +604,19 @@ export function StoreProductFolderItem({
           {listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.superadmin) ? [
             <Divider key="divider" sx={{ borderStyle: 'dashed' }} />,
             <MenuItem
+              key="status"
+              onClick={() => {
+                confirmActivation.onTrue();
+                popover.onClose();
+              }}
+              sx={{ color: folder?.isActive ? 'warning.main' : 'success.main' }}
+            >
+              <Iconify
+                icon={folder?.isActive ? 'material-symbols:tab-close-inactive' : 'nrk:check-active'}
+              />
+              {folder?.isActive ? 'Deactivate' : 'Activate'} Store Product
+            </MenuItem>,
+            <MenuItem
               key="delete"
               onClick={() => {
                 confirm.onTrue();
@@ -597,8 +637,34 @@ export function StoreProductFolderItem({
         title="Delete Store Product"
         content={`Are you sure want to delete store product ${folderName}?`}
         action={
-          <Button variant="contained" color="error" onClick={onDelete}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              await onDelete(folder?.id);
+              confirm.onFalse();
+            }}
+          >
             Delete
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmActivation.value}
+        onClose={confirmActivation.onFalse}
+        title={folder?.isActive ? 'Deactivate Store Product' : 'Activate Store Product'}
+        content={`Are you sure want to ${folder?.isActive ? 'deactivate' : 'activate'} store product ${folder?.name}?`}
+        action={
+          <Button
+            variant="contained"
+            color={folder?.isActive ? 'warning' : 'success'}
+            onClick={async () => {
+              await onManageActiveRow(folder?.id)
+              confirmActivation.onFalse();
+            }}
+          >
+            {folder?.isActive ? 'Deactivate' : 'Activate'}
           </Button>
         }
       />

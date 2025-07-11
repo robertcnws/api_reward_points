@@ -3,6 +3,10 @@ export const fieldsRewardPoints = [
     'createdTime',
     'totalSpentPoints',
     'totalGainedPoints',
+    'totalAssignedPoints',
+    'totalSubstractedPoints',
+    'totalRefundedPoints',
+    'totalAvailablePoints',
     'totalAmountInvoices',
     {
       name: 'invoices',

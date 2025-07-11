@@ -6,7 +6,7 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 
 // ----------------------------------------------------------------------
 
-export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults, hasNotAll=true, sx }) {
+export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults, hasNotAll = true, sx }) {
   const handleRemoveKeyword = useCallback(() => {
     onResetPage();
     filters.setState({ name: '' });
@@ -14,25 +14,37 @@ export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults,
 
   const handleRemoveStatus = useCallback(() => {
     onResetPage();
-    filters.setState({ status: 'all' });
+    filters.setState({ status: 'not_used' });
   }, [filters, onResetPage]);
 
   const handleReset = useCallback(() => {
     onResetPage();
     filters.onResetState();
-    filters.setState({ status: 'all' });
+    filters.setState({ status: 'not_used' });
   }, [filters, onResetPage]);
 
   return (
     <FiltersResult totalResults={totalResults} onReset={handleReset} sx={sx}>
-      <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
-        <Chip
-          {...chipProps}
-          label={filters.state.status === 'used' ? 'Used' : filters.state.status === 'not_used' ? 'Not Used' : filters.state.status}
-          onDelete={handleRemoveStatus}
-          sx={{ textTransform: 'capitalize' }}
-        />
-      </FiltersBlock>
+      {(filters.state.status !== 'all' && filters.state.status !== 'not_used') && (
+        <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
+          <Chip
+            {...chipProps}
+            label={
+              filters.state.status === 'used' ?
+                'Used' :
+                filters.state.status === 'not_used' ?
+                  'Not Used' :
+                  filters.state.status === 'partially_used' ?
+                    'Partially Used' :
+                    filters.state.status === 'hasRequestedRefund' ?
+                      'Refund Requested' :
+                      filters.state.status
+            }
+            onDelete={handleRemoveStatus}
+            sx={{ textTransform: 'capitalize' }}
+          />
+        </FiltersBlock>
+      )}
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />

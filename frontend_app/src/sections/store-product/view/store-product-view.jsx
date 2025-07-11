@@ -44,6 +44,7 @@ export function StoreProductView() {
         loadedStoreProducts,
         refetchStoreProducts,
         loadingStoreProducts,
+        refetchStoreProductSelectionCarts,
     } = useDataContext();
 
     // console.log('loadedFilteredRewardItems', loadedFilteredRewardItems);
@@ -76,9 +77,13 @@ export function StoreProductView() {
 
     useEffect(() => {
         if (loadedStoreProducts && loadedStoreProducts.length > 0) {
-            setTableData(loadedStoreProducts);
+            setTableData(
+                !isClient(userRole) ?
+                    loadedStoreProducts :
+                    loadedStoreProducts.filter((item) => item.isActive)
+            );
         }
-    }, [loadedStoreProducts]);
+    }, [loadedStoreProducts, userRole]);
 
     useEffect(() => {
         const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/`);
@@ -88,19 +93,10 @@ export function StoreProductView() {
         };
         socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.type === 'created' || message.type === 'updated') {
-                setTableData((prevData) => {
-                    const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-                    if (existingItemIndex !== -1) {
-                        const updatedData = [...prevData];
-                        updatedData[existingItemIndex] = message.item;
-                        return updatedData;
-                    }
-                    return [message.item, ...prevData];
+            if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+                refetchStoreProducts?.().catch((error) => {
+                    console.error('Error refetching store products:', error);
                 });
-            }
-            else if (message.type === 'deleted') {
-                setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
             }
         };
         return () => {
@@ -108,7 +104,7 @@ export function StoreProductView() {
                 socket.close();
             }
         };
-    }, [userLogged?.data?.user_role?.name, userLogged?.data?.username]);
+    }, [userLogged?.data?.user_role?.name, userLogged?.data?.username, refetchStoreProducts]);
 
     const filters = useSetState({
         // list: localStorage.getItem('projectFilterList') || 'in progress',
@@ -184,49 +180,53 @@ export function StoreProductView() {
 
     const handleDeleteItem = useCallback(
         async (id) => {
-
-            const promise = axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product/${id}/`, {
-                data: {
-                    userReporter: JSON.stringify(userLogged?.data),
+            try {
+                const promise = await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product/${id}/`, {
+                    data: {
+                        userReporter: JSON.stringify(userLogged?.data),
+                    }
+                });
+                if (promise.status > 204) {
+                    toast.error('Error deleting store product. Please try again.');
                 }
-            });
+                else {
+                    const deleteRow = tableData.filter((row) => row.id !== id);
+                    toast.success('Delete success!');
+                    setTableData(deleteRow);
+                    refetchStoreProducts?.();
+                }
 
-
-            const deleteRow = tableData.filter((row) => row.id !== id);
-
-            toast.success('Delete success!');
-
-            setTableData(deleteRow);
-
-            refetchStoreProducts?.();
-
-            table.onUpdatePageDeleteRow(dataInPage.length);
+            } catch (error) {
+                console.error('Error deleting store product:', error);
+                toast.error(error?.response?.data?.error || 'Error deleting store product');
+            } finally {
+                table.onUpdatePageDeleteRow(dataInPage.length);
+            }
         },
         [dataInPage.length, table, tableData, refetchStoreProducts, userLogged]
     );
 
     const handleDeleteItems = useCallback(
         async () => {
-            const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-
-            const promise = axios.delete(`${CONFIG.apiUrl}/reward-points/delete/list/store-product/`, {
-                data: {
-                    ids: table.selected,
-                    userReporter: JSON.stringify(userLogged?.data),
-                },
-            });
-
-
-            toast.success('Delete success!');
-
-            setTableData(deleteRows);
-
-            refetchStoreProducts?.();
-
-            table.onUpdatePageDeleteRows({
-                totalRowsInPage: dataInPage.length,
-                totalRowsFiltered: dataFiltered.length,
-            });
+            try {
+                const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+                const promise = await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/list/store-product/`, {
+                    data: {
+                        ids: table.selected,
+                        userReporter: JSON.stringify(userLogged?.data),
+                    },
+                });
+                toast.success('Delete success!');
+                setTableData(deleteRows);
+                refetchStoreProducts?.();
+                table.onUpdatePageDeleteRows({
+                    totalRowsInPage: dataInPage.length,
+                    totalRowsFiltered: dataFiltered.length,
+                });
+            } catch (error) {
+                console.error('Error deleting store products:', error);
+                toast.error(error?.response?.data?.error || 'Error deleting store products');
+            }
         }, [refetchStoreProducts, table, tableData, dataInPage.length, dataFiltered.length, userLogged]);
 
     const handleDetailsView = useCallback(
@@ -252,6 +252,33 @@ export function StoreProductView() {
             router.push(paths.dashboard.storeProduct.edit(id));
         },
         [router, dataFiltered]
+    );
+
+    const handleManageActiveItem = useCallback(
+        async (id) => {
+            try {
+                const promise = await axios.post(`${CONFIG.apiUrl}/reward-points/manage-active/store-product/${id}/`, {
+                    userReporter: JSON.stringify(userLogged?.data),
+                });
+                if (promise.status > 204) {
+                    toast.error('Error managing store product. Please try again.');
+                }
+                else {
+                    toast.success('Manage success!');
+                    refetchStoreProducts?.();
+                    refetchStoreProductSelectionCarts?.();
+                }
+
+            } catch (error) {
+                console.error('Error managing store product:', error);
+                toast.error(error?.response?.data?.error || 'Error managing store product');
+            }
+        },
+        [
+            refetchStoreProducts,
+            userLogged,
+            refetchStoreProductSelectionCarts
+        ]
     );
 
     const renderFilters = (
@@ -378,6 +405,7 @@ export function StoreProductView() {
                                             onDeleteRow={handleDeleteItem}
                                             onViewRow={handleDetailsView}
                                             onEditRow={handleEditView}
+                                            onManageActiveRow={handleManageActiveItem}
                                             notFound={notFound}
                                             onOpenConfirm={confirm.onTrue}
                                             setTableData={setTableData}
@@ -392,6 +420,7 @@ export function StoreProductView() {
                                             onDeleteItem={handleDeleteItem}
                                             onViewRow={handleDetailsView}
                                             onEditRow={handleEditView}
+                                            onManageActiveRow={handleManageActiveItem}
                                             onOpenConfirm={confirm.onTrue}
                                             setTableData={setTableData}
                                             refetchStoreProducts={refetchStoreProducts}
@@ -462,15 +491,9 @@ function applyFilter({ inputData, comparator, filters }) {
     if (name) {
         inputData = inputData?.filter(
             (file) => file?.name?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.number?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.salesOrder?.salesorder_id?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.salesOrder?.salesorder_number?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.salesOrder?.customer_id?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.salesOrder?.customer_name?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                file?.address?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                JSON.stringify(file?.userManager)?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                JSON.stringify(file?.usersAssignees)?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-                JSON.stringify(file?.currentStage)?.toLowerCase().indexOf(name.toLowerCase()) !== -1
+                file?.assignedPoints?.toString()?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+                file?.description?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+                JSON.stringify(file?.attachments)?.toLowerCase().indexOf(name.toLowerCase()) !== -1
         );
     }
 

@@ -67,13 +67,22 @@ export default defineConfig({
     ],
   },
   server: {
+    // port: PORT,
+    // host: HOST,
+    // hmr: false,
     port: PORT,
-    host: HOST,
-    hmr: false,
+    host: '0.0.0.0',       
+    strictPort: true,     
+    hmr: {
+      host: '10.1.10.217', 
+      port: PORT,
+    },
   },
-  preview: { 
-    port: PORT, 
-    host: HOST,
+  preview: {
+    // port: PORT,
+    // host: HOST,
+    port: PORT,
+    host: '0.0.0.0',
   },
   build: {
     outDir: 'dist',

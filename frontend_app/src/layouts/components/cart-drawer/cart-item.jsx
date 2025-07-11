@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -34,43 +34,66 @@ export function CartItem({
   cart,
   drawer,
   onClickBuy,
-  totalGainedPoints,
+  totalAvailablePoints,
+  storeProductSelectionCarts,
+  refetchStoreProductSelectionCarts,
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
   const router = useRouter();
 
-  const points = useMemo(() => cart?.storeProductSelection?.storeProduct?.assignedPoints || 0,
-    [cart?.storeProductSelection?.storeProduct?.assignedPoints]
+  const [currentCart, setCurrentCart] = useState(null);
+
+  useEffect(() => {
+    if (refetchStoreProductSelectionCarts) {
+      refetchStoreProductSelectionCarts();
+    }
+  }, [refetchStoreProductSelectionCarts]);
+
+  useEffect(() => {
+    if (storeProductSelectionCarts) {
+      setCurrentCart(
+        storeProductSelectionCarts.find(c => c.id === cart?.id)
+      );
+    }
+  }, [cart, storeProductSelectionCarts]);
+
+  const points = useMemo(() => currentCart?.storeProductSelection?.storeProduct?.assignedPoints || 0,
+    [currentCart?.storeProductSelection?.storeProduct?.assignedPoints]
   );
 
   const totalPoints = useMemo(() =>
-    points * (cart?.storeProductSelection?.quantity || 0),
-    [points, cart?.storeProductSelection?.quantity]
+    points * (currentCart?.storeProductSelection?.quantity || 0),
+    [points, currentCart?.storeProductSelection?.quantity]
+  );
+
+  const isActiveProduct = useMemo(
+    () => currentCart?.storeProductSelection?.storeProduct?.isActive,
+    [currentCart?.storeProductSelection?.storeProduct?.isActive]
   );
 
   const confirmDelete = useBoolean();
 
   const handleViewDetailsCart = useCallback(
     async () => {
-      if (cart?.storeProductSelection?.storeProduct) {
-        const storeProductId = cart?.storeProductSelection?.storeProduct?.id;
+      if (currentCart?.storeProductSelection?.storeProduct) {
+        const storeProductId = currentCart?.storeProductSelection?.storeProduct?.id;
         localStorage.setItem('storeProductId', storeProductId);
         router.push(paths.dashboard.storeProduct.details(storeProductId));
       }
     },
-    [cart?.storeProductSelection?.storeProduct, router]
+    [currentCart?.storeProductSelection?.storeProduct, router]
   );
 
   const handleDeleteCart = useCallback(async () => {
-    if (cart?.storeProductSelection && cart?.storeProductSelection?.id) {
+    if (currentCart?.storeProductSelection && currentCart?.storeProductSelection?.id) {
       try {
         const payload = {
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/delete/store-product-selection-cart/${cart?.id}/`;
+        const url = `${CONFIG.apiUrl}/reward-points/delete/store-product-selection-cart/${currentCart?.id}/`;
 
         const promise = axios.delete(url, {
           data: payload
@@ -93,7 +116,7 @@ export function CartItem({
         console.error('Error adding product to cart:', err);
       }
     }
-  }, [userLogged, cart]);
+  }, [userLogged, currentCart]);
 
   const renderAvatar = (
     <ListItemAvatar>
@@ -111,7 +134,7 @@ export function CartItem({
           bgcolor: 'background.neutral'
         }}
       >
-        <StoreProductFolderItemCarousel images={cart?.storeProductSelection?.storeProduct?.attachments} />
+        <StoreProductFolderItemCarousel images={currentCart?.storeProductSelection?.storeProduct?.attachments} />
       </Stack>
     </ListItemAvatar>
   );
@@ -129,7 +152,7 @@ export function CartItem({
               </Label>
             </Box>
           )}
-          {reader(`${cart.storeProductSelection.storeProduct.name}`)}
+          {reader(`${cart?.storeProductSelection.storeProduct.name}`)}
         </Box>
       }
       secondary={
@@ -157,15 +180,21 @@ export function CartItem({
               flexDirection: 'column',
             }}>
 
-              {totalPoints > totalGainedPoints && (
+              {totalPoints > totalAvailablePoints ? (
                 <Box>
                   <Label color="error" >
-                    You need at least {fNumber(totalPoints - totalGainedPoints)} more points
+                    You need at least {fNumber(totalPoints - totalAvailablePoints)} more points
+                  </Label>
+                </Box>
+              ) : !isActiveProduct && (
+                <Box>
+                  <Label color="error" >
+                    This product is inactive
                   </Label>
                 </Box>
               )}
               <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                Created at {fDateTime(cart.createdTime)}
+                Created at {fDateTime(cart?.createdTime)}
               </Typography>
               <Box sx={{
                 color: 'text.disabled',
@@ -174,7 +203,7 @@ export function CartItem({
                 justifyContent: 'space-between',
               }}>
                 <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
-                  Qty: <b>{cart?.storeProductSelection?.quantity}</b>
+                  Qty: <b>x{currentCart?.storeProductSelection?.quantity}</b>
                 </Typography>
                 {totalPoints > 0 ? (
                   <Label color="info" sx={{ alignItems: 'center' }}>
@@ -330,10 +359,10 @@ export function CartItem({
       </Label> */}
       <IconButton
         color='success'
-        disabled={totalPoints > totalGainedPoints}
+        disabled={(totalPoints > totalAvailablePoints || !isActiveProduct)}
         onClick={() => onClickBuy(cart)}
         sx={{
-          cursor: totalPoints > totalGainedPoints ? 'not-allowed' : 'pointer',
+          cursor: (totalPoints > totalAvailablePoints || !isActiveProduct) ? 'not-allowed' : 'pointer',
           '&.Mui-disabled': {
             cursor: 'not-allowed !important',
             pointerEvents: 'auto',
@@ -341,16 +370,18 @@ export function CartItem({
         }}
       >
         <Tooltip
-          title={totalPoints > totalGainedPoints ?
-            `You need at least ${fNumber(totalPoints - totalGainedPoints)} more points to buy this product` :
-            "Click to buy this product"
+          title={totalPoints > totalAvailablePoints ?
+            `You need at least ${fNumber(totalPoints - totalAvailablePoints)} more points to buy this product` :
+            !isActiveProduct ?
+              "This product is inactive" :
+              "Click to buy this product"
           }
           arrow
           placement='top'
           sx={{ width: 45, height: 45 }}
         >
           <Iconify
-            icon={totalPoints > totalGainedPoints ?
+            icon={(totalPoints > totalAvailablePoints || !isActiveProduct) ?
               "streamline-freehand:e-commerce-click-buy" :
               "streamline-freehand-color:e-commerce-click-buy"
             }
@@ -401,11 +432,11 @@ export function CartItem({
       <ConfirmDialog
         open={confirmDelete.value}
         onClose={confirmDelete.onFalse}
-        title={`Delete Cart: ${cart?.storeProductSelection?.storeProduct?.name}`}
+        title={`Delete Cart: ${currentCart?.storeProductSelection?.storeProduct?.name}`}
         content={
           <>
-            Are you sure want to delete <strong> {cart?.storeProductSelection?.storeProduct?.name} </strong>,
-            with quantity <strong> {cart?.storeProductSelection?.quantity} </strong>?
+            Are you sure want to delete <strong> {currentCart?.storeProductSelection?.storeProduct?.name} </strong>,
+            with quantity <strong> {currentCart?.storeProductSelection?.quantity} </strong>?
           </>
         }
         action={

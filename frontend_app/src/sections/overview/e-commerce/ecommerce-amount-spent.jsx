@@ -89,7 +89,7 @@ export function EcommerceRewardPointsAttribute({
           {fPercent(percent)}
         </Typography>
       </Box>
-      <Box component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
+      <Box component="span" sx={{ color: 'text.secondary', typography: 'caption' }}>
         last week
       </Box>
     </Box>
@@ -124,7 +124,7 @@ export function EcommerceRewardPointsAttribute({
               <Iconify icon={icon} width={20} />
             </Box>
           )}
-          <Typography>
+          <Typography sx={{ fontWeight: 'bold', display: 'inline-flex' }}>
             {isMoney ? fCurrency(total) : fNumber(total)}
           </Typography>
         </Box>

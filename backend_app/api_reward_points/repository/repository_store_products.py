@@ -4,6 +4,9 @@ from api_authorization.models import LoginUser
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardAttachment,
+     RewardStoreProductSelection,
+     RewardStoreProductSelectionCart,
+     RewardStoreProductSelectionBuy,
 )
 from utils.s3_utils import (
     upload_attachment_to_s3, 
@@ -376,7 +379,22 @@ def delete_store_product(request, id):
     
     if user_reporter:
         try:
+
+            selections = RewardStoreProductSelection.objects(store_product=store_product).all()
             
+            if selections:
+                carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=selections).all()
+                buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=selections).all()
+                if carts:
+                    return Response({
+                        'error': f'Cannot delete store product with active selections in {carts.count()} carts'
+                    }, status=400)
+                    
+                if buys:
+                    return Response({
+                        'error': f'Cannot delete store product with active selections in {buys.count()} buys'
+                    }, status=400)
+
             tracking_info = transform_data_to_mongo(
                 store_product, 
                 exclude_fields=[
@@ -440,39 +458,53 @@ def delete_list_store_products(request):
         
         list_tracking_info = []
         list_names = []
+        list_store_products = []
         
         try:
             for product_id in store_product_ids:
                 store_product = RewardStoreProduct.objects(id=product_id).first()
-                if not store_product:
-                    continue
+                if store_product:
+                    selections = RewardStoreProductSelection.objects(store_product=store_product).all()
                 
-                list_names.append(store_product.name)
-                
-                attachments = store_product.attachments if store_product.attachments else []
-                
-                tracking_info = transform_data_to_mongo(
-                    store_product, 
-                    exclude_fields=[
-                        'password', 
-                        'is_staff', 
-                        'is_active', 
-                        'is_verified', 
-                        'last_login', 
-                        'date_joined',
-                        'last_modified_time', 
-                        'created_time'
-                    ]
-                )
-                        
-                list_tracking_info.append(tracking_info)
-                
-                for attachment in attachments:
-                    file_to_delete = attachment.file
-                    delete_attachment_from_s3(file_to_delete)
-                    attachment.delete()
-                
-                store_product.delete()
+                    if selections:
+                        carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=selections).all()
+                        buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=selections).all()
+                        if carts:
+                            return Response({
+                                'error': f'Cannot delete store products with active selections in carts'
+                            }, status=400)
+                            
+                        if buys:
+                            return Response({
+                                'error': f'Cannot delete store products with active selections in buys'
+                            }, status=400)
+                    
+                    list_names.append(store_product.name)
+                    
+                    attachments = store_product.attachments if store_product.attachments else []
+                    
+                    tracking_info = transform_data_to_mongo(
+                        store_product, 
+                        exclude_fields=[
+                            'password', 
+                            'is_staff', 
+                            'is_active', 
+                            'is_verified', 
+                            'last_login', 
+                            'date_joined',
+                            'last_modified_time', 
+                            'created_time'
+                        ]
+                    )
+                            
+                    list_tracking_info.append(tracking_info)
+                    
+                    for attachment in attachments:
+                        file_to_delete = attachment.file
+                        delete_attachment_from_s3(file_to_delete)
+                        attachment.delete()
+                    
+                    list_store_products.append(store_product)
             
             create_tracking(
                 user_reporter=user_reporter,
@@ -490,6 +522,9 @@ def delete_list_store_products(request):
             info_id='list'
             type='delete_store_product_list'
             create_notification(module, info_id, info, type, user_reporter.username)
+            
+            for store_product in list_store_products:
+                store_product.delete()
                         
             return Response({'message': 'Store products deleted successfully'}, status=200)
         
@@ -513,3 +548,64 @@ def get_default_file_url(request):
         return Response({'url': url})
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+    
+    
+#############################################
+# MANAGE ACTIVE STORE PRODUCT
+#############################################
+
+def manage_active_store_product(request, id):         
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            
+            product = RewardStoreProduct.objects(id=id).first()
+            if not product:
+                return Response({'error': 'Store product not found'}, status=404)
+            product.is_active = not product.is_active
+            product.save()
+            
+            tracking_info = transform_data_to_mongo(
+                product, 
+                include_fields=[
+                    'id',
+                    'name',
+                    'assigned_points',
+                    'is_active',
+                    'created_time',
+                    'last_modified_time'
+                ]
+            )
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'manage active store product',
+                object_id=product.id,
+                object_type='RewardStoreProduct',
+                object_name=product.name,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+                            
+            module='store_products'
+            info=f'has {"activated" if product.is_active else "deactivated"} store product ({product.name})'
+            info_id=product.id
+            type='manage_store_product'
+            create_notification(module, info_id, info, type, user_reporter.username)
+                        
+            return Response({
+                'message': 'Store product managed successfully',
+                'data': json.loads(product.to_json())
+            }, status=200)
+
+        except Exception as e:
+            logger.error(f"Error managing store product: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)

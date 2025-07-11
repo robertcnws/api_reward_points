@@ -42,6 +42,11 @@ urlpatterns = [
         views.delete_list_store_products,
         name='delete_list_store_products'
     ),
+    path(
+        'manage-active/store-product/<str:id>/',
+        views.manage_active_store_product,
+        name='manage_active_store_product'
+    ),
     # POINTS SETTINGS
     path(
         'create/points-settings/',
@@ -98,6 +103,11 @@ urlpatterns = [
         name='create_store_product_selection_cart_buy'
     ),
     path(
+        'create-all/store-product-selection-cart-buy/',
+        views.create_all_store_product_selection_cart_buy,
+        name='create_all_store_product_selection_cart_buy'
+    ),
+    path(
         'create/store-product-selection-buy/<str:id>/',
         views.create_store_product_selection_buy,
         name='create_store_product_selection_buy'
@@ -111,6 +121,24 @@ urlpatterns = [
         'delete/list/store-product-selection-buys/',
         views.delete_list_store_product_selection_buys,
         name='delete_list_store_product_selection_buys'
+    ),
+    # MANAGE STORE PRODUCT SELECTION BUY REFUND
+    path(
+        'manage-refund/store-product-selection-buy/<str:id>/',
+        views.manage_refund_store_product_selection_buy,
+        name='manage_refund_store_product_selection_buy'
+    ),
+    # MANAGE STORE PRODUCT SELECTION BUY USE
+    path(
+        'manage-use/store-product-selection-buy/<str:id>/',
+        views.manage_use_store_product_selection_buy,
+        name='manage_use_store_product_selection_buy'
+    ),
+    # MANAGE REWARD POINTS
+    path(
+        'manage-points/<str:user_id>/',
+        views.manage_points,
+        name='manage_points'
     ),
     # GET FILE URL FROM AWS S3
     path(

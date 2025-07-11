@@ -54,11 +54,6 @@ import { PurchaseTableFiltersResult } from '../purchase-table-filters-result';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'All Purchases' }].concat([
-  { value: 'used', label: 'Used Purchases' },
-  { value: 'not_used', label: 'Not Used Purchases' },
-]);
-
 const headersCSV = [
   { label: 'Name', key: 'name' },
   { label: 'Description', key: 'description' },
@@ -78,12 +73,21 @@ export function PurchaseListView() {
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
+  const STATUS_OPTIONS = [].concat([
+    { value: 'not_used', label: 'Not Used Purchases' },
+    { value: 'partially_used', label: 'PARTIALLY USED PURCHASES!' },
+    { value: 'used', label: 'USED PURCHASES!' },
+    ...!isClient(roleName) ? [
+      { value: 'hasRequestedRefund', label: 'Refund Requested?' },
+    ] : []
+  ]);
+
   const rewardHook = useRewardStoreProductSelectionBuyByUsername(
     userLogged?.data?.username,
     fieldsRewardStoreProductSelectionBuys
   );
   const dataContextHook = useDataContext();
-  
+
   const {
     data: clientData,
     loading: clientLoading,
@@ -97,10 +101,10 @@ export function PurchaseListView() {
     errorStoreProductSelectionBuys: otherError,
     refetchStoreProductSelectionBuys: otherRefetch
   } = dataContextHook;
-  
-  const loadedPurchases  = roleName === 'client' ? clientData  : otherData;
+
+  const loadedPurchases = roleName === 'client' ? clientData : otherData;
   const loadingPurchases = roleName === 'client' ? clientLoading : otherLoading;
-  const errorPurchases   = roleName === 'client' ? clientError   : otherError;
+  const errorPurchases = roleName === 'client' ? clientError : otherError;
   const refetchPurchases = roleName === 'client' ? clientRefetch : otherRefetch;
 
   const [updating, setUpdating] = useState(false);
@@ -109,14 +113,20 @@ export function PurchaseListView() {
 
   const TABLE_HEAD = [
     { id: 'file', label: 'Product' },
+    { id: 'orderNumber', label: 'Order' },
+    { id: 'confirmationNumber', label: 'Confirmation #' },
     { id: 'name', label: 'Name' },
     ...!isClient(roleName) ? [
       { id: 'client', label: 'Client' },
-    ]:[],
+    ] : [],
     { id: 'assignedPoints', label: 'Points' },
     { id: 'quantity', label: 'Quantity' },
     { id: 'total', label: 'Total' },
     { id: 'status', label: 'Status' },
+    { id: 'quantityUsed', label: 'Quantity Used' },
+    ...isClient(roleName) ? [
+      { id: 'hasRequestedRefund', label: 'REFUND REQUESTED?' },
+    ] : [],
     { id: 'createdTime', label: 'Created At' },
     { id: '' },
   ];
@@ -134,11 +144,11 @@ export function PurchaseListView() {
 
   const [tableData, setTableData] = useState([]);
 
-  const filters = useSetState({ name: '', status: 'all' });
+  const filters = useSetState({ name: '', status: 'not_used' });
 
   const collapse = useBoolean();
 
-  const statusValue = getValidTabValue(STATUS_OPTIONS, filters.state.status) || 'all';
+  const statusValue = getValidTabValue(STATUS_OPTIONS, filters.state.status) || 'not_used';
 
 
   useEffect(() => {
@@ -201,9 +211,14 @@ export function PurchaseListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name || filters.state.status !== 'all';
+    !!filters.state.name || filters.state.status !== 'not_used';
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+
+  const someRowsUsed = useMemo(
+    () => dataFiltered.some((row) => row.hasBeenUsed),
+    [dataFiltered]
+  );
 
   const handleDeleteRow = useCallback(
     async (id) => {
@@ -249,6 +264,21 @@ export function PurchaseListView() {
       toast.error(error.response.data.error);
     }
   }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged?.data]);
+
+  const handleCancelRefundRow = useCallback(
+    async (id) => {
+      try {
+        await axios.post(`${CONFIG.apiUrl}/reward-points/manage-refund/store-product-selection-buy/${id}/`, {
+          userReporter: JSON.stringify(userLogged?.data),
+        });
+        toast.success('Manage refund success!');
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
+      }
+    },
+    [userLogged?.data]
+  );
 
   const handleEditRow = useCallback(
     (id) => {
@@ -371,17 +401,30 @@ export function PurchaseListView() {
                         'soft'
                       }
                       color={
-                        (tab.value === 'used' && 'warning') ||
+                        (tab.value === 'used' && 'error') ||
+                        (tab.value === 'partially_used' && 'warning') ||
                         (tab.value === 'not_used' && 'info') ||
+                        (tab.value === 'hasRequestedRefund' && 'secondary') ||
                         'default'
                       }
                     >
                       {
                         tab.value === 'used' ?
-                          tableData.filter((it) => it.hasBeenUsed).length :
-                          tab.value === 'not_used' ?
-                            tableData.filter((it) => !it.hasBeenUsed).length :
-                            tableData.length
+                          tableData.filter(
+                            (it) => it.hasBeenUsed &&
+                              it.quantityUsed === it.storeProductSelection.quantity
+                          ).length :
+                          tab.value === 'partially_used' ?
+                            tableData.filter(
+                              (it) => it.hasBeenUsed &&
+                                it.quantityUsed !== 0 &&
+                                it.quantityUsed < it.storeProductSelection.quantity
+                            ).length :
+                            tab.value === 'not_used' ?
+                              tableData.filter((it) => !it.hasBeenUsed).length :
+                              tab.value === 'hasRequestedRefund' ?
+                                tableData.filter((it) => it.hasRequestedRefund).length :
+                                tableData.length
                       }
                     </Label>
                   }
@@ -410,7 +453,8 @@ export function PurchaseListView() {
             title={filters.state.status === 'all' ? 'All Purchases' :
               filters.state.status === 'used' ? 'Used Purchases' :
                 filters.state.status === 'not_used' ? 'Not Used Purchases' :
-                  filters.state.status
+                  filters.state.status === 'hasRequestedRefund' ? 'Refund Requested Purchases' :
+                    filters.state.status
             }
           />
 
@@ -428,11 +472,12 @@ export function PurchaseListView() {
               dense={table.dense}
               numSelected={table.selected.length}
               rowCount={dataFiltered.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  dataFiltered.map((row) => row.id)
-                )
+              onSelectAllRows={
+                (!isClient(roleName) && !someRowsUsed) ? ((checked) =>
+                  table.onSelectAllRows(
+                    checked,
+                    dataFiltered.map((row) => row.id)
+                  )) : null
               }
               action={
                 <Tooltip title="Delete">
@@ -453,11 +498,12 @@ export function PurchaseListView() {
                       rowCount={dataFiltered.length}
                       numSelected={table.selected.length}
                       onSort={table.onSort}
-                      onSelectAllRows={(checked) =>
+                      onSelectAllRows={
+                        (!isClient(roleName) && !someRowsUsed) ? (checked) =>
                         table.onSelectAllRows(
                           checked,
                           dataFiltered.map((row) => row.id)
-                        )
+                        ) : null
                       }
                     />
 
@@ -477,6 +523,7 @@ export function PurchaseListView() {
                             onEditRow={() => handleEditRow(row.id)}
                             onReturnList={() => handleReturnList()}
                             onViewRow={() => handleViewRow(row.id)}
+                            onCancelRefundRow={() => handleCancelRefundRow(row.id)}
                           />
                         ))}
 
@@ -558,17 +605,34 @@ function applyFilter({ inputData, comparator, filters }) {
 
   if (name) {
     inputData = inputData.filter(
-      (item) => item?.storeProductSelection?.storeProduct?.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+      (item) => item?.storeProductSelection?.storeProduct?.name?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         item?.storeProductSelection?.quantity?.toString().toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        item?.storeProductSelection?.storeProduct?.description.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        item?.storeProductSelection?.storeProduct?.description?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.storeProductSelection?.storeProduct?.assignedPoints?.toString().toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.storeProductSelection?.user?.username?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.storeProductSelection?.user?.firstName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.storeProductSelection?.user?.lastName?.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
   if (status !== 'all') {
     if (status === 'used') {
-      inputData = inputData.filter((item) => item.hasBeenUsed === true);
+      inputData = inputData.filter(
+        (item) => item.hasBeenUsed === true &&
+          item.quantityUsed === item.storeProductSelection.quantity
+      );
+    } else if (status === 'partially_used') {
+      inputData = inputData.filter(
+        item => item.hasBeenUsed === true &&
+          item.quantityUsed !== 0 &&
+          item.quantityUsed < item.storeProductSelection.quantity
+      );
     } else if (status === 'not_used') {
-      inputData = inputData.filter(item => item.hasBeenUsed === false);
+      inputData = inputData.filter(
+        item => item.hasBeenUsed === false
+      );
+    } else if (status === 'hasRequestedRefund') {
+      inputData = inputData.filter(item => item.hasRequestedRefund === true);
     }
   }
   return inputData;

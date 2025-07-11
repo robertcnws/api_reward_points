@@ -98,6 +98,9 @@ class RewardPoints(Document):
     user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
     total_gained_points = IntField(default=0)
     total_spent_points = IntField(default=0)
+    total_assigned_points = IntField(default=0)
+    total_substracted_points = IntField(default=0)
+    total_refunded_points = IntField(default=0)
     total_amount_invoices = FloatField(default=0.0)
     invoices = ListField(ReferenceField(RewardInvoice, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
@@ -106,7 +109,13 @@ class RewardPoints(Document):
     meta = {
         'collection': 'reward_points',
         'indexes': [
-            'user', 'total_gained_points', 'total_spent_points', 'total_amount_invoices'
+            'user', 
+            'total_gained_points', 
+            'total_spent_points', 
+            'total_assigned_points', 
+            'total_substracted_points', 
+            'total_refunded_points', 
+            'total_amount_invoices'
         ],
         'verbose_name': 'Reward Points',
         'verbose_name_plural': 'Reward Points'
@@ -118,7 +127,10 @@ class RewardPoints(Document):
 class RewardPointsHistory(Document):
     created_time = DateTimeField(default=timezone.now, null=True)
     reward_points = ReferenceField(RewardPoints, required=True, reverse_delete_rule=2)  # CASCADE
-    action = StringField(default='gained', choices=['gained', 'spent', 'refunded'], required=True)
+    action = StringField(
+        default='gained', choices=['gained', 'spent', 'refunded', 'assigned', 'substracted'], 
+        required=True
+    )
     gained_points = IntField(default=0)
     spent_points = IntField(default=0)
     info = DynamicField(null=True, blank=True)
@@ -187,18 +199,19 @@ class RewardStoreProduct(Document):
     attachments = ListField(ReferenceField(RewardAttachment, reverse_delete_rule=PULL), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
+    is_active = BooleanField(default=True)
 
     meta = {
         'collection': 'reward_store_products',
         'indexes': [
-            'name', 'assigned_points'
+            'name', 'assigned_points', 'created_time', 'last_modified_time', 'is_active'
         ],
         'verbose_name': 'Reward Store Product',
         'verbose_name_plural': 'Reward Store Products'
     }
     
     def __str__(self):
-        return f"{self.name} - {self.points_required} points required"
+        return f"{self.name} - {self.assigned_points} points required"
     
     
 class RewardStoreProductUser(Document):
@@ -333,11 +346,21 @@ class RewardStoreProductSelectionBuy(Document):
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
     has_been_used = BooleanField(default=False)
+    has_requested_refund = BooleanField(default=False)
+    quantity_used = IntField(default=0)
+    order_number = IntField(default=0)
+    confirmation_number = StringField(null=True, blank=True)
+    notes = StringField(null=True, blank=True)
     
     meta = {
         'collection': 'reward_store_product_selection_buy',
         'indexes': [
-            'store_product_selection', 'created_time', 'has_been_used'
+            'store_product_selection', 
+            'created_time', 
+            'has_been_used', 
+            'has_requested_refund',
+            'order_number', 
+            'confirmation_number',
         ],
         'verbose_name': 'Reward Store Product Selection Buy',
         'verbose_name_plural': 'Reward Store Product Selection Buys'

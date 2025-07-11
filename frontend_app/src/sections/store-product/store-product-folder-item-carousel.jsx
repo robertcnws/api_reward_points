@@ -26,7 +26,7 @@ export function StoreProductFolderItemCarousel({ images }) {
   const [initialFiles, setInitialFiles] = useState([]);
 
   useEffect(() => {
-      const attachments = [...images] || [];
+      const attachments = images?.length ? [...images] : [];
 
       if (!attachments.length) {
         const defaultFile = {

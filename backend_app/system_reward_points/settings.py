@@ -328,12 +328,12 @@ CELERY_TIMEZONE = 'America/New_York'
 CELERY_ENABLE_UTC = False
 
 # Celery Beat Schedule
-CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/59')  # Every 59 minute
+CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/5')  # Every 5 minute
 CELERY_TASK_REVIEW_USER_POINTS_HOUR = env('CELERY_TASK_REVIEW_USER_POINTS_HOUR', default='7-17')
 CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK = env('CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK', default='*')
 
 CELERY_BEAT_SCHEDULE = {
-    'run-task-sequence-every-10-min': {
+    'run-task-sequence-every-5-min': {
         'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_every_10_min',
         'schedule': crontab(
             minute=CELERY_TASK_REVIEW_USER_POINTS_MIN, 

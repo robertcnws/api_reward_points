@@ -12,7 +12,7 @@ import { fCurrency, fNumber } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { FlagIcon } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { TableHeadCustom } from 'src/components/table';
+import { TableHeadCustom, TableNoData } from 'src/components/table';
 import { fDate } from 'src/utils/format-time';
 import { TableFooter } from '@mui/material';
 
@@ -26,13 +26,17 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
       <Scrollbar sx={{ minHeight: 422, maxHeight: 422, overflowY: 'auto' }}>
         <Table sx={{ minWidth: 422, position: 'relative' }} stickyHeader>
           <TableHeadCustom headLabel={headLabel} />
-
-          <TableBody>
-            {tableData.map((row, index) => (
-              <RowItem key={`${row.id}-${index}`} row={row} />
-            ))}
-          </TableBody>
-          
+          {tableData?.length > 0 ? (
+            <TableBody>
+              {tableData.map((row, index) => (
+                <RowItem key={`${row.id}-${index}`} row={row} />
+              ))}
+            </TableBody>
+          ) : (
+            <TableBody>
+              <TableNoData notFound={tableData?.length === 0} />
+            </TableBody>
+          )}
         </Table>
       </Scrollbar>
     </Card>

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { CONFIG } from 'src/config-global';
 
 import Box from '@mui/material/Box';
@@ -28,6 +28,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
+import { UserManagePointsModalForm } from './user-manage-points-modal-form';
 
 // ----------------------------------------------------------------------
 
@@ -59,6 +60,8 @@ export function UserClientTableRow({
   const confirmApproval = useBoolean();
 
   const confirmVerify = useBoolean();
+
+  const confirmManagePoints = useBoolean();
 
   useEffect(() => {
     if (rowRewardPoints) {
@@ -98,6 +101,10 @@ export function UserClientTableRow({
       }
     };
   }, [rowRewardPoints]);
+
+  const totalAvailablePoints = useMemo(() => currentRowRewardPoints?.totalAvailablePoints || 0,
+    [currentRowRewardPoints]
+  );
 
   return (
     <>
@@ -142,10 +149,10 @@ export function UserClientTableRow({
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.lastName}</TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
-            {currentRowRewardPoints?.totalGainedPoints > 0 ? (
+            {totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {currentRowRewardPoints?.totalGainedPoints || 0}
+                {totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">
@@ -273,9 +280,9 @@ export function UserClientTableRow({
             </Stack><br />
             Company: {row.companyName}<br />
             Name: {row.firstName} {row.lastName}<br />
-            Reward Points: {currentRowRewardPoints ? (
+            Reward Points: {totalAvailablePoints > 0 ? (
               <Label color="success">
-                {currentRowRewardPoints?.totalGainedPoints || 0}
+                {totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">
@@ -340,9 +347,24 @@ export function UserClientTableRow({
         </TableRow>
       )}
 
-      <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} />
+      <UserQuickEditForm
+        currentUser={row}
+        open={quickEdit.value}
+        onClose={quickEdit.onFalse}
+      />
 
-      <UserQuickChangePasswordForm currentUser={row} open={quickChangePassword.value} onClose={quickChangePassword.onFalse} />
+      <UserQuickChangePasswordForm
+        currentUser={row}
+        open={quickChangePassword.value}
+        onClose={quickChangePassword.onFalse}
+      />
+
+      <UserManagePointsModalForm
+        currentUser={row}
+        currentRewardPoints={currentRowRewardPoints}
+        open={confirmManagePoints.value}
+        onClose={confirmManagePoints.onFalse}
+      />
 
       <CustomPopover
         open={popover.open}
@@ -351,6 +373,19 @@ export function UserClientTableRow({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
+          <MenuItem
+            onClick={() => {
+              confirmManagePoints.onTrue();
+              popover.onClose();
+            }}
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            <Iconify icon='streamline-ultimate:reward-stars-2-bold' sx={{ fontWeight: 'bold' }} />
+            Manage reward points
+            {/* <Label color="info" sx={{ ml: 1 }}>NEW</Label> */}
+          </MenuItem>
           <MenuItem
             onClick={() => {
               confirmVerify.onTrue();
@@ -456,6 +491,8 @@ export function UserClientTableRow({
           </Button>
         }
       />
+
+
     </>
   );
 }

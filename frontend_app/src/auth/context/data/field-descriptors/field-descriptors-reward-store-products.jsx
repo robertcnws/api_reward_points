@@ -5,6 +5,7 @@ export const fieldsRewardStoreProducts = [
     'id',
     'lastModifiedTime',
     'name',
+    'isActive',
     {
         name: 'attachments',
         fields: [
@@ -33,6 +34,7 @@ export const fieldsRewardStoreProductDetails = [
     'id',
     'lastModifiedTime',
     'name',
+    'isActive',
     {
         name: 'attachments',
         fields: [

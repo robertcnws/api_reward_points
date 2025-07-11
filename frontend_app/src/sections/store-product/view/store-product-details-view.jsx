@@ -270,7 +270,7 @@ export function StoreProductDetailsView({
               totalRatings={totalRatings}
               totalReviews={totalReviews}
               onAddCart={onAddCart}
-              onAddBuy={onAddBuy}
+              onAddBuy={onAddBuy}              
               userLoggedRewardPoints={userLoggedRewardPoints}
               userLoggedRewardPointsLoading={userLoggedRewardPointsLoading}
               userLoggedRewardPointsError={userLoggedRewardPointsError}

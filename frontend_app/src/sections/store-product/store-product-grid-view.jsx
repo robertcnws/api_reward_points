@@ -25,6 +25,7 @@ export function StoreProductGridView({
   onDeleteItem,
   onViewRow,
   onEditRow,
+  onManageActiveRow,
   onOpenConfirm,
   setTableData,
   refetchStoreProducts,
@@ -98,6 +99,7 @@ export function StoreProductGridView({
                   onDelete={() => onDeleteItem(folder.id)}
                   onViewRow={() => onViewRow(folder.id)}
                   onEditRow={() => onEditRow(folder.id)}
+                  onManageActiveRow={() => onManageActiveRow(folder.id)}
                   setTableData={setTableData}
                   refetchStoreProducts={refetchStoreProducts}
                   storeProductSelectionCarts={storeProductSelectionCarts}

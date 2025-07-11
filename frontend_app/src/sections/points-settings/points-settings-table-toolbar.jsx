@@ -74,9 +74,9 @@ export function PointsSettingsTableToolbar({ filters, onResetPage, options, data
             />
           {/* )} */}
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Stack>
 

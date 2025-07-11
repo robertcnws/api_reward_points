@@ -34,6 +34,7 @@ export function StoreProductTableRow({
   onDeleteRow,
   onViewRow,
   onEditRow,
+  onManageActiveRow,
   setTableData,
   refetchStoreProducts,
   loadedStoreProducts,
@@ -46,6 +47,8 @@ export function StoreProductTableRow({
   const details = useBoolean();
 
   const confirm = useBoolean();
+
+  const confirmActivation = useBoolean();
 
   const popover = usePopover();
 
@@ -191,6 +194,22 @@ export function StoreProductTableRow({
           </Stack>
         </TableCell>
 
+        <TableCell
+          onClick={() => {
+            localStorage.removeItem('storeProductReminderTab');
+            onEditRow();
+          }}
+          sx={{
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            fontWeight: 'inherit',
+          }}
+        >
+          <Label color={row?.isActive ? 'success' : 'error'} sx={{ alignItems: 'center' }}>
+            {row?.isActive ? 'Active' : 'Inactive'}
+          </Label>
+        </TableCell>
+
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap', cursor: 'pointer', }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
@@ -230,6 +249,19 @@ export function StoreProductTableRow({
           {listRolesAndSubroles(userLogged?.data?.user_role?.name).includes(CONFIG.roles.superadmin) ? [
             <Divider key="divider" sx={{ borderStyle: 'dashed' }} />,
             <MenuItem
+              key="status"
+              onClick={() => {
+                confirmActivation.onTrue();
+                popover.onClose();
+              }}
+              sx={{ color: row?.isActive ? 'warning.main' : 'success.main' }}
+            >
+              <Iconify
+                icon={row?.isActive ? 'material-symbols:tab-close-inactive' : 'nrk:check-active'}
+              />
+              {row?.isActive ? 'Deactivate' : 'Activate'} Store Product
+            </MenuItem>,
+            <MenuItem
               key="delete"
               onClick={() => {
                 confirm.onTrue();
@@ -250,8 +282,34 @@ export function StoreProductTableRow({
         title="Delete Project"
         content={`Are you sure want to delete store product ${row?.name}?`}
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => { 
+              await onDeleteRow(row?.id);
+              confirm.onFalse(); 
+            }}
+          >
             Delete
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmActivation.value}
+        onClose={confirmActivation.onFalse}
+        title={row?.isActive ? 'Deactivate Store Product' : 'Activate Store Product'}
+        content={`Are you sure want to ${row?.isActive ? 'deactivate' : 'activate'} store product ${row?.name}?`}
+        action={
+          <Button
+            variant="contained"
+            color={row?.isActive ? 'warning' : 'success'}
+            onClick={async () => { 
+              await onManageActiveRow(row?.id) 
+              confirmActivation.onFalse();
+            }}
+          >
+            {row?.isActive ? 'Deactivate' : 'Activate'}
           </Button>
         }
       />

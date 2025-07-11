@@ -70,6 +70,8 @@ export function UserQuickEditForm({ currentUser, open, onClose }) {
     [currentUser]
   );
 
+  // console.log('defaultValues', defaultValues);
+
   const methods = useForm({
     mode: 'all',
     resolver: zodResolver(UserQuickEditSchema),

@@ -9,9 +9,15 @@ from dateutil import parser
 from phonenumbers import NumberParseException
 from api_users.models import Notification, NotificationUser
 from api_authorization.models import LoginUser
-from api_reward_points.models import RewardPointsSettings, Tracking
+from api_reward_points.models import (
+    RewardPointsSettings, 
+    Tracking, 
+    RewardStoreProductSelectionBuy
+)
 import phonenumbers
 import json
+import random
+import string
 
 def to_camel(snake_str: str) -> str:
     parts = snake_str.split('_')
@@ -273,6 +279,24 @@ def assign_points_to_item(rate) -> int:
     if rate > 0:
         points += 1
     return points
+
+
+def generate_order_number():
+    max_order_number = RewardStoreProductSelectionBuy.objects().order_by('-order_number').first()
+    if max_order_number and max_order_number.order_number:
+        order_number = max_order_number.order_number
+    else:
+        order_number = 0
+    order_number += 1
+    return order_number
+
+
+def generate_confirmation_number():
+    confirmation_number = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
+    existing = RewardStoreProductSelectionBuy.objects(confirmation_number=confirmation_number).first()
+    if existing:
+        return generate_confirmation_number()
+    return confirmation_number
 
 
 

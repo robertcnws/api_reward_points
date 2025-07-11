@@ -62,7 +62,7 @@ export function PurchaseTableToolbar({ filters, onResetPage, options, dataFilter
               fullWidth
               value={filters.state.name}
               onChange={handleFilterName}
-              placeholder={isListAll ? "Search by user role (NAME, DESCRIPTION)..." : "Search by item name..."}
+              placeholder="Search by (NAME, LAST NAME, DESCRIPTION, ASSIGNED POINTS, QUANTITY, USERNAME)"
               // disabled={dataFiltered?.length === 0}
               InputProps={{
                 startAdornment: (
@@ -74,9 +74,9 @@ export function PurchaseTableToolbar({ filters, onResetPage, options, dataFilter
             />
           {/* )} */}
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Stack>
 

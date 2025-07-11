@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -21,6 +21,8 @@ import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
+import { PurchaseDetailsModal } from './purchase-details-modal';
+import { PurchaseUseModalForm } from './purchase-use-modal-form';
 
 
 // ----------------------------------------------------------------------
@@ -32,7 +34,8 @@ export function PurchaseTableRow({
   onSelectRow,
   onDeleteRow,
   onViewRow,
-  onReturnList
+  onReturnList,
+  onCancelRefundRow,
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
@@ -43,11 +46,15 @@ export function PurchaseTableRow({
 
   const confirm = useBoolean();
 
+  const confirmRefund = useBoolean();
+
   const collapse = useBoolean();
 
   const popover = usePopover();
 
-  const quickEdit = useBoolean();
+  const openDetails = useBoolean();
+
+  const openUse = useBoolean();
 
   const assignedPoints = useMemo(() => row?.storeProductSelection?.storeProduct?.assignedPoints || 0, [row]);
 
@@ -59,9 +66,12 @@ export function PurchaseTableRow({
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} sx={{ cursor: 'pointer' }}>
 
-        <TableCell padding="checkbox">
-          <Checkbox id={row.id} checked={selected} onClick={onSelectRow} />
-        </TableCell>
+        {(!isClient(roleName) && !row?.hasBeenUsed) && (
+
+          <TableCell padding="checkbox">
+            <Checkbox id={row.id} checked={selected} onClick={onSelectRow} />
+          </TableCell>
+        )}
 
         {/* { id: 'file', label: 'Product' },
     { id: 'name', label: 'Name' },
@@ -74,55 +84,103 @@ export function PurchaseTableRow({
 
         {!isMobile ? (
           <>
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+            <TableCell sx={{ whiteSpace: 'nowrap' }}>
               <StoreProductFolderItemCarousel
                 images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
               />
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              {row?.orderNumber || 'N/A'}
+            </TableCell>
+
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              <Typography
+                variant="body2"
+                noWrap
+                sx={{
+                  fontWeight: 'bold',
+                  fontStyle: 'normal',
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  color: 'text.primary',
+                  '&:hover': { color: 'primary.main' }
+                }}>
+                {row?.confirmationNumber || 'N/A'}
+              </Typography>
+            </TableCell>
+
+            <TableCell onClick={openDetails.onTrue}>
               {row?.storeProductSelection?.storeProduct?.name}
             </TableCell>
 
             {!isClient(roleName) && (
-              <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+              <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
                 {row?.storeProductSelection?.user?.firstName} {row?.storeProductSelection?.user?.lastName}
               </TableCell>
             )}
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               <Label color="success" sx={{ alignItems: 'center', fontSize: 14 }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {fNumber(assignedPoints) || 0}
               </Label>
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
-              {quantity}
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              x{quantity}
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               <Label color="info" sx={{ alignItems: 'center', fontSize: 14 }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {fNumber(total) || 0}
               </Label>
             </TableCell>
 
-            <TableCell onClick={() => onEditRow()}>
+            <TableCell onClick={openDetails.onTrue}>
               <Label
                 variant="soft"
                 color={
-                  (row.hasBeenUsed && 'warning') ||
-                  (!row.hasBeenUsed && 'info') ||
+                  (row?.hasBeenUsed && row?.quantityUsed === quantity && 'error') ||
+                  (row?.hasBeenUsed && row?.quantityUsed !== 0 && row?.quantityUsed < quantity && 'warning') ||
+                  (!row?.hasBeenUsed && 'info') ||
                   'default'
                 }
                 sx={{ cursor: 'pointer' }}
               >
-                {row?.hasBeenUsed ? 'Used' : 'Not Used'}
+                {
+                  (row?.hasBeenUsed && row?.quantityUsed === quantity) ? 'Used!!' :
+                    (row?.hasBeenUsed && row?.quantityUsed !== 0 && row?.quantityUsed < quantity) ? 'Partially Used!' :
+                      'Not Used'
+                }
               </Label>
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              <b>{row?.quantityUsed ? `x${row?.quantityUsed}` : 0}</b>
+            </TableCell>
+
+            {isClient(roleName) && (
+              <TableCell
+                sx={{ whiteSpace: 'nowrap' }}
+                onClick={openDetails.onTrue}
+              >
+                <Label
+                  variant="soft"
+                  color={
+                    (row.hasRequestedRefund && 'secondary') ||
+                    (!row.hasRequestedRefund && 'success') ||
+                    'default'
+                  }
+                  sx={{ cursor: 'pointer' }}
+                >
+                  {row?.hasRequestedRefund ? 'YES!' : 'NO'}
+                </Label>
+              </TableCell>
+            )}
+
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               {fDateTime(row?.createdTime)}
             </TableCell>
 
@@ -133,7 +191,7 @@ export function PurchaseTableRow({
               variant="soft"
               color='default'
               sx={{ cursor: 'pointer' }}
-              onClick={() => onEditRow()}
+              onClick={openDetails.onTrue}
             >
               <u>{row.name}</u>
             </Label><br />
@@ -160,13 +218,12 @@ export function PurchaseTableRow({
           </TableCell>
         )}
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
-          {!row?.hasBeenUsed && (
-            <Stack direction="row" alignItems="center">
-              <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
-                <Iconify icon="eva:more-vertical-fill" />
-              </IconButton>
-            </Stack>
-          )}
+
+          <Stack direction="row" alignItems="center">
+            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+              <Iconify icon="eva:more-vertical-fill" />
+            </IconButton>
+          </Stack>
         </TableCell>
       </TableRow>
 
@@ -178,8 +235,47 @@ export function PurchaseTableRow({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
-          {roleName !== 'client' ? (
+          <MenuItem
+            onClick={() => {
+              openDetails.onTrue();
+              popover.onClose();
+            }}
+          >
+            <Iconify
+              icon="hugeicons:view"
+            />
+            View Purchase Details
+          </MenuItem>
+          {!row?.hasBeenUsed && (
             <MenuItem
+              onClick={() => {
+                confirmRefund.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify
+                icon={
+                  row.hasRequestedRefund ? "si:cancel-presentation-fill" : "heroicons-solid:receipt-refund"
+                }
+              />
+              {row.hasRequestedRefund ? 'Cancel Refund Request' : 'Request Refund'}
+            </MenuItem>
+          )}
+          {(roleName !== 'client' && !row.hasRequestedRefund) && [
+            <MenuItem
+              key='use-purchase'
+              onClick={() => {
+                openUse.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="bxs:purchase-tag" />
+              Use Purchase
+            </MenuItem>
+          ]}
+          {(roleName !== 'client' && !row.hasBeenUsed) && [
+            <MenuItem
+              key='edit-purchase'
               onClick={() => {
                 confirm.onTrue();
                 popover.onClose();
@@ -189,17 +285,8 @@ export function PurchaseTableRow({
               <Iconify icon="solar:trash-bin-trash-bold" />
               Delete Purchase
             </MenuItem>
-          ) : (
-            <MenuItem
-              onClick={() => {
-                confirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="heroicons-solid:receipt-refund" />
-              Request Refund
-            </MenuItem>
-          )}
+          ]}
+
 
         </MenuList>
       </CustomPopover>
@@ -210,11 +297,48 @@ export function PurchaseTableRow({
         title="Delete"
         content={`Are you sure want to delete purchase: (${row.storeProductSelection?.storeProduct?.name})?`}
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={
+              async () => {
+                await onDeleteRow(row?.id);
+                confirm.onFalse();
+              }}>
             Delete
+          </Button>
+        } />
+
+      <ConfirmDialog
+        open={confirmRefund.value}
+        onClose={confirmRefund.onFalse}
+        title={row.hasRequestedRefund ? "Cancel Refund Request" : "Request Refund"}
+        content={`Are you sure want to ${row.hasRequestedRefund ? "cancel" : "request"} refund for purchase: (${row.storeProductSelection?.storeProduct?.name})?`}
+        action={
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              onCancelRefundRow(row?.id);
+              confirmRefund.onFalse();
+            }}
+          >
+            {row.hasRequestedRefund ? "Cancel Refund" : "Request Refund"}
           </Button>
         }
       />
+
+      <PurchaseDetailsModal
+        currentBuy={row}
+        open={openDetails}
+        openUse={openUse}
+      />
+
+      <PurchaseUseModalForm
+        currentBuy={row}
+        open={openUse}
+      />
+
     </>
   );
 }

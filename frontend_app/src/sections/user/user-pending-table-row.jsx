@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { CONFIG } from 'src/config-global';
 
 import Box from '@mui/material/Box';
@@ -60,41 +60,45 @@ export function UserPendingTableRow({
   useEffect(() => {
     if (rowRewardPoints) {
       setCurrentRowRewardPoints(rowRewardPoints);
-    } 
+    }
   }, [rowRewardPoints]);
 
   useEffect(() => {
-        const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/${rowRewardPoints?.id}/`);
-        socket.onerror = (errorEvent) => {
-            console.dir(errorEvent);
-            console.error('WebSocket error (toString):', errorEvent.toString());
-        };
-        socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            // console.log("WebSocket message:", message);
-            if (message.type === 'created' || message.type === 'updated') {
-                setCurrentRowRewardPoints((prevData) => {
-                    if (prevData?.id === message.item.id) {
-                        return message.item;
-                    }
-                    return prevData;
-                });
-            }
-            else if (message.type === 'deleted') {
-                setCurrentRowRewardPoints((prevData) => {
-                    if (prevData?.id === message.item.id) {
-                        return null;
-                    }
-                    return prevData;
-                });
-            }
-        };
-        return () => {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.close();
-            }
-        };
-    }, [rowRewardPoints]);
+    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/${rowRewardPoints?.id}/`);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      // console.log("WebSocket message:", message);
+      if (message.type === 'created' || message.type === 'updated') {
+        setCurrentRowRewardPoints((prevData) => {
+          if (prevData?.id === message.item.id) {
+            return message.item;
+          }
+          return prevData;
+        });
+      }
+      else if (message.type === 'deleted') {
+        setCurrentRowRewardPoints((prevData) => {
+          if (prevData?.id === message.item.id) {
+            return null;
+          }
+          return prevData;
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [rowRewardPoints]);
+
+  const totalAvailablePoints = useMemo(() => currentRowRewardPoints?.totalAvailablePoints || 0,
+    [currentRowRewardPoints]
+  );
 
   return (
     <>
@@ -130,10 +134,10 @@ export function UserPendingTableRow({
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.phoneNumber}</TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
-            {currentRowRewardPoints?.totalGainedPoints > 0 ? (
+            {totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {currentRowRewardPoints?.totalGainedPoints || 0}
+                {totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">
@@ -199,9 +203,9 @@ export function UserPendingTableRow({
             Company: {row.companyName}<br />
             Name: {row.firstName} {row.lastName}<br />
             Phone: {row.phoneNumber}<br />
-            Reward Points: {currentRowRewardPoints ? (
+            Reward Points: {totalAvailablePoints > 0 ? (
               <Label color="success">
-                {currentRowRewardPoints?.totalGainedPoints || 0}
+                {totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">
