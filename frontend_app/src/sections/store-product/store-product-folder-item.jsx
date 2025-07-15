@@ -127,16 +127,10 @@ export function StoreProductFolderItem({
         const message = JSON.parse(event.data);
         if (
           message.type === 'created' ||
-          message.type === 'updated' ||
-          message.type === 'deleted'
+          message.type === 'updated' 
+          // message.type === 'deleted'
         ) {
-          refetchProductDetails()
-            .then((data) => {
-              if (data?.rewardStoreProductDetailsById) {
-                setCurrentProduct(data.rewardStoreProductDetailsById);
-              }
-            })
-            .catch((err) => console.error('Error fetching product data:', err));
+          refetchProductDetails().catch((err) => console.error('Error fetching product data:', err));
         }
       };
     }
@@ -146,37 +140,6 @@ export function StoreProductFolderItem({
       }
     };
   }, [product, productLoading, productError, refetchProductDetails]);
-
-  useEffect(() => {
-    let socket;
-    if (userLogged) {
-      const username = userLogged?.data?.username;
-      const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${username}/`;
-      socket = new WebSocket(url);
-
-      socket.onerror = (errorEvent) => {
-        console.error('WebSocket error:', errorEvent);
-      };
-
-      socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (
-          message.type === 'created' ||
-          message.type === 'updated' ||
-          message.type === 'deleted'
-        ) {
-          refetchStoreProductSelectionBuys().catch((err) => console.error('Error fetching product data:', err));
-          refetchRewardPoints().catch((err) => console.error('Error fetching reward points:', err));
-          refetchStoreProducts?.().catch((err) => console.error('Error fetching store products:', err));
-        }
-      };
-    }
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, [userLogged, refetchStoreProductSelectionBuys, refetchRewardPoints, refetchStoreProducts]);
 
   const [values, setValue] = useState({
     quantity: 1,

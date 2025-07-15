@@ -9,7 +9,7 @@ import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import { LinearProgress } from '@mui/material';
+import { Autocomplete, InputAdornment, LinearProgress, MenuItem, TextField } from '@mui/material';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -99,7 +99,8 @@ export function PurchaseListView() {
     loadedStoreProductSelectionBuys: otherData,
     loadingStoreProductSelectionBuys: otherLoading,
     errorStoreProductSelectionBuys: otherError,
-    refetchStoreProductSelectionBuys: otherRefetch
+    refetchStoreProductSelectionBuys: otherRefetch,
+    loadedUsers,
   } = dataContextHook;
 
   const loadedPurchases = roleName === 'client' ? clientData : otherData;
@@ -144,7 +145,15 @@ export function PurchaseListView() {
 
   const [tableData, setTableData] = useState([]);
 
-  const filters = useSetState({ name: '', status: 'not_used' });
+  const filters = useSetState(
+    {
+      name: '',
+      status: 'not_used',
+      client: {
+        id: '',
+        name: ''
+      }
+    });
 
   const collapse = useBoolean();
 
@@ -211,7 +220,10 @@ export function PurchaseListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name || filters.state.status !== 'not_used';
+    !!filters.state.name ||
+    filters.state.status !== 'not_used' ||
+    !!filters.state.client.id ||
+    !!filters.state.client.name;
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -318,6 +330,103 @@ export function PurchaseListView() {
     [router, filters]
   );
 
+  const openClientFilter = useBoolean()
+
+  // const handleFilterClient = useCallback(
+  //   (event) => {
+  //     const client = event.target.value;
+  //     console.log('client', client);
+  //     const clientName = `${client.firstName} ${client.lastName}` || null;
+  //     filters.setState({ client: { id: client.id, name: clientName } });
+  //     localStorage.setItem('purchaseFilterClient', JSON.stringify({ id: client.id, name: clientName }));
+  //     setTableData(dataFiltered.filter((item) => item.storeProductSelection.user.id === client.id))
+  //     table.onResetPage();
+  //   },
+  //   [filters, table, dataFiltered]
+  // );
+
+  const renderFilterClient = (
+    <>
+      <Button
+        color="inherit"
+        onClick={openClientFilter.onTrue}
+        endIcon={
+          <Iconify
+            icon={openClientFilter.value ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'}
+            sx={{ ml: -0.5 }}
+          />
+        }
+      >
+        {!!filters.state.client.id && !!filters.state.client.name
+          ? `Client: ${filters.state.client.name}`
+          : 'Select Client'}
+      </Button>
+
+      <ConfirmDialog
+        open={openClientFilter.value}
+        onClose={openClientFilter.onFalse}
+        title="Select Client"
+        content={
+          <Autocomplete
+            disablePortal
+            options={loadedUsers.filter((user) => isClient(user.userRole.name))}
+            value={filters.state.client.id ? loadedUsers.find((user) => user.id === filters.state.client.id) : null}
+            getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.username})`}
+            onChange={(_, value) => {
+              if (value) {
+                const clientName = `${value.firstName} ${value.lastName}` || '';
+                filters.setState({ client: { id: value.id, name: clientName } });
+                localStorage.setItem('purchaseFilterClient', JSON.stringify({ id: value.id, name: clientName }));
+              } else {
+                filters.setState({ client: { id: '', name: '' } });
+                localStorage.removeItem('purchaseFilterClient');
+              }
+            }}
+            renderInput={(params) => (
+              <TextField {...params} variant="outlined" />
+            )}
+            sx={{
+              width: '100%'
+            }}
+          />
+          // <TextField
+          //   select
+          //   value={filters.state.client.id || ''}
+          //   onChange={handleFilterClient}
+          //   placeholder="Select Client"
+          //   InputProps={{
+          //     startAdornment: (
+          //       <InputAdornment position="start">
+          //         <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+          //       </InputAdornment>
+          //     ),
+          //   }}
+          //   sx={{ width: '100%' }}
+          // >
+          //   {loadedUsers.filter((user) => isClient(user.userRole.name)).map((user) => (
+          //     <MenuItem key={user.id} value={user.id}>
+          //       {user.firstName} {user.lastName} ({user.username})
+          //     </MenuItem>
+          //   ))}
+          // </TextField>
+        }
+        action={
+          <Button
+            variant="contained"
+            onClick={() => {
+              // onCloseClientFilter();
+              filters.setState({ client: { id: '', name: '' } });
+              localStorage.removeItem('purchaseFilterClient');
+            }}
+            color='warning'
+          >
+            Clear
+          </Button>
+        }
+      />
+    </>
+  );
+
   if (errorPurchases) {
     return (
       <DashboardContent>
@@ -366,15 +475,22 @@ export function PurchaseListView() {
   return (
     <>
       <DashboardContent>
-        <CustomBreadcrumbs
-          // heading="List"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.general.analytics },
-            { name: 'Purchases', href: paths.dashboard.purchase.root },
-            { name: 'List' },
-          ]}
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <CustomBreadcrumbs
+            // heading="List"
+            links={[
+              { name: 'Dashboard', href: paths.dashboard.general.analytics },
+              { name: 'Purchases', href: paths.dashboard.purchase.root },
+              { name: 'List' },
+            ]}
+            sx={{ mb: { xs: 3, md: 5 } }}
+          // action={
+          //   !isClient(roleName) ? renderFilterClient : null
+          // }
+
+          />
+          {!isClient(roleName) && renderFilterClient}
+        </Box>
 
         <Card>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -500,10 +616,10 @@ export function PurchaseListView() {
                       onSort={table.onSort}
                       onSelectAllRows={
                         (!isClient(roleName) && !someRowsUsed) ? (checked) =>
-                        table.onSelectAllRows(
-                          checked,
-                          dataFiltered.map((row) => row.id)
-                        ) : null
+                          table.onSelectAllRows(
+                            checked,
+                            dataFiltered.map((row) => row.id)
+                          ) : null
                       }
                     />
 
@@ -591,7 +707,7 @@ export function PurchaseListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name, status } = filters;
+  const { name, status, client } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -612,6 +728,12 @@ function applyFilter({ inputData, comparator, filters }) {
         item?.storeProductSelection?.user?.username?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         item?.storeProductSelection?.user?.firstName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         item?.storeProductSelection?.user?.lastName?.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    );
+  }
+
+  if (client.id) {
+    inputData = inputData.filter(
+      (item) => item.storeProductSelection.user.id === client.id
     );
   }
 

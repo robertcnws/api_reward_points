@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from 'react';
+import { useRef, useState, useCallback, useMemo, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,12 +10,12 @@ import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward
 import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { CONFIG } from 'src/config-global';
 
 import { Iconify } from 'src/components/iconify';
 
 import { StoreProductFolderItem } from './store-product-folder-item';
 import { StoreProductActionSelected } from './store-product-action-selected';
-
 
 // ----------------------------------------------------------------------
 
@@ -39,12 +39,12 @@ export function StoreProductGridView({
   const containerRef = useRef(null);
 
   const {
-      loadedRewardPoints,
-      refetchRewardPoints,
-      loadingRewardPoints,
-      errorRewardPoints
-    } = useDataContext();
-  
+    loadedRewardPoints,
+    refetchRewardPoints,
+    loadingRewardPoints,
+    errorRewardPoints
+  } = useDataContext();
+
 
   const {
     loading: loadingStoreProductSelectionCarts,
@@ -65,6 +65,37 @@ export function StoreProductGridView({
     userLogged?.data?.username,
     fieldsRewardStoreProductSelectionBuys
   );
+
+  useEffect(() => {
+    let socket;
+    if (userLogged) {
+      const username = userLogged?.data?.username;
+      const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${username}/`;
+      socket = new WebSocket(url);
+
+      socket.onerror = (errorEvent) => {
+        console.error('WebSocket error:', errorEvent);
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (
+          message.type === 'created' ||
+          message.type === 'updated' ||
+          message.type === 'deleted'
+        ) {
+          refetchStoreProductSelectionBuys().catch((err) => console.error('Error fetching product data:', err));
+          refetchRewardPoints().catch((err) => console.error('Error fetching reward points:', err));
+          refetchStoreProducts?.().catch((err) => console.error('Error fetching store products:', err));
+        }
+      };
+    }
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [userLogged, refetchStoreProductSelectionBuys, refetchRewardPoints, refetchStoreProducts]);
 
   return (
     <>

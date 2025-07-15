@@ -351,7 +351,22 @@ class RewardStoreProductSelectionBuy(Document):
     order_number = IntField(default=0)
     confirmation_number = StringField(null=True, blank=True)
     notes = StringField(null=True, blank=True)
-    
+    purchase_type = StringField(
+        default='gained_points', 
+        choices=[
+            'gained_points', 
+            'assigned_points', 
+            'mixed_points',
+        ], 
+        required=False,
+        null=True,
+    )
+    purchase_fraction = ListField(
+        FloatField(),
+        default=list,
+        null=True,
+    )
+
     meta = {
         'collection': 'reward_store_product_selection_buy',
         'indexes': [

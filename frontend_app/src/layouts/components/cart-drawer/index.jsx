@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { m } from 'framer-motion';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useContext } from 'react';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -28,6 +28,7 @@ import { Iconify } from 'src/components/iconify';
 import { varHover } from 'src/components/animate';
 import { Scrollbar } from 'src/components/scrollbar';
 import { CustomTabs } from 'src/components/custom-tabs';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fNumber } from 'src/utils/format-number';
@@ -37,11 +38,13 @@ import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward
 import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 import { CartItem } from './cart-item';
 
+
 // ----------------------------------------------------------------------
 
 export function CartsDrawer({ sx, ...other }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+  const { isMobile } = useContext(LoadingContext);
 
   const {
     loadedRewardPoints,
@@ -308,6 +311,9 @@ export function CartsDrawer({ sx, ...other }) {
           )}
         </Box>
       </Box>
+      <IconButton onClick={drawer.onFalse} sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
+        <Iconify icon="mingcute:close-line" />
+      </IconButton>
     </Stack>
   );
 
@@ -354,7 +360,14 @@ export function CartsDrawer({ sx, ...other }) {
         onClose={drawer.onFalse}
         anchor="right"
         slotProps={{ backdrop: { invisible: true } }}
-        PaperProps={{ sx: { width: 1, maxWidth: 470, maxHeight: '96%' } }}
+        PaperProps={{
+          sx: {
+            width: 1,
+            maxWidth: !isMobile ? 470 : '100%',
+            maxHeight: '96%'
+          }
+        }}
+
       >
         {renderHead}
 
@@ -491,7 +504,7 @@ export function CartsDrawer({ sx, ...other }) {
           </Button>
         }
       />
-      
+
       <ConfirmDialog
         open={confirmCheckoutAll.value}
         onClose={confirmCheckoutAll.onFalse}
@@ -507,7 +520,7 @@ export function CartsDrawer({ sx, ...other }) {
           <Button
             variant="contained"
             color="warning"
-            onClick={async() => {
+            onClick={async () => {
               await onBuyAll();
               confirmCheckoutAll.onFalse();
             }}

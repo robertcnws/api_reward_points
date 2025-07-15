@@ -5,18 +5,11 @@ from api_reward_points.models import (
      RewardStoreProduct,
      RewardStoreProductReview,
 )
-from utils.s3_utils import (
-    upload_attachment_to_s3, 
-    generate_default_file_url,
-    delete_attachment_from_s3,
-)
 from utils.data_util import (
     transform_data_to_mongo,
-    parse_custom_date,
     create_notification,
     create_tracking,
     to_aware,
-    transform_dict_to_camelcase,
 )
 import json
 import logging
@@ -41,6 +34,7 @@ def create_store_product_review(request, id):
             
             store_product = RewardStoreProduct.objects(id=id).first()
             if not store_product:
+                logger.error("Store product not found")
                 return Response({'error': 'Store product not found'}, status=404)            
             
             rating = data.get('rating', 0)

@@ -39,10 +39,12 @@ def delete_store_product_file(request, id, folder, file):
         file_to_delete = folder + '/' + file
         attachments = obj.attachments if obj.attachments else []
         if not attachments:
+            logger.error("No attachments found for this product")
             return Response({'error': 'No attachments found for this product'}, status=404)
         attachment = RewardAttachment.objects(file=file_to_delete).first()
         file_name = attachment.name if attachment else None
         if not attachment:
+            logger.error("Attachment not found")
             return Response({'error': 'Attachment not found'}, status=404)
         attachments = [a for a in attachments if a.file != file_to_delete]
         attachments = sorted(attachments, key=lambda x: to_aware(x['created_time']), reverse=True)
@@ -104,6 +106,7 @@ def delete_all_store_product_files(request, id, folder):
         obj = RewardStoreProduct.objects(id=id).first()
         attachments = obj.attachments if obj.attachments else []
         if not attachments:
+            logger.error("No attachments found for this product")
             return Response({'error': 'No attachments found for this product'}, status=404)
         list_tracking_info = []
         list_files_names = []
@@ -173,6 +176,7 @@ def update_store_product(request, id):
     
     store_product = RewardStoreProduct.objects(id=id).first()
     if not store_product:
+        logger.error("Store product not found")
         return Response({'error': 'Store product not found'}, status=404)
     
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
@@ -373,6 +377,7 @@ def delete_store_product(request, id):
     
     store_product = RewardStoreProduct.objects(id=id).first()
     if not store_product:
+        logger.error("Store product not found")
         return Response({'error': 'Store product not found'}, status=404)
     
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
@@ -386,11 +391,13 @@ def delete_store_product(request, id):
                 carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=selections).all()
                 buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=selections).all()
                 if carts:
+                    logger.error(f"Cannot delete store product with active selections in {carts.count()} carts")
                     return Response({
                         'error': f'Cannot delete store product with active selections in {carts.count()} carts'
                     }, status=400)
                     
                 if buys:
+                    logger.error(f"Cannot delete store product with active selections in {buys.count()} buys")
                     return Response({
                         'error': f'Cannot delete store product with active selections in {buys.count()} buys'
                     }, status=400)
@@ -470,11 +477,13 @@ def delete_list_store_products(request):
                         carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=selections).all()
                         buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=selections).all()
                         if carts:
+                            logger.error(f'Cannot delete store products with active selections in carts')
                             return Response({
                                 'error': f'Cannot delete store products with active selections in carts'
                             }, status=400)
                             
                         if buys:
+                            logger.error(f'Cannot delete store products with active selections in buys')
                             return Response({
                                 'error': f'Cannot delete store products with active selections in buys'
                             }, status=400)
@@ -566,6 +575,7 @@ def manage_active_store_product(request, id):
             
             product = RewardStoreProduct.objects(id=id).first()
             if not product:
+                logger.error("Store product not found")
                 return Response({'error': 'Store product not found'}, status=404)
             product.is_active = not product.is_active
             product.save()

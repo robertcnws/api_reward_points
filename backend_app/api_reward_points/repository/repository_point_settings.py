@@ -28,6 +28,7 @@ def update_points_settings(request, id):
     
     points = RewardPointsSettings.objects(id=id).first()
     if not points:
+        logger.error("Points setting not found")
         return Response({'error': 'Points setting not found'}, status=404)
     
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
@@ -177,6 +178,7 @@ def delete_points_settings(request, id):
     
     points = RewardPointsSettings.objects(id=id).first()
     if not points:
+        logger.error("Points setting not found")
         return Response({'error': 'Points settings not found'}, status=404)
     
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
@@ -250,6 +252,7 @@ def delete_list_points_settings(request):
             for point_id in ids:
                 points = RewardPointsSettings.objects(id=point_id).first()
                 if not points:
+                    logger.error(f"Points setting with id {point_id} not found")
                     continue
                 
                 list_names.append(points.description or f'Points Settings {points.amount} - {points.points}')

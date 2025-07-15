@@ -40,6 +40,8 @@ export const fieldsRewardStoreProductSelectionBuys = [
     'orderNumber',
     'confirmationNumber',
     'notes',
+    'purchaseType',
+    'purchaseFraction',
     'lastModifiedTime',
     {
         name: 'storeProductSelection',

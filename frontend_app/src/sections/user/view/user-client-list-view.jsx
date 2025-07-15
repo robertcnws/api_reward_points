@@ -139,19 +139,10 @@ export function UserClientListView() {
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated') {
-        setTableData((prevData) => {
-          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-          if (existingItemIndex !== -1) {
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = message.item;
-            return updatedData;
-          }
-          return [message.item, ...prevData];
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchUsers?.().catch((error) => {
+          console.error('Error refetching users:', error);
         });
-      }
-      else if (message.type === 'deleted') {
-        setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
       }
     };
     return () => {
@@ -159,7 +150,7 @@ export function UserClientListView() {
         socket.close();
       }
     };
-  }, []);
+  }, [refetchUsers]);
 
 
   // useEffect(() => {

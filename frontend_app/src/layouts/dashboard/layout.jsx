@@ -128,19 +128,8 @@ export function DashboardLayout({ sx, children, header, data }) {
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated') {
-        setPurchases((prevData) => {
-          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-          if (existingItemIndex !== -1) {
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = message.item;
-            return updatedData;
-          }
-          return [message.item, ...prevData];
-        });
-      }
-      else if (message.type === 'deleted') {
-        setPurchases((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchPurchases().catch((err) => console.error('Error fetching purchases data:', err));
       }
     };
     return () => {
@@ -148,7 +137,7 @@ export function DashboardLayout({ sx, children, header, data }) {
         socket.close();
       }
     };
-  }, [userLogged?.data?.username, roleName]);
+  }, [userLogged?.data?.username, roleName, refetchPurchases]);
 
   const newPurchases = useMemo(
     () => {

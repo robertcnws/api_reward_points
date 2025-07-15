@@ -7,6 +7,7 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 // ----------------------------------------------------------------------
 
 export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults, hasNotAll = true, sx }) {
+  
   const handleRemoveKeyword = useCallback(() => {
     onResetPage();
     filters.setState({ name: '' });
@@ -14,13 +15,23 @@ export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults,
 
   const handleRemoveStatus = useCallback(() => {
     onResetPage();
-    filters.setState({ status: 'not_used' });
+    filters.setState({status: 'not_used'});
+  }, [filters, onResetPage]);
+
+  const handleResetClient = useCallback(() => {
+    onResetPage();
+    filters.setState({ client: { id: '', name: '' } });
+    localStorage.removeItem('purchaseFilterClient');
   }, [filters, onResetPage]);
 
   const handleReset = useCallback(() => {
     onResetPage();
     filters.onResetState();
-    filters.setState({ status: 'not_used' });
+    filters.setState({ 
+      status: 'not_used',
+      client: { id: '', name: '' }, 
+    });
+
   }, [filters, onResetPage]);
 
   return (
@@ -48,6 +59,10 @@ export function PurchaseTableFiltersResult({ filters, onResetPage, totalResults,
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
+      </FiltersBlock>
+
+      <FiltersBlock label="Client:" isShow={!!filters.state.client.name}>
+        <Chip {...chipProps} label={filters.state.client.name} onDelete={handleResetClient} />
       </FiltersBlock>
     </FiltersResult>
   );

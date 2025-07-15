@@ -5,18 +5,11 @@ from api_reward_points.models import (
      RewardStoreProductReview,
      RewardStoreProductReviewReaction,
 )
-from utils.s3_utils import (
-    upload_attachment_to_s3, 
-    generate_default_file_url,
-    delete_attachment_from_s3,
-)
 from utils.data_util import (
     transform_data_to_mongo,
-    parse_custom_date,
     create_notification,
     create_tracking,
     to_aware,
-    transform_dict_to_camelcase,
 )
 import json
 import logging
@@ -41,10 +34,12 @@ def manage_store_product_review_reaction(request, review_id):
 
             review = RewardStoreProductReview.objects(id=review_id).first()
             if not review:
+                logger.error("Store product review not found")
                 return Response({'error': 'Store product review not found'}, status=404)
 
             reaction_type = data.get('reactionType', None)
             if not reaction_type:
+                logger.error("Reaction type is required")
                 return Response({'error': 'Reaction type is required'}, status=400)
             
             reaction = RewardStoreProductReviewReaction.objects(

@@ -36,6 +36,8 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+
   // const filterNotifications = (notifications, projects, services, measurements, user) => {
   //   const projectsIds = projects?.map((project) => project?.id);
 
@@ -70,12 +72,12 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const [websocketChange, setWebsocketChange] = useState(false);
 
-  useEffect(() => {
-    if (refetchNotifications) {
-      refetchNotifications();
-    }
-    setNotifications(userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []);
-  }, [refetchNotifications, userNotifications, userLogged]);
+  // useEffect(() => {
+  //   if (refetchNotifications) {
+  //     refetchNotifications();
+  //   }
+  //   setNotifications(userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []);
+  // }, [refetchNotifications, userNotifications, userLogged]);
 
   useEffect(() => {
     if (userNotifications) {
@@ -91,22 +93,10 @@ export function NotificationsDrawer({ sx, ...other }) {
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated') {
-        setNotifications((prevData) => {
-          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-          if (existingItemIndex !== -1) {
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = message.item;
-            return updatedData;
-          }
-          const pData = prevData?.filter((notif) => notif.user.username === userLogged?.data.username && String(notif.id) !== String(message.item.id));
-          const updatedNotifications = [message.item, ...pData];
-          return updatedNotifications;
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchNotifications?.().catch((error) => {
+          console.error('Error refetching notifications:', error);
         });
-        setWebsocketChange(true);
-      }
-      else if (message.type === 'deleted') {
-        setNotifications((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
         setWebsocketChange(true);
       }
     };
@@ -115,7 +105,7 @@ export function NotificationsDrawer({ sx, ...other }) {
         socket.close();
       }
     };
-  }, [userLogged, projects, services, measurements]);
+  }, [refetchNotifications]);
 
   useEffect(() => {
     if (websocketChange) {

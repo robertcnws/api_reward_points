@@ -107,6 +107,8 @@ def store_product_selection_buy_saved(sender, document, **kwargs):
                 "orderNumber": document.order_number,
                 "confirmationNumber": document.confirmation_number,
                 "notes": document.notes,
+                "purchaseType": document.purchase_type,
+                "purchaseFraction": document.purchase_fraction,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }
@@ -136,6 +138,8 @@ def store_product_selection_buy_deleted(sender, document, **kwargs):
                 "orderNumber": document.order_number,
                 "confirmationNumber": document.confirmation_number,
                 "notes": document.notes,
+                "purchaseType": document.purchase_type,
+                "purchaseFraction": document.purchase_fraction,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }
@@ -173,6 +177,8 @@ def store_product_selection_buy_by_username_saved(sender, document, **kwargs):
                 "orderNumber": document.order_number,
                 "confirmationNumber": document.confirmation_number,
                 "notes": document.notes,
+                "purchaseType": document.purchase_type,
+                "purchaseFraction": document.purchase_fraction,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }
@@ -207,6 +213,8 @@ def store_product_selection_buy_by_username_deleted(sender, document, **kwargs):
                 "orderNumber": document.order_number,
                 "confirmationNumber": document.confirmation_number,
                 "notes": document.notes,
+                "purchaseType": document.purchase_type,
+                "purchaseFraction": document.purchase_fraction,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }

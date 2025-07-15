@@ -30,6 +30,7 @@ def manage_points(request, user_id):
 
     user = LoginUser.objects(id=user_id).first()
     if not user:
+        logger.error("User not found")
         return Response({'error': 'User not found'}, status=404)
 
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
@@ -39,7 +40,21 @@ def manage_points(request, user_id):
             
             reward_points = RewardPoints.objects(user=user).first()
             if not reward_points:
-                return Response({'error': 'Reward points not found for the user'}, status=404)
+                # logger.error("Reward points not found for the user")
+                # return Response({'error': 'Reward points not found for the user'}, status=404)
+                reward_points = RewardPoints(
+                    user=user,
+                    total_assigned_points=0.0,
+                    total_spent_points=0.0,
+                    total_gained_points=0.0,
+                    total_substracted_points=0.0,
+                    total_refunded_points=0.0,
+                    total_amount_invoices=0.0,
+                    invoices=[],
+                    created_time=to_aware(timezone.now()),
+                    last_modified_time=to_aware(timezone.now())
+                )
+                reward_points.save()
             
             new_assigned_points = data.get('newAssignedPoints', 0.0)
             new_spent_points = data.get('newSpentPoints', 0.0)
@@ -55,6 +70,7 @@ def manage_points(request, user_id):
             total_current_points = current_assigned_points + current_gained_points - current_substracted_points + points_to_add
 
             if total_current_points < 0:
+                logger.error("Insufficient points available")
                 return Response({'error': 'Insufficient points available'}, status=400)
 
             reward_points.total_assigned_points += new_assigned_points

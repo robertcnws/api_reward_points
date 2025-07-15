@@ -37,29 +37,42 @@ REDIS_HOST = env('REDIS_HOST', default='localhost')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'detailed': {
+            'format': (
+                '%(asctime)s %(levelname)-8s '
+                '[%(filename)s:%(lineno)d %(funcName)s()] '
+                '%(message)s'
+            ),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': '/var/log/celery.log',
-            'formatter': 'verbose',
+            'formatter': 'detailed',
         },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'detailed',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'celery': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'WARNING',
         },
     },
 }

@@ -280,9 +280,10 @@ function reader(data) {
         ml: 1,
         mr: 1,
         mb: 0.5,
-        '& p': { typography: 'subtitle2', m: 0 },
-        '& a': { color: 'inherit', textDecoration: 'none' },
-        '& strong': { typography: 'subtitle2' },
+        fontSize: '0.875rem',
+        // '& p': { typography: 'subtitle2', m: 0 },
+        // '& a': { color: 'inherit', textDecoration: 'none' },
+        // '& strong': { typography: 'subtitle2' },
       }}
     />
   );

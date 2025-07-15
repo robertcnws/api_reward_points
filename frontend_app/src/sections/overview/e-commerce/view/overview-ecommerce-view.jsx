@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -18,6 +18,7 @@ import { paths } from 'src/routes/paths';
 import dayjs from 'dayjs';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { fDate } from 'src/utils/format-time';
 
 
 import { useRouter } from 'src/routes/hooks';
@@ -28,7 +29,6 @@ import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
-
 
 // ----------------------------------------------------------------------
 
@@ -41,6 +41,7 @@ export function OverviewEcommerceView({
 
   const {
     loadedStoreProducts,
+    loadedRewardPointsHistory,
   } = useDataContext();
 
   const router = useRouter();
@@ -81,6 +82,114 @@ export function OverviewEcommerceView({
       })) || []
     );
   }, [sortedInvoices]);
+
+  const seriesFromInvoices = useCallback((attributeName, attributeData, sliceNumber = 10) => {
+    const finalList = sliceNumber ? sortedInvoices.slice(0, sliceNumber) : sortedInvoices;
+    const series = finalList.map((invoice) => {
+      const xData = invoice[attributeName] || '';
+      const yData = invoice[attributeData] || 0;
+      return {
+        name: xData,
+        value: yData,
+      };
+    });
+    return series || [];
+  }, [sortedInvoices]);
+
+  const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber=10) => {
+    const finalList = sliceNumber ? loadedRewardPointsHistory.slice(0, sliceNumber) : loadedRewardPointsHistory;
+    const series = finalList?.filter(item => types.includes(item.action))
+      .map((item) => {
+        const xData = item[attributeName] || '';
+        const yData = item[attributeData] || 0;
+        return {
+          name: xData,
+          value: yData,
+        };
+      });
+    return series || [];
+  }, [loadedRewardPointsHistory]);
+
+  const avgStepTrendPercent = (arr) => {
+    if (!Array.isArray(arr) || arr.length < 2) return null;
+    const first = arr[0];
+    const last = arr[arr.length - 1];
+    const n = arr.length - 1;
+    if (first <= 0) return null;
+    const factor = last / first;
+    return (factor ** (1 / n) - 1) * 100;
+  }
+
+
+  const invoicesDateArray = useMemo(
+    () => seriesFromInvoices('date', 'paymentMade').map(item => fDate(item.name)), 
+    [seriesFromInvoices]
+  );
+  const invoicesPaymentMadeArray = useMemo(
+    () => seriesFromInvoices('date', 'paymentMade').map(item => item.value),
+    [seriesFromInvoices]
+  );
+  const invoicesTrendPercent = useMemo(
+    () => avgStepTrendPercent(invoicesPaymentMadeArray),
+    [invoicesPaymentMadeArray]
+  );
+
+
+  const currentGainedDateArray = useMemo(
+    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDate(item.name)), 
+    [seriesFromHistory]
+  );
+  const currentGainedPointsArray = useMemo(
+    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => item.value),
+    [seriesFromHistory]
+  );
+  const currentGainedTrendPercent = useMemo(
+    () => avgStepTrendPercent(currentGainedPointsArray),
+    [currentGainedPointsArray]
+  );
+
+
+  const currentAssignedDateArray = useMemo(
+    () => seriesFromHistory('createdTime', ['assigned'], 'assignedPoints').map(item => fDate(item.name)), 
+    [seriesFromHistory]
+  );
+  const currentAssignedPointsArray = useMemo(
+    () => seriesFromHistory('createdTime', ['assigned'], 'assignedPoints').map(item => item.value),
+    [seriesFromHistory]
+  );
+  const currentAssignedTrendPercent = useMemo(
+    () => avgStepTrendPercent(currentAssignedPointsArray),
+    [currentAssignedPointsArray]
+  );
+
+
+  const currentSpentDateArray = useMemo(
+    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDate(item.name)), 
+    [seriesFromHistory]
+  );
+  const currentSpentPointsArray = useMemo(
+    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => item.value),
+    [seriesFromHistory]
+  );
+  const currentSpentTrendPercent = useMemo(
+    () => avgStepTrendPercent(currentSpentPointsArray),
+    [currentSpentPointsArray]
+  );
+
+
+  const currentSubstractedDateArray = useMemo(
+    () => seriesFromHistory('createdTime', ['substracted'], 'substractedPoints').map(item => fDate(item.name)), 
+    [seriesFromHistory]
+  );
+  const currentSubstractedPointsArray = useMemo(
+    () => seriesFromHistory('createdTime', ['substracted'], 'substractedPoints').map(item => item.value),
+    [seriesFromHistory]
+  );
+  const currentSubstractedTrendPercent = useMemo(
+    () => avgStepTrendPercent(currentSubstractedPointsArray),
+    [currentSubstractedPointsArray]
+  );
+
 
   return (
     <DashboardContent maxWidth="xl">
@@ -160,13 +269,14 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsAttribute
               title="Spent Amount (USD)"
               icon='noto:money-with-wings'
-              percent={2.6}
+              percent={invoicesTrendPercent || 0}
               total={totalAmountInvoices}
               bgcolor='info.lighter'
               isMoney
+              indicatorName='(10 days)'
               chart={{
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [22, 8, 35, 50, 82, 84, 77, 12],
+                categories: invoicesDateArray,
+                series: invoicesPaymentMadeArray,
               }}
             />
           </Grid>
@@ -175,13 +285,13 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsAttribute
               title="Current Points"
               icon='streamline-stickies-color:star'
-              percent={-0.1}
+              percent={currentGainedTrendPercent || 0}
               total={totalAvailablePoints}
               bgcolor='success.lighter'
               chart={{
                 colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [56, 47, 40, 62, 73, 30, 23, 54],
+                categories: currentGainedDateArray,
+                series: currentGainedPointsArray,
               }}
             />
           </Grid>
@@ -190,13 +300,13 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsAttribute
               title="Assigned Points"
               icon='fluent-color:reward-24'
-              percent={-0.1}
+              percent={currentAssignedTrendPercent || 0}
               total={totalAssignedPoints}
               bgcolor='secondary.lighter'
               chart={{
                 colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [56, 47, 40, 62, 73, 30, 23, 54],
+                categories: currentAssignedDateArray,
+                series: currentAssignedPointsArray,
               }}
             />
           </Grid>
@@ -205,13 +315,13 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsAttribute
               title="Spent Points"
               icon='streamline-ultimate-color:warehouse-cart-package-ribbon'
-              percent={0.6}
+              percent={currentSpentTrendPercent || 0}
               total={totalSpentPoints}
               bgcolor='warning.lighter'
               chart={{
                 colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [40, 70, 75, 70, 50, 28, 7, 64],
+                categories: currentSpentDateArray,
+                series: currentSpentPointsArray,
               }}
             />
           </Grid>
@@ -220,13 +330,13 @@ export function OverviewEcommerceView({
             <EcommerceRewardPointsAttribute
               title="Substracted Points"
               icon='fluent-color:error-circle-16'
-              percent={0.6}
+              percent={currentSubstractedTrendPercent || 0}
               total={totalSubstractedPoints}
               bgcolor='error.lighter'
               chart={{
                 colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [40, 70, 75, 70, 50, 28, 7, 64],
+                categories: currentSubstractedDateArray,
+                series: currentSubstractedPointsArray,
               }}
             />
           </Grid>

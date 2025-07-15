@@ -21,6 +21,7 @@ export function EcommerceRewardPointsAttribute({
   bgcolor = 'background.paper',
   sx,
   isMoney = false,
+  indicatorName = '(10 days)',
   ...other
 }) {
   const theme = useTheme();
@@ -84,13 +85,13 @@ export function EcommerceRewardPointsAttribute({
 
       <Box component="span" sx={{ typography: 'subtitle2', display: 'inline-flex', flexDirection: 'row' }}>
 
-        <Typography>
+        <Typography sx={{ fontWeight: 'bold', display: 'inline-flex', fontSize: 13 }}>
           {percent > 0 && '+'}
           {fPercent(percent)}
         </Typography>
       </Box>
       <Box component="span" sx={{ color: 'text.secondary', typography: 'caption' }}>
-        last week
+        {indicatorName}
       </Box>
     </Box>
   );

@@ -553,15 +553,17 @@ def get_rewards_points(user, description=None):
                 reward_points.total_amount_invoices = total_amount_invoices
                 reward_points.invoices = final_invoices
                 reward_points.last_modified = timezone.now()
+                
+            reward_points.save()
             
             all_history = RewardPointsHistory.objects(
                 reward_points=reward_points, 
                 # action__in=['gained', 'assigned', 'refunded']
-            ).only('gained_points')
+            ).all()
             
             history = None
             
-            if new_points > 0 and all_history.count() == 0:
+            if new_points > 0 and not all_history:
                 history = RewardPointsHistory(
                     created_time=timezone.now(),
                     reward_points=reward_points,
@@ -594,8 +596,6 @@ def get_rewards_points(user, description=None):
                 
                 # reward_points.total_substracted_points += -new_points
                 # reward_points.last_modified = timezone.now()
-                
-            reward_points.save()
             
             if history:
                 history.save()
