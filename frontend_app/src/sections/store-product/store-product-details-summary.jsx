@@ -240,7 +240,13 @@ export function StoreProductDetailsSummary({
           onDecrease={() => setValue('quantity', values.quantity - 1)}
         />
 
-        <Typography variant="caption" component="div" sx={{ textAlign: 'right' }}>
+        <Typography
+          variant="caption"
+          component="div"
+          sx={{
+            textAlign: 'right',
+            color: available === 0 ? 'error.main' : 'text.secondary',
+          }}>
           Available: {available}
         </Typography>
       </Stack>
@@ -286,6 +292,12 @@ export function StoreProductDetailsSummary({
       {newLabel.enabled && <Label color="info">{newLabel.content}</Label>}
       {saleLabel.enabled && <Label color="error">{saleLabel.content}</Label>}
     </Stack>
+  );
+
+  const renderNeedPoints = (
+    <Typography variant="body2" sx={{ color: 'error.main' }}>
+      You need <b>{price - totalAvailablePoints}</b> more points to purchase {product?.name}
+    </Typography>
   );
 
   const renderInventoryType = (
@@ -348,6 +360,12 @@ export function StoreProductDetailsSummary({
               {/* {renderSizeOptions} */}
 
               {product?.isActive && renderQuantity}
+            </React.Fragment>
+          )}
+          {(roleName === 'client' && price > totalAvailablePoints) && (
+            <React.Fragment key="client-need-points">
+              <Divider sx={{ borderStyle: 'dashed' }} />
+              {renderNeedPoints}
             </React.Fragment>
           )}
           {(roleName === 'client' && product?.isActive) && (

@@ -79,15 +79,15 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
 
   const [quantityUsed, setQuantityUsed] = useState(1);
 
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(currentBuy?.notes || '');
 
   const confirmUse = useBoolean();
 
   useEffect(() => {
-    if (currentBuy) {
-      setNotes(currentBuy.notes || '');
+    if (open.value) {
+      setNotes(currentBuy?.notes ?? '');
     }
-  }, [currentBuy]);
+  }, [open.value, currentBuy?.notes]);
 
   const handleUsePurchase = useCallback(
     async (id) => {
@@ -169,7 +169,7 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
 
             <TextField
               name="notes"
-              value={notes}
+              value={notes || ''}
               onChange={(e) => setNotes(e.target.value)}
               variant="outlined"
               size="small"
@@ -185,18 +185,21 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
                 ),
               }}
               sx={{ flexGrow: 1 }}
+              disabled={isUsed}
             />
           </Stack>
         </DialogContent>
 
         <DialogActions>
-          <Button
-            variant="contained"
-            disabled={quantityUsed <= 0 || quantityUsed > available}
-            onClick={() => confirmUse.onTrue()}
-          >
-            Use this!
-          </Button>
+          {!isUsed && (
+            <Button
+              variant="contained"
+              disabled={quantityUsed <= 0 || quantityUsed > available}
+              onClick={() => confirmUse.onTrue()}
+            >
+              Use this!
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => open.onFalse()}>
             Cancel
           </Button>

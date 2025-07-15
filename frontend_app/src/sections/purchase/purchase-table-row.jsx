@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -85,9 +85,12 @@ export function PurchaseTableRow({
         {!isMobile ? (
           <>
             <TableCell sx={{ whiteSpace: 'nowrap' }}>
-              <StoreProductFolderItemCarousel
-                images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
-              />
+                <StoreProductFolderItemCarousel
+                  images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
+                  maxWidth={50}
+                  maxHeight={50}
+                  overflow='hidden'
+                />
             </TableCell>
 
             <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
@@ -100,8 +103,8 @@ export function PurchaseTableRow({
                 noWrap
                 sx={{
                   fontWeight: 'bold',
-                  fontStyle: 'normal',
-                  fontSize: 15,
+                  fontFamily: 'Mono, monospace',
+                  fontSize: 17,
                   cursor: 'pointer',
                   color: 'text.primary',
                   '&:hover': { color: 'primary.main' }

@@ -16,7 +16,12 @@ import { FormatAlignJustify } from '@mui/icons-material';
 
 // ----------------------------------------------------------------------
 
-export function StoreProductFolderItemCarousel({ images }) {
+export function StoreProductFolderItemCarousel({
+  images,
+  maxHeight = 100,
+  maxWidth = 100,
+  overflow = 'inherit',
+}) {
   const carousel = useCarousel({
     thumbs: {
       slidesToShow: 'auto',
@@ -26,57 +31,57 @@ export function StoreProductFolderItemCarousel({ images }) {
   const [initialFiles, setInitialFiles] = useState([]);
 
   useEffect(() => {
-      const attachments = images?.length ? [...images] : [];
+    const attachments = images?.length ? [...images] : [];
 
-      if (!attachments.length) {
-        const defaultFile = {
-          file: 'store_products/nws_reward_points_preview.png',
-          name: 'Default Image',
-          isNew: false,
-        }
-        attachments.push(defaultFile);
-        // setInitialFiles([defaultFile]);
-        // return;
+    if (!attachments.length) {
+      const defaultFile = {
+        file: 'store_products/nws_reward_points_preview.png',
+        name: 'Default Image',
+        isNew: false,
       }
-      const loadFiles = async () => {
-        const loaded = await Promise.all(
-          attachments.map(async (attachment) => {
-            if (attachment instanceof File) {
-              return {
-                ...attachment,
-                fileUrl: URL.createObjectURL(attachment),
-                name: attachment.name,
-                isNew: true,
-              };
-            }
-            if (!attachment.file) {
+      attachments.push(defaultFile);
+      // setInitialFiles([defaultFile]);
+      // return;
+    }
+    const loadFiles = async () => {
+      const loaded = await Promise.all(
+        attachments.map(async (attachment) => {
+          if (attachment instanceof File) {
+            return {
+              ...attachment,
+              fileUrl: URL.createObjectURL(attachment),
+              name: attachment.name,
+              isNew: true,
+            };
+          }
+          if (!attachment.file) {
+            return attachment;
+          }
+          try {
+            const response = await fetch(
+              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(attachment.file)}`
+            );
+            if (!response.ok) {
+              console.error('Error fetching URL', response.statusText);
               return attachment;
             }
-            try {
-              const response = await fetch(
-                `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(attachment.file)}`
-              );
-              if (!response.ok) {
-                console.error('Error fetching URL', response.statusText);
-                return attachment;
-              }
-              const values = await response.json();
-              
-              return {
-                ...attachment,
-                fileUrl: values.url,
-                isNew: false,
-              };
-            } catch (error) {
-              console.error('Error al obtener la URL:', error);
-              return attachment;
-            }
-          })
-        );
-        setInitialFiles(loaded);
-      };
-      loadFiles();
-    }, [images]);
+            const values = await response.json();
+
+            return {
+              ...attachment,
+              fileUrl: values.url,
+              isNew: false,
+            };
+          } catch (error) {
+            console.error('Error al obtener la URL:', error);
+            return attachment;
+          }
+        })
+      );
+      setInitialFiles(loaded);
+    };
+    loadFiles();
+  }, [images]);
 
   const slides = initialFiles?.map((img) => ({ src: img.fileUrl })) || [];
 
@@ -90,7 +95,12 @@ export function StoreProductFolderItemCarousel({ images }) {
 
   return (
     <>
-      <div>
+      <div style={{
+        maxWidth,
+        maxHeight,
+        overflow,
+        // overflow: 'hidden'
+      }}>
         <Box sx={{ mb: 2.5, position: 'relative', display: 'flex', justifyContent: 'center' }}>
           {/* <CarouselArrowNumberButtons
             {...carousel.arrows}
@@ -108,12 +118,12 @@ export function StoreProductFolderItemCarousel({ images }) {
                 src={slide.src}
                 ratio="1/1"
                 onClick={() => lightbox.onOpen(slide.src)}
-                sx={{ 
-                  cursor: 'zoom-in', 
-                  minWidth: 100, 
-                  maxWidth: 100, 
+                sx={{
+                  cursor: 'zoom-in',
+                  minWidth: maxWidth,
+                  maxWidth,
                   // maxHeight: 700, 
-                  justifyContent: 'flex-end', 
+                  justifyContent: 'flex-end',
                   display: 'flex',
                   alignItems: 'center',
                   objectFit: 'contain'

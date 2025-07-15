@@ -1073,7 +1073,7 @@ def manage_use_store_product_selection_buy(request, id):
             if quantity_used <= 0:
                 return Response({'error': 'Invalid quantity used'}, status=400)
             
-            notes = data.get('notes', None)
+            notes = data.get('notes', '')
             
             total_quantity_used = buy.quantity_used + quantity_used if buy.quantity_used else quantity_used
 

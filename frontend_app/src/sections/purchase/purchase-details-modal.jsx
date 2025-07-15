@@ -25,7 +25,7 @@ import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { Divider, Stack, Typography } from '@mui/material';
+import { Divider, Stack, TextField, Typography } from '@mui/material';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { fNumber } from 'src/utils/format-number';
 import { Iconify } from 'src/components/iconify';
@@ -64,7 +64,7 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
     >
       <DialogTitle>
         Purchase of {currentBuy?.storeProductSelection?.storeProduct?.name}
-        { currentBuy?.hasRequestedRefund && (
+        {currentBuy?.hasRequestedRefund && (
           <Label color="secondary" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
             Refund Requested
           </Label>
@@ -256,6 +256,42 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
             </Box>
           </Box>
         </Box>
+        {isClient(roleName) && currentBuy?.notes && currentBuy?.notes !== '' && (
+              <Box
+                display="flex"
+                flexDirection='row'
+                justifyContent="flex-start"
+                alignItems="flex-start"
+                sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
+              >
+                <Label color="default" sx={{ width: '50%' }}>
+                  <b>Notes:</b>
+                </Label>
+                <TextField
+                  value={currentBuy?.notes || ''}
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  InputProps={{
+                    startAdornment: (
+                      <Box sx={{ mr: 1 }}>
+                        <Iconify icon="mdi:note-text-outline" width={20} height={20} color='text.disabled' />
+                      </Box>
+                    ),
+                    inputProps: {
+                      sx: {
+                        fontSize: 12,
+                        color: 'text.secondary',
+                      },
+                    },
+                  }}
+                  sx={{ flexGrow: 1, width: '50%' }}
+                  disabled
+                />
+              </Box>
+            )}
       </DialogContent>
 
       <DialogActions>

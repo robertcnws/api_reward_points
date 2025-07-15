@@ -67,7 +67,7 @@ export function NotificationItem({ notification, drawer }) {
       <Stack
         alignItems="center"
         justifyContent="center"
-        sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: 'background.neutral' }}
+        sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: 'background.neutral' }}
       >
         <Box
           component="img"
@@ -75,7 +75,7 @@ export function NotificationItem({ notification, drawer }) {
             `${CONFIG.assetsDir}/assets/icons/notification/${notification.notification.module.replace(/_/g, '-')}/ic-${notification.notification.type.replace(/_/g, '-')}.svg`
           }
           alt={notification.notification.type}
-          sx={{ width: 24, height: 24 }}
+          sx={{ width: 44, height: 44 }}
         />
       </Stack>
     </ListItemAvatar>

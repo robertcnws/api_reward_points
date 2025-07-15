@@ -18,7 +18,7 @@ import { paths } from 'src/routes/paths';
 import dayjs from 'dayjs';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { fDate } from 'src/utils/format-time';
+import { fDate, fDateTime } from 'src/utils/format-time';
 
 
 import { useRouter } from 'src/routes/hooks';
@@ -97,8 +97,16 @@ export function OverviewEcommerceView({
   }, [sortedInvoices]);
 
   const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber=10) => {
-    const finalList = sliceNumber ? loadedRewardPointsHistory.slice(0, sliceNumber) : loadedRewardPointsHistory;
-    const series = finalList?.filter(item => types.includes(item.action))
+    const initialList = loadedRewardPointsHistory || [];
+    const sortedList = [...initialList].sort((a, b) => {
+      if (a[attributeName] && b[attributeName]) return dayjs(b[attributeName]).diff(dayjs(a[attributeName]));
+      if (!a[attributeName] && b[attributeName]) return 1;
+      if (a[attributeName] && !b[attributeName]) return -1;
+      return 0;
+    });
+    const finalList = sliceNumber ? sortedList.slice(0, sliceNumber) : sortedList;
+    const reverseList = finalList.reverse();
+    const series = reverseList?.filter(item => types.includes(item.action))
       .map((item) => {
         const xData = item[attributeName] || '';
         const yData = item[attributeData] || 0;
@@ -136,7 +144,7 @@ export function OverviewEcommerceView({
 
 
   const currentGainedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDateTime(item.name)), 
     [seriesFromHistory]
   );
   const currentGainedPointsArray = useMemo(
@@ -150,11 +158,11 @@ export function OverviewEcommerceView({
 
 
   const currentAssignedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['assigned'], 'assignedPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => fDateTime(item.name)), 
     [seriesFromHistory]
   );
   const currentAssignedPointsArray = useMemo(
-    () => seriesFromHistory('createdTime', ['assigned'], 'assignedPoints').map(item => item.value),
+    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => item.value),
     [seriesFromHistory]
   );
   const currentAssignedTrendPercent = useMemo(
@@ -164,7 +172,7 @@ export function OverviewEcommerceView({
 
 
   const currentSpentDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDateTime(item.name)), 
     [seriesFromHistory]
   );
   const currentSpentPointsArray = useMemo(
@@ -178,11 +186,11 @@ export function OverviewEcommerceView({
 
 
   const currentSubstractedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['substracted'], 'substractedPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => fDate(item.name)), 
     [seriesFromHistory]
   );
   const currentSubstractedPointsArray = useMemo(
-    () => seriesFromHistory('createdTime', ['substracted'], 'substractedPoints').map(item => item.value),
+    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => item.value),
     [seriesFromHistory]
   );
   const currentSubstractedTrendPercent = useMemo(

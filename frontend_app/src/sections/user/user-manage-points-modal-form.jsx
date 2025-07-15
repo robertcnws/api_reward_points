@@ -225,7 +225,7 @@ export function UserManagePointsModalForm({
               onClose();
             }}
           >
-            Use
+            Update
           </Button>
         }
       />

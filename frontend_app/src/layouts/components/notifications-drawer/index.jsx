@@ -38,27 +38,34 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
-  // const filterNotifications = (notifications, projects, services, measurements, user) => {
-  //   const projectsIds = projects?.map((project) => project?.id);
+  const clientModules = useMemo(
+    () => [
+      'points_settings',
+      'reward_points',
+      'store_products',
+      'store_product_review_reactions',
+      'store_product_reviews',
+    ],
+    []
+  );
 
-  //   const servicesIds = services?.map((service) => service?.id);
+  const clientTypes = useMemo(
+    () => [
+      'manage_store_product_selection_buy_use',
+      'manage_store_product_selection_buy_refund',
+    ],
+    []
+  );
 
-  //   const measurementsIds = measurements?.map((measurement) => measurement?.id);
+  const filterNotifications = useCallback((notifs) => {
 
-  //   const allIds = [...projectsIds, ...servicesIds, ...measurementsIds];
+    if (!isClient(roleName)) return notifs;
 
-  //   const isInstallerRole = isClient(user?.data?.user_role?.name);
-  //   if (!notifications || !allIds?.length) return [];
+    return notifs?.filter(
+      (n) => clientModules.includes(n.notification.module) || clientTypes.includes(n.notification.type)
+    );
 
-  //   if (!isInstallerRole && !user) return notifications;
-    
-  //   return notifications?.filter((notification) => {
-  //     const itemId = notification?.notification?.info_id;
-  //     if (!itemId || !allIds?.includes(itemId)) return false;
-  //     return true;
-  //   });
-
-  // }
+  }, [clientModules, clientTypes, roleName]);
 
   const {
     loadedNotifications: userNotifications,
@@ -72,6 +79,8 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const [websocketChange, setWebsocketChange] = useState(false);
 
+  console.log('userNotifications', userNotifications);
+
   // useEffect(() => {
   //   if (refetchNotifications) {
   //     refetchNotifications();
@@ -81,9 +90,15 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   useEffect(() => {
     if (userNotifications) {
-      setNotifications(userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username));
+      const allNotifications = filterNotifications(userNotifications);
+      const filteredNotifications = allNotifications?.filter(
+        (notif) => notif.user.username === userLogged?.data.username
+      );
+      if (filteredNotifications.length > 0) {
+        setNotifications(filteredNotifications);
+      }
     }
-  }, [userNotifications, userLogged]);
+  }, [userNotifications, userLogged, filterNotifications]);
 
   useEffect(() => {
     const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`);
@@ -107,15 +122,15 @@ export function NotificationsDrawer({ sx, ...other }) {
     };
   }, [refetchNotifications]);
 
-  useEffect(() => {
-    if (websocketChange) {
-      setNotifications(
-        userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []
-        // filterNotifications(userNotifications, projects, services, measurements, userLogged)
-      );
-      setWebsocketChange(false);
-    }
-  }, [websocketChange, userLogged, projects, services, measurements, userNotifications]);
+  // useEffect(() => {
+  //   if (websocketChange) {
+  //     setNotifications(
+  //       // userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []
+  //       filterNotifications(userNotifications) || []
+  //     );
+  //     setWebsocketChange(false);
+  //   }
+  // }, [websocketChange, userNotifications, userLogged, filterNotifications]);
 
 
   const drawer = useBoolean();
