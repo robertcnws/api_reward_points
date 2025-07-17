@@ -47,7 +47,7 @@ def update_points_settings(request, id):
             
             points.save()
             
-            description = points.description or f'Update Points Settings {points.amount} - {points.points}'
+            description = points.description or f'Update Points Settings ${points.amount} -> {points.points}'
             update_reward_points_in_users(description=description)
             
             tracking_info = transform_data_to_mongo(
@@ -69,14 +69,14 @@ def update_points_settings(request, id):
                 action=f'update points settings',
                 object_id=points.id,
                 object_type='RewardPointsSettings',
-                object_name=points.description or f'Points Settings {points.amount} - {points.points}',
+                object_name=points.description or f'Points Settings ${points.amount} -> {points.points}',
                 managed_data={
                     'data': tracking_info
                 }
             )
                             
             module='points_settings'
-            info=f'has updated points settings ({points.description or f"Points Settings {points.amount} - {points.points}"})'
+            info=f'has updated points settings ({points.description or f"Points Settings ${points.amount} -> {points.points}"})'
             info_id=points.id
             type='update_points_settings'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -121,7 +121,7 @@ def create_points_settings(request):
             
             points.save()
             
-            description = points.description or f'New Points Settings {points.amount} - {points.points}'
+            description = points.description or f'New Points Settings ${points.amount} -> {points.points}'
             update_reward_points_in_users(description=description)
             
             tracking_info = transform_data_to_mongo(
@@ -143,14 +143,14 @@ def create_points_settings(request):
                 action=f'create points settings',
                 object_id=points.id,
                 object_type='RewardPointsSettings',
-                object_name=points.description or f'Points Settings {points.amount} - {points.points}',
+                object_name=points.description or f'Points Settings ${points.amount} -> {points.points}',
                 managed_data={
                     'data': tracking_info
                 }
             )
                             
             module='points_settings'
-            info=f'has created new points settings ({points.description or f"Points Settings {points.amount} - {points.points}"})'
+            info=f'has created new points settings ({points.description or f"Points Settings ${points.amount} -> {points.points}"})'
             info_id=points.id
             type='create_points_settings'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -205,19 +205,19 @@ def delete_points_settings(request, id):
                 action=f'delete points settings',
                 object_id=points.id,
                 object_type='RewardPointsSettings',
-                object_name=points.description or f'Points Settings {points.amount} - {points.points}',
+                object_name=points.description or f'Points Settings ${points.amount} -> {points.points}',
                 managed_data={
                     'data': tracking_info
                 }
             )
                             
             module='points_settings'
-            info=f'has deleted a points settings ({points.description or f"Points Settings {points.amount} - {points.points}"})'
+            info=f'has deleted a points settings ({points.description or f"Points Settings ${points.amount} -> {points.points}"})'
             info_id=points.id
             type='delete_points_settings'
             create_notification(module, info_id, info, type, user_reporter.username)
-            
-            description = points.description or f'Delete Points Settings {points.amount} - {points.points}'
+
+            description = points.description or f'Delete Points Settings ${points.amount} -> {points.points}'
             
             points.delete()
             
@@ -254,9 +254,9 @@ def delete_list_points_settings(request):
                 if not points:
                     logger.error(f"Points setting with id {point_id} not found")
                     continue
-                
-                list_names.append(points.description or f'Points Settings {points.amount} - {points.points}')
-                
+
+                list_names.append(points.description or f'Points Settings ${points.amount} -> {points.points}')
+
                 tracking_info = transform_data_to_mongo(
                     points, 
                     exclude_fields=[
@@ -274,8 +274,8 @@ def delete_list_points_settings(request):
                 list_tracking_info.append(tracking_info)
                 
                 points.delete()
-                
-            description = points.description or f'Delete list of Points Settings {", ".join(list_names)}'
+
+            description = points.description or f'Delete list of Points Settings ${", ".join(list_names)}'
             update_reward_points_in_users(description=description)
             
             create_tracking(

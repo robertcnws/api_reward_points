@@ -36,7 +36,7 @@ export function NavMobile({ data, open, onClose, slots, sx, ...other }) {
       }}
     >
       {slots?.topArea ?? (
-        <Box sx={{ pl: 4.5, pt: 2.5, pb: 1, mt: 0 }}>
+        <Box sx={{ pl: 9, pt: 2.5, pb: 2, mt: 0 }}>
           <Logo isSingle={false} sx={{ width: '200px', height: 'auto' }}/>
         </Box>
       )}

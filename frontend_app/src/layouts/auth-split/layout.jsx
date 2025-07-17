@@ -51,12 +51,12 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                   // ml: !isMobile ? 1 : 0,
                   // mb: !isMobile ? 0 : 10,
                   mt: !isMobile ? 100 : 40,
-                  ml: !isMobile ? 5 : 3,
+                  ml: !isMobile ? 4 : 6,
                 }}>
                   <Logo
                     isSingle={false}
                     sx={{
-                      width: 500,
+                      width: 450,
                       height: 'auto'
                     }}
                   />

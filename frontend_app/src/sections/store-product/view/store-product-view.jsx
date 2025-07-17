@@ -54,7 +54,7 @@ export function StoreProductView() {
         defaultRowsPerPage: parseInt(localStorage.getItem('storeProductRowsPerPage'), 10) || 10,
         defaultDense: true,
         defaultOrder: 'asc',
-        defaultOrderBy: 'createdTime'
+        defaultOrderBy: 'name'
     });
 
     const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);

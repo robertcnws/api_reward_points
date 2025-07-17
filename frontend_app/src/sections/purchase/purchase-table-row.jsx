@@ -48,6 +48,8 @@ export function PurchaseTableRow({
 
   const confirmRefund = useBoolean();
 
+  const confirmInactive = useBoolean();
+
   const collapse = useBoolean();
 
   const popover = usePopover();
@@ -85,12 +87,12 @@ export function PurchaseTableRow({
         {!isMobile ? (
           <>
             <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                <StoreProductFolderItemCarousel
-                  images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
-                  maxWidth={50}
-                  maxHeight={50}
-                  overflow='hidden'
-                />
+              <StoreProductFolderItemCarousel
+                images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
+                maxWidth={50}
+                maxHeight={50}
+                overflow='hidden'
+              />
             </TableCell>
 
             <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
@@ -115,6 +117,14 @@ export function PurchaseTableRow({
 
             <TableCell onClick={openDetails.onTrue}>
               {row?.storeProductSelection?.storeProduct?.name}
+            </TableCell>
+
+            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              <Label
+                color={row?.storeProductSelection?.storeProduct?.isActive ? 'success' : 'warning'}
+              >
+                {row?.storeProductSelection?.storeProduct?.isActive ? 'YES' : 'NO'}
+              </Label>
             </TableCell>
 
             {!isClient(roleName) && (
@@ -266,9 +276,13 @@ export function PurchaseTableRow({
           )}
           {(roleName !== 'client' && !row.hasRequestedRefund) && [
             <MenuItem
-              key='use-purchase'
+              key="use-purchase"
               onClick={() => {
-                openUse.onTrue();
+                if (row.storeProductSelection?.storeProduct?.isActive) {
+                  openUse.onTrue();
+                } else {
+                  confirmInactive.onTrue();
+                }
                 popover.onClose();
               }}
             >
@@ -293,6 +307,14 @@ export function PurchaseTableRow({
 
         </MenuList>
       </CustomPopover>
+
+      <ConfirmDialog
+        open={confirmInactive.value}
+        onClose={confirmInactive.onFalse}
+        title="Warning"
+        content={`You can not use product: (${row.storeProductSelection?.storeProduct?.name}) because it is inactive.`}
+
+      />
 
       <ConfirmDialog
         open={confirm.value}

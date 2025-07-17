@@ -200,7 +200,7 @@ def to_aware(dt):
         return dt
     if dt.tzinfo is None:
         return timezone.make_aware(dt, timezone.get_default_timezone())
-    return dt
+    return timezone.localtime(dt)
 
 
 def create_notification(module, info_id, info, type, username):

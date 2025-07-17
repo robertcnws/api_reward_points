@@ -354,6 +354,11 @@ CELERY_BEAT_SCHEDULE = {
             day_of_week=CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK
         ),
     },
+    'run-task-sequence-daily': {
+        'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_daily',
+        'schedule': crontab(minute=0, hour=8, day_of_week='*'),
+        # 'schedule': crontab(minute='*/2', hour='7-17', day_of_week='*'),
+    },
 }
 
 

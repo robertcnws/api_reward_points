@@ -69,6 +69,11 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
             Refund Requested
           </Label>
         )}
+        {!currentBuy?.storeProductSelection?.storeProduct?.isActive && (
+          <Label color="warning" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
+            Inactive
+          </Label>
+        )}
       </DialogTitle>
 
       <DialogContent>
@@ -93,12 +98,15 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
             justifyContent: 'center',
             alignItems: 'center',
             maxWidth: '100%',
-            p: 1,
+            p: 0,
 
           }}>
             <StoreProductDetailsCarousel
               images={currentBuy?.storeProductSelection?.storeProduct?.attachments}
-              predefinedSize={200}
+              predefinedSize={
+                currentBuy?.storeProductSelection?.storeProduct?.attachments?.length > 2 ? 130 :
+                  currentBuy?.storeProductSelection?.storeProduct?.attachments?.length > 1 ? 200 : null
+              }
             />
           </Box>
 
@@ -257,52 +265,54 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
           </Box>
         </Box>
         {isClient(roleName) && currentBuy?.notes && currentBuy?.notes !== '' && (
-              <Box
-                display="flex"
-                flexDirection='row'
-                justifyContent="flex-start"
-                alignItems="flex-start"
-                sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
-              >
-                <Label color="default" sx={{ width: '50%' }}>
-                  <b>Notes:</b>
-                </Label>
-                <TextField
-                  value={currentBuy?.notes || ''}
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  InputProps={{
-                    startAdornment: (
-                      <Box sx={{ mr: 1 }}>
-                        <Iconify icon="mdi:note-text-outline" width={20} height={20} color='text.disabled' />
-                      </Box>
-                    ),
-                    inputProps: {
-                      sx: {
-                        fontSize: 12,
-                        color: 'text.secondary',
-                      },
-                    },
-                  }}
-                  sx={{ flexGrow: 1, width: '50%' }}
-                  disabled
-                />
-              </Box>
-            )}
+          <Box
+            display="flex"
+            flexDirection='row'
+            justifyContent="flex-start"
+            alignItems="flex-start"
+            sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
+          >
+            <Label color="default" sx={{ width: '50%' }}>
+              <b>Notes:</b>
+            </Label>
+            <TextField
+              value={currentBuy?.notes || ''}
+              variant="outlined"
+              size="small"
+              fullWidth
+              multiline
+              rows={3}
+              InputProps={{
+                startAdornment: (
+                  <Box sx={{ mr: 1 }}>
+                    <Iconify icon="mdi:note-text-outline" width={20} height={20} color='text.disabled' />
+                  </Box>
+                ),
+                inputProps: {
+                  sx: {
+                    fontSize: 12,
+                    color: 'text.secondary',
+                  },
+                },
+              }}
+              sx={{ flexGrow: 1, width: '50%' }}
+              disabled
+            />
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions>
-        {(!isClient(roleName) && !currentBuy.hasRequestedRefund) && (
-          <Button variant="contained" onClick={() => {
-            openUse.onTrue();
-            open.onFalse();
-          }}>
-            Use Purchase
-          </Button>
-        )}
+        {(!isClient(roleName) &&
+          !currentBuy.hasRequestedRefund &&
+          currentBuy.storeProductSelection?.storeProduct?.isActive) && (
+            <Button variant="contained" onClick={() => {
+              openUse.onTrue();
+              open.onFalse();
+            }}>
+              Use Purchase
+            </Button>
+          )}
         <Button variant="outlined" onClick={() => open.onFalse()}>
           Cancel
         </Button>

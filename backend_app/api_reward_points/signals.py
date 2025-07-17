@@ -11,6 +11,7 @@ from api_reward_points.models import (
     RewardStoreProduct,
     RewardStoreProductReview,
     RewardStoreProductReviewReaction,
+    RewardStoreProductSelection,
     RewardStoreProductSelectionCart,
     RewardStoreProductSelectionBuy,
     RewardPointsHistory,
@@ -18,6 +19,7 @@ from api_reward_points.models import (
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
+import signal_events
 
 ##########################################################################
 # PointHistory by username
@@ -34,22 +36,11 @@ def point_history_by_username_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'point_history_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "rewardPoints": full_selection if document.reward_points else None,
-                "action": document.action,
-                "gainedPoints": document.gained_points,
-                "spentPoints": document.spent_points,
-                "info": document.info,
-                "description": document.description,
-            }
-
-        }
-    }
+    event = signal_events.event_point_history(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -65,21 +56,11 @@ def point_history_by_username_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'point_history_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "rewardPoints": full_selection if document.reward_points else None,
-                "action": document.action,
-                "gainedPoints": document.gained_points,
-                "spentPoints": document.spent_points,
-                "info": document.info,
-                "description": document.description,
-            }
-        }
-    }
+    event = signal_events.event_point_history(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 ###########################################################################
@@ -94,27 +75,12 @@ def store_product_selection_buy_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_buy_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "hasBeenUsed": document.has_been_used,
-                "hasRequestedRefund": document.has_requested_refund,
-                "quantityUsed": document.quantity_used,
-                "orderNumber": document.order_number,
-                "confirmationNumber": document.confirmation_number,
-                "notes": document.notes,
-                "purchaseType": document.purchase_type,
-                "purchaseFraction": document.purchase_fraction,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    # print('full_selection', full_selection)
+    event = signal_events.event_store_product_selection_buy(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('store_product_selection_buy', serialize_datetime(event))
 
 
@@ -125,26 +91,11 @@ def store_product_selection_buy_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_buy_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "hasBeenUsed": document.has_been_used,
-                "hasRequestedRefund": document.has_requested_refund,
-                "quantityUsed": document.quantity_used,
-                "orderNumber": document.order_number,
-                "confirmationNumber": document.confirmation_number,
-                "notes": document.notes,
-                "purchaseType": document.purchase_type,
-                "purchaseFraction": document.purchase_fraction,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_selection_buy(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('store_product_selection_buy', serialize_datetime(event))
 
 ##########################################################################
@@ -164,27 +115,12 @@ def store_product_selection_buy_by_username_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_buy_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "hasBeenUsed": document.has_been_used,
-                "hasRequestedRefund": document.has_requested_refund,
-                "quantityUsed": document.quantity_used,
-                "orderNumber": document.order_number,
-                "confirmationNumber": document.confirmation_number,
-                "notes": document.notes,
-                "purchaseType": document.purchase_type,
-                "purchaseFraction": document.purchase_fraction,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    # print('full_selection_by_username', full_selection)
+    event = signal_events.event_store_product_selection_buy(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -200,26 +136,11 @@ def store_product_selection_buy_by_username_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_buy_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "hasBeenUsed": document.has_been_used,
-                "hasRequestedRefund": document.has_requested_refund,
-                "quantityUsed": document.quantity_used,
-                "orderNumber": document.order_number,
-                "confirmationNumber": document.confirmation_number,
-                "notes": document.notes,
-                "purchaseType": document.purchase_type,
-                "purchaseFraction": document.purchase_fraction,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_selection_buy(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -240,20 +161,11 @@ def store_product_selection_cart_by_username_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_cart_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "isBought": document.is_bought,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_store_product_selection_cart(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -269,19 +181,11 @@ def store_product_selection_cart_by_username_deleted(sender, document, **kwargs)
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_selection_cart_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "storeProductSelection": full_selection if document.store_product_selection else None,
-                "isBought": document.is_bought,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_selection_cart(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -298,32 +202,63 @@ def store_product_by_id_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                # "id": str(document.id),
-                # "user": str(document.user.id) if document.user else None,
-                # "totalGainedPoints": document.total_gained_points,
-                # "totalSpentPoints": document.total_spent_points,
-                # "totalAmountInvoices": document.total_amount_invoices,
-                # "invoices": [str(invoice.id) for invoice in document.invoices],
-                # "createdTime": document.created_time,
-                # "lastModifiedTime": document.last_modified_time,
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "assignedPoints": document.assigned_points,
-                "attachments": full_selection if document.attachments else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "isActive": document.is_active,
-            }
-
-        }
-    }
+    event = signal_events.event_store_product(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+    
+    selections = RewardStoreProductSelection.objects(store_product=document).only('id')
+    if not selections:
+        return
+    sel_ids = [sel.id for sel in selections]
+    related_buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=sel_ids)
+    related_carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=sel_ids)
+
+    for buy in related_buys:
+        sel_data = transform_data_to_mongo(
+            buy.store_product_selection,
+            exclude_fields=['password'],
+        )
+        sel_data = camelize(sel_data)
+
+        event_buy = signal_events.event_store_product_selection_buy(
+            type='created' if created else 'updated',
+            document=buy,
+            full_selection=sel_data
+        )
+
+        username = buy.store_product_selection.user.username
+        group_name = f"store_product_selection_buy_{username}"
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            serialize_datetime(event_buy)
+        )
+        async_to_sync(channel_layer.group_send)(
+            'store_product_selection_buy',
+            serialize_datetime(event_buy)
+        )
+        
+    for cart in related_carts:
+        sel_data = transform_data_to_mongo(
+            cart.store_product_selection,
+            exclude_fields=['password'],
+        )
+        sel_data = camelize(sel_data)
+
+        event_cart = signal_events.event_store_product_selection_cart(
+            type='created' if created else 'updated',
+            document=cart,
+            full_selection=sel_data
+        )
+
+        username = cart.store_product_selection.user.username
+        group_name = f"store_product_selection_cart_{username}"
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            serialize_datetime(event_cart)
+        )
     
 
 def store_product_by_id_deleted(sender, document, **kwargs):
@@ -334,30 +269,11 @@ def store_product_by_id_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                # "id": str(document.id),
-                # "user": str(document.user.id) if document.user else None,
-                # "totalGainedPoints": document.total_gained_points,
-                # "totalSpentPoints": document.total_spent_points,
-                # "totalAmountInvoices": document.total_amount_invoices,
-                # "invoices": [str(invoice.id) for invoice in document.invoices],
-                # "createdTime": document.created_time,
-                # "lastModifiedTime": document.last_modified_time,
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "assignedPoints": document.assigned_points,
-                "attachments": full_selection if document.attachments else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "isActive": document.is_active,
-            }
-        }
-    }
+    event = signal_events.event_store_product(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
     
@@ -370,21 +286,11 @@ def store_product_review_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_review_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection if document.user else None,
-                "rating": document.rating,
-                "comment": document.comment,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_store_product_review(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
     
@@ -396,20 +302,11 @@ def store_product_review_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_review_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection if document.user else None,
-                "rating": document.rating,
-                "comment": document.comment,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_review(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
     
@@ -426,20 +323,12 @@ def store_product_review_reaction_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_review = camelize(full_selection_review)
-    event = {
-        'type': 'store_product_review_reaction_update',
-        'message': {
-            'type': 'created',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "storeProductReview": full_selection_review if document.store_product_review else None,
-                "reactionType": document.reaction_type,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_review_reaction(
+        type='created',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_review=full_selection_review
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
     
@@ -456,20 +345,12 @@ def store_product_review_reaction_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_review = camelize(full_selection_review)
-    event = {
-        'type': 'store_product_review_reaction_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "storeProductReview": full_selection_review if document.store_product_review else None,
-                "reactionType": document.reaction_type,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_store_product_review_reaction(
+        type='deleted',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_review=full_selection_review
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
@@ -503,6 +384,80 @@ def store_product_saved(sender, document, **kwargs):
         }
     }
     async_to_sync(channel_layer.group_send)('store_product', serialize_datetime(event))
+    
+    selections = RewardStoreProductSelection.objects(store_product=document).only('id')
+    if not selections:
+        return
+    sel_ids = [sel.id for sel in selections]
+    related_buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=sel_ids)
+    related_carts = RewardStoreProductSelectionCart.objects(store_product_selection__in=sel_ids)
+
+    for buy in related_buys:
+        sel_data = transform_data_to_mongo(
+            buy.store_product_selection,
+            exclude_fields=['password'],
+        )
+        sel_data = camelize(sel_data)
+
+        event_buy = {
+            'type': 'store_product_selection_buy_update',
+            'message': {
+                'type': 'created' if created else 'updated',
+                'item': {
+                    'id': str(buy.id),
+                    'storeProductSelection': sel_data,
+                    'hasBeenUsed': buy.has_been_used,
+                    'hasRequestedRefund': buy.has_requested_refund,
+                    'quantityUsed': buy.quantity_used,
+                    'orderNumber': buy.order_number,
+                    'confirmationNumber': buy.confirmation_number,
+                    'notes': buy.notes,
+                    'purchaseType': buy.purchase_type,
+                    'purchaseFraction': buy.purchase_fraction,
+                    'createdTime': buy.created_time,
+                    'lastModifiedTime': buy.last_modified_time,
+                }
+            }
+        }
+        
+        username = buy.store_product_selection.user.username
+        group_name = f"store_product_selection_buy_{username}"
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            serialize_datetime(event_buy)
+        )
+        async_to_sync(channel_layer.group_send)(
+            'store_product_selection_buy',
+            serialize_datetime(event_buy)
+        )
+
+    for cart in related_carts:
+        sel_data = transform_data_to_mongo(
+            cart.store_product_selection,
+            exclude_fields=['password'],
+        )
+        sel_data = camelize(sel_data)
+
+        event_cart = {
+            'type': 'store_product_selection_cart_update',
+            'message': {
+                'type': 'created' if created else 'updated',
+                'item': {
+                    'id': str(cart.id),
+                    'storeProductSelection': sel_data,
+                    'isBought': cart.is_bought,
+                    'createdTime': cart.created_time,
+                    'lastModifiedTime': cart.last_modified_time,
+                }
+            }
+        }
+
+        username = cart.store_product_selection.user.username
+        group_name = f"store_product_selection_cart_{username}"
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            serialize_datetime(event_cart)
+        )
 
 
 def store_product_deleted(sender, document, **kwargs):

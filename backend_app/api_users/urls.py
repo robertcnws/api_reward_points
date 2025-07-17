@@ -22,4 +22,10 @@ urlpatterns = [
     path('change-password/<str:id>/', views.change_password, name='change_password'),
     path('change-verify/<str:id>/', views.change_verify_user, name='change_verify_user'),
     path('change-approval/<str:id>/', views.change_approval_user, name='change_approval_user'),
+    # NOTIFICATIONS
+    path('delete/old-notifications/', views.remove_old_notifications, name='remove_old_notifications'),
+    path('mark-read/notifications/', views.mark_as_read_notifications, name='mark_as_read_notifications'),
+    path('delete/notifications/', views.delete_notifications, name='delete_notifications'),
+    # TRACKINGS
+    path('delete/old-trackings/', views.delete_old_trackings, name='delete_old_trackings'),
 ]

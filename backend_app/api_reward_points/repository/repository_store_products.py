@@ -82,7 +82,7 @@ def delete_store_product_file(request, id, folder, file):
             )
                 
             module='store_products'
-            info=f'has deleted file attachment ({file_name}) in store product ({obj.name})'
+            info=f'has deleted file attachment ({file_name}) in product ({obj.name})'
             info_id=obj.id
             type='delete_store_product_file'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -147,7 +147,7 @@ def delete_all_store_product_files(request, id, folder):
             )
                 
             module='store_products'
-            info=f'has deleted all files attachments ({", ".join(list_files_names)}) in store product ({obj.name})'
+            info=f'has deleted all files attachments ({", ".join(list_files_names)}) in product ({obj.name})'
             info_id=obj.id
             type='delete_all_store_product_files'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -178,6 +178,17 @@ def update_store_product(request, id):
     if not store_product:
         logger.error("Store product not found")
         return Response({'error': 'Store product not found'}, status=404)
+    
+    last_store_product = transform_data_to_mongo(
+        store_product, 
+        exclude_fields=[
+            'password', 
+            'is_staff',
+            'is_verified', 
+            'last_login', 
+            'date_joined',
+        ]
+    )
     
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
@@ -211,6 +222,7 @@ def update_store_product(request, id):
             name = data.get('name', '')
             description = data.get('description', '')
             assigned_points = data.get('assignedPoints', 0)
+            status = data.get('status', False)
             
             list_attachments = store_product.attachments if store_product.attachments else []
             list_attachments += attachments
@@ -220,6 +232,7 @@ def update_store_product(request, id):
             store_product.assigned_points = assigned_points
             store_product.attachments = list_attachments
             store_product.last_modified_time = timezone.now()
+            store_product.is_active = status == 'true' if status else False
             
             store_product.save()
             
@@ -247,9 +260,28 @@ def update_store_product(request, id):
                     'data': tracking_info
                 }
             )
-                            
+            
+            number_changes = 0
+            info = f'has updated product ({store_product.name}) with'
+            if last_store_product['assigned_points'] != store_product.assigned_points:
+                info += f' new assigned points ({store_product.assigned_points})'
+                number_changes += 1
+            if last_store_product['description'] != store_product.description:
+                info += f'{', ' if number_changes > 0 else ' '}new description ({store_product.description})'
+                number_changes += 1
+            if last_store_product['name'] != store_product.name:
+                info += f'{', ' if number_changes > 0 else ' '}new name ({store_product.name}) '
+                number_changes += 1
+            if last_store_product['attachments']:
+                if len(last_store_product['attachments']) != len(attachments):
+                    info += f'{', ' if number_changes > 0 else ' '}changes in attachments'
+                    number_changes += 1
+            if last_store_product['is_active'] != store_product.is_active:
+                new_status = 'active' if store_product.is_active else 'inactive'
+                info += f'{', ' if number_changes > 0 else ' '}new status {new_status}'
+
             module='store_products'
-            info=f'has updated store product ({store_product.name})'
+            info=info
             info_id=store_product.id
             type='update_store_product'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -312,12 +344,14 @@ def create_store_product(request):
             name = data.get('name', '')
             description = data.get('description', '')
             assigned_points = data.get('assignedPoints', 0)
+            status = data.get('status', False)
             
             product = RewardStoreProduct(
                 name=name,
                 description=description,
                 assigned_points=assigned_points,
                 attachments=attachments,
+                is_active=status == 'true' if status else False,
                 created_time=timezone.now(),
                 last_modified_time=timezone.now(),
             )
@@ -349,7 +383,7 @@ def create_store_product(request):
             )
                             
             module='store_products'
-            info=f'has created new store product ({product.name})'
+            info=f'has created new product ({product.name.upper()}) with assigned points ({product.assigned_points})'
             info_id=product.id
             type='create_store_product'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -428,7 +462,7 @@ def delete_store_product(request, id):
             )
                             
             module='store_products'
-            info=f'has deleted store product ({store_product.name})'
+            info=f'has deleted product ({store_product.name}) with assigned points ({store_product.assigned_points})'
             info_id=store_product.id
             type='delete_store_product'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -517,7 +551,7 @@ def delete_list_store_products(request):
             
             create_tracking(
                 user_reporter=user_reporter,
-                action=f'delete list of {len(list_names)} store products',
+                action=f'delete list of {len(list_names)} products',
                 object_id=",".join(store_product_ids),
                 object_type='RewardStoreProduct',
                 object_name=','.join(list_names),
@@ -527,7 +561,7 @@ def delete_list_store_products(request):
             )
                                 
             module='store_products'
-            info=f'has deleted list of {len(list_names)} store products ({", ".join(list_names)})'
+            info=f'has deleted list of {len(list_names)} products ({", ".join(list_names)})'
             info_id='list'
             type='delete_store_product_list'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -604,7 +638,7 @@ def manage_active_store_product(request, id):
             )
                             
             module='store_products'
-            info=f'has {"activated" if product.is_active else "deactivated"} store product ({product.name})'
+            info=f'has {"activated" if product.is_active else "deactivated"} product ({product.name})'
             info_id=product.id
             type='manage_store_product'
             create_notification(module, info_id, info, type, user_reporter.username)

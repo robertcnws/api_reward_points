@@ -8,37 +8,23 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Button, IconButton, InputAdornment } from '@mui/material';
+import { Button, InputAdornment, Switch, Typography } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { _mock } from 'src/_mock/_mock';
 import { CONFIG } from 'src/config-global';
-
 import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
-
-import { useDataContext } from 'src/auth/context/data/data-context';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
-
-export function StoreProductNewEditForm({ currentStoreProduct }) {
-
+export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProduct }) {
   const router = useRouter();
-
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-
-  const {
-    loadedStoreProducts,
-    refetchStoreProducts
-  } = useDataContext();
 
   const [initialFiles, setInitialFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
@@ -47,67 +33,56 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
   const confirmAll = useBoolean();
 
   const NewSchema = zod.object({
-    name: zod.string().min(1, { message: 'Name is required!' }),
+    name: zod.string().min(1, 'Name is required!'),
     description: zod.string().optional(),
-    assignedPoints: zod.number().min(1, { message: 'Assigned points must be greater than 0' }),
-    attachments: schemaHelper.files({
-      requireFiles: false,
-    }),
+    assignedPoints: zod.number().min(1, 'Assigned points must be greater than 0'),
+    status: zod.boolean().optional(),
+    attachments: schemaHelper.files({ requireFiles: false }),
   });
-  
 
+  // Load initial attachments only when product ID changes
   useEffect(() => {
-
-    const projectAttachments = currentStoreProduct?.attachments || [];
-
-    const attachments = [...projectAttachments] || [];
-
+    const attachments = currentStoreProduct?.attachments || [];
     if (!attachments.length) {
       setInitialFiles([]);
       return;
     }
-    const loadFiles = async () => {
+    async function loadFiles() {
       const loaded = await Promise.all(
-        attachments.map(async (attachment) => {
-          if (attachment instanceof File) {
+        attachments.map(async (att) => {
+          if (att instanceof File) {
             return {
-              ...attachment,
-              fileUrl: URL.createObjectURL(attachment),
-              name: attachment.name,
+              ...att,
+              fileUrl: URL.createObjectURL(att),
+              uid: `${Date.now()}-${Math.random()}`,
+              name: att.name,
               isNew: true,
             };
           }
-          if (!attachment.file) {
-            return attachment;
-          }
+          if (!att.file) return att;
           try {
-            const response = await fetch(
-              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(attachment.file)}`
+            const resp = await fetch(
+              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(att.file)}`
             );
-            if (!response.ok) {
-              console.error('Error fetching URL', response.statusText);
-              return attachment;
-            }
-            const values = await response.json();
+            const { url } = await resp.json();
             return {
-              ...attachment,
-              fileUrl: values.url,
+              ...att,
+              fileUrl: url,
               isNew: false,
+              uid: att.file
             };
-          } catch (error) {
-            console.error('Error al obtener la URL:', error);
-            return attachment;
+          } catch {
+            console.error('Error fetching URL for attachment', att);
+            return att;
           }
         })
       );
       setInitialFiles(loaded);
-    };
+    }
     loadFiles();
-  }, [currentStoreProduct]);
+  }, [currentStoreProduct?.attachments]);
 
   const displayFiles = useMemo(() => [...initialFiles, ...newFiles], [initialFiles, newFiles]);
-
-  console.log('displayFiles', displayFiles);
 
   const defaultValues = useMemo(
     () => ({
@@ -115,219 +90,166 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
       description: currentStoreProduct?.description || '',
       assignedPoints: currentStoreProduct?.assignedPoints || 1,
       attachments: displayFiles,
+      status: currentStoreProduct?.isActive || false,
     }),
     [currentStoreProduct, displayFiles]
   );
 
-  const methods = useForm({
-    mode: 'onSubmit',
-    resolver: zodResolver(NewSchema),
-    defaultValues,
-  });
+  const methods = useForm({ mode: 'onSubmit', resolver: zodResolver(NewSchema), defaultValues });
+  const { reset, handleSubmit, setValue, watch, formState: { isSubmitting } } = methods;
 
-  const {
-    reset,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { isSubmitting },
-  } = methods;
-
+  // Sync form when attachments change
   useEffect(() => {
-    if (displayFiles.length) {
-      setValue('name', currentStoreProduct?.name || '');
-      setValue('description', currentStoreProduct?.description || '');
-      setValue('assignedPoints', currentStoreProduct?.assignedPoints || 1);
-      setValue('attachments', displayFiles, { shouldValidate: true });
-    }
-  }, [displayFiles, setValue, currentStoreProduct]);
+    setValue('attachments', displayFiles, { shouldValidate: true });
+  }, [displayFiles, setValue]);
 
   const currentPoints = watch('assignedPoints') || 0;
   const increment = () => setValue('assignedPoints', currentPoints + 1);
   const decrement = () => setValue('assignedPoints', Math.max(1, currentPoints - 1));
-
-  const currentAttachments = useCallback(() => {
-    const attachments = watch('attachments');
-    return Array.isArray(attachments) ? attachments : [];
-  }, [watch]);
-
+  const currentAttachments = () => Array.isArray(watch('attachments')) ? watch('attachments') : [];
 
   const onSubmit = handleSubmit(async (data) => {
-
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
     formData.append('assignedPoints', data.assignedPoints.toString());
-    formData.append('userReporter', JSON.stringify(userLogged?.data));
+    formData.append('status', data.status);
+    formData.append('userReporter', JSON.stringify(userLogged.data));
     currentAttachments().forEach((file) => {
-      if (file instanceof File) {
-        formData.append('attachments', file);
-      }
+      if (file instanceof File) formData.append('attachments', file);
     });
 
     const url = currentStoreProduct
       ? `${CONFIG.apiUrl}/reward-points/update/store-product/${currentStoreProduct.id}/`
       : `${CONFIG.apiUrl}/reward-points/create/store-product/`;
-
     const action = currentStoreProduct ? 'update' : 'create';
 
-
-    const promise = axios.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
     try {
-
+      const promise = axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.promise(promise, {
         loading: 'Loading...',
         success: `Store product ${action}d successfully!`,
         error: `Store product ${action} error!`,
       });
-
       await promise;
-
+      refetchStoreProduct?.();
       router.push(paths.dashboard.storeProduct.list);
-
       reset();
-
     } catch (error) {
       console.error(error);
     }
   });
 
-  const handleClickRemoveFile = useCallback((file) => {
+  const handleSwitch = (e) => setValue('status', e.target.checked);
+  const handleClickRemoveFile = (file) => {
     setFileToRemove(file);
     confirm.onTrue();
-  }, [confirm]);
+  };
+  const handleClickRemoveAll = () => confirmAll.onTrue();
 
-  const handleClickRemoveAll = useCallback(() => {
-    confirmAll.onTrue();
-  }, [confirmAll]);
-
-  const handleConfirmRemove = useCallback(async (file) => {
+  const handleConfirmRemove = useCallback(async () => {
     if (!fileToRemove) return;
-    let updatedInitial = initialFiles;
-    let updatedNew = newFiles;
-    const isLocalFile = fileToRemove instanceof File;
-    if (!fileToRemove.isNew && !isLocalFile) {
-      try {
-        const url = `${CONFIG.apiUrl}/reward-points/delete/file/${currentStoreProduct?.id}/store-product/${file}/`;
-        await axios.delete(url, {
-          data: {
-            userReporter: userLogged?.data,
-          },
-        });
-        updatedInitial = initialFiles.filter((f) => f.file !== fileToRemove.file);
-        toast.success('File deleted successfully');
-      } catch (error) {
-        console.error('Error deleting file', error);
-        toast.error('Error deleting file');
-        return;
-      }
+    // console.log('Removing file:', fileToRemove);
+    if (fileToRemove instanceof File) {
+      setNewFiles((prev) => {
+        const updated = prev.filter((f) => f.name !== fileToRemove.name);
+        toast.success('Local file removed');
+        setValue('attachments', [...initialFiles, ...updated], { shouldValidate: true });
+        return updated;
+      });
     } else {
-      updatedNew = newFiles.filter((f) => f.name !== fileToRemove.name);
+      try {
+        await axios.delete(
+          `${CONFIG.apiUrl}/reward-points/delete/file/${currentStoreProduct.id}/store-product/${fileToRemove.file}/`,
+          { data: { userReporter: userLogged.data } }
+        );
+        setInitialFiles((prev) => {
+          const updated = prev.filter((f) => f.id !== fileToRemove.id);
+          toast.success('File deleted successfully');
+          setValue('attachments', [...updated, ...newFiles], { shouldValidate: true });
+          return updated;
+        });
+      } catch {
+        toast.error('Error deleting file');
+      }
     }
-    setInitialFiles(updatedInitial);
-    setNewFiles(updatedNew);
-
     confirm.onFalse();
     setFileToRemove(null);
-    refetchStoreProducts?.();
-  }, [confirm, initialFiles, newFiles, userLogged, currentStoreProduct, fileToRemove, refetchStoreProducts]);
+  }, [fileToRemove, initialFiles, newFiles, setValue, currentStoreProduct, userLogged, confirm]);
+
 
   const handleConfirmRemoveAll = useCallback(async () => {
-    try {
-      const url = `${CONFIG.apiUrl}/reward-points/delete/files/${currentStoreProduct?.id}/store-product/store_products/`;
-      await axios.delete(url, {
-        data: {
-          userReporter: userLogged?.data,
-        },
-      });
-      toast.success('Files deleted successfully');
-      setValue('attachments', [], { shouldValidate: true });
-      setInitialFiles([]);
-      setNewFiles([]);
-      confirmAll.onFalse();
-      setFileToRemove(null);
-      refetchStoreProducts?.();
-    } catch (error) {
-      console.error('Error deleting file', error);
-      toast.error('Error deleting file');
+    if (initialFiles.length) {
+      try {
+        await axios.delete(
+          `${CONFIG.apiUrl}/reward-points/delete/files/${currentStoreProduct.id}/store-product/store_products/`,
+          { data: { userReporter: userLogged.data } }
+        );
+        toast.success('All files deleted successfully');
+      } catch {
+        toast.error('Error deleting files');
+      }
     }
-  }, [setValue, userLogged, currentStoreProduct, confirmAll, refetchStoreProducts]);
+    setInitialFiles([]);
+    setNewFiles([]);
+    setValue('attachments', [], { shouldValidate: true });
+    confirmAll.onFalse();
+    setFileToRemove(null);
+    refetchStoreProduct?.();
+  }, [initialFiles.length, setValue, currentStoreProduct, userLogged, confirmAll, refetchStoreProduct]);
 
-  const handleUploadFiles = useCallback(
-    (files) => {
-      const currentFiles = currentAttachments();
-      const newfiles = Array.isArray(files) ? files : [files];
-      const updatedFiles = [...currentFiles, ...newfiles];
-      setValue('attachments', updatedFiles, { shouldValidate: true });
-    },
-    [setValue, currentAttachments]
-  );
+  const handleUploadFiles = (files) => {
+    const list = Array.isArray(files) ? files : [files];
+    const wrapped = list.map((file) => ({
+      ...file,
+      uid: `${Date.now()}-${Math.random()}`,
+      isNew: true,
+    }));
+    console.log('Uploading files:', wrapped);
+    setNewFiles((prev) => [...prev, ...wrapped]);
+  };
 
   const handleDownloadFile = (file) => {
-    if (!file || !file.fileUrl) return;
-
-    const link = document.createElement('a');
-    link.href = file.fileUrl;
-    link.download = file.name;
-    link.target = '_blank';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (!file?.fileUrl) return;
+    const a = document.createElement('a');
+    a.href = file.fileUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
     <>
       <Form methods={methods} onSubmit={onSubmit}>
         <Grid container spacing={3}>
-
           <Grid xs={12} md={12}>
             <Card sx={{ p: 3 }}>
-              <Box
-                rowGap={3}
-                columnGap={2}
-                display="grid"
-                gridTemplateColumns={{
-                  xs: 'repeat(1, 1fr)',
-                  sm: 'repeat(1, 1fr)',
-                }}
-                sx={{
-                  mb: 3,
-                  '& .MuiTextField-root': { width: '100%' },
-                }}
-              >
+              <Box rowGap={3} columnGap={2} display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr' }} sx={{ mb: 3 }}>
                 <Field.Text name="name" label="Name" />
                 <Field.Text
                   name="assignedPoints"
                   label="Assigned Points"
                   type="number"
-                  min={1}
-                  max={1000000}
-                  step={1}
                   InputProps={{
-                    inputProps: {
-                      min: 1,
-                      max: 1000000,
-                      step: 1,
-                    },
+                    inputProps: { min: 1, max: 1000000, step: 1 },
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={decrement} width={30} height={30}>
-                          <Iconify icon="memory:minus-box" fontSize="small" sx={{ width: 30, height: 30 }} />
+                        <IconButton size="small" onClick={decrement}>
+                          <Iconify icon="memory:minus-box" />
                         </IconButton>
-                        <IconButton size="small" onClick={increment} width={30} height={30}>
-                          <Iconify icon="memory:plus-box" fontSize="small" sx={{ width: 30, height: 30 }} />
+                        <IconButton size="small" onClick={increment}>
+                          <Iconify icon="memory:plus-box" />
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                 />
                 <Field.Text name="description" label="Description" multiline rows={3} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="subtitle2" color="text.secondary"><b>Is Active?</b></Typography>
+                  <Field.Switch name="status" checked={watch('status')} onChange={handleSwitch} />
+                </Box>
                 <Field.Upload
                   multiple
                   thumbnail
@@ -340,12 +262,11 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
                   onDownload={handleDownloadFile}
                 />
               </Box>
-
-              <Stack alignItems="flex-end" sx={{ mt: 3, flexDirection: 'row', display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
                 <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-                  {!currentStoreProduct ? 'Create store product' : 'Save changes'}
+                  {currentStoreProduct ? 'Save changes' : 'Create store product'}
                 </LoadingButton>
-                <Button type="button" variant="outlined" onClick={() => router.push(paths.dashboard.storeProduct.list)}>
+                <Button variant="outlined" onClick={() => router.push(paths.dashboard.storeProduct.list)}>
                   Cancel
                 </Button>
               </Stack>
@@ -353,48 +274,26 @@ export function StoreProductNewEditForm({ currentStoreProduct }) {
           </Grid>
         </Grid>
       </Form>
+
       <ConfirmDialog
         open={confirm.value}
-        onClose={() => {
-          confirm.onFalse();
-          setFileToRemove(null);
-        }}
+        onClose={() => { confirm.onFalse(); setFileToRemove(null); }}
         title="Remove File"
-        content={
-          <>
-            {fileToRemove && (
-              <>
-                Are you sure you want to delete the file{' '}
-                <strong>{fileToRemove.name}</strong> from{' '}
-                <strong>
-                  store product <em>{currentStoreProduct?.name}</em>
-                </strong>
-                ?
-              </>
-            )}
-          </>
-        }
+        content={fileToRemove && (
+          <>Are you sure you want to delete the file <strong>{fileToRemove.name}</strong> from <strong>store product <em>{currentStoreProduct?.name}</em></strong>?</>
+        )}
         action={
-          <Button variant="contained" color="error" onClick={() => handleConfirmRemove(fileToRemove?.file)}>
+          <Button variant="contained" color="error" onClick={handleConfirmRemove}>
             Remove
           </Button>
         }
       />
+
       <ConfirmDialog
         open={confirmAll.value}
-        onClose={() => {
-          confirmAll.onFalse();
-        }}
-        title="Remove All File"
-        content={
-          <>
-            Are you sure you want to delete all files from{' '}
-            <strong>
-              store product <em>{currentStoreProduct?.name}</em>
-            </strong>
-            ?
-          </>
-        }
+        onClose={confirmAll.onFalse}
+        title="Remove All Files"
+        content={<>Are you sure you want to delete all files from <strong>store product <em>{currentStoreProduct?.name}</em></strong>?</>}
         action={
           <Button variant="contained" color="error" onClick={handleConfirmRemoveAll}>
             Remove

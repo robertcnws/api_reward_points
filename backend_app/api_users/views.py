@@ -8,6 +8,7 @@ from utils.data_util import (
     create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole
+from api_users.repository import repository_notifications, repository_trackings
 import logging
 
 logging.basicConfig(level=logging.WARNING)
@@ -740,3 +741,56 @@ def change_verify_user(request, id):
     
     except LoginUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# NOTIFICATIONS
+#############################################
+#############################################
+# REMOVE ALL NOTIFICATIONS
+#############################################
+
+    
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def remove_old_notifications(request):
+    return repository_notifications.remove_old_notifications(request)
+
+
+
+#############################################
+# DELETE NOTIFICATIONS
+#############################################
+
+    
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_notifications(request):
+    return repository_notifications.delete_notifications(request)
+
+
+#############################################
+# MARK AS READ NOTIFICATIONS
+#############################################
+
+    
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mark_as_read_notifications(request):
+    return repository_notifications.mark_as_read_notifications(request)
+
+
+#############################################
+# DELETE OLD NOTIFICATIONS
+#############################################
+
+def delete_old_notifications():
+    return repository_notifications.delete_old_notifications()
+
+
+#############################################
+# DELETE OLD TRACKINGS
+#############################################
+
+def delete_old_trackings():
+    return repository_trackings.delete_old_trackings()

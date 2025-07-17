@@ -227,7 +227,7 @@ export function DashboardLayout({ sx, children, header, data }) {
                 {/* -- Logo -- */}
                 {isNavHorizontal && (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Logo isSingle={false} sx={{ width: '200px', height: 'auto' }} />
+                    <Logo isSingle={false} sx={{ width: '100px', height: 'auto' }} />
                   </Box>
                   // <Logo
                   //   isSingle={false}

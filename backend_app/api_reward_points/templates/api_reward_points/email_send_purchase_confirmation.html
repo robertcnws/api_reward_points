@@ -1,0 +1,174 @@
+{% load math_filters %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>User's Purchase Confirmation</title>
+    <style>
+      body,
+      table,
+      td,
+      a {
+        font-family: 'Open Sans', sans-serif;
+        color: #333333;
+      }
+
+      body {
+        background-color: #f8f8f8;
+      }
+
+      a {
+        color: #669a41;
+        text-decoration: none;
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        color: #333333;
+        line-height: 1.2;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header,
+      .footer {
+        background-color: #ffffff;
+      }
+
+      .header {
+        padding: 20px;
+        text-align: center;
+      }
+
+      .footer {
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .content {
+        background-color: #ffffff;
+        padding: 20px;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 15px 25px;
+        background-color: #669a41;
+        color: #ffffff;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .button:hover {
+        background-color: #567a33;
+      }
+    </style>
+  </head>
+  <body style="font-family: 'Open Sans', sans-serif; color: #333333; background-color: #f8f8f8">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px">
+      <div style="background-color: #669a41; color: #ffffff; text-align: center; padding: 20px">
+        <h1 style="color: #ffffff; line-height: 1.2">NWS Reward Points Purchase</h1>
+      </div>
+      <div style="background-color: #ffffff; color: #333333; padding: 20px">
+        <p style="font-size: 14px; line-height: 1.5">Hello, {{ first_name }} {{ last_name }}</p>
+        <p style="font-size: 14px; line-height: 1.5">
+          You have made a purchase of <strong>{{ purchase_total_points }}</strong> reward points:<br/><br/>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th 
+                style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;"
+                colspan="2"
+              >
+                Product
+              </th>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
+                Order #
+              </th>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
+                Confirmation Code
+              </th>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
+                Qty
+              </th>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
+                Price
+              </th>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
+                Total
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in list_purchases %}
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                <img 
+                  src="{{ item.default_url }}" 
+                  alt="Product Image" 
+                  style="width: 60px; height: 60px; border-radius: 5px;"
+                >
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                {{ item.store_product_selection.store_product.name }}
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                {{ item.order_number }}
+              </td>
+              <td 
+                style="
+                  padding: 10px; 
+                  border-bottom: 1px solid #dddddd; 
+                  font-family: Mono, monospace; 
+                  font-size: 17px;
+                  font-weight: bold;
+                "
+              >
+                {{ item.confirmation_number }}
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                {{ item.store_product_selection.quantity }}
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                {{ item.store_product_selection.store_product.assigned_points }}
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
+                {{ item.store_product_selection.quantity|mul:item.store_product_selection.store_product.assigned_points }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" style="padding: 10px; border-top: 1px solid #dddddd; text-align: right;">
+                Total Purchase:
+              </td>
+              <td colspan="2" style="padding: 10px; border-top: 1px solid #dddddd;">
+                {{ purchase_total_points }}
+              </td>
+            </tr>
+        </table>
+        <p style="font-size: 14px; line-height: 1.5">
+          Should you have any questions or need further assistance, please do not hesitate to contact us.
+        </p>
+        <p style="font-size: 14px; line-height: 1.5">Best regards,</p>
+        <p style="font-size: 14px; line-height: 1.5">Your NWS Team</p>
+      </div>
+    </div>
+  </body>
+</html>

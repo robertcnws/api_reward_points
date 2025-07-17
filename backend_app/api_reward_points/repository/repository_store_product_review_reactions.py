@@ -88,7 +88,7 @@ def manage_store_product_review_reaction(request, review_id):
             )
                             
             module='store_product_review_reactions'
-            info=f'has created new store product review reaction ({reaction.reaction_type})'
+            info=f'has made new reaction ({reaction.reaction_type.capitalize()}) on product {review.store_product.name} review by {review.user.username}'
             info_id=reaction.id
             type='create_store_product_review_reaction'
             create_notification(module, info_id, info, type, user_reporter.username)

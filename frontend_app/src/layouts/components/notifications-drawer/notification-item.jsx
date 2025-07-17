@@ -52,7 +52,7 @@ export function NotificationItem({ notification, drawer }) {
                         module === 'user_roles' ? paths.dashboard.role.list : ''
       );
       if (!notification.read) {
-        await axios.post(`${CONFIG.apiUrl}/projects/mark-read/notifications/`, {
+        await axios.post(`${CONFIG.apiUrl}/users/mark-read/notifications/`, {
           userReporter: userLogged?.data,
           notificationIds: [notification.id],
         });

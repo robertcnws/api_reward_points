@@ -141,9 +141,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                     {oldPurchases.length > 0 && (
                       <Label color="info" sx={{ ml: 1, gap: 0 }}>
                         {oldPurchases.length}
-                        <Typography variant="subtitle2" sx={{ ml: 1 }}>
-                          Orders
-                        </Typography>
+                        <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
                       </Label>
                     )}
                   </Box>

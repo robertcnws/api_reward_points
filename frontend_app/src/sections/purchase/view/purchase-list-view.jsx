@@ -117,6 +117,7 @@ export function PurchaseListView() {
     { id: 'orderNumber', label: 'Order' },
     { id: 'confirmationNumber', label: 'Confirmation #' },
     { id: 'name', label: 'Name' },
+    { id: 'isActive', label: 'Active?' },
     ...!isClient(roleName) ? [
       { id: 'client', label: 'Client' },
     ] : [],
@@ -188,27 +189,32 @@ export function PurchaseListView() {
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated') {
-        setTableData((prevData) => {
-          const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-          if (existingItemIndex !== -1) {
-            const updatedData = [...prevData];
-            updatedData[existingItemIndex] = message.item;
-            return updatedData;
-          }
-          return [message.item, ...prevData];
-        });
-      }
-      else if (message.type === 'deleted') {
-        setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
-      }
+
+      setTableData((prev) => {
+        switch (message.type) {
+          case 'created':
+            return [message.item, ...prev];
+
+          case 'updated':
+            return prev.map((row) =>
+              row.id === message.item.id ? message.item : row
+            );
+
+          case 'deleted':
+            return prev.filter((row) => row.id !== message.item.id);
+
+          default:
+            return prev;
+        }
+      });
+      refetchPurchases?.().catch(console.error);
     };
     return () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     };
-  }, [userLogged?.data?.username, roleName]);
+  }, [userLogged?.data?.username, roleName, refetchPurchases, loadedPurchases]);
 
 
   const dataFiltered = applyFilter({
@@ -547,7 +553,7 @@ export function PurchaseListView() {
                 />
               ))}
             </Tabs>
-            <Box sx={{ display: 'flex', alignItems: 'right' }}>
+            {/* <Box sx={{ display: 'flex', alignItems: 'right' }}>
               <IconButton
                 color={collapse.value ? 'inherit' : 'default'}
                 onClick={collapse.onToggle}
@@ -555,7 +561,7 @@ export function PurchaseListView() {
               >
                 <Iconify icon={collapse.value ? "eva:arrow-ios-upward-fill" : "eva:arrow-ios-downward-fill"} />
               </IconButton>
-            </Box>
+            </Box> */}
           </Box>
 
           <PurchaseTableToolbar
@@ -727,7 +733,9 @@ function applyFilter({ inputData, comparator, filters }) {
         item?.storeProductSelection?.storeProduct?.assignedPoints?.toString().toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         item?.storeProductSelection?.user?.username?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
         item?.storeProductSelection?.user?.firstName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        item?.storeProductSelection?.user?.lastName?.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        item?.storeProductSelection?.user?.lastName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.confirmationNumber?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        item?.orderNumber?.toString().toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 

@@ -78,7 +78,7 @@ def create_store_product_review(request, id):
             )
                             
             module='store_product_reviews'
-            info=f'has created new store product review ({review.comment})'
+            info=f'has made new review ({review.comment.capitalize()}) on product {store_product.name}'
             info_id=review.id
             type='create_store_product_review'
             create_notification(module, info_id, info, type, user_reporter.username)

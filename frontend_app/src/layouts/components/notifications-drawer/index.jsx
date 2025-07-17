@@ -35,8 +35,8 @@ import { NotificationItem } from './notification-item';
 export function NotificationsDrawer({ sx, ...other }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-
-  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+  const username = userLogged?.data?.username;
+  const roleName = userLogged?.data?.user_role?.name;
 
   const clientModules = useMemo(
     () => [
@@ -57,164 +57,104 @@ export function NotificationsDrawer({ sx, ...other }) {
     []
   );
 
-  const filterNotifications = useCallback((notifs) => {
-
-    if (!isClient(roleName)) return notifs;
-
-    return notifs?.filter(
-      (n) => clientModules.includes(n.notification.module) || clientTypes.includes(n.notification.type)
-    );
-
-  }, [clientModules, clientTypes, roleName]);
-
   const {
-    loadedNotifications: userNotifications,
+    loadedNotifications = [],
     refetchNotifications,
-    loadedProjects: projects,
-    loadedServices: services,
-    loadedMeasurements: measurements,
   } = useDataContext();
 
-  const [notifications, setNotifications] = useState(null);
-
-  const [websocketChange, setWebsocketChange] = useState(false);
-
-  console.log('userNotifications', userNotifications);
-
-  // useEffect(() => {
-  //   if (refetchNotifications) {
-  //     refetchNotifications();
-  //   }
-  //   setNotifications(userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []);
-  // }, [refetchNotifications, userNotifications, userLogged]);
+  useEffect(() => {
+    refetchNotifications?.().catch(console.error);
+  }, [refetchNotifications]);
 
   useEffect(() => {
-    if (userNotifications) {
-      const allNotifications = filterNotifications(userNotifications);
-      const filteredNotifications = allNotifications?.filter(
-        (notif) => notif.user.username === userLogged?.data.username
-      );
-      if (filteredNotifications.length > 0) {
-        setNotifications(filteredNotifications);
-      }
-    }
-  }, [userNotifications, userLogged, filterNotifications]);
-
-  useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`);
-    socket.onerror = (errorEvent) => {
-      console.dir(errorEvent);
-      console.error('WebSocket error (toString):', errorEvent.toString());
-    };
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
-        refetchNotifications?.().catch((error) => {
-          console.error('Error refetching notifications:', error);
-        });
-        setWebsocketChange(true);
+    const socket = new WebSocket(
+      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`
+    );
+    socket.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (['created', 'updated', 'deleted'].includes(msg.type)) {
+        refetchNotifications?.().catch(console.error);
       }
     };
+    socket.onerror = console.error;
     return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
+      if (socket.readyState === WebSocket.OPEN) socket.close();
     };
   }, [refetchNotifications]);
 
-  // useEffect(() => {
-  //   if (websocketChange) {
-  //     setNotifications(
-  //       // userNotifications?.filter((notif) => notif.user.username === userLogged?.data.username) || []
-  //       filterNotifications(userNotifications) || []
-  //     );
-  //     setWebsocketChange(false);
-  //   }
-  // }, [websocketChange, userNotifications, userLogged, filterNotifications]);
-
-
-  const drawer = useBoolean();
-
-  const [filteredNotifications, setFilteredNotifications] = useState(null);
-
-  const [currentTab, setCurrentTab] = useState('all');
+  const [myNotifications, setMyNotifications] = useState([]);
 
   useEffect(() => {
-    if (currentTab === 'all') {
-      setFilteredNotifications(notifications?.filter(
-        (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-      ));
-    }
-  }, [notifications, currentTab, userLogged]);
+    setMyNotifications(
+      loadedNotifications.filter((n) => n.user.username === username)
+    );
+  }, [loadedNotifications, username]);
 
-  const handleChangeTab = useCallback((event, newValue) => {
-    setCurrentTab(newValue);
-    if (newValue === 'all') {
-      setFilteredNotifications(notifications);
-    }
-    else if (newValue === 'unread') {
-      setFilteredNotifications(
-        notifications?.filter(
-          (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-        ).filter((item) => item.read === false
-        ));
-    }
-    else if (newValue === 'archived') {
-      setFilteredNotifications(
-        notifications?.filter(
-          (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-        ).filter((item) => item.read === true));
-    }
-  }, [notifications, userLogged]);
+  // const myNotifications = useMemo(
+  //   () => loadedNotifications.filter(
+  //     (n) => n.user.username === username
+  //   ),
+  //   [loadedNotifications, username]
+  // );
 
-  const totalAll = useMemo(
-    () => notifications?.filter(
-      (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username).length,
-    [notifications, userLogged]);
-
-  const totalUnRead = useMemo(
-    () => notifications?.filter(
-      (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-    ).filter((item) => item.read === false).length,
-    [notifications, userLogged]);
-
-  const totalRead = useMemo(
-    () => notifications?.filter(
-      (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-    ).filter((item) => item.read === true).length,
-    [notifications, userLogged]);
-
-  const handleMarkAllAsRead = useCallback(
-    async () => {
-      setNotifications(notifications?.filter(
-        (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
-      ).map((notification) => ({ ...notification, read: true })));
-      await axios.post(`${CONFIG.apiUrl}/projects/mark-read/notifications/`, {
-        userReporter: userLogged?.data,
-        notificationIds: notifications?.filter((notif) => notif.user.username === userLogged?.data.username).map((notification) => notification.id),
-      });
-    }, [notifications, userLogged]);
-
-
-  const handleDeleteNotifications = useCallback(
-    async () => {
-      const selectedNotifications = notifications?.filter(
-        (notif) => notif.user.username === userLogged?.data.username && notif.username !== userLogged?.data.username
+  const roleFilteredNotifications = useMemo(() => {
+    if (isClient(roleName)) {
+      return myNotifications.filter(
+        (n) =>
+          clientModules.includes(n.notification.module) ||
+          clientTypes.includes(n.notification.type)
       );
-      const deletedNotifications = currentTab === 'all' ? selectedNotifications :
-        currentTab === 'unread' ? selectedNotifications.filter((item) => item.read === false) :
-          selectedNotifications.filter((item) => item.read === true);
-      const finalNotifications = deletedNotifications.map((notification) => notification.id);
-      const response = await axios.delete(`${CONFIG.apiUrl}/projects/delete/notifications/`, {
-        data: {
-          userReporter: userLogged?.data,
-          notificationIds: finalNotifications,
-        }
-      });
-      if (response.status) {
-        setCurrentTab('all');
-      }
-    }, [notifications, userLogged, currentTab]);
+    }
+    return myNotifications;
+  }, [myNotifications, roleName, clientModules, clientTypes]);
+  
+
+  const [currentTab, setCurrentTab] = useState('all');
+  const handleChangeTab = useCallback((_, newValue) => {
+    setCurrentTab(newValue);
+  }, []);
+
+  // Filter according to tab
+  const filteredNotifications = useMemo(() => {
+    if (currentTab === 'unread') {
+      return roleFilteredNotifications.filter((n) => !n.read);
+    }
+    if (currentTab === 'archived') {
+      return roleFilteredNotifications.filter((n) => n.read);
+    }
+    return roleFilteredNotifications;
+  }, [roleFilteredNotifications, currentTab]);
+
+  const totalAll = roleFilteredNotifications.length;
+  const totalUnRead = roleFilteredNotifications.filter((n) => !n.read).length;
+  const totalRead = roleFilteredNotifications.filter((n) => n.read).length;
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    const ids = roleFilteredNotifications.map((n) => n.id);
+    await axios.post(`${CONFIG.apiUrl}/users/mark-read/notifications/`, {
+      userReporter: userLogged.data,
+      notificationIds: ids,
+    });
+    refetchNotifications?.().catch(console.error);
+  }, [roleFilteredNotifications, userLogged, refetchNotifications]);
+
+
+  const handleDeleteNotifications = useCallback(async () => {
+    const toDelete = (currentTab === 'all'
+      ? roleFilteredNotifications
+      : currentTab === 'unread'
+      ? roleFilteredNotifications.filter((n) => !n.read)
+      : roleFilteredNotifications.filter((n) => n.read)
+    ).map((n) => n.id);
+    await axios.delete(
+      `${CONFIG.apiUrl}/users/delete/notifications/`,
+      { data: { userReporter: userLogged.data, notificationIds: toDelete } }
+    );
+    setCurrentTab('all');
+    refetchNotifications?.().catch(console.error);
+  }, [roleFilteredNotifications, currentTab, userLogged, refetchNotifications]);
+
+  const drawer = useBoolean();
 
   const TABS = [
     { value: 'all', label: 'All', count: totalAll },
@@ -282,51 +222,6 @@ export function NotificationsDrawer({ sx, ...other }) {
       </Box>
     </Scrollbar>
   );
-
-  // const [dataLoaded, setDataLoaded] = useState(false);
-
-  // useEffect(() => {
-  //   if (
-  //     notifications
-  //   ) {
-  //     setDataLoaded(true);
-  //   } else {
-  //     setDataLoaded(false);
-  //   }
-  // }, [
-  //   notifications
-  // ]);
-
-  // if (!dataLoaded) {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         width: '350px',
-  //         display: 'flex',
-  //         flexDirection: 'column',
-  //         alignItems: 'center',
-  //         justifyContent: 'center',
-  //         height: '80vh',
-  //         margin: 'auto'
-  //       }}
-  //     >
-  //       <Typography variant="body2" sx={{ mb: 1 }}>
-  //         Loading Data...
-  //       </Typography>
-  //       <LinearProgress
-  //         key="error"
-  //         sx={{
-  //           mb: 2,
-  //           width: '100%',
-  //           '& .MuiLinearProgress-bar': {
-  //             backgroundColor: 'black',
-  //           },
-  //           backgroundColor: '#e0e0e0',
-  //         }}
-  //       />
-  //     </Box>
-  //   );
-  // }
 
   return (
     <>

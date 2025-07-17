@@ -1,6 +1,8 @@
 from rest_framework.response import Response
 from django.utils import timezone
+from django.template.loader import render_to_string
 from api_authorization.models import LoginUser
+from api_authorization.views import send_generic_email
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardStoreProductSelection,
@@ -18,6 +20,7 @@ from utils.data_util import (
     generate_order_number,
     generate_confirmation_number,
 )
+from utils.s3_utils import generate_default_file_url
 import json
 import logging
 
@@ -91,8 +94,9 @@ def create_store_product_selection_cart(request, id):
                 }
             )
             
-            info = f'has created new store product selection cart of \
-                {cart.store_product_selection.store_product.name} \
+            info = f'has added \
+                {cart.store_product_selection.store_product.name.upper()} \
+                to cart \
                 with quantity {cart.store_product_selection.quantity} \
                 and total points \
                 {cart.store_product_selection.store_product.assigned_points * cart.store_product_selection.quantity}'
@@ -167,8 +171,9 @@ def delete_store_product_selection_cart(request, id):
             }
         )
         
-        info = f'has deleted store product selection cart of \
-                {cart.store_product_selection.store_product.name} \
+        info = f'has deleted \
+                {cart.store_product_selection.store_product.name.upper()} \
+                from cart \
                 with quantity {cart.store_product_selection.quantity} \
                 and total points \
                 {cart.store_product_selection.store_product.assigned_points * cart.store_product_selection.quantity}'
@@ -246,11 +251,14 @@ def delete_all_store_product_selection_carts(request):
                 'data': tracking_info
             }
         )
-        
+
+        info = f'has deleted a list of {len(carts)} \
+            carts ({", ".join([cart.store_product_selection.store_product.name.upper() for cart in carts])})'
+
         create_notification(
             module='store_product_selection_carts',
             info_id='list',
-            info=f'has deleted a list of {len(carts)} store product selection carts for user {user_reporter.username}',
+            info=info,
             type='delete_list_store_product_selection_cart',
             username=user_reporter.username
         )
@@ -395,8 +403,8 @@ def create_store_product_selection_cart_buy(request, id):
                 }
             )
 
-            info = f'has created new store product selection buy of \
-                {buy.store_product_selection.store_product.name} \
+            info = f'has purchased \
+                {buy.store_product_selection.store_product.name.upper()} \
                 with quantity {buy.store_product_selection.quantity} \
                 and total points \
                 {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
@@ -406,6 +414,21 @@ def create_store_product_selection_cart_buy(request, id):
             info_id=buy.id
             type='create_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
+            
+            # SENDING EMAIL
+            
+            file = buy.store_product_selection.store_product.attachments[0].file if \
+                len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+            buy.default_url = generate_default_file_url(file)
+            
+            send_email_confirmation(
+                type='purchase',
+                points=purchased_points,
+                user=user_reporter,
+                purchases=[buy],
+                # list_receivers=[user_reporter.email]
+                list_receivers=['nnws15815@gmail.com']
+            )
                         
             return Response({
                 'message': 'Store product selection buy created successfully',
@@ -450,6 +473,7 @@ def create_all_store_product_selection_cart_buy(request):
                 return Response({'error': 'Store product selection carts not found or already bought'}, status=404)
             
             list_tracking_info = []
+            list_buys = []
             total_purchased_points = 0
 
             for cart in carts:
@@ -472,6 +496,7 @@ def create_all_store_product_selection_cart_buy(request):
                     ]
                 )
                 list_tracking_info.append(tracking_info)
+                list_buys.append(buy)
             
             description = f'Used {total_purchased_points} points to buy {len(carts)} products from cart'
             
@@ -508,8 +533,10 @@ def create_all_store_product_selection_cart_buy(request):
                 }
             )
 
-            info = f'has created new store product selection buy of \
-                {len(carts)} products from cart with total points \
+            info = f'has purchased \
+                {len(carts)} products \
+                ({", ".join([cart.store_product_selection.store_product.name.upper() for cart in carts])}) \
+                from cart with total points \
                 {total_purchased_points}'
 
             module='store_product_selection_buys'
@@ -517,6 +544,24 @@ def create_all_store_product_selection_cart_buy(request):
             info_id=','.join(ids)
             type='create_all_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
+            
+            # SENDING EMAIL
+            
+            for buy in list_buys:
+                if not hasattr(buy, 'default_url'):
+                    buy.default_url = None
+                file = buy.store_product_selection.store_product.attachments[0].file if \
+                    len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+                buy.default_url = generate_default_file_url(file)
+
+            send_email_confirmation(
+                type='purchase',
+                points=total_purchased_points,
+                user=user_reporter,
+                purchases=list_buys,
+                # list_receivers=[user_reporter.email]
+                list_receivers=['nnws15815@gmail.com']
+            )
                         
             return Response({
                 'message': 'Store products selection buy created successfully',
@@ -657,8 +702,8 @@ def create_store_product_selection_buy(request, id):
                 }
             )
 
-            info = f'has created new store product selection buy of \
-                {buy.store_product_selection.store_product.name} \
+            info = f'has purchased \
+                {buy.store_product_selection.store_product.name.upper()} \
                 with quantity {buy.store_product_selection.quantity} \
                 and total points \
                 {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
@@ -668,6 +713,21 @@ def create_store_product_selection_buy(request, id):
             info_id=buy.id
             type='create_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
+            
+            # SENDING EMAIL
+            
+            file = buy.store_product_selection.store_product.attachments[0].file if \
+                len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+            buy.default_url = generate_default_file_url(file)
+            
+            send_email_confirmation(
+                type='purchase',
+                points=purchased_points,
+                user=user_reporter,
+                purchases=[buy],
+                # list_receivers=[user_reporter.email]
+                list_receivers=['nnws15815@gmail.com']
+            )
                         
             return Response({
                 'message': 'Store product selection buy created successfully',
@@ -797,17 +857,33 @@ def delete_store_product_selection_buy(request, id):
                 }
             )
             
-            info = f'has deleted store product selection buy of \
-                {buy.store_product_selection.store_product.name} \
+            info = f'has deleted a purchase of \
+                {buy.store_product_selection.store_product.name.upper()} \
                 with quantity {buy.store_product_selection.quantity} \
-                and total points \
-                {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
+                and refunded \
+                {purchased_points} \
+                points to user {user.username}'
 
             module='store_product_selection_buys'
             info=info
             info_id=buy.id
             type='delete_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
+            
+            # SENDING EMAIL
+            
+            file = buy.store_product_selection.store_product.attachments[0].file if \
+                len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+            buy.default_url = generate_default_file_url(file)
+            
+            send_email_confirmation(
+                type='refund',
+                points=purchased_points,
+                user=user_reporter,
+                purchases=[buy],
+                # list_receivers=[user_reporter.email]
+                list_receivers=['nnws15815@gmail.com']
+            )
             
             # DELETING THE BUY
             buy.delete()
@@ -850,6 +926,9 @@ def delete_list_store_product_selection_buys(request):
                 return Response({'error': 'No store product selection buys found'}, status=404)
             
             list_tracking_info = []
+            list_buys = []
+            
+            total_purchased_points = 0
             
             for buy in buys:
                 if not buy:
@@ -889,6 +968,7 @@ def delete_list_store_product_selection_buys(request):
                     return Response({'error': 'Store product not found in buy selection'}, status=404)
                 
                 purchased_points = store_product.assigned_points * selection.quantity
+                total_purchased_points += purchased_points
                 
                 refund_gained_points = int(buy.purchase_fraction[0])
                 refund_spent_points = int(buy.purchase_fraction[1])
@@ -942,6 +1022,7 @@ def delete_list_store_product_selection_buys(request):
                 history.save()
 
                 list_tracking_info.append(tracking_info)
+                list_buys.append(buy)
 
                 # DELETING THE BUY
                 buy.delete()
@@ -964,13 +1045,34 @@ def delete_list_store_product_selection_buys(request):
                 }
             )
             
-            info = f'has deleted a list of {len(buys)} store product selection buys for user {user_reporter.username}'
+            info = f'has deleted a list of {len(buys)} \
+                purchases ({", ".join([buy.store_product_selection.store_product.name.upper() for buy in buys if buy is not None])})\
+                for user {user.username} and refunded {total_purchased_points} points'
+                
             create_notification(
                 module='store_product_selection_buys',
                 info_id='list',
                 info=info,
                 type='delete_list_store_product_selection_buy',
                 username=user_reporter.username
+            )
+            
+            # SENDING EMAIL
+            
+            for buy in list_buys:
+                if not hasattr(buy, 'default_url'):
+                    buy.default_url = None
+                file = buy.store_product_selection.store_product.attachments[0].file if \
+                    len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+                buy.default_url = generate_default_file_url(file)
+            
+            send_email_confirmation(
+                type='refund',
+                points=total_purchased_points,
+                user=user_reporter,
+                purchases=list_buys,
+                # list_receivers=[user_reporter.email]
+                list_receivers=['nnws15815@gmail.com']
             )
 
             return Response({
@@ -1030,7 +1132,7 @@ def manage_refund_store_product_selection_buy(request, id):
             )
 
             info = f'has {"requested" if refund_buy.has_requested_refund else "cancelled"} \
-                refund for store product selection buy of \
+                refund for purchase of \
                 {refund_buy.store_product_selection.store_product.name}'
 
             module='store_product_selection_buys'
@@ -1109,8 +1211,8 @@ def manage_use_store_product_selection_buy(request, id):
                 }
             )
 
-            info = f'has used store product selection buy of {buy.store_product_selection.store_product.name} \
-                with quantity used {total_quantity_used}'
+            info = f'has completed use of {buy.store_product_selection.store_product.name.upper()} \
+                with quantity {total_quantity_used} to user {buy.store_product_selection.user.username} effectively'
 
             module='store_product_selection_buys'
             info=info
@@ -1128,3 +1230,27 @@ def manage_use_store_product_selection_buy(request, id):
             return Response({'error': str(e)}, status=500)
     
     return Response({'error': 'User reporter not found'}, status=404)
+
+
+
+def send_email_confirmation(type, points, user, purchases, list_receivers):
+    email_html_message = render_to_string(
+            f"api_reward_points/email_send_{type}_confirmation.html",  
+            {
+             "username": user.username, 
+             "first_name": user.first_name, 
+             "last_name": user.last_name, 
+             "purchase_total_points": points,
+             "list_purchases": purchases,
+            }, 
+    )
+    message = f"Thank you for your {type}! Your order has been successfully processed. \
+    You can view your {type} details in your account."
+    today = to_aware(timezone.now())
+    today_str = today.strftime("%Y-%m-%d %H:%M:%S")
+    return send_generic_email(
+        list_receivers, 
+        email_html_message, 
+        f"{type.capitalize()} Confirmation - {today_str}",
+        message_response=message
+    )
