@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemText } from '@mui/material';
+import { ListItemText, Typography } from '@mui/material';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -188,58 +188,83 @@ export function UserPendingTableRow({
           </TableCell>
 
           <TableCell sx={{ cursor: 'pointer' }}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <Avatar alt={row.username} src={row.avatarUrl} />
+            <Stack spacing={0} direction="column" alignItems="left">
+              <Stack spacing={1} direction="row" alignItems="left">
+                <Avatar alt={row.username} src={row.avatarUrl} />
 
-              <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
-                <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
-                  {row.username}
-                </Link>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
-                  {row.email}
-                </Box>
+                <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
+                  <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
+                    {row.username}
+                  </Link>
+                  <Box component="span" sx={{ color: 'text.disabled' }}>
+                    {row.email}
+                  </Box>
+                </Stack>
               </Stack>
-            </Stack><br />
-            Company: {row.companyName}<br />
-            Name: {row.firstName} {row.lastName}<br />
-            Phone: {row.phoneNumber}<br />
-            Reward Points: {totalAvailablePoints > 0 ? (
-              <Label color="success">
-                {totalAvailablePoints || 0}
-              </Label>
-            ) : (
-              <Label color="error">
-                0
-              </Label>
-            )}<br />
-            Created: {fDateTime(row.createdTime)}
-            <ListItemText
+              <Stack spacing={1} direction="row" justifyContent="space-between" alignItems="center">
+                <Stack spacing={0} direction="column" alignItems="left">
+                  <Typography variant='body2'>
+                    Company: <b>{row.companyName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Name: <b>{row.firstName} {row.lastName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Phone: <b>{row.phoneNumber}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Reward Points: {totalAvailablePoints > 0 ? (
+                      <Label color="success">
+                        <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
+                        {totalAvailablePoints || 0}
+                      </Label>
+                    ) : (
+                      <Label color="error">
+                        0
+                      </Label>
+                    )}
+                  </Typography>
+                  <Typography variant='body2'>
+                    Created: <b>{fDateTime(row.createdTime)}</b>
+                  </Typography>
+                </Stack>
+                <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                  <Iconify icon="eva:more-vertical-fill" />
+                </IconButton>
+              </Stack>
+            </Stack>
+            {/* <ListItemText
               secondary={
                 <>
                   <IconButton
-                    color={confirmApproval.value ? 'inherit' : 'info'}
+                    color={confirmApproval.value ? 'inherit' : 'default'}
                     onClick={confirmApproval.onTrue}
                     sx={{ fontSize: '1rem' }}
                   >
                     Approve <Iconify icon="mdi:approve" />
                   </IconButton>
                   <IconButton
-                    color={quickChangePassword.value ? 'inherit' : 'info'}
+                    color={quickChangePassword.value ? 'inherit' : 'default'}
                     onClick={quickChangePassword.onTrue}
                     sx={{ fontSize: '1rem' }}
                   >
                     Change <Iconify icon="mdi:password-reset" />
                   </IconButton>
                   <IconButton
-                    color={quickEdit.value ? 'inherit' : 'info'}
+                    color={quickEdit.value ? 'inherit' : 'default'}
                     onClick={quickEdit.onTrue}
                     sx={{ fontSize: '1rem' }}
                   >
                     Edit <Iconify icon="solar:pen-bold" />
                   </IconButton>
+                  <IconButton color={confirm.value ? 'inherit' : 'error'}
+                    onClick={confirm.onTrue}
+                    sx={{ fontSize: '1rem' }}>
+                    Delete <Iconify icon="solar:trash-bin-trash-bold" />
+                  </IconButton>
                 </>
               }
-            />
+            /> */}
           </TableCell>
         </TableRow>
       )}

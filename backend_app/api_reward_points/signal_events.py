@@ -106,3 +106,47 @@ def event_store_product_review_reaction(type, document, full_selection_user, ful
             }
         }
     }
+    
+def event_points_settings(type, document):
+    return {
+        'type': 'points_settings_update',
+        'message': {
+            'type': type,
+            "item": {
+                "id": str(document.id),
+                "amount": document.amount,
+                "points": document.points,
+                "description": document.description,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+
+        }
+    }
+    
+    
+def event_reward_points(type, document, full_selection_user, full_selection_invoices):
+    total_available_points = document.total_gained_points + \
+                             document.total_assigned_points - \
+                             document.total_substracted_points
+    return {
+        'type': 'reward_points_update',
+        'message': {
+            'type': type,
+            "item": {
+                "id": str(document.id),
+                "user": full_selection_user if document.user else None,
+                "totalGainedPoints": document.total_gained_points,
+                "totalSpentPoints": document.total_spent_points,
+                "totalAssignedPoints": document.total_assigned_points,
+                "totalSubstractedPoints": document.total_substracted_points,
+                "totalRefundedPoints": document.total_refunded_points,
+                "totalAvailablePoints": total_available_points,
+                "totalAmountInvoices": document.total_amount_invoices,
+                "invoices": full_selection_invoices if document.invoices else [],
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+
+        }
+    }

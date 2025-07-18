@@ -12,7 +12,7 @@ export function StoreProductReviewList({ reviews, refetch }) {
       ))}
 
       <Pagination
-        count={10}
+        count={Math.ceil(reviews.length / 5)}
         sx={{
           mx: 'auto',
           [`& .${paginationClasses.ul}`]: { my: 5, mx: 'auto', justifyContent: 'center' },

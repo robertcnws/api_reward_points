@@ -65,7 +65,7 @@ const getValidTabValue = (options, currentValue) => options.some(
 
 // ----------------------------------------------------------------------
 
-export function PurchaseListView() {
+export function PurchaseListView({ lengthLimit = null }) {
 
   const { isMobile } = useContext(LoadingContext);
 
@@ -174,9 +174,14 @@ export function PurchaseListView() {
 
   useEffect(() => {
     if (loadedPurchases && loadedPurchases?.length > 0) {
-      setTableData(loadedPurchases);
+      if (lengthLimit && loadedPurchases.length > lengthLimit) {
+        setTableData(loadedPurchases.slice(0, lengthLimit));
+      }
+      else {
+        setTableData(loadedPurchases);
+      }
     }
-  }, [loadedPurchases]);
+  }, [loadedPurchases, lengthLimit]);
 
   useEffect(() => {
     const url = !isClient(roleName) ?
@@ -218,7 +223,7 @@ export function PurchaseListView() {
 
 
   const dataFiltered = applyFilter({
-    inputData: tableData,
+    inputData: lengthLimit ? tableData.slice(0, lengthLimit) : tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters: filters.state,
   });
@@ -481,22 +486,24 @@ export function PurchaseListView() {
   return (
     <>
       <DashboardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-          <CustomBreadcrumbs
-            // heading="List"
-            links={[
-              { name: 'Dashboard', href: paths.dashboard.general.analytics },
-              { name: 'Purchases', href: paths.dashboard.purchase.root },
-              { name: 'List' },
-            ]}
-            sx={{ mb: { xs: 3, md: 5 } }}
-          // action={
-          //   !isClient(roleName) ? renderFilterClient : null
-          // }
+        {!lengthLimit && (
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <CustomBreadcrumbs
+              // heading="List"
+              links={[
+                { name: 'Dashboard', href: paths.dashboard.general.analytics },
+                { name: 'Purchases', href: paths.dashboard.purchase.root },
+                { name: 'List' },
+              ]}
+              sx={{ mb: { xs: 3, md: 5 } }}
+            // action={
+            //   !isClient(roleName) ? renderFilterClient : null
+            // }
 
-          />
-          {!isClient(roleName) && renderFilterClient}
-        </Box>
+            />
+            {!isClient(roleName) && renderFilterClient}
+          </Box>
+        )}
 
         <Card>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -564,29 +571,33 @@ export function PurchaseListView() {
             </Box> */}
           </Box>
 
-          <PurchaseTableToolbar
-            filters={filters}
-            onResetPage={table.onResetPage}
-            options={{ values: STATUS_OPTIONS.map((option) => option.label) }}
-            dataFiltered={dataFiltered}
-            headersCSV={headersCSV}
-            setUpdating={setUpdating}
-            setTitleLinearProgress={setTitleLinearProgress}
-            title={filters.state.status === 'all' ? 'All Purchases' :
-              filters.state.status === 'used' ? 'Used Purchases' :
-                filters.state.status === 'not_used' ? 'Not Used Purchases' :
-                  filters.state.status === 'hasRequestedRefund' ? 'Refund Requested Purchases' :
-                    filters.state.status
-            }
-          />
+          {!lengthLimit && (
+            <>
+              <PurchaseTableToolbar
+                filters={filters}
+                onResetPage={table.onResetPage}
+                options={{ values: STATUS_OPTIONS.map((option) => option.label) }}
+                dataFiltered={dataFiltered}
+                headersCSV={headersCSV}
+                setUpdating={setUpdating}
+                setTitleLinearProgress={setTitleLinearProgress}
+                title={filters.state.status === 'all' ? 'All Purchases' :
+                  filters.state.status === 'used' ? 'Used Purchases' :
+                    filters.state.status === 'not_used' ? 'Not Used Purchases' :
+                      filters.state.status === 'hasRequestedRefund' ? 'Refund Requested Purchases' :
+                        filters.state.status
+                }
+              />
+              {canReset && (
+                <PurchaseTableFiltersResult
+                  filters={filters}
+                  totalResults={dataFiltered.length}
+                  onResetPage={table.onResetPage}
+                  sx={{ p: 2.5, pt: 0 }}
+                />
+              )}
+            </>
 
-          {canReset && (
-            <PurchaseTableFiltersResult
-              filters={filters}
-              totalResults={dataFiltered.length}
-              onResetPage={table.onResetPage}
-              sx={{ p: 2.5, pt: 0 }}
-            />
           )}
 
           <Box sx={{ position: 'relative' }}>
@@ -611,8 +622,15 @@ export function PurchaseListView() {
             />
             <Scrollbar>
               {tableData && tableData.length > 0 ? (
-                <TableContainer sx={{ maxHeight: filters.state.status !== 'all' ? 500 : 590 }}>
-                  <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: !isMobile ? 960 : 380 }} stickyHeader>
+                <TableContainer sx={{
+                  maxHeight: !isMobile && !lengthLimit ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
+                  minHeight: !isMobile && !lengthLimit ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
+                }}>
+                  <Table
+                    size={table.dense ? 'small' : 'medium'}
+                    sx={{ minWidth: !isMobile ? 960 : 380 }}
+                    stickyHeader
+                  >
                     <TableHeadCustom
                       order={table.order}
                       orderBy={table.orderBy}
@@ -649,7 +667,7 @@ export function PurchaseListView() {
                           />
                         ))}
 
-                      {dataFiltered.length > 0 && (
+                      {(dataFiltered.length > 0 && !lengthLimit) && (
                         <TableCustomPaginationZohoStyleRow
                           columnsLength={isMobile ? TABLE_HEAD_MOBILE.length : TABLE_HEAD.length}
                           data={dataFiltered}
@@ -668,7 +686,7 @@ export function PurchaseListView() {
                         />
                       )}
 
-                      <TableNoData notFound={notFound} />
+                      <TableNoData notFound={notFound} colSpan={20}/>
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -676,7 +694,7 @@ export function PurchaseListView() {
                 <TableContainer>
                   <Table>
                     <TableBody>
-                      <TableNoData notFound={tableData.length === 0} />
+                      <TableNoData notFound={tableData.length === 0} colSpan={20}/>
                     </TableBody>
                   </Table>
                 </TableContainer>

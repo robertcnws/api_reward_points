@@ -2,7 +2,7 @@ import React, { useMemo, useContext, createContext } from 'react';
 
 import { useRewardPointsByUsername, useAllRewardPoints } from 'src/_mock/__reward-points';
 
-import { useRewardPointsHistoryByRewardPointsId } from 'src/_mock/__reward-points-history';
+import { useRewardPointsHistoryByAction, useRewardPointsHistoryByRewardPointsId } from 'src/_mock/__reward-points-history';
 import { fieldsRewardPoints, fieldsRewardPointsHistory } from '../field-descriptors/field-descriptors-reward-points';
 
 const RewardPointsContext = createContext();
@@ -32,6 +32,11 @@ export function RewardPointsProvider({ children }) {
     fieldsHistory
   );
 
+  const byActionHistoryQuery = useRewardPointsHistoryByAction(
+    'refunded', 
+    fieldsHistory
+  );
+
   const loadedRewardPoints =
     roleName === 'admin' || roleName === 'superadmin'
       ? allPointsQuery.data
@@ -52,10 +57,25 @@ export function RewardPointsProvider({ children }) {
       ? allPointsQuery.error
       : byUsernameQuery.error;
 
-  const loadedRewardPointsHistory = historyQuery?.data;
-  const refetchRewardPointsHistory = historyQuery?.refetch;
-  const loadingRewardPointsHistory = historyQuery?.loading;
-  const errorRewardPointsHistory = historyQuery?.error;
+  const loadedRewardPointsHistory = 
+    roleName !== 'admin' && roleName !== 'superadmin'
+      ? historyQuery.data
+      : byActionHistoryQuery.data;
+
+  const refetchRewardPointsHistory = 
+    roleName !== 'admin' && roleName !== 'superadmin'
+      ? historyQuery.refetch
+      : byActionHistoryQuery.refetch;
+
+  const loadingRewardPointsHistory = 
+    roleName !== 'admin' && roleName !== 'superadmin'
+      ? historyQuery.loading
+      : byActionHistoryQuery.loading;
+
+  const errorRewardPointsHistory = 
+    roleName !== 'admin' && roleName !== 'superadmin'
+      ? historyQuery.error
+      : byActionHistoryQuery.error;
 
   const value = useMemo(
     () => ({

@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemText } from '@mui/material';
+import { ListItemText, Typography } from '@mui/material';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -255,94 +255,91 @@ export function UserClientTableRow({
           </TableCell>
 
           <TableCell sx={{ cursor: 'pointer' }}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <Avatar alt={row.username} src={row.avatarUrl} />
+            <Stack spacing={0} direction="column" alignItems="left">
+              <Stack spacing={2} direction="row" alignItems="left">
+                <Avatar alt={row.username} src={row.avatarUrl} />
 
-              <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
-                <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
-                  {row.username}
-                </Link>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
-                  Email: {row.email}
-                </Box>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
-                  Phone: {row.phoneNumber}
-                </Box>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
-                  Created at: {fDateTime(row.createdTime)}
-                </Box>
-                {row.lastModifiedTime && (
+                <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
+                  <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
+                    {row.username}
+                  </Link>
                   <Box component="span" sx={{ color: 'text.disabled' }}>
-                    Updated at: {fDateTime(row.lastModifiedTime)}
+                    Email: {row.email}
                   </Box>
-                )}
+                </Stack>
               </Stack>
-            </Stack><br />
-            Company: {row.companyName}<br />
-            Name: {row.firstName} {row.lastName}<br />
-            Reward Points: {totalAvailablePoints > 0 ? (
-              <Label color="success">
-                {totalAvailablePoints || 0}
-              </Label>
-            ) : (
-              <Label color="error">
-                0
-              </Label>
-            )}<br />
-            Active: <Label
-              color={row.isActive ? 'success' : 'error'}
-              sx={{ alignItems: 'center' }}
-            >
-              {row?.isActive ?
-                <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-              }
-            </Label><br />
-            Verified: <Label
-              color={row.isVerified ? 'success' : 'error'}
-              sx={{ alignItems: 'center' }}
-            >
-              {row?.isVerified ?
-                <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-              }
-            </Label><br />
-            Approved: <Label
-              color={row.isApproved ? 'success' : 'error'}
-              sx={{ alignItems: 'center' }}
-            >
-              {row?.isApproved ?
-                <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-              }
-            </Label><br />
-            <ListItemText
-              secondary={
-                <>
-                  <IconButton
-                    color={confirmApproval.value ? 'inherit' : 'info'}
-                    onClick={confirmApproval.onTrue}
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    Approve <Iconify icon="mdi:approve" />
-                  </IconButton>
-                  <IconButton
-                    color={quickChangePassword.value ? 'inherit' : 'info'}
-                    onClick={quickChangePassword.onTrue}
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    Change <Iconify icon="mdi:password-reset" />
-                  </IconButton>
-                  <IconButton
-                    color={quickEdit.value ? 'inherit' : 'info'}
-                    onClick={quickEdit.onTrue}
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    Edit <Iconify icon="solar:pen-bold" />
-                  </IconButton>
-                </>
-              }
-            />
+              <Stack spacing={1} direction="row" justifyContent="space-between" alignItems="center">
+                <Stack spacing={0} direction="column" alignItems="left">
+                  <Typography variant='body2'>
+                    Company: <b>{row.companyName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Name: <b>{row.firstName} {row.lastName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Phone: <b>{row.phoneNumber}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Reward Points: {totalAvailablePoints > 0 ? (
+                      <Label color="success">
+                        <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
+                        {totalAvailablePoints || 0}
+                      </Label>
+                    ) : (
+                      <Label color="error">
+                        0
+                      </Label>
+                    )}
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                    <Typography variant='body2'>
+                      Active: <Label
+                        color={row.isActive ? 'success' : 'error'}
+                        sx={{ alignItems: 'center' }}
+                      >
+                        {row?.isActive ?
+                          <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
+                          <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
+                        }
+                      </Label>
+                    </Typography>
+                    <Typography variant='body2'>
+                      Verified: <Label
+                        color={row.isVerified ? 'success' : 'error'}
+                        sx={{ alignItems: 'center' }}
+                      >
+                        {row?.isVerified ?
+                          <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
+                          <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
+                        }
+                      </Label>
+                    </Typography>
+                    <Typography variant='body2'>
+                      Approved: <Label
+                        color={row.isApproved ? 'success' : 'error'}
+                        sx={{ alignItems: 'center' }}
+                      >
+                        {row?.isApproved ?
+                          <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
+                          <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
+                        }
+                      </Label>
+                    </Typography>
+                  </Box>
+                  <Typography variant='body2'>
+                    Created: <b>{fDateTime(row.createdTime)}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Updated: <b>{fDateTime(row.lastModifiedTime)}</b>
+                  </Typography>
+                </Stack>
+                <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                  <Iconify icon="eva:more-vertical-fill" />
+                </IconButton>
+              </Stack>
+
+
+            </Stack>
           </TableCell>
         </TableRow>
       )}

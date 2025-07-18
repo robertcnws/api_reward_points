@@ -393,11 +393,11 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                 title: 'List',
                 path: paths.dashboard.storeProduct.list,
               },
-              {
-                key: `${paths.dashboard.storeProduct.attachments}-12`,
-                title: 'Attachments',
-                path: paths.dashboard.storeProduct.attachments,
-              },
+              // {
+              //   key: `${paths.dashboard.storeProduct.attachments}-12`,
+              //   title: 'Attachments',
+              //   path: paths.dashboard.storeProduct.attachments,
+              // },
               {
                 key: `${paths.dashboard.storeProduct.new}-13`,
                 title: 'Create',

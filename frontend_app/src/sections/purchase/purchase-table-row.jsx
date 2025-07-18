@@ -199,35 +199,99 @@ export function PurchaseTableRow({
 
           </>
         ) : (
-          <TableCell >
-            Name: <Label
-              variant="soft"
-              color='default'
-              sx={{ cursor: 'pointer' }}
-              onClick={openDetails.onTrue}
-            >
-              <u>{row.name}</u>
-            </Label><br />
-            <Label
-              variant="soft"
-              color={
-                (row.isActive && 'success') ||
-                (!row.isActive && 'warning') ||
-                'default'
-              }
-              sx={{ cursor: 'pointer' }}
-              onClick={() => onEditRow()}
-            >
-              {row.isActive ? 'Active' : 'Inactive'}
-            </Label><br />
-            Description: <Label
-              sx={{ cursor: 'pointer' }}
-              variant="soft"
-              color='default'
-              onClick={() => onEditRow()}
-            >
-              {row.description ? row.description : 'No description'}
-            </Label>
+          <TableCell align="left" sx={{ px: 1, whiteSpace: 'nowrap' }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <StoreProductFolderItemCarousel
+                images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
+                maxWidth={80}
+                maxHeight={80}
+                overflow='hidden'
+              />
+              <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }} onClick={openDetails.onTrue}>
+                <Typography>Order #: <b>{row.orderNumber}</b></Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  CONFIRMATION #:
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{
+                      fontWeight: 'bold',
+                      fontFamily: 'Mono, monospace',
+                      fontSize: 17,
+                      cursor: 'pointer',
+                      color: 'text.primary',
+                      '&:hover': { color: 'primary.main' }
+                    }}>
+                    {row?.confirmationNumber || 'N/A'}
+                  </Typography>
+                </Box>
+                <Typography>
+                  Product: <b>{row?.storeProductSelection?.storeProduct?.name}</b>
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Is Active?:
+                  <Label
+                    color={row?.storeProductSelection?.storeProduct?.isActive ? 'success' : 'warning'}
+                  >
+                    {row?.storeProductSelection?.storeProduct?.isActive ? 'YES' : 'NO'}
+                  </Label>
+                  Status:
+                  <Label
+                    variant="soft"
+                    color={
+                      (row?.hasBeenUsed && row?.quantityUsed === quantity && 'error') ||
+                      (row?.hasBeenUsed && row?.quantityUsed !== 0 && row?.quantityUsed < quantity && 'warning') ||
+                      (!row?.hasBeenUsed && 'info') ||
+                      'default'
+                    }
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {
+                      (row?.hasBeenUsed && row?.quantityUsed === quantity) ? 'Used!!' :
+                        (row?.hasBeenUsed && row?.quantityUsed !== 0 && row?.quantityUsed < quantity) ? 'Partially Used!' :
+                          'Not Used'
+                    }
+                  </Label>
+                </Box>
+                {!isClient(roleName) && (
+                  <Typography>
+                    Client: <b>{row?.storeProductSelection?.user?.firstName} {row?.storeProductSelection?.user?.lastName}</b>
+                  </Typography>
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Points:
+                  <Label color="success" sx={{ alignItems: 'center', fontSize: 14 }}>
+                    <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
+                    {fNumber(assignedPoints) || 0}
+                  </Label>
+                  Qty:
+                  <Typography><b>x{fNumber(quantity) || 0}</b></Typography>
+                  Total:
+                  <Label color="info" sx={{ alignItems: 'center', fontSize: 14 }}>
+                    <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
+                    {fNumber(total) || 0}
+                  </Label>
+                </Box>
+                <Typography>Qty Used: <b>x{fNumber(row?.quantityUsed) || 0}</b></Typography>
+                {isClient(roleName) && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    Has Refund Request?
+                    <Label
+                      variant="soft"
+                      color={
+                        (row.hasRequestedRefund && 'secondary') ||
+                        (!row.hasRequestedRefund && 'success') ||
+                        'default'
+                      }
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      {row?.hasRequestedRefund ? 'YES!' : 'NO'}
+                    </Label>
+                  </Box>
+                )}
+                <Typography>Created At: <b>{fDateTime(row?.createdTime)}</b></Typography>
+              </Box>
+            </Stack>
           </TableCell>
         )}
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>

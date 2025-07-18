@@ -8,6 +8,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { WelcomeTypography } from '../welcome-typography';
 import { OverviewEcommerceView } from '../../e-commerce/view';
+import { OverviewAdminView } from '../../admin/view';
 
 
 
@@ -23,7 +24,20 @@ export function OverviewAnalyticsView() {
     loadedRewardPoints,
     refetchRewardPoints,
     loadingRewardPoints,
-    errorRewardPoints
+    errorRewardPoints,
+    loadedRewardPointsHistory,
+    refetchRewardPointsHistory,
+    loadingRewardPointsHistory,
+    errorRewardPointsHistory,
+    loadedUsers,
+    loadedPendingUsers,
+    refetchUsers,
+    loadingUsers,
+    errorUsers,
+    loadedStoreProducts,
+    refetchStoreProducts,
+    loadingStoreProducts,
+    errorStoreProducts,
   } = useDataContext();
 
   return (
@@ -32,6 +46,25 @@ export function OverviewAnalyticsView() {
         <DashboardContent maxWidth="xl">
           <WelcomeTypography
             userLogged={userLogged}
+          />
+          <OverviewAdminView
+            loadedRewardPoints={loadedRewardPoints}
+            refetchRewardPoints={refetchRewardPoints}
+            loadingRewardPoints={loadingRewardPoints}
+            errorRewardPoints={errorRewardPoints}
+            loadedRewardPointsHistory={loadedRewardPointsHistory}
+            refetchRewardPointsHistory={refetchRewardPointsHistory}
+            loadingRewardPointsHistory={loadingRewardPointsHistory}
+            errorRewardPointsHistory={errorRewardPointsHistory}
+            loadedUsers={loadedUsers}
+            loadedPendingUsers={loadedPendingUsers}
+            refetchUsers={refetchUsers}
+            loadingUsers={loadingUsers}
+            errorUsers={errorUsers}
+            loadedStoreProducts={loadedStoreProducts}
+            refetchStoreProducts={refetchStoreProducts}
+            loadingStoreProducts={loadingStoreProducts}
+            errorStoreProducts={errorStoreProducts}
           />
         </DashboardContent>
       ) : (

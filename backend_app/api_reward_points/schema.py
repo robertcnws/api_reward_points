@@ -44,6 +44,10 @@ class Query(graphene.ObjectType):
     all_reward_points_history = graphene.List(
         RewardPointsHistoryType
     )
+    reward_points_history_by_action = graphene.List(
+        RewardPointsHistoryType, 
+        action=graphene.String(required=True)
+    )
     reward_points_history_by_id = graphene.List(
         RewardPointsHistoryType, 
         reward_points_id=graphene.String(required=True)
@@ -135,7 +139,10 @@ class Query(graphene.ObjectType):
     
     def resolve_all_reward_points_history(self, info):
         return RewardPointsHistory.objects.all()
-    
+
+    def resolve_reward_points_history_by_action(self, info, action):
+        return RewardPointsHistory.objects(action=action).all()
+
     def resolve_reward_points_history_by_id(self, info, reward_points_id):
         reward_points = RewardPoints.objects(id=reward_points_id).first()
         if reward_points:

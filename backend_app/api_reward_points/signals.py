@@ -19,7 +19,7 @@ from api_reward_points.models import (
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
-import signal_events
+import api_reward_points.signal_events as signal_events
 
 ##########################################################################
 # PointHistory by username
@@ -366,23 +366,11 @@ def store_product_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "assignedPoints": document.assigned_points,
-                "attachments": full_selection if document.attachments else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "isActive": document.is_active,
-            }
-
-        }
-    }
+    event = signal_events.event_store_product(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('store_product', serialize_datetime(event))
     
     selections = RewardStoreProductSelection.objects(store_product=document).only('id')
@@ -399,27 +387,12 @@ def store_product_saved(sender, document, **kwargs):
         )
         sel_data = camelize(sel_data)
 
-        event_buy = {
-            'type': 'store_product_selection_buy_update',
-            'message': {
-                'type': 'created' if created else 'updated',
-                'item': {
-                    'id': str(buy.id),
-                    'storeProductSelection': sel_data,
-                    'hasBeenUsed': buy.has_been_used,
-                    'hasRequestedRefund': buy.has_requested_refund,
-                    'quantityUsed': buy.quantity_used,
-                    'orderNumber': buy.order_number,
-                    'confirmationNumber': buy.confirmation_number,
-                    'notes': buy.notes,
-                    'purchaseType': buy.purchase_type,
-                    'purchaseFraction': buy.purchase_fraction,
-                    'createdTime': buy.created_time,
-                    'lastModifiedTime': buy.last_modified_time,
-                }
-            }
-        }
-        
+        event_buy = signal_events.event_store_product_selection_buy(
+            type='created' if created else 'updated',
+            document=buy,
+            full_selection=sel_data
+        )
+
         username = buy.store_product_selection.user.username
         group_name = f"store_product_selection_buy_{username}"
         async_to_sync(channel_layer.group_send)(
@@ -438,19 +411,11 @@ def store_product_saved(sender, document, **kwargs):
         )
         sel_data = camelize(sel_data)
 
-        event_cart = {
-            'type': 'store_product_selection_cart_update',
-            'message': {
-                'type': 'created' if created else 'updated',
-                'item': {
-                    'id': str(cart.id),
-                    'storeProductSelection': sel_data,
-                    'isBought': cart.is_bought,
-                    'createdTime': cart.created_time,
-                    'lastModifiedTime': cart.last_modified_time,
-                }
-            }
-        }
+        event_cart = signal_events.event_store_product_selection_cart(
+            type='created' if created else 'updated',
+            document=cart,
+            full_selection=sel_data
+        )
 
         username = cart.store_product_selection.user.username
         group_name = f"store_product_selection_cart_{username}"
@@ -467,22 +432,11 @@ def store_product_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'store_product_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "assignedPoints": document.assigned_points,
-                "attachments": full_selection if document.attachments else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "isActive": document.is_active,
-            }
-        }
-    }
+    event = signal_events.event_store_product(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('store_product', serialize_datetime(event))
 
 ##########################################################################
@@ -492,40 +446,19 @@ def store_product_deleted(sender, document, **kwargs):
 def points_settings_saved(sender, document, **kwargs):
     created = kwargs.get('created', False)
     channel_layer = get_channel_layer()
-    event = {
-        'type': 'points_settings_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "amount": document.amount,
-                "points": document.points,
-                "description": document.description,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_points_settings(
+        type='created' if created else 'updated',
+        document=document
+    )
     async_to_sync(channel_layer.group_send)('points_settings', serialize_datetime(event))
     
     
 def points_settings_deleted(sender, document, **kwargs):
     channel_layer = get_channel_layer()
-    event = {
-        'type': 'points_settings_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "amount": document.amount,
-                "points": document.points,
-                "description": document.description,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_points_settings(
+        type='deleted',
+        document=document
+    )
     async_to_sync(channel_layer.group_send)('points_settings', serialize_datetime(event))
     
     
@@ -546,30 +479,12 @@ def reward_points_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
-    total_available_points = document.total_gained_points + \
-                             document.total_assigned_points - \
-                             document.total_substracted_points
-    event = {
-        'type': 'reward_points_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAssignedPoints": document.total_assigned_points,
-                "totalSubstractedPoints": document.total_substracted_points,
-                "totalRefundedPoints": document.total_refunded_points,
-                "totalAvailablePoints": total_available_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": full_selection_invoices if document.invoices else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_reward_points(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_invoices=full_selection_invoices
+    )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
     
     
@@ -585,29 +500,12 @@ def reward_points_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
-    total_available_points = document.total_gained_points + \
-                             document.total_assigned_points - \
-                             document.total_substracted_points
-    event = {
-        'type': 'reward_points_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAssignedPoints": document.total_assigned_points,
-                "totalSubstractedPoints": document.total_substracted_points,
-                "totalRefundedPoints": document.total_refunded_points,
-                "totalAvailablePoints": total_available_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": full_selection_invoices if document.invoices else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_reward_points(
+        type='deleted',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_invoices=full_selection_invoices
+    )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
     
 ##########################################################################
@@ -628,30 +526,12 @@ def reward_points_by_id_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
-    total_available_points = document.total_gained_points + \
-                             document.total_assigned_points - \
-                             document.total_substracted_points
-    event = {
-        'type': 'reward_points_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAssignedPoints": document.total_assigned_points,
-                "totalSubstractedPoints": document.total_substracted_points,
-                "totalAvailablePoints": total_available_points,
-                "totalRefundedPoints": document.total_refunded_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": full_selection_invoices if document.invoices else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_reward_points(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_invoices=full_selection_invoices
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
 
@@ -668,29 +548,12 @@ def reward_points_by_id_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
-    total_available_points = document.total_gained_points + \
-                             document.total_assigned_points - \
-                             document.total_substracted_points
-    event = {
-        'type': 'reward_points_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "user": full_selection_user if document.user else None,
-                "totalGainedPoints": document.total_gained_points,
-                "totalSpentPoints": document.total_spent_points,
-                "totalAssignedPoints": document.total_assigned_points,
-                "totalSubstractedPoints": document.total_substracted_points,
-                "totalAvailablePoints": total_available_points,
-                "totalRefundedPoints": document.total_refunded_points,
-                "totalAmountInvoices": document.total_amount_invoices,
-                "invoices": full_selection_invoices if document.invoices else [],
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_reward_points(
+        type='deleted',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_invoices=full_selection_invoices
+    )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
 

@@ -15,6 +15,7 @@ from api_authorization.models import LoginUser
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
+import api_users.signal_events as signal_events
 
 ##########################################################################
 # UserRole
@@ -23,40 +24,19 @@ import json
 def user_role_saved(sender, document, **kwargs):
     created = kwargs.get('created', False)
     channel_layer = get_channel_layer()
-    event = {
-        'type': 'user_role_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "isActive": document.is_active,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_user_role(
+        type='created' if created else 'updated',
+        document=document
+    )
     async_to_sync(channel_layer.group_send)('user_role', serialize_datetime(event))
     
     
 def user_role_deleted(sender, document, **kwargs):
     channel_layer = get_channel_layer()
-    event = {
-        'type': 'user_role_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "name": document.name,
-                "description": document.description,
-                "isActive": document.is_active,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_user_role(
+        type='deleted',
+        document=document
+    )
     async_to_sync(channel_layer.group_send)('user_role', serialize_datetime(event))
     
     
@@ -72,33 +52,11 @@ def user_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'user_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "username": document.username,
-                "firstName": document.first_name,
-                "lastName": document.last_name,
-                "companyName": document.company_name,
-                "email": document.email,
-                "isStaff": document.is_staff,
-                "isActive": document.is_active,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "phoneNumber": document.phone_number,
-                "password": document.password,
-                "lastLogin": document.last_login,
-                "dateJoined": document.date_joined,
-                "token": document.token,
-                "userRole": full_selection if document.user_role else None,
-                "avatarUrl": document.avatar_url,
-                "isVerified": document.is_verified,
-                "isApproved": document.is_approved,
-            }
-        }
-    }
+    event = signal_events.event_user(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('user', serialize_datetime(event))
     
     
@@ -109,33 +67,11 @@ def user_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection = camelize(full_selection)
-    event = {
-        'type': 'user_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "username": document.username,
-                "firstName": document.first_name,
-                "lastName": document.last_name,
-                "companyName": document.company_name,
-                "email": document.email,
-                "isStaff": document.is_staff,
-                "isActive": document.is_active,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-                "phoneNumber": document.phone_number,
-                "password": document.password,
-                "lastLogin": document.last_login,
-                "dateJoined": document.date_joined,
-                "token": document.token,
-                "userRole": full_selection if document.user_role else None,
-                "avatarUrl": document.avatar_url,
-                "isVerified": document.is_verified,
-                "isApproved": document.is_approved,
-            }
-        }
-    }
+    event = signal_events.event_user(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
     async_to_sync(channel_layer.group_send)('user', serialize_datetime(event))
     
     
@@ -158,22 +94,12 @@ def notification_user_saved(sender, document, **kwargs):
     )
     full_selection_user = camelize(full_selection_user)
     
-    event = {
-        'type': 'notification_user_update',
-        'message': {
-            'type': 'created' if created else 'updated',
-            "item": {
-                "id": str(document.id),
-                "notification": full_selection_notification if document.notification else None,
-                "username": document.username,
-                "user": full_selection_user if document.user else None,
-                "read": document.read,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-
-        }
-    }
+    event = signal_events.event_notification_user(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection_notification=full_selection_notification,
+        full_selection_user=full_selection_user
+    )
     async_to_sync(channel_layer.group_send)('notification_user', serialize_datetime(event))
 
 
@@ -190,21 +116,12 @@ def notification_user_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_user = camelize(full_selection_user)
-    event = {
-        'type': 'notification_user_update',
-        'message': {
-            'type': 'deleted',
-            "item": {
-                "id": str(document.id),
-                "notification": full_selection_notification if document.notification else None,
-                "username": document.username,
-                "user": full_selection_user if document.user else None,
-                "read": document.read,
-                "createdTime": document.created_time,
-                "lastModifiedTime": document.last_modified_time,
-            }
-        }
-    }
+    event = signal_events.event_notification_user(
+        type='deleted',
+        document=document,
+        full_selection_notification=full_selection_notification,
+        full_selection_user=full_selection_user
+    )
     async_to_sync(channel_layer.group_send)('notification_user', serialize_datetime(event))
     
 

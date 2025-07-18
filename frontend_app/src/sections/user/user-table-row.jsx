@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemText } from '@mui/material';
+import { ListItemText, Typography } from '@mui/material';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -145,61 +145,57 @@ export function UserTableRow({
           </TableCell>
 
           <TableCell sx={{ cursor: 'pointer' }}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <Avatar alt={row.username} src={row.avatarUrl} />
+            <Stack spacing={0} direction="column" alignItems="left">
+              <Stack spacing={1} direction="row" alignItems="left">
+                <Avatar alt={row.username} src={row.avatarUrl} />
 
-              <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
-                <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
-                  {row.username}
-                </Link>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
-                  {row.email}
-                </Box>
+                <Stack sx={{ typography: 'body2', flex: '0 0 auto', alignItems: 'flex-start' }}>
+                  <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>
+                    {row.username}
+                  </Link>
+                  <Box component="span" sx={{ color: 'text.disabled' }}>
+                    {row.email}
+                  </Box>
+                </Stack>
               </Stack>
-            </Stack><br />
-            Name: {row.firstName} {row.lastName}<br />
-            Phone: {row.phoneNumber}<br />
-            Role: {row.role}<br />
-            Last Login: {fDateTime(row.lastLogin)}<br />
-            Status: <Label
-              variant="soft"
-              color={
-                (row.isActive && 'success') ||
-                (!row.isActive && 'error') ||
-                'default'
-              }
-            >
-              {row.isActive ? 'Active' : 'Inactive'}
-            </Label>
-            <ListItemText
-              secondary={
-                <>
-                  {userLogged?.data.username !== row.username && (
-                    <IconButton
-                      color={confirmApproval.value ? 'inherit' : 'info'}
-                      onClick={confirmApproval.onTrue}
-                      sx={{ fontSize: '1rem' }}
+              <Stack spacing={1} direction="row" justifyContent="space-between" alignItems="center">
+                <Stack spacing={0} direction="column" alignItems="left">
+                  <Typography variant='body2'>
+                    Company: <b>{row.companyName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Name: <b>{row.firstName} {row.lastName}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Phone: <b>{row.phoneNumber}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Role: <b>{row.userRole.name}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Status: <Label
+                      variant="soft"
+                      color={
+                        (row.isActive && 'success') ||
+                        (!row.isActive && 'error') ||
+                        'default'
+                      }
                     >
-                      Disapprove <Iconify icon="material-symbols:disabled-by-default-rounded" />
-                    </IconButton>
-                  )}
-                  <IconButton
-                    color={quickChangePassword.value ? 'inherit' : 'info'}
-                    onClick={quickChangePassword.onTrue}
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    Change <Iconify icon="mdi:password-reset" />
-                  </IconButton>
-                  <IconButton
-                    color={quickEdit.value ? 'inherit' : 'info'}
-                    onClick={quickEdit.onTrue}
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    Edit <Iconify icon="solar:pen-bold" />
-                  </IconButton>
-                </>
-              }
-            />
+                      {row.isActive ? 'Active' : 'Inactive'}
+                    </Label>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Last Login: <b>{fDateTime(row.lastLogin)}</b>
+                  </Typography>
+                  <Typography variant='body2'>
+                    Created: <b>{fDateTime(row.createdTime)}</b>
+                  </Typography>
+                </Stack>
+                <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                  <Iconify icon="eva:more-vertical-fill" />
+                </IconButton>
+              </Stack>
+            </Stack>
           </TableCell>
         </TableRow>
       )}

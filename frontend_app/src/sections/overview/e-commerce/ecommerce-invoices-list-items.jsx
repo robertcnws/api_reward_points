@@ -15,10 +15,15 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom, TableNoData } from 'src/components/table';
 import { fDate } from 'src/utils/format-time';
 import { TableFooter } from '@mui/material';
+import { LoadingContext } from 'src/auth/context/loading-context';
+import { useContext } from 'react';
 
 // ----------------------------------------------------------------------
 
 export function EcommerceInvoicesListItems({ title, subheader, tableData, headLabel, ...other }) {
+
+  const { isMobile } = useContext(LoadingContext);
+  
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} sx={{ mb: 3 }} />
@@ -29,7 +34,7 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
           {tableData?.length > 0 ? (
             <TableBody>
               {tableData.map((row, index) => (
-                <RowItem key={`${row.id}-${index}`} row={row} />
+                <RowItem key={`${row.id}-${index}`} row={row} isMobile={isMobile}/>
               ))}
             </TableBody>
           ) : (
@@ -45,14 +50,14 @@ export function EcommerceInvoicesListItems({ title, subheader, tableData, headLa
 
 // ----------------------------------------------------------------------
 
-function RowItem({ row }) {
+function RowItem({ row, isMobile }) {
 
   return (
     <TableRow>
 
       <TableCell align="left">{fDate(row?.date)}</TableCell>
 
-      <TableCell width={300}>{row?.invoiceNumber}</TableCell>
+      <TableCell width={!isMobile ? 300 : 'auto'}>{row?.invoiceNumber}</TableCell>
 
       <TableCell align="center">{fNumber(row?.lineItems?.length)}</TableCell>
 
