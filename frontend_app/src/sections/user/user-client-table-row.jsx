@@ -465,7 +465,12 @@ export function UserClientTableRow({
           />
         }
         action={
-          <Button variant="contained" color={row.isApproved ? "warning" : "primary"} onClick={onApprovalRow}>
+          <Button variant="contained" color={row.isApproved ? "warning" : "primary"} onClick={
+            async() => {
+              await onApprovalRow(row.id);
+              confirmApproval.onFalse();
+            }
+          }>
             {row.isApproved ? "Unapprove" : "Approve"}
           </Button>
         }

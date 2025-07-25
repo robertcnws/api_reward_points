@@ -46,7 +46,7 @@ export function StoreProductFilters({
 
 
   const createCustomFilterName = useCallback(() => {
-    const name = 'Store';
+    const name = 'Reward Store';
     const active = [];
     // if (custom.hasPermission) active.push('Need permission');
     // if (custom.isPreparation?.value) active.push('In preparation stage');

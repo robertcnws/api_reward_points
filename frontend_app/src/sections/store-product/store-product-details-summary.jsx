@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import React, { useEffect, useCallback, useState, useMemo, useContext } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
-import { Chip } from '@mui/material';
+import { Chip, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -13,6 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -27,6 +28,9 @@ import { Form, Field } from 'src/components/hook-form';
 import { ColorPicker } from 'src/components/color-utils';
 
 import { IncrementerButton } from './components/incrementer-button';
+import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
+import { StoreProductConfirmCheckoutTable } from './store-product-confirm-checkout-table';
+
 
 
 // ----------------------------------------------------------------------
@@ -108,6 +112,13 @@ export function StoreProductDetailsSummary({
   const values = watch();
 
   const isMaxQuantity = useMemo(() => values.quantity > available, [values.quantity, available]);
+
+  const listMappedProducts = useMemo(() => ([
+    {
+      ...product,
+      quantity: values.quantity,
+    }
+  ]), [product, values]);
 
   useEffect(() => {
     if (product) {
@@ -268,8 +279,15 @@ export function StoreProductDetailsSummary({
         Add to cart
       </Button>
 
-      <Button fullWidth size="large" type="submit" variant="contained" disabled={isMaxQuantity || values.quantity < 1}>
-        Buy now
+      <Button
+        fullWidth
+        size="large"
+        type="submit"
+        variant="contained"
+        startIcon={<Iconify icon="mdi:redeem" width={24} />}
+        disabled={isMaxQuantity || values.quantity < 1}
+      >
+        Redeem now
       </Button>
     </Stack>
   );
@@ -296,7 +314,7 @@ export function StoreProductDetailsSummary({
 
   const renderNeedPoints = (
     <Typography variant="body2" sx={{ color: 'error.main' }}>
-      You need <b>{price - totalAvailablePoints}</b> more points to purchase {product?.name}
+      You need <b>{price - totalAvailablePoints}</b> more points to redeem {product?.name}
     </Typography>
   );
 
@@ -381,10 +399,10 @@ export function StoreProductDetailsSummary({
       <ConfirmDialog
         open={confirmBuy.value}
         onClose={confirmBuy.onFalse}
-        title={`Buying Cart: ${product?.name}`}
+        title={`Redeeming Cart: ${product?.name}`}
         content={
           <>
-            Are you sure want to buy <strong> {product?.name} </strong>,
+            Are you sure want to redeem <strong> {product?.name} </strong>,
             with quantity <strong> {values.quantity} </strong>
             spending <strong>{fNumber(product.assignedPoints * values.quantity)}</strong> point(s)?
           </>
@@ -398,19 +416,34 @@ export function StoreProductDetailsSummary({
               confirmCheckout.onTrue();
             }}
           >
-            Buy
+            Redeem
           </Button>
         }
       />
 
       <ConfirmDialog
+        maxWidth='md'
         open={confirmCheckout.value}
         onClose={confirmCheckout.onFalse}
-        title={`Checking out: ${product?.name}`}
+        // title={`Checking out: ${product?.name}`}
+        title={`Proceed to confirm redeemed order of ${listMappedProducts.length} product(s)`}
         content={
           <>
-            You are going to checkout a product <strong> {product?.name} </strong>,
-            spending <strong>{fNumber(product.assignedPoints * values.quantity)}</strong> point(s) ... Are you sure?
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}>
+              {/* <Typography>
+                You are going to checkout a product <strong> {product?.name} </strong>,
+                spending <strong>{fNumber(product.assignedPoints * values.quantity)}</strong> point(s):
+              </Typography> */}
+              <StoreProductConfirmCheckoutTable
+                listMappedProducts={listMappedProducts}
+              />
+            </Box>
           </>
         }
         action={
@@ -425,7 +458,7 @@ export function StoreProductDetailsSummary({
               router.push(paths.dashboard.storeProduct.root);
             }}
           >
-            Confirm Checkout
+            Confirm Redeem
           </Button>
         }
       />

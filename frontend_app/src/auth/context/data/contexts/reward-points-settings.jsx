@@ -21,20 +21,20 @@ export function RewardPointsSettingsProvider({ children }) {
   const allPointsSettingsQuery = useAllRewardPointsSettings(fields);
 
   const loadedAllRewardPointsSettings = useMemo(
-    () => roleName === 'admin' || roleName === 'superadmin' ?
+    () => roleName !== 'client' ?
     allPointsSettingsQuery.data : [],
     [allPointsSettingsQuery, roleName]
   );
 
   const refetchAllRewardPointsSettings = useMemo(
-    () => (roleName === 'admin' || roleName === 'superadmin') ? allPointsSettingsQuery.refetch : () => {},
+    () => (roleName !== 'client') ? allPointsSettingsQuery.refetch : () => {},
     [allPointsSettingsQuery, roleName]
   );
 
-  const loadingAllRewardPointsSettings = roleName === 'admin' || roleName === 'superadmin' ?
+  const loadingAllRewardPointsSettings = roleName !== 'client' ?
     allPointsSettingsQuery.loading : false;
 
-  const errorRewardPointsSettings = roleName === 'admin' || roleName === 'superadmin' ?
+  const errorRewardPointsSettings = roleName !== 'client' ?
     allPointsSettingsQuery.error : null;
 
   const value = useMemo(

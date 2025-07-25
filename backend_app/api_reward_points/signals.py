@@ -352,6 +352,83 @@ def store_product_review_reaction_deleted(sender, document, **kwargs):
         full_selection_review=full_selection_review
     )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+    
+    
+def all_store_product_review_saved(sender, document, **kwargs):
+    created = kwargs.get('created', False)
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_review"
+    full_selection = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = signal_events.event_store_product_review(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+    
+    
+def all_store_product_review_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_review"
+    full_selection = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = signal_events.event_store_product_review(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+    
+    
+def all_store_product_review_reaction_saved(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_review_reaction"
+    full_selection_user = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_user = camelize(full_selection_user)
+    full_selection_review = transform_data_to_mongo(
+        document.store_product_review,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_review = camelize(full_selection_review)
+    event = signal_events.event_store_product_review_reaction(
+        type='created',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_review=full_selection_review
+    )
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
+    
+    
+def all_store_product_review_reaction_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    group_name = f"store_product_review_reaction"
+    full_selection_user = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_user = camelize(full_selection_user)
+    full_selection_review = transform_data_to_mongo(
+        document.store_product_review,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_review = camelize(full_selection_review)
+    event = signal_events.event_store_product_review_reaction(
+        type='deleted',
+        document=document,
+        full_selection_user=full_selection_user,
+        full_selection_review=full_selection_review
+    )
+    async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
 
 
 ##########################################################################
@@ -580,3 +657,7 @@ signals.post_save.connect(store_product_selection_buy_by_username_saved, sender=
 signals.post_delete.connect(store_product_selection_buy_by_username_deleted, sender=RewardStoreProductSelectionBuy)
 signals.post_save.connect(point_history_by_username_saved, sender=RewardPointsHistory)
 signals.post_delete.connect(point_history_by_username_deleted, sender=RewardPointsHistory)
+signals.post_save.connect(all_store_product_review_saved, sender=RewardStoreProductReview)
+signals.post_delete.connect(all_store_product_review_deleted, sender=RewardStoreProductReview)
+signals.post_save.connect(all_store_product_review_reaction_saved, sender=RewardStoreProductReviewReaction)
+signals.post_delete.connect(all_store_product_review_reaction_deleted, sender=RewardStoreProductReviewReaction)

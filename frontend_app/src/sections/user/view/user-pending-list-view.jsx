@@ -83,11 +83,11 @@ export function UserPendingListView() {
 
   const confirm = useBoolean();
 
-  const { 
-    loadedPendingUsers, 
-    refetchUsers, 
+  const {
+    loadedPendingUsers,
+    refetchUsers,
     loadedUserRoles,
-    loadedRewardPoints,  
+    loadedRewardPoints,
     refetchRewardPoints,
   } = useDataContext();
 
@@ -269,16 +269,22 @@ export function UserPendingListView() {
   const handleChangeApprovalRow = useCallback(
     async (id) => {
 
-      const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
-          userReporter: userLogged?.data,
-      });
+      try {
 
-      if (response.data.message) {
-        refetchUsers?.();
-        toast.success(response.data.message);
-      }
-      else {
-        toast.error(response.data.error);
+        const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
+          userReporter: userLogged?.data,
+        });
+
+        if (response.data.message) {
+          refetchUsers?.();
+          toast.success(response.data.message);
+        }
+        else {
+          toast.error(response.data.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
       }
     },
     [userLogged, refetchUsers]

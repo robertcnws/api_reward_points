@@ -39,6 +39,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { IncrementerButton } from './components/incrementer-button';
 import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
+import { StoreProductConfirmCheckoutTable } from './store-product-confirm-checkout-table';
 
 // ----------------------------------------------------------------------
 
@@ -104,6 +105,13 @@ export function StoreProductFolderItem({
 
   const [purchased, setPurchased] = useState(false);
 
+  const listMappedProducts = useMemo(() => ([
+    {
+      ...currentProduct,
+      quantity: 1,
+    }
+  ]), [currentProduct]);
+
   useEffect(() => {
     if (product) {
       setCurrentProduct(product);
@@ -127,7 +135,7 @@ export function StoreProductFolderItem({
         const message = JSON.parse(event.data);
         if (
           message.type === 'created' ||
-          message.type === 'updated' 
+          message.type === 'updated'
           // message.type === 'deleted'
         ) {
           refetchProductDetails().catch((err) => console.error('Error fetching product data:', err));
@@ -191,17 +199,18 @@ export function StoreProductFolderItem({
           },
         });
 
+        const resp = await promise;
+
         toast.promise(promise, {
           loading: 'Loading...',
           success: `Store product added to cart successfully!`,
-          error: `Store product added to cart error!`,
+          error: resp.data.error || `Store product added to cart error!`,
         });
-
-        await promise;
 
 
       } catch (err) {
         console.error('Error adding product to cart:', err);
+        toast.error(err.response?.data?.error || `Store product added to cart error!`); // Show a generic error message
       }
     }
   }, [currentProduct, userLogged]);
@@ -263,8 +272,8 @@ export function StoreProductFolderItem({
 
         toast.promise(promise, {
           loading: 'Loading...',
-          success: `Store product purchased successfully!`,
-          error: `Store product purchase error!`,
+          success: `Store product redeemed successfully!`,
+          error: `Store product redemption error!`,
         });
 
         refetchProductDetails?.().catch((err) => console.error('Error fetching product data:', err));
@@ -351,12 +360,12 @@ export function StoreProductFolderItem({
           <Tooltip
             title={purchased ?
               ((totalAvailablePoints < folderPoints && isClient(roleName)) ?
-                `You need ${folderPoints - totalAvailablePoints} more points to purchase ${currentProduct?.name}` :
-                `${currentProduct?.name} already purchased`
+                `You need ${folderPoints - totalAvailablePoints} more points to redeem ${currentProduct?.name}` :
+                `${currentProduct?.name} already redeemed`
               ) :
               ((totalAvailablePoints < folderPoints && isClient(roleName)) ?
-                `You need ${folderPoints - totalAvailablePoints} more points to purchase ${currentProduct?.name}` :
-                `Make new purchase of ${currentProduct?.name} with quantity 1`
+                `You need ${folderPoints - totalAvailablePoints} more points to redeem ${currentProduct?.name}` :
+                `Make new redemption of ${currentProduct?.name} with quantity 1`
               )
             }
             arrow
@@ -377,7 +386,7 @@ export function StoreProductFolderItem({
                   if (!purchased) {
                     confirmBuy.onTrue();
                   } else {
-                    toast.info(`${currentProduct?.name} already purchased`);
+                    toast.info(`${currentProduct?.name} already redeemed`);
                   }
                 }}
               >
@@ -438,7 +447,7 @@ export function StoreProductFolderItem({
             </Typography>
             {(totalAvailablePoints < folderPoints && isClient(roleName)) && (
               <Typography variant="caption" sx={{ color: 'error.main' }}>
-                You need <b>{folderPoints - totalAvailablePoints}</b> more points to purchase
+                You need <b>{folderPoints - totalAvailablePoints}</b> more points to redeem
               </Typography>
             )}
           </Box>
@@ -457,43 +466,57 @@ export function StoreProductFolderItem({
         onViewRow();
       }}
       primary={
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+            <Typography
+              variant="subtitle1"
+              noWrap
+              sx={{
+                fontWeight: 'fontWeightBold',
+                color: 'text.primary',
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              {currentProduct?.name}
+            </Typography>
+            {!currentProduct?.isActive && (
+              <Chip label="Inactive" color="error" size="small" />
+            )}
+          </Box>
           <Typography
-            variant="subtitle1"
-            noWrap
+            component="span"
             sx={{
-              fontWeight: 'fontWeightBold',
-              color: 'text.primary',
-              cursor: 'pointer',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
+              color: currentProduct?.description ? 'text.primary' : 'text.disabled',
+              fontSize: '0.775rem',
+              justifyContent: 'flex-end',
             }}
           >
-            {currentProduct?.name}
+            {currentProduct?.description || 'No description available'}
           </Typography>
-          {!currentProduct?.isActive && (
-            <Chip label="Inactive" color="error" size="small" />
-          )}
         </Box>
       }
       secondary={
         <>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Tooltip title="Value in points">
-              <Iconify icon="streamline-sharp-color:shopping-bag-hand-bag-price-tag" sx={{ color: 'error.main' }} />
-            </Tooltip>
-            <Box
-              component="span"
-              sx={{
-                mx: 0.75,
-                width: 2,
-                height: 2,
-                borderRadius: '50%',
-                bgcolor: 'currentColor',
-              }}
-            />
-            <b>{currentProduct?.assignedPoints}</b>{'  '}point(s)
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Tooltip title="Value in points">
+                <Iconify icon="streamline-sharp-color:shopping-bag-hand-bag-price-tag" sx={{ color: 'error.main' }} />
+              </Tooltip>
+              <Box
+                component="span"
+                sx={{
+                  mx: 0.75,
+                  width: 2,
+                  height: 2,
+                  borderRadius: '50%',
+                  bgcolor: 'currentColor',
+                }}
+              />
+              <b>{currentProduct?.assignedPoints} </b>{'  '} point(s)
+            </Box>
           </Box>
         </>
       }
@@ -508,7 +531,6 @@ export function StoreProductFolderItem({
       }}
     />
   );
-
 
   return (
     <>
@@ -635,10 +657,10 @@ export function StoreProductFolderItem({
       <ConfirmDialog
         open={confirmBuy.value}
         onClose={confirmBuy.onFalse}
-        title={`Buying Cart: ${folderName}`}
+        title={`Redeeming Cart: ${folderName}`}
         content={
           <>
-            Are you sure want to buy <strong> {folderName} </strong>,
+            Are you sure want to redeem <strong> {folderName} </strong>,
             with quantity <strong> 1 </strong>
             spending <strong>{fNumber(folderPoints)}</strong> point(s)?
           </>
@@ -652,19 +674,34 @@ export function StoreProductFolderItem({
               confirmCheckout.onTrue();
             }}
           >
-            Buy
+            Redeem
           </Button>
         }
       />
 
       <ConfirmDialog
+        maxWidth="md"
         open={confirmCheckout.value}
         onClose={confirmCheckout.onFalse}
-        title={`Checking out: ${product?.name}`}
+        // title={`Checking out: ${product?.name}`}
+        title={`Proceed to confirm redeemed order of ${listMappedProducts.length} product(s)`}
         content={
           <>
-            You are going to checkout a product <strong> {folderName} </strong>,
-            spending <strong>{fNumber(folderPoints)}</strong> point(s) ... Are you sure?
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}>
+              {/* <Typography>
+                You are going to checkout a product <strong> {folderName} </strong>,
+                spending <strong>{fNumber(folderPoints)}</strong> point(s):
+              </Typography> */}
+              <StoreProductConfirmCheckoutTable
+                listMappedProducts={listMappedProducts}
+              />
+            </Box>
           </>
         }
         action={
@@ -676,7 +713,7 @@ export function StoreProductFolderItem({
               onAddBuy();
             }}
           >
-            Confirm Checkout
+            Confirm Redeem
           </Button>
         }
       />

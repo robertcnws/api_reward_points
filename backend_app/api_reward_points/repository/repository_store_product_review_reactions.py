@@ -103,3 +103,39 @@ def manage_store_product_review_reaction(request, review_id):
             return Response({'error': str(e)}, status=500)
     
     return Response({'error': 'User reporter not found'}, status=404)
+
+
+def delete_store_product_review_reaction(request, reaction_id):
+    try:
+        reaction = RewardStoreProductReviewReaction.objects(id=reaction_id).first()
+        if not reaction:
+            logger.error("Store product review reaction not found")
+            return Response({'error': 'Store product review reaction not found'}, status=404)
+
+        user_reporter = request.user
+        if not user_reporter:
+            logger.error("User reporter not found")
+            return Response({'error': 'User reporter not found'}, status=404)
+
+        reaction.delete()
+
+        create_tracking(
+            user_reporter=user_reporter,
+            action='delete store product review reaction',
+            object_id=reaction.id,
+            object_type='RewardStoreProductReviewReaction',
+            object_name=reaction.reaction_type,
+            managed_data={}
+        )
+
+        module = 'store_product_review_reactions'
+        info = f'has deleted a reaction ({reaction.reaction_type.capitalize()}) on product {reaction.store_product_review.store_product.name} review by {reaction.store_product_review.user.username}'
+        info_id = reaction.id
+        type = 'delete_store_product_review_reaction'
+        create_notification(module, info_id, info, type, user_reporter.username)
+
+        return Response({'message': 'Store product review reaction deleted successfully'}, status=204)
+
+    except Exception as e:
+        logger.error(f"Error deleting store product review reaction: {str(e)}")
+        return Response({'error': str(e)}, status=500)

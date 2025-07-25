@@ -4,6 +4,7 @@ from api_authorization.models import LoginUser
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardStoreProductReview,
+     RewardStoreProductReviewReaction,
 )
 from utils.data_util import (
     transform_data_to_mongo,
@@ -93,3 +94,70 @@ def create_store_product_review(request, id):
             return Response({'error': str(e)}, status=500)
     
     return Response({'error': 'User reporter not found'}, status=404)
+
+
+#############################################
+# DELETE STORE PRODUCT REVIEW
+#############################################
+
+def delete_store_product_review(request, id):
+    user_reporter = json.loads(request.data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            review = RewardStoreProductReview.objects(id=id).first()
+            if not review:
+                logger.error("Store product review not found")
+                return Response({'error': 'Store product review not found'}, status=404)
+            
+            tracking_info = transform_data_to_mongo(
+                review, 
+                exclude_fields=[
+                    'password', 
+                    'is_staff', 
+                    'is_active', 
+                    'is_verified', 
+                    'last_login', 
+                    'date_joined',
+                    'last_modified_time', 
+                    'created_time'
+                ]
+            )
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'delete store product review',
+                object_id=review.id,
+                object_type='RewardStoreProductReview',
+                object_name=review.comment,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+                            
+            module='store_product_reviews'
+            info=f'has deleted review ({review.comment.capitalize()}) on product {review.store_product.name}'
+            info_id=review.id
+            type='delete_store_product_review'
+            create_notification(module, info_id, info, type, user_reporter.username)
+            
+            reactions = RewardStoreProductReviewReaction.objects(store_product_review=review).all()
+            if reactions:
+                for reaction in reactions:
+                    react = RewardStoreProductReviewReaction.objects(id=reaction.id).first()
+                    if react:
+                        react.delete()
+            
+            review.delete()
+                        
+            return Response({
+                'message': 'Store product review deleted successfully',
+            }, status=204)
+        
+        except Exception as e:
+            logger.error(f"Error deleting store product review: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404) 

@@ -15,12 +15,7 @@ import { Chart, useChart } from 'src/components/chart';
 // ----------------------------------------------------------------------
 
 export function AdminCheckInWidgets({ 
-  chart, 
-  openModal, 
-  setOpenModal, 
-  handleOpenModal, 
-  listItemsNoReconciled, 
-  listItemsLost,
+  chart,
   ...other 
 }) {
   const theme = useTheme();
@@ -30,8 +25,9 @@ export function AdminCheckInWidgets({
   const [activeIndex, setActiveIndex] = useState(null);
 
   const chartColors = chart.colors ?? [
-    [theme.palette.warning.light, theme.palette.warning.main],
     [theme.palette.error.light, theme.palette.error.main],
+    [theme.palette.success.light, theme.palette.success.main],
+    [theme.palette.warning.light, theme.palette.warning.main],
   ];
 
   const chartOptions = useChart({
@@ -116,7 +112,7 @@ export function AdminCheckInWidgets({
 
             <div>
               <Box sx={{ mb: 0.5, typography: 'h5' }}>{fNumber(item.total)}</Box>
-              <Box sx={{ typography: 'body2', color: chartColors[index][1] }}><b>SKUs {item.label}</b></Box>
+              <Box sx={{ typography: 'body2', color: chartColors[index][1] }}><b>{item.label}</b></Box>
             </div>
           </Box>
         ))}

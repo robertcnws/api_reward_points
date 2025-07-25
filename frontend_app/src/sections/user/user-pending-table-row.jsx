@@ -353,7 +353,11 @@ export function UserPendingTableRow({
           />
         }
         action={
-          <Button variant="contained" color="primary" onClick={onApprovalRow}>
+          <Button variant="contained" color="primary" onClick={
+            async () => {
+              await onApprovalRow();
+              confirmApproval.onFalse();
+            }}>
             Approve
           </Button>
         }

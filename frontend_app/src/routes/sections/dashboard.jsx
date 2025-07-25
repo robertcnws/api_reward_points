@@ -36,6 +36,7 @@ const PointsSettingsListPage = lazy(() => import('src/pages/dashboard/points-set
 const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-settings/new'));
 // Purchases
 const PurchaseListPage = lazy(() => import('src/pages/dashboard/purchase/list'));
+const PurchaseCheckoutPage = lazy(() => import('src/pages/dashboard/purchase/checkout'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -169,14 +170,6 @@ export const dashboardRoutes = (user) => [
               element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductEditPage /> : <Page403 />
             },
           ] : [],
-          // {
-          //   path: 'attachments',
-          //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectAttachmentsPage /> : <Page403 />
-          // },
-          // {
-          //   path: ':id/edit',
-          //   element: <ProjectEditPage />,
-          // },
           {
             path: ':id/details',
             element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductDetailsPage /> : <Page403 />,
@@ -184,32 +177,6 @@ export const dashboardRoutes = (user) => [
 
         ],
       },
-      // {
-      //   path: 'item',
-      //   children: [
-      //     {
-      //       element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <ItemPage /> : <Page403 />,
-      //       index: true
-      //     },
-      //     {
-      //       path: 'list',
-      //       element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <ItemPage /> : <Page403 />
-      //     },
-      //     // {
-      //     //   path: 'attachments',
-      //     //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectAttachmentsPage /> : <Page403 />
-      //     // },
-      //     // {
-      //     //   path: ':id/edit',
-      //     //   element: <ProjectEditPage />,
-      //     // },
-      //     // {
-      //     //   path: ':id/details',
-      //     //   element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.projectManager) ? <ProjectDetailsPage /> : <Page403 />,
-      //     // }
-
-      //   ],
-      // },
       ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
         [
           {
@@ -255,18 +222,10 @@ export const dashboardRoutes = (user) => [
                   CONFIG.roles.administrator
                 ) ? <UserCreatePage /> : <Page403 />
               },
-              // {
-              //   path: ':id/edit',
-              //   element: listRolesAndSubroles(
-              //     user?.user_role?.name
-              //   ).includes(
-              //     CONFIG.roles.superadmin
-              //   ) ? <UserRoleDefaultCreatePage /> : <Page403 />
-              // },
             ],
           },
         ] : [],
-      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
         [
           {
             path: 'purchase',
@@ -275,7 +234,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <PurchaseListPage /> : <Page403 />,
                 index: true
               },
@@ -284,8 +243,16 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <PurchaseListPage /> : <Page403 />
+              },
+              {
+                path: 'checkout',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.officeStaff
+                ) ? <PurchaseCheckoutPage /> : <Page403 />
               },
             ],
           },

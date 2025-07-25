@@ -298,6 +298,13 @@ def generate_confirmation_number():
         return generate_confirmation_number()
     return confirmation_number
 
+def generate_pin_number():
+    pin_number = ''.join(random.choices(string.digits, k=4))
+    existing = RewardStoreProductSelectionBuy.objects(pin_number=pin_number).all()
+    if existing.count() > 10:
+        return generate_pin_number()
+    return pin_number
+
 
 
 class DateTimeJSONEncoder(json.JSONEncoder):

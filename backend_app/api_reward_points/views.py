@@ -166,6 +166,16 @@ def create_store_product_review(request, id):
 
 
 #############################################
+# DELETE STORE PRODUCT REVIEW
+#############################################
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_store_product_review(request, id):
+    return repository_store_product_reviews.delete_store_product_review(request, id)
+
+
+#############################################
 # CREATE STORE PRODUCT REVIEW REACTION
 #############################################
 

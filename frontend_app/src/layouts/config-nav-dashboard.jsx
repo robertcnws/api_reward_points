@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import { paths } from 'src/routes/paths';
 
-import { isClient } from 'src/utils/check-permissions';
+import { isAdministrator, isClient } from 'src/utils/check-permissions';
 
 import { CONFIG } from 'src/config-global';
 
@@ -67,6 +67,7 @@ const ICONS = {
   pointsSettings: icon('ic-points-settings'),
   store: icon('ic-store'),
   purchase: icon('ic-purchase'),
+  checkout: icon('ic-checkout'),
 };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -94,7 +95,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       ...(userLogged && isClient(userRole) ? [
         {
           key: `${paths.dashboard.storeProduct.root}-2`,
-          title: 'Store',
+          title: 'Reward Store',
           path: paths.dashboard.storeProduct.root,
           icon: ICONS.store,
         },
@@ -119,7 +120,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                     alignItems: 'center',
                   }}
                 >
-                  My Orders
+                  My Reward Orders
                 </Typography>
                 {(newPurchases?.length > 0 && !isNavMini) && (
                   <Box
@@ -160,6 +161,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       subheader: 'Management',
       items: [
         ...(userLogged && !isClient(userRole) ? [
+          ...(userLogged && isAdministrator(userRole) ? [
           {
             key: `${paths.dashboard.user.root}-4`,
             title: (
@@ -260,6 +262,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
               },
             ],
           },
+          ] : []),
           {
             key: `${paths.dashboard.purchase.root}-9`,
             title: (
@@ -279,12 +282,12 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                     variant={isNavMini ? 'caption' : 'subtitle2'}
                     sx={{
                       mr: 1,
-                      color: 'text.primary',
+                      color: 'primary',
                       display: 'flex',
                       alignItems: 'center',
                     }}
                   >
-                    Purchase Orders
+                    Reward Orders
                   </Typography>
                   {([...oldPurchases, ...newPurchases]?.length > 0 && !isNavMini) && (
                     <Box
@@ -355,36 +358,50 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
             //   },
             // ],
           },
-
-          // {
-          //   title: 'Items',
-          //   path: paths.dashboard.item.root,
-          //   icon: ICONS.item,
-          //   children: [
-          //     {
-          //       title: 'List',
-          //       path: paths.dashboard.item.list,
-          //     },
-          //     ...((userLogged && !isClient(userLogged?.data?.user_role?.name)) ? [
-          //       {
-          //         title: 'Attachments',
-          //         path: paths.dashboard.item.attachments,
-          //       },
-          //     ] : []),
-          //   ],
-          // },
+          {
+            key: `${paths.dashboard.purchase.checkout}-9`,
+            title: (
+              <React.Fragment key='purchases-checkout-fragment'>
+                <Box
+                  key='purchases-checkout'
+                  component="span"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: isNavMini ? 'center' : 'flex-start',
+                  }}
+                >
+                  <Typography
+                    key='purchase-checkout-title'
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'primary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Checkout
+                  </Typography>
+                </Box>
+              </React.Fragment>
+            ),
+            path: paths.dashboard.purchase.checkout,
+            icon: ICONS.checkout,
+          },
         ] : []),
       ]
     },
   ] : []),
-  ...(userLogged && !isClient(userRole) ? [
+  ...(userLogged && isAdministrator(userRole) ? [
     {
       subheader: 'Settings',
       items: [
         ...(userLogged && !isClient(userRole) ? [
           {
             key: `${paths.dashboard.storeProduct.root}-10`,
-            title: 'Store Products',
+            title: 'Products',
             path: paths.dashboard.storeProduct.root,
             icon: ICONS.item,
             children: [

@@ -51,6 +51,8 @@ import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/fie
 import { PurchaseTableRow } from '../purchase-table-row';
 import { PurchaseTableToolbar } from '../purchase-table-toolbar';
 import { PurchaseTableFiltersResult } from '../purchase-table-filters-result';
+import { PurchaseOfficeTableToolbar } from '../purchase-office-table-toolbar';
+import { PurchaseOfficeTableFiltersResult } from '../purchase-office-table-filters-result';
 
 
 
@@ -67,7 +69,7 @@ const getValidTabValue = (options, currentValue) => options.some(
 
 // ----------------------------------------------------------------------
 
-export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
+export function PurchaseOfficeListView() {
 
   const { isMobile } = useContext(LoadingContext);
 
@@ -116,12 +118,14 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   const [titleLinearProgress, setTitleLinearProgress] = useState('Loading purchases data...');
 
   const filters = useSetState({
-    name: '',
+    confirmationNumber: '',
+    pinNumber: '',
     status: 'not_used',
     client: {
       id: '',
       name: ''
-    }
+    },
+    isSearching: false,
   });
 
   const statusValue = getValidTabValue(STATUS_OPTIONS, filters.state.status) || 'not_used';
@@ -150,10 +154,10 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     { id: '' },
   ];
 
-  const table = useTable({ 
-    defaultDense: true, 
-    defaultOrderBy: statusValue !== 'not_used' ? 'createdTime' : 'redeemedTime', 
-    defaultOrder: 'desc' 
+  const table = useTable({
+    defaultDense: true,
+    defaultOrderBy: statusValue !== 'not_used' ? 'createdTime' : 'redeemedTime',
+    defaultOrder: 'desc'
   });
 
   const router = useRouter();
@@ -175,19 +179,11 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     }
   }, [table]);
 
-  useEffect(() => {
-    if (loadedPurchases && loadedPurchases?.length > 0) {
-      if (lengthLimit && loadedPurchases.length > lengthLimit) {
-        const sortedPurchases = [...loadedPurchases].sort(
-          (a, b) => dayjs(b.createdTime).valueOf() - dayjs(a.createdTime).valueOf()
-        );
-        setTableData(sortedPurchases.slice(0, lengthLimit));
-      }
-      else {
-        setTableData(loadedPurchases);
-      }
-    }
-  }, [loadedPurchases, lengthLimit]);
+  // useEffect(() => {
+  //   if (loadedPurchases && loadedPurchases?.length > 0) {
+  //     setTableData(loadedPurchases);
+  //   }
+  // }, [loadedPurchases]);
 
   useEffect(() => {
     const url = !isClient(roleName) ?
@@ -228,8 +224,16 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   }, [userLogged?.data?.username, roleName, refetchPurchases, loadedPurchases]);
 
 
+  const handleFilterExactRow = useCallback(
+    (event) => {
+      const { value } = event.target;
+      filters.setState({ confirmationNumber: value });
+    },
+    [filters]
+  );
+
   const dataFiltered = applyFilter({
-    inputData: lengthLimit ? tableData.slice(0, lengthLimit) : tableData,
+    inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters: filters.state,
   });
@@ -237,7 +241,8 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name ||
+    !!filters.state.confirmationNumber ||
+    !!filters.state.pinNumber ||
     filters.state.status !== 'not_used' ||
     !!filters.state.client.id ||
     !!filters.state.client.name;
@@ -349,82 +354,6 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
 
   const openClientFilter = useBoolean()
 
-  // const handleFilterClient = useCallback(
-  //   (event) => {
-  //     const client = event.target.value;
-  //     console.log('client', client);
-  //     const clientName = `${client.firstName} ${client.lastName}` || null;
-  //     filters.setState({ client: { id: client.id, name: clientName } });
-  //     localStorage.setItem('purchaseFilterClient', JSON.stringify({ id: client.id, name: clientName }));
-  //     setTableData(dataFiltered.filter((item) => item.storeProductSelection.user.id === client.id))
-  //     table.onResetPage();
-  //   },
-  //   [filters, table, dataFiltered]
-  // );
-
-  const renderFilterClient = (
-    <>
-      <Button
-        color="inherit"
-        onClick={openClientFilter.onTrue}
-        endIcon={
-          <Iconify
-            icon={openClientFilter.value ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'}
-            sx={{ ml: -0.5 }}
-          />
-        }
-      >
-        {!!filters.state.client.id && !!filters.state.client.name
-          ? `Client: ${filters.state.client.name}`
-          : 'Select Client'}
-      </Button>
-
-      <ConfirmDialog
-        open={openClientFilter.value}
-        onClose={openClientFilter.onFalse}
-        title="Select Client"
-        content={
-          <Autocomplete
-            disablePortal={false}
-            PopperProps={{ container: document.body }}
-            options={loadedUsers.filter((user) => isClient(user.userRole.name))}
-            value={filters.state.client.id ? loadedUsers.find((user) => user.id === filters.state.client.id) : null}
-            getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.username})`}
-            onChange={(_, value) => {
-              if (value) {
-                const clientName = `${value.firstName} ${value.lastName}` || '';
-                filters.setState({ client: { id: value.id, name: clientName } });
-                localStorage.setItem('purchaseFilterClient', JSON.stringify({ id: value.id, name: clientName }));
-              } else {
-                filters.setState({ client: { id: '', name: '' } });
-                localStorage.removeItem('purchaseFilterClient');
-              }
-            }}
-            renderInput={(params) => (
-              <TextField {...params} variant="outlined" />
-            )}
-            sx={{
-              width: '100%'
-            }}
-          />
-        }
-        action={
-          <Button
-            variant="contained"
-            onClick={() => {
-              // onCloseClientFilter();
-              filters.setState({ client: { id: '', name: '' } });
-              localStorage.removeItem('purchaseFilterClient');
-            }}
-            color='warning'
-          >
-            Clear
-          </Button>
-        }
-      />
-    </>
-  );
-
   if (errorPurchases) {
     return (
       <DashboardContent>
@@ -473,24 +402,21 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   return (
     <>
       <DashboardContent>
-        {!lengthLimit && (
-          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <CustomBreadcrumbs
-              // heading="List"
-              links={[
-                { name: 'Dashboard', href: paths.dashboard.general.analytics },
-                { name: 'Reward Orders', href: paths.dashboard.purchase.root },
-                { name: 'List' },
-              ]}
-              sx={{ mb: { xs: 3, md: 5 } }}
-            // action={
-            //   !isClient(roleName) ? renderFilterClient : null
-            // }
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <CustomBreadcrumbs
+            // heading="List"
+            links={[
+              { name: 'Dashboard', href: paths.dashboard.general.analytics },
+              { name: 'Reward Orders', href: paths.dashboard.purchase.root },
+              { name: 'List' },
+            ]}
+            sx={{ mb: { xs: 3, md: 5 } }}
+          // action={
+          //   !isClient(roleName) ? renderFilterClient : null
+          // }
 
-            />
-            {!isClient(roleName) && renderFilterClient}
-          </Box>
-        )}
+          />
+        </Box>
 
         <Card>
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -559,138 +485,144 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
               </IconButton>
             </Box> */}
           </Box>
-
-          {!lengthLimit && (
-            <>
-              <PurchaseTableToolbar
-                filters={filters}
-                onResetPage={table.onResetPage}
-                options={{ values: STATUS_OPTIONS.map((option) => option.label) }}
-                dataFiltered={dataFiltered}
-                headersCSV={headersCSV}
-                setUpdating={setUpdating}
-                setTitleLinearProgress={setTitleLinearProgress}
-                title={filters.state.status === 'all' ? 'All Purchases' :
-                  filters.state.status === 'used' ? 'Used Purchases' :
-                    filters.state.status === 'not_used' ? 'Not Used Purchases' :
-                      filters.state.status === 'hasRequestedRefund' ? 'Refund Requested Purchases' :
-                        filters.state.status
-                }
-              />
-              {canReset && (
-                <PurchaseTableFiltersResult
-                  filters={filters}
-                  totalResults={dataFiltered.length}
-                  onResetPage={table.onResetPage}
-                  sx={{ p: 2.5, pt: 0 }}
-                />
-              )}
-            </>
-
+          <PurchaseOfficeTableToolbar
+            filters={filters}
+            loadedUsers={loadedUsers}
+            openClientFilter={openClientFilter}
+            onResetPage={table.onResetPage}
+            options={{ values: STATUS_OPTIONS.map((option) => option.label) }}
+            dataFiltered={dataFiltered}
+            headersCSV={headersCSV}
+            setUpdating={setUpdating}
+            setTitleLinearProgress={setTitleLinearProgress}
+            title={filters.state.status === 'all' ? 'All Purchases' :
+              filters.state.status === 'used' ? 'Used Purchases' :
+                filters.state.status === 'not_used' ? 'Not Used Purchases' :
+                  filters.state.status === 'hasRequestedRefund' ? 'Refund Requested Purchases' :
+                    filters.state.status
+            }
+          />
+          {canReset && (
+            <PurchaseOfficeTableFiltersResult
+              filters={filters}
+              totalResults={dataFiltered.length}
+              onResetPage={table.onResetPage}
+              sx={{ p: 2.5, pt: 0 }}
+            />
           )}
 
-          <Box sx={{ position: 'relative' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
-              onSelectAllRows={
-                (!isClient(roleName) && !someRowsUsed) ? ((checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    dataFiltered.map((row) => row.id)
-                  )) : null
-              }
-              action={
-                <Tooltip title="Delete">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
-              }
-            />
-            <Scrollbar>
-              {tableData && tableData.length > 0 ? (
-                <TableContainer sx={{
-                  maxHeight: !isMobile && !lengthLimit ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
-                  minHeight: !isMobile && !lengthLimit ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
-                }}>
-                  <Table
-                    size={table.dense ? 'small' : 'medium'}
-                    sx={{ minWidth: !isMobile ? 960 : 380 }}
-                    stickyHeader
-                  >
-                    <TableHeadCustom
-                      order={table.order}
-                      orderBy={table.orderBy}
-                      headLabel={!isMobile ? TABLE_HEAD : TABLE_HEAD_MOBILE}
-                      rowCount={dataFiltered.length}
-                      numSelected={table.selected.length}
-                      onSort={table.onSort}
-                      onSelectAllRows={
-                        (!isClient(roleName) && !someRowsUsed) ? (checked) =>
-                          table.onSelectAllRows(
-                            checked,
-                            dataFiltered.map((row) => row.id)
-                          ) : null
-                      }
-                    />
+          {(
+            !!filters.state.client.id && 
+            !!filters.state.client.name &&
+            !!filters.state.confirmationNumber &&
+            !!filters.state.pinNumber &&
+            filters.state.isSearching
+          ) && (
 
-                    <TableBody>
-                      {dataFiltered
-                        .slice(
-                          table.page * table.rowsPerPage,
-                          table.page * table.rowsPerPage + table.rowsPerPage
-                        )
-                        .map((row) => (
-                          <PurchaseTableRow
-                            key={row.id}
-                            row={row}
-                            statusValue={statusValue}
-                            selected={table.selected.includes(row.id)}
-                            onSelectRow={() => table.onSelectRow(row.id)}
-                            onDeleteRow={() => handleDeleteRow(row.id)}
-                            onEditRow={() => handleEditRow(row.id)}
-                            onReturnList={() => handleReturnList()}
-                            onViewRow={() => handleViewRow(row.id)}
-                            onCancelRefundRow={() => handleCancelRefundRow(row.id)}
+            <Box sx={{ position: 'relative' }}>
+              <TableSelectedAction
+                dense={table.dense}
+                numSelected={table.selected.length}
+                rowCount={dataFiltered.length}
+                onSelectAllRows={
+                  (!isClient(roleName) && !someRowsUsed) ? ((checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      dataFiltered.map((row) => row.id)
+                    )) : null
+                }
+                action={
+                  <Tooltip title="Delete">
+                    <IconButton color="primary" onClick={confirm.onTrue}>
+                      <Iconify icon="solar:trash-bin-trash-bold" />
+                    </IconButton>
+                  </Tooltip>
+                }
+              />
+              <Scrollbar>
+                {tableData && tableData.length > 0 ? (
+                  <TableContainer sx={{
+                    maxHeight: !isMobile ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
+                    minHeight: !isMobile ? (filters.state.status !== 'not_used' ? 500 : 590) : '100%',
+                  }}>
+                    <Table
+                      size={table.dense ? 'small' : 'medium'}
+                      sx={{ minWidth: !isMobile ? 960 : 380 }}
+                      stickyHeader
+                    >
+                      <TableHeadCustom
+                        order={table.order}
+                        orderBy={table.orderBy}
+                        headLabel={!isMobile ? TABLE_HEAD : TABLE_HEAD_MOBILE}
+                        rowCount={dataFiltered.length}
+                        numSelected={table.selected.length}
+                        onSort={table.onSort}
+                        onSelectAllRows={
+                          (!isClient(roleName) && !someRowsUsed) ? (checked) =>
+                            table.onSelectAllRows(
+                              checked,
+                              dataFiltered.map((row) => row.id)
+                            ) : null
+                        }
+                      />
+
+                      <TableBody>
+                        {dataFiltered
+                          .slice(
+                            table.page * table.rowsPerPage,
+                            table.page * table.rowsPerPage + table.rowsPerPage
+                          )
+                          .map((row) => (
+                            <PurchaseTableRow
+                              key={row.id}
+                              row={row}
+                              statusValue={statusValue}
+                              selected={table.selected.includes(row.id)}
+                              onSelectRow={() => table.onSelectRow(row.id)}
+                              onDeleteRow={() => handleDeleteRow(row.id)}
+                              onEditRow={() => handleEditRow(row.id)}
+                              onReturnList={() => handleReturnList()}
+                              onViewRow={() => handleViewRow(row.id)}
+                              onCancelRefundRow={() => handleCancelRefundRow(row.id)}
+                            />
+                          ))}
+
+                        {(dataFiltered.length > 0) && (
+                          <TableCustomPaginationZohoStyleRow
+                            columnsLength={isMobile ? TABLE_HEAD_MOBILE.length : TABLE_HEAD.length}
+                            data={dataFiltered}
+                            page={table.page}
+                            rowsPerPage={table.rowsPerPage}
+                            handleChangePage={(event, newPage) => {
+                              localStorage.setItem('itemPage', newPage);
+                              table.onChangePage(event, newPage);
+                            }}
+                            handleChangeRowsPerPage={(event) => {
+                              localStorage.setItem('itemRowsPerPage', event.target.value);
+                              table.onChangeRowsPerPage(event);
+                            }}
+                            dense={table.dense}
+                            onChangeDense={table.onChangeDense}
                           />
-                        ))}
+                        )}
 
-                      {(dataFiltered.length > 0 && !lengthLimit) && (
-                        <TableCustomPaginationZohoStyleRow
-                          columnsLength={isMobile ? TABLE_HEAD_MOBILE.length : TABLE_HEAD.length}
-                          data={dataFiltered}
-                          page={table.page}
-                          rowsPerPage={table.rowsPerPage}
-                          handleChangePage={(event, newPage) => {
-                            localStorage.setItem('itemPage', newPage);
-                            table.onChangePage(event, newPage);
-                          }}
-                          handleChangeRowsPerPage={(event) => {
-                            localStorage.setItem('itemRowsPerPage', event.target.value);
-                            table.onChangeRowsPerPage(event);
-                          }}
-                          dense={table.dense}
-                          onChangeDense={table.onChangeDense}
-                        />
-                      )}
+                        <TableNoData notFound={notFound} colSpan={20} />
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <TableContainer>
+                    <Table>
+                      <TableBody>
+                        <TableNoData notFound={tableData.length === 0} colSpan={20} />
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Scrollbar>
+            </Box>
 
-                      <TableNoData notFound={notFound} colSpan={20} />
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <TableContainer>
-                  <Table>
-                    <TableBody>
-                      <TableNoData notFound={tableData.length === 0} colSpan={20} />
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </Scrollbar>
-          </Box>
+          )}
         </Card>
       </DashboardContent >
 

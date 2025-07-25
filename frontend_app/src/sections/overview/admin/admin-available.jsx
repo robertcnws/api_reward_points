@@ -12,12 +12,12 @@ import { Chart, useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-export function AdminAvailable({ title, subheader, chart, ...other }) {
+export function AdminAvailable({ title, subheader, chart, seedAttr, ...other }) {
   const theme = useTheme();
 
   const total = sumBy(chart.series, (series) => series.value);
 
-  const chartSeries = (chart.series.filter((i) => i.label === 'Sold out')[0].value / total) * 100;
+  const chartSeries = (chart.series.filter((i) => i.id === seedAttr)[0].value / total) * 100;
 
   const chartColors = chart.colors ?? [theme.palette.primary.light, theme.palette.primary.main];
 
@@ -40,7 +40,7 @@ export function AdminAvailable({ title, subheader, chart, ...other }) {
         dataLabels: {
           name: { offsetY: -12 },
           value: { offsetY: 6 },
-          total: { label: 'Tours', formatter: () => fNumber(total) },
+          total: { label: 'Users', formatter: () => fNumber(total) },
         },
       },
     },
@@ -79,11 +79,11 @@ export function AdminAvailable({ title, subheader, chart, ...other }) {
                 height: 16,
                 borderRadius: 0.75,
                 bgcolor: varAlpha(theme.vars.palette.grey['500Channel'], 0.16),
-                ...(item.label === 'Sold out' && { bgcolor: chartColors[1] }),
+                ...(item.id === seedAttr && { bgcolor: chartColors[1] }),
               }}
             />
             <Box sx={{ color: 'text.secondary', flexGrow: 1 }}>{item.label}</Box>
-            {item.value} tours
+            {item.value} users
           </Box>
         ))}
       </Box>

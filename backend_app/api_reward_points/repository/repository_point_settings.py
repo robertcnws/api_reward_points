@@ -255,7 +255,7 @@ def delete_list_points_settings(request):
                     logger.error(f"Points setting with id {point_id} not found")
                     continue
 
-                list_names.append(points.description or f'Points Settings ${points.amount} -> {points.points}')
+                list_names.append(points.description or f'Points Settings ${points.amount} -> {points.points} points')
 
                 tracking_info = transform_data_to_mongo(
                     points, 
@@ -311,7 +311,8 @@ def delete_list_points_settings(request):
 def update_reward_points_in_users(description=None):
     roleClient = UserRole.objects(name='client').first()
     if roleClient:
-        users = LoginUser.objects(user_role=roleClient, is_active=True, is_verified=True).all()
+        # users = LoginUser.objects(user_role=roleClient, is_active=True, is_verified=True).all()
+        users = LoginUser.objects(user_role=roleClient).all()
         if users:
             for user in users:
                 get_rewards_points(user, description=description)

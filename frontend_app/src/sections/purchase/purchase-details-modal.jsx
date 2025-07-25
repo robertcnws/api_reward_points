@@ -63,10 +63,15 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
       PaperProps={{ sx: { maxWidth: 820 } }}
     >
       <DialogTitle>
-        Purchase of {currentBuy?.storeProductSelection?.storeProduct?.name}
+        Redeemed Order of {currentBuy?.storeProductSelection?.storeProduct?.name}
         {currentBuy?.hasRequestedRefund && (
           <Label color="secondary" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
             Refund Requested
+          </Label>
+        )}
+        {currentBuy?.hasBeenUsed && (
+          <Label color="error" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
+            Already Used!
           </Label>
         )}
         {!currentBuy?.storeProductSelection?.storeProduct?.isActive && (
@@ -77,11 +82,33 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
       </DialogTitle>
 
       <DialogContent>
-        <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-          Client: <b>{currentBuy?.storeProductSelection?.user?.firstName} {currentBuy?.storeProductSelection?.user?.lastName}</b>
+        <Alert
+          variant="outlined"
+          severity={
+            currentBuy?.hasBeenUsed ? 'error' :
+              currentBuy?.hasRequestedRefund ? 'secondary' :
+                'info'
+          }
+          sx={{ mb: 3 }}
+        >
+          {roleName !== 'client' && (
+            <Typography variant="subtitle2" sx={{ mb: 0.5, fontSize: 11 }}>
+              Client: <b>{currentBuy?.storeProductSelection?.user?.firstName} {currentBuy?.storeProductSelection?.user?.lastName}</b>
+            </Typography>
+          )}
           <Typography variant="subtitle2" sx={{ mt: 0.5, fontSize: 11 }}>
             <b>Created at:</b> {fDateTime(currentBuy?.createdTime) || 'N/A'}<br />
           </Typography>
+          {currentBuy?.expirationTime && (
+            <Typography variant="subtitle2" sx={{ mt: 0.5, fontSize: 11 }}>
+              <b>Expiration at:</b> {fDateTime(currentBuy?.expirationTime) || 'N/A'}<br />
+            </Typography>
+          )}
+          {currentBuy?.hasBeenUsed && (
+            <Typography variant="subtitle2" sx={{ mt: 0.5, fontSize: 11 }}>
+              <b>Redeemed at:</b> {fDateTime(currentBuy?.redeemedTime) || 'N/A'}<br />
+            </Typography>
+          )}
         </Alert>
 
         <Box sx={{
@@ -105,7 +132,7 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
               images={currentBuy?.storeProductSelection?.storeProduct?.attachments}
               predefinedSize={
                 currentBuy?.storeProductSelection?.storeProduct?.attachments?.length > 2 ? 130 :
-                  currentBuy?.storeProductSelection?.storeProduct?.attachments?.length > 1 ? 200 : null
+                  currentBuy?.storeProductSelection?.storeProduct?.attachments?.length > 1 ? 200 : 300
               }
             />
           </Box>
@@ -145,13 +172,27 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
               sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
             >
               <Label color="default" sx={{ width: '100%' }}>
+                <b>PIN #:</b>
+              </Label>
+              <Typography variant="subtitle2" sx={{ width: '100%', fontSize: 17 }}>
+                {currentBuy?.pinNumber || 'N/A'}
+              </Typography>
+            </Box>
+            <Box
+              display="flex"
+              flexDirection='row'
+              justifyContent="flex-start"
+              alignItems="flex-start"
+              sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
+            >
+              <Label color="default" sx={{ width: '100%' }}>
                 <b>Order #:</b>
               </Label>
               <Typography variant="subtitle2" sx={{ width: '100%' }}>
                 {`No. ${currentBuy?.orderNumber || 'N/A'}`}
               </Typography>
             </Box>
-            <Box
+            {/* <Box
               display="flex"
               flexDirection='row'
               justifyContent="flex-start"
@@ -164,8 +205,8 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
               <Typography variant="subtitle2" sx={{ width: '100%' }}>
                 {currentBuy?.storeProductSelection?.storeProduct?.name}
               </Typography>
-            </Box>
-            <Box
+            </Box> */}
+            {/* <Box
               display="flex"
               flexDirection='row'
               justifyContent="flex-start"
@@ -178,7 +219,7 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
               <Typography variant="subtitle2" sx={{ width: '100%' }}>
                 {currentBuy?.quantityUsed > 0 ? `x${currentBuy?.quantityUsed}` : '0'}
               </Typography>
-            </Box>
+            </Box> */}
             <Box
               display="flex"
               flexDirection='row'
@@ -227,7 +268,7 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
                 {fNumber(assignedPoints) || 0}
               </Label>
             </Box>
-            <Box
+            {/* <Box
               display="flex"
               flexDirection='row'
               justifyContent="flex-start"
@@ -261,10 +302,10 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {fNumber(totalPoints) || 0}
               </Label>
-            </Box>
+            </Box> */}
           </Box>
         </Box>
-        {isClient(roleName) && currentBuy?.notes && currentBuy?.notes !== '' && (
+        {currentBuy?.notes && currentBuy?.notes !== '' && (
           <Box
             display="flex"
             flexDirection='row'
@@ -304,13 +345,15 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
 
       <DialogActions>
         {(!isClient(roleName) &&
-          !currentBuy.hasRequestedRefund &&
-          currentBuy.storeProductSelection?.storeProduct?.isActive) && (
+          !currentBuy?.hasBeenUsed 
+          && !currentBuy?.hasRequestedRefund 
+          // && currentBuy?.storeProductSelection?.storeProduct?.isActive
+        ) && (
             <Button variant="contained" onClick={() => {
               openUse.onTrue();
               open.onFalse();
             }}>
-              Use Purchase
+              Proceed
             </Button>
           )}
         <Button variant="outlined" onClick={() => open.onFalse()}>

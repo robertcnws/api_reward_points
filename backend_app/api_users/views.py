@@ -6,9 +6,13 @@ from utils.data_util import (
     transform_data_to_mongo,
     create_notification,
     create_tracking,
+    to_aware,
 )
 from api_authorization.models import LoginUser, UserRole
+
 from api_users.repository import repository_notifications, repository_trackings
+
+from api_users.repo_util.users_util import inherit_from_unapproved_user
 import logging
 
 logging.basicConfig(level=logging.WARNING)
@@ -658,6 +662,27 @@ def change_approval_user(request, id):
         user = LoginUser.objects(id=id).first()
         if not user:
             return Response({'error': 'User not found'}, status=404)
+        
+        company_name = user.company_name
+        if company_name:
+            if not user.is_approved: 
+                user_exists_company = LoginUser.objects(company_name=company_name, is_approved=True).first()
+                if user_exists_company:
+                    return Response({
+                            'error': 'User cannot be approved because company already exists and is active', 
+                            'description': 'User cannot be approved because company already exists and is active', 
+                            'error_name': 'company_exists',
+                            'error_mail': None
+                    }, status=400)
+            else:
+                users_exists_company = LoginUser.objects(
+                    company_name=company_name, 
+                    is_approved=False,
+                    id__ne=user.id
+                ).first()
+                if users_exists_company:
+                    
+                    inherit_from_unapproved_user(user_exists_company, user)
         
         user.is_approved = not user.is_approved
         user.save()

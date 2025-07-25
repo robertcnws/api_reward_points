@@ -39,10 +39,14 @@ export const fieldsRewardStoreProductSelectionBuys = [
     'quantityUsed',
     'orderNumber',
     'confirmationNumber',
+    'pinNumber',
     'notes',
     'purchaseType',
     'purchaseFraction',
     'lastModifiedTime',
+    'expirationTime',
+    'redeemedTime',
+    'isRemoved',
     {
         name: 'storeProductSelection',
         fields: fieldDesctiptorsRewardStoreProductSelection

@@ -148,6 +148,7 @@ def login(request):
                 return JsonResponse({'data': user}, status=200)
             
             login_user = LoginUser.objects(username=username).first()
+            
             if login_user and not login_user.is_approved:
                 return JsonResponse({
                     'error': 'User not approved', 
@@ -249,6 +250,15 @@ def register(request):
                     'error_email': user.email,
                     'error_phone_number': user.phone_number
                 }, status=400)
+            company_name = data.get('companyName', '')
+            user_exists_company = LoginUser.objects(company_name=company_name, is_approved=True).first()
+            if user_exists_company:
+                return JsonResponse({
+                    'error': 'Company already exists and is active', 
+                    'description': 'Company already exists and is active', 
+                    'error_name': 'company_exists',
+                    'error_mail': None
+                }, status=400)
             user_role_name = settings.DJANGO_REGISTER_USER_ROLE
             user_role = UserRole.objects(name=user_role_name).first()
             if not user_role:
@@ -311,10 +321,11 @@ def register(request):
             # send_sms_verification_code(phone, message)
             logger.info(f'SMS sent to {phone} with code {code}')
             print(f'SMS sent to {phone} with code {code}')
-            email = user.email
-            # send_email_verification_code(email, code)
-            logger.info(f'Email sent to {email} with code {code}')
-            print(f'Email sent to {email} with code {code}')
+            # list_emails = [user.email]
+            list_emails = ['admin@newwindowsystem.com', 'robertoc@newwindowsystem.com']
+            send_email_verification_code(list_emails, code)
+            logger.info(f'Email sent to {user.email} with code {code}')
+            # print(f'Email sent to {email} with code {code}')
             
             # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
             
@@ -430,7 +441,9 @@ def send_verification_code(request):
                 code=code,
                 expires_at=expiration
             )
-            # send_email_verification_code(email, code)
+            # list_emails = [email]
+            list_emails = ['admin@newwindowsystem.com', 'robertoc@newwindowsystem.com']
+            send_email_verification_code(list_emails, code)
             logger.info(f'Email sent to {email} with code {code}')
             print(f'Email sent to {email} with code {code}')
             return JsonResponse({'data': 'Email sent successfully'}, status=200)
@@ -459,14 +472,14 @@ def send_sms_verification_code(phone_number, message):
         raise e
     
     
-def send_email_verification_code(email, code):
+def send_email_verification_code(list_emails, code):
         email_html_message = render_to_string(
             "api_authorization/email_send_verification_code.html",  
             {"code": code}, 
         )
         message = "Verification code sent successfully."
         return send_generic_email(
-            [email], 
+            list_emails, 
             email_html_message, 
             "Verification Code for Reward Points System", 
             message_response=message

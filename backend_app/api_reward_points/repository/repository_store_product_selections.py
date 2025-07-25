@@ -19,6 +19,7 @@ from utils.data_util import (
     to_aware,
     generate_order_number,
     generate_confirmation_number,
+    generate_pin_number,
 )
 from utils.s3_utils import generate_default_file_url
 import json
@@ -40,6 +41,11 @@ def create_store_product_selection_cart(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try:
 
             store_product = RewardStoreProduct.objects(id=id).first()
@@ -48,58 +54,66 @@ def create_store_product_selection_cart(request, id):
                 return Response({'error': 'Store product not found'}, status=404)
 
             quantity = data.get('quantity', None)
-            if not quantity:
+            if not quantity or quantity <= 0:
                 logger.error(f"Quantity is required for store product: {store_product.name}")
                 return Response({'error': 'Quantity is required'}, status=400)
+            
+            default_qty = 1
+            list_carts = []
+            total_carts_points = 0
 
-            selection = RewardStoreProductSelection(
-                store_product=store_product,
-                user=user_reporter,
-                quantity=quantity,
-                created_time=to_aware(timezone.now()),
-                last_modified_time=to_aware(timezone.now()),
-            )
-            selection.save()
+            for _ in range(quantity):
+                selection = RewardStoreProductSelection(
+                    store_product=store_product,
+                    user=user_reporter,
+                    quantity=default_qty,
+                    created_time=to_aware(timezone.now()),
+                    last_modified_time=to_aware(timezone.now()),
+                )
+                selection.save()
             
-            cart = RewardStoreProductSelectionCart(
-                store_product_selection=selection,
-                is_bought=False,
-                created_time=to_aware(timezone.now()),
-                last_modified_time=to_aware(timezone.now()),
-            )
-            cart.save()
+                cart = RewardStoreProductSelectionCart(
+                    store_product_selection=selection,
+                    is_bought=False,
+                    created_time=to_aware(timezone.now()),
+                    last_modified_time=to_aware(timezone.now()),
+                )
+                cart.save()
 
-            tracking_info = transform_data_to_mongo(
-                cart, 
-                exclude_fields=[
-                    'password', 
-                    'is_staff', 
-                    'is_active', 
-                    'is_verified', 
-                    'last_login', 
-                    'date_joined',
-                    'last_modified_time', 
-                    'created_time'
-                ]
-            )
+                tracking_info = transform_data_to_mongo(
+                    cart, 
+                    exclude_fields=[
+                        'password', 
+                        'is_staff', 
+                        'is_active', 
+                        'is_verified', 
+                        'last_login', 
+                        'date_joined',
+                        'last_modified_time', 
+                        'created_time'
+                    ]
+                )
             
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'create store product selection cart',
-                object_id=cart.id,
-                object_type='RewardStoreProductSelectionCart',
-                object_name=cart.store_product_selection.store_product.name,
-                managed_data={
-                    'data': tracking_info
-                }
-            )
+                create_tracking(
+                    user_reporter=user_reporter,
+                    action=f'create store product selection cart',
+                    object_id=cart.id,
+                    object_type='RewardStoreProductSelectionCart',
+                    object_name=cart.store_product_selection.store_product.name,
+                    managed_data={
+                        'data': tracking_info
+                    }
+                )
+                
+                list_carts.append(cart)
+                total_carts_points += store_product.assigned_points * default_qty
             
-            info = f'has added \
-                {cart.store_product_selection.store_product.name.upper()} \
-                to cart \
-                with quantity {cart.store_product_selection.quantity} \
-                and total points \
-                {cart.store_product_selection.store_product.assigned_points * cart.store_product_selection.quantity}'
+            info = f'has added ' \
+                f'{len(list_carts)} ' \
+                f'{list_carts[0].store_product_selection.store_product.name.upper()} ' \
+                f'to reward cart ' \
+                f'with total points ' \
+                f'{total_carts_points}'
 
             module='store_product_selection_carts'
             info=info
@@ -134,6 +148,10 @@ def delete_store_product_selection_cart(request, id):
         if not user_reporter:
             logger.error("User reporter not found")
             return Response({'error': 'User reporter not found'}, status=404)
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
         
         cart = RewardStoreProductSelectionCart.objects(id=id).first()
         if not cart:
@@ -211,6 +229,10 @@ def delete_all_store_product_selection_carts(request):
         if not user_reporter:
             logger.error("User reporter not found")
             return Response({'error': 'User reporter not found'}, status=404)
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
         
         selections = RewardStoreProductSelection.objects(user=user_reporter).all()
         if not selections:
@@ -300,7 +322,7 @@ def _buy_single_cart(cart, reward_points):
     )
             
     if not isinstance(purchase_type, str):
-        logger.error("Error calculating purchase fraction")
+        logger.error("Error calculating redeemed order fraction")
         return purchase_type
             
             
@@ -311,6 +333,7 @@ def _buy_single_cart(cart, reward_points):
         has_been_used=False,
         order_number=generate_order_number(),
         confirmation_number=generate_confirmation_number(),
+        pin_number=generate_pin_number(),
         purchase_type=purchase_type,
         purchase_fraction=purchase_fraction,
     )
@@ -342,6 +365,11 @@ def create_store_product_selection_cart_buy(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try:
             
             reward_points = RewardPoints.objects(user=user_reporter).first()
@@ -378,7 +406,7 @@ def create_store_product_selection_cart_buy(request, id):
                 ]
             )
             
-            description = f'Used {purchased_points} points to buy {selection.quantity} of {store_product.name}'
+            description = f'Used {purchased_points} points to redeem {selection.quantity} of {store_product.name}'
             
             history = RewardPointsHistory(
                 created_time=timezone.now(),
@@ -403,10 +431,9 @@ def create_store_product_selection_cart_buy(request, id):
                 }
             )
 
-            info = f'has purchased \
+            info = f'has redeemed order # {buy.order_number} of \
                 {buy.store_product_selection.store_product.name.upper()} \
-                with quantity {buy.store_product_selection.quantity} \
-                and total points \
+                with total points \
                 {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
 
             module='store_product_selection_buys'
@@ -427,6 +454,7 @@ def create_store_product_selection_cart_buy(request, id):
                 user=user_reporter,
                 purchases=[buy],
                 # list_receivers=[user_reporter.email]
+                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
                 list_receivers=['nnws15815@gmail.com']
             )
                         
@@ -450,6 +478,11 @@ def create_all_store_product_selection_cart_buy(request):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try:
             
             reward_points = RewardPoints.objects(user=user_reporter).first()
@@ -498,7 +531,7 @@ def create_all_store_product_selection_cart_buy(request):
                 list_tracking_info.append(tracking_info)
                 list_buys.append(buy)
             
-            description = f'Used {total_purchased_points} points to buy {len(carts)} products from cart'
+            description = f'Used {total_purchased_points} points to redeem {len(carts)} products from cart'
             
             history = RewardPointsHistory(
                 created_time=timezone.now(),
@@ -533,7 +566,7 @@ def create_all_store_product_selection_cart_buy(request):
                 }
             )
 
-            info = f'has purchased \
+            info = f'has redeemed orders of \
                 {len(carts)} products \
                 ({", ".join([cart.store_product_selection.store_product.name.upper() for cart in carts])}) \
                 from cart with total points \
@@ -560,6 +593,7 @@ def create_all_store_product_selection_cart_buy(request):
                 user=user_reporter,
                 purchases=list_buys,
                 # list_receivers=[user_reporter.email]
+                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
                 list_receivers=['nnws15815@gmail.com']
             )
                         
@@ -587,6 +621,11 @@ def create_store_product_selection_buy(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try:
             
             reward_points = RewardPoints.objects(user=user_reporter).first()
@@ -601,112 +640,121 @@ def create_store_product_selection_buy(request, id):
                 return Response({'error': 'Store product not found'}, status=404)
 
             quantity = data.get('quantity', None)
-            if not quantity:
+            if not quantity or quantity <= 0:
                 logger.error(f"Quantity is required for store product: {store_product.name}")
                 return Response({'error': 'Quantity is required'}, status=400)
             
-            purchased_points = store_product.assigned_points * quantity
-            gained_points = reward_points.total_gained_points
-            assigned_points = reward_points.total_assigned_points
-
-            if gained_points + assigned_points < purchased_points:
-                logger.error(f"Not enough points to buy this store product: {store_product.name}")
-                return Response({'error': 'Not enough points to buy this store product'}, status=400)
-
-            selection = RewardStoreProductSelection(
-                store_product=store_product,
-                user=user_reporter,
-                quantity=quantity,
-                created_time=to_aware(timezone.now()),
-                last_modified_time=to_aware(timezone.now()),
-            )
-            selection.save()
+            list_buys = []
+            total_buys_points = 0
+            default_qty = 1
             
-            cart = RewardStoreProductSelectionCart.objects(
-                store_product_selection=selection,
-                is_bought=False
-            ).first()
+            for _ in range(quantity):
             
-            if cart:
-                cart.is_bought = True
-                cart.last_modified_time = to_aware(timezone.now())
-                cart.save()
+                purchased_points = store_product.assigned_points * default_qty
+                gained_points = reward_points.total_gained_points
+                assigned_points = reward_points.total_assigned_points
+
+                if gained_points + assigned_points < purchased_points:
+                    logger.error(f"Not enough points to redeem this store product: {store_product.name}")
+                    return Response({'error': 'Not enough points to redeem this store product'}, status=400)
+
+                selection = RewardStoreProductSelection(
+                    store_product=store_product,
+                    user=user_reporter,
+                    quantity=default_qty,
+                    created_time=to_aware(timezone.now()),
+                    last_modified_time=to_aware(timezone.now()),
+                )
+                selection.save()
+            
+                cart = RewardStoreProductSelectionCart.objects(
+                    store_product_selection=selection,
+                    is_bought=False
+                ).first()
+            
+                if cart:
+                    cart.is_bought = True
+                    cart.last_modified_time = to_aware(timezone.now())
+                    cart.save()
                 
-            purchase_type, purchase_fraction = calculate_purchase_fraction(
-                logger,
-                reward_points,
-                gained_points, 
-                assigned_points, 
-                purchased_points
-            )
+                purchase_type, purchase_fraction = calculate_purchase_fraction(
+                    logger,
+                    reward_points,
+                    gained_points, 
+                    assigned_points, 
+                    purchased_points
+                )
             
-            if not isinstance(purchase_type, str):
-                logger.error("Error calculating purchase fraction")
-                return purchase_type
+                if not isinstance(purchase_type, str):
+                    logger.error("Error calculating redeemed order fraction")
+                    return purchase_type
             
             
-            buy = RewardStoreProductSelectionBuy(
-                store_product_selection=selection,
-                created_time=to_aware(timezone.now()),
-                last_modified_time=to_aware(timezone.now()),
-                has_been_used=False,
-                order_number=generate_order_number(),
-                confirmation_number=generate_confirmation_number(),
-                purchase_type=purchase_type,
-                purchase_fraction=purchase_fraction,
-            )
-            buy.save()
+                buy = RewardStoreProductSelectionBuy(
+                    store_product_selection=selection,
+                    created_time=to_aware(timezone.now()),
+                    last_modified_time=to_aware(timezone.now()),
+                    has_been_used=False,
+                    order_number=generate_order_number(),
+                    confirmation_number=generate_confirmation_number(),
+                    pin_number=generate_pin_number(),
+                    purchase_type=purchase_type,
+                    purchase_fraction=purchase_fraction,
+                )
+                buy.save()
             
-            spent_points = reward_points.total_spent_points + purchased_points
-            reward_points.total_spent_points = spent_points
-            reward_points.last_modified = timezone.now()
+                spent_points = reward_points.total_spent_points + purchased_points
+                reward_points.total_spent_points = spent_points
+                reward_points.last_modified = timezone.now()
             
-            reward_points.save()
+                reward_points.save()
 
-            tracking_info = transform_data_to_mongo(
-                buy,
-                exclude_fields=[
-                    'password', 
-                    'is_staff', 
-                    'is_active', 
-                    'is_verified', 
-                    'last_login', 
-                    'date_joined',
-                    'last_modified_time', 
-                    'created_time'
-                ]
-            )
-            
-            description = f'Used {purchased_points} points to buy {quantity} of {store_product.name}'
-            
-            history = RewardPointsHistory(
-                created_time=timezone.now(),
-                reward_points=reward_points,
-                action='spent',
-                gained_points=0,
-                spent_points=purchased_points,
-                description=description,
-                info=tracking_info,
-            )
-            
-            history.save()
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'create store product selection buy',
-                object_id=buy.id,
-                object_type='RewardStoreProductSelectionBuy',
-                object_name=buy.store_product_selection.store_product.name,
-                managed_data={
-                    'data': tracking_info
-                }
-            )
+                tracking_info = transform_data_to_mongo(
+                    buy,
+                    exclude_fields=[
+                        'password', 
+                        'is_staff', 
+                        'is_active', 
+                        'is_verified', 
+                        'last_login', 
+                        'date_joined',
+                        'last_modified_time', 
+                        'created_time'
+                    ]
+                )
 
-            info = f'has purchased \
-                {buy.store_product_selection.store_product.name.upper()} \
-                with quantity {buy.store_product_selection.quantity} \
+                description = f'Used {purchased_points} points to redeem {default_qty} {store_product.name}'
+
+                history = RewardPointsHistory(
+                    created_time=timezone.now(),
+                    reward_points=reward_points,
+                    action='spent',
+                    gained_points=0,
+                    spent_points=purchased_points,
+                    description=description,
+                    info=tracking_info,
+                )
+                
+                history.save()
+            
+                create_tracking(
+                    user_reporter=user_reporter,
+                    action=f'create store product selection buy',
+                    object_id=buy.id,
+                    object_type='RewardStoreProductSelectionBuy',
+                    object_name=buy.store_product_selection.store_product.name,
+                    managed_data={
+                        'data': tracking_info
+                    }
+                )
+                
+                list_buys.append(buy)
+                total_buys_points += purchased_points
+
+            info = f'has redeemed {len(list_buys)} orders of \
+                {list_buys[0].store_product_selection.store_product.name.upper()} \
                 and total points \
-                {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
+                {total_buys_points}'
 
             module='store_product_selection_buys'
             info=info
@@ -716,16 +764,19 @@ def create_store_product_selection_buy(request, id):
             
             # SENDING EMAIL
             
-            file = buy.store_product_selection.store_product.attachments[0].file if \
-                len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
-            buy.default_url = generate_default_file_url(file)
+            for buy in list_buys:
+            
+                file = buy.store_product_selection.store_product.attachments[0].file if \
+                    len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+                buy.default_url = generate_default_file_url(file)
             
             send_email_confirmation(
                 type='purchase',
-                points=purchased_points,
+                points=total_buys_points,
                 user=user_reporter,
-                purchases=[buy],
+                purchases=list_buys,
                 # list_receivers=[user_reporter.email]
+                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
                 list_receivers=['nnws15815@gmail.com']
             )
                         
@@ -753,23 +804,28 @@ def delete_store_product_selection_buy(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try:
             
             buy = RewardStoreProductSelectionBuy.objects(id=id).first()
             if not buy:
-                logger.error("Store product selection buy not found")
-                return Response({'error': 'Store product selection buy not found'}, status=404)
-            
+                logger.error("Order not found")
+                return Response({'error': 'Order not found'}, status=404)
+
             selection_id = buy.store_product_selection.id
             selection = RewardStoreProductSelection.objects(id=selection_id).first()
             if not selection:
-                logger.error("Store product selection not found")
-                return Response({'error': 'Store product selection not found'}, status=404)
-            
+                logger.error("Selection not found")
+                return Response({'error': 'Selection not found'}, status=404)
+
             if buy.has_been_used:
-                logger.error("Cannot delete a used store product selection buy")
-                return Response({'error': 'Cannot delete a used store product selection buy'}, status=400)
-            
+                logger.error("Cannot delete a used redeemed order")
+                return Response({'error': 'Cannot delete a used redeemed order'}, status=400)
+
             cart = RewardStoreProductSelectionCart.objects(
                 store_product_selection=selection,
                 is_bought=True
@@ -790,8 +846,8 @@ def delete_store_product_selection_buy(request, id):
             
             store_product = buy.store_product_selection.store_product
             if not store_product:
-                logger.error("Store product not found in buy selection")
-                return Response({'error': 'Store product not found in buy selection'}, status=404)
+                logger.error("Store product not found")
+                return Response({'error': 'Store product not found'}, status=404)
             
             purchased_points = store_product.assigned_points * selection.quantity
             
@@ -832,7 +888,7 @@ def delete_store_product_selection_buy(request, id):
                 ]
             )
             
-            description = f'Refunded {purchased_points} points from buy {selection.quantity} of {store_product.name}'
+            description = f'Refunded {purchased_points} points from redeem {selection.quantity} of {store_product.name}'
             
             history = RewardPointsHistory(
                 created_time=timezone.now(),
@@ -856,8 +912,8 @@ def delete_store_product_selection_buy(request, id):
                     'data': tracking_info
                 }
             )
-            
-            info = f'has deleted a purchase of \
+
+            info = f'has deleted a redeemed order # {buy.order_number} of \
                 {buy.store_product_selection.store_product.name.upper()} \
                 with quantity {buy.store_product_selection.quantity} \
                 and refunded \
@@ -882,6 +938,7 @@ def delete_store_product_selection_buy(request, id):
                 user=user_reporter,
                 purchases=[buy],
                 # list_receivers=[user_reporter.email]
+                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
                 list_receivers=['nnws15815@gmail.com']
             )
             
@@ -913,6 +970,11 @@ def delete_list_store_product_selection_buys(request):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403) 
+        
         try:
             
             ids = data.get('ids', None)
@@ -1007,7 +1069,7 @@ def delete_list_store_product_selection_buys(request):
                     ]
                 )
                 
-                description = f'Refunded {purchased_points} points from buy {selection.quantity} of {store_product.name}'
+                description = f'Refunded {purchased_points} points from redeemed of {selection.quantity} {store_product.name}'
                 
                 history = RewardPointsHistory(
                     created_time=timezone.now(),
@@ -1046,7 +1108,8 @@ def delete_list_store_product_selection_buys(request):
             )
             
             info = f'has deleted a list of {len(buys)} \
-                purchases ({", ".join([buy.store_product_selection.store_product.name.upper() for buy in buys if buy is not None])})\
+                redeemed orders ({", ".join([buy.store_product_selection.store_product.name.upper() \
+                    for buy in buys if buy is not None])})\
                 for user {user.username} and refunded {total_purchased_points} points'
                 
             create_notification(
@@ -1072,6 +1135,7 @@ def delete_list_store_product_selection_buys(request):
                 user=user_reporter,
                 purchases=list_buys,
                 # list_receivers=[user_reporter.email]
+                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
                 list_receivers=['nnws15815@gmail.com']
             )
 
@@ -1099,6 +1163,11 @@ def manage_refund_store_product_selection_buy(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try: 
             refund_buy = RewardStoreProductSelectionBuy.objects(id=id).first()
             if not refund_buy:
@@ -1132,7 +1201,7 @@ def manage_refund_store_product_selection_buy(request, id):
             )
 
             info = f'has {"requested" if refund_buy.has_requested_refund else "cancelled"} \
-                refund for purchase of \
+                refund for redeemed order # {refund_buy.order_number} of \
                 {refund_buy.store_product_selection.store_product.name}'
 
             module='store_product_selection_buys'
@@ -1165,6 +1234,11 @@ def manage_use_store_product_selection_buy(request, id):
     user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
     
     if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
         try: 
             buy = RewardStoreProductSelectionBuy.objects(id=id).first()
             if not buy:
@@ -1184,6 +1258,7 @@ def manage_use_store_product_selection_buy(request, id):
             if notes:
                 buy.notes = notes
             buy.last_modified_time = to_aware(timezone.now())
+            buy.redeemed_time = to_aware(timezone.now())
             buy.save()
             
             tracking_info = transform_data_to_mongo(
@@ -1244,7 +1319,7 @@ def send_email_confirmation(type, points, user, purchases, list_receivers):
              "list_purchases": purchases,
             }, 
     )
-    message = f"Thank you for your {type}! Your order has been successfully processed. \
+    message = f"Thank you for your {type}! Your redeemed order has been successfully processed. \
     You can view your {type} details in your account."
     today = to_aware(timezone.now())
     today_str = today.strftime("%Y-%m-%d %H:%M:%S")

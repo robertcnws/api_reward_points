@@ -345,12 +345,16 @@ class RewardStoreProductSelectionBuy(Document):
     store_product_selection = ReferenceField(RewardStoreProductSelection, required=True, reverse_delete_rule=PULL)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
+    expiration_time = DateTimeField(null=True, blank=True)
     has_been_used = BooleanField(default=False)
     has_requested_refund = BooleanField(default=False)
     quantity_used = IntField(default=0)
     order_number = IntField(default=0)
     confirmation_number = StringField(null=True, blank=True)
+    pin_number = StringField(null=True, blank=True)
     notes = StringField(null=True, blank=True)
+    redeemed_time = DateTimeField(null=True, blank=True)
+    is_removed = BooleanField(default=False)
     purchase_type = StringField(
         default='gained_points', 
         choices=[
@@ -376,6 +380,7 @@ class RewardStoreProductSelectionBuy(Document):
             'has_requested_refund',
             'order_number', 
             'confirmation_number',
+            'pin_number',
         ],
         'verbose_name': 'Reward Store Product Selection Buy',
         'verbose_name_plural': 'Reward Store Product Selection Buys'

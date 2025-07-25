@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { StoreProductConfirmCheckoutTable } from 'src/sections/store-product/store-product-confirm-checkout-table';
 
 import { toast } from 'src/components/snackbar';
 
@@ -37,6 +38,7 @@ import { fNumber } from 'src/utils/format-number';
 import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 import { CartItem } from './cart-item';
+
 
 
 // ----------------------------------------------------------------------
@@ -252,6 +254,21 @@ export function CartsDrawer({ sx, ...other }) {
     currentStoreProductSelectionCart
   ]);
 
+  const listMappedProducts = useMemo(() =>
+    currentStoreProductSelectionCart?.map((cart) => ({
+      ...cart?.storeProductSelection?.storeProduct,
+      quantity: cart?.storeProductSelection?.quantity || 0,
+    })) || [],
+    [currentStoreProductSelectionCart]
+  );
+
+  const listMappedSingleProduct = useMemo(() => ([
+    {
+      ...selectedCart?.storeProductSelection?.storeProduct,
+      quantity: selectedCart?.storeProductSelection?.quantity || 0,
+    }
+  ]), [selectedCart]);
+
   const renderHead = (
     <Stack
       direction="row"
@@ -380,9 +397,17 @@ export function CartsDrawer({ sx, ...other }) {
             color='primary'
             variant="outlined"
             onClick={confirmBuyAll.onTrue}
-            disabled={currentStoreProductSelectionCart?.length === 0}
+            disabled={currentStoreProductSelectionCart?.length === 0 || totalCartPoints > totalAvailablePoints}
+            sx={{
+              cursor: (currentStoreProductSelectionCart?.length === 0 || totalCartPoints > totalAvailablePoints) ?
+                'not-allowed' : 'pointer',
+              '&.Mui-disabled': {
+                cursor: 'not-allowed !important',
+                pointerEvents: 'auto',
+              }
+            }}
           >
-            Buy all Carts
+            Redeem All Carts
           </Button>
           <Button
             fullWidth
@@ -422,10 +447,10 @@ export function CartsDrawer({ sx, ...other }) {
       <ConfirmDialog
         open={confirmBuy.value}
         onClose={confirmBuy.onFalse}
-        title={`Buying Cart: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
+        title={`Redeeming Cart: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
         content={
           <>
-            Are you sure want to buy <strong> {selectedCart?.storeProductSelection?.storeProduct?.name} </strong>,
+            Are you sure want to redeem <strong> {selectedCart?.storeProductSelection?.storeProduct?.name} </strong>,
             with quantity <strong> {selectedQuantity} </strong>
             spending <strong>{
               fNumber(selectedPoints)
@@ -441,7 +466,7 @@ export function CartsDrawer({ sx, ...other }) {
               confirmCheckout.onTrue();
             }}
           >
-            Buy
+            Redeem
           </Button>
         }
       />
@@ -449,10 +474,10 @@ export function CartsDrawer({ sx, ...other }) {
       <ConfirmDialog
         open={confirmBuyAll.value}
         onClose={confirmBuyAll.onFalse}
-        title='Buying All Carts'
+        title='Redeem All Carts'
         content={
           <>
-            Are you sure want to buy all products in the cart: <br /><br />
+            Are you sure want to redeem all products in the cart: <br /><br />
             <ul>
               {currentStoreProductSelectionCart.map((item, index) => (
                 <li key={item.id}>
@@ -473,22 +498,35 @@ export function CartsDrawer({ sx, ...other }) {
               confirmCheckoutAll.onTrue();
             }}
           >
-            Buy All
+            Redeem All
           </Button>
         }
       />
 
       <ConfirmDialog
+        maxWidth="md"
         open={confirmCheckout.value}
         onClose={confirmCheckout.onFalse}
-        title={`Checking out: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
+        // title={`Checking out: ${selectedCart?.storeProductSelection?.storeProduct?.name}`}
+        title={`Proceed to confirm redeemed order of ${listMappedSingleProduct.length} product(s)`}
         content={
           <>
-            You are going to checkout a product <strong> {
+            {/* You are going to checkout a product <strong> {
               selectedCart?.storeProductSelection?.storeProduct?.name
             } </strong>,
             spending <strong>{
-              fNumber(selectedPoints)}</strong> point(s) ... Are you sure?
+              fNumber(selectedPoints)}</strong> point(s) ... Are you sure? */}
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}>
+              <StoreProductConfirmCheckoutTable
+                listMappedProducts={listMappedSingleProduct}
+              />
+            </Box>
           </>
         }
         action={
@@ -500,20 +538,33 @@ export function CartsDrawer({ sx, ...other }) {
               onAddBuy(selectedCart);
             }}
           >
-            Confirm Checkout
+            Confirm Redeem
           </Button>
         }
       />
 
       <ConfirmDialog
+        maxWidth="md"
         open={confirmCheckoutAll.value}
         onClose={confirmCheckoutAll.onFalse}
-        title='Checking out All Carts'
+        // title='Checking out All Carts'
+        title={`Proceed to confirm redeemed order of ${listMappedProducts.length} product(s)`}
         content={
           <>
-            Are you sure want to checkout all products in the cart with total points <strong>
+            {/* Are you sure want to checkout all products in the cart with total points <strong>
               {fNumber(totalCartPoints)}
-            </strong>?
+            </strong>? */}
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}>
+              <StoreProductConfirmCheckoutTable
+                listMappedProducts={listMappedProducts}
+              />
+            </Box>
           </>
         }
         action={
@@ -525,7 +576,7 @@ export function CartsDrawer({ sx, ...other }) {
               confirmCheckoutAll.onFalse();
             }}
           >
-            Confirm Checkout All
+            Confirm Redeem All
           </Button>
         }
       />

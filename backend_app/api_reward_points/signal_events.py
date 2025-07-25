@@ -33,6 +33,10 @@ def event_store_product_selection_buy(type, document, full_selection):
                 "purchaseFraction": document.purchase_fraction,
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
+                "expirationTime": document.expiration_time,
+                "pinNumber": document.pin_number,
+                "redeemedTime": document.redeemed_time,
+                "isRemoved": document.is_removed,
             }
 
         }

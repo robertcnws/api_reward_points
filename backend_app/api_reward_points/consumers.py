@@ -235,3 +235,53 @@ class RewardPointHistoryByUsernameConsumer(AsyncJsonWebsocketConsumer):
 
     async def point_history_update(self, event):
         await self.send_json(event["message"])
+        
+        
+##########################################################################
+# StoreProductReview
+##########################################################################
+
+class RewardStoreProductReviewConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.channel_layer.group_add(
+            "store_product_review",
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            "store_product_review",
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        pass
+
+    async def store_product_review_update(self, event):
+        await self.send(text_data=json.dumps(event["message"]))
+        
+
+##########################################################################
+# StoreProductReview
+##########################################################################
+
+class RewardStoreProductReactionConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.channel_layer.group_add(
+            "store_product_review_reaction",
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            "store_product_review_reaction",
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        pass
+
+    async def store_product_review_reaction_update(self, event):
+        await self.send(text_data=json.dumps(event["message"]))

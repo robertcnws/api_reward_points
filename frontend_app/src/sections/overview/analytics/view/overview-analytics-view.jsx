@@ -13,13 +13,13 @@ import { OverviewAdminView } from '../../admin/view';
 
 
 export function OverviewAnalyticsView() {
-  
+
   const router = useRouter();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
   const currentRole = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
-  
+
   const {
     loadedRewardPoints,
     refetchRewardPoints,
@@ -29,6 +29,14 @@ export function OverviewAnalyticsView() {
     refetchRewardPointsHistory,
     loadingRewardPointsHistory,
     errorRewardPointsHistory,
+    loadedRewardPointsGainedHistory,
+    refetchRewardPointsGainedHistory,
+    loadingRewardPointsGainedHistory,
+    errorRewardPointsGainedHistory,
+    loadedRewardPointsSpentHistory,
+    refetchRewardPointsSpentHistory,
+    loadingRewardPointsSpentHistory,
+    errorRewardPointsSpentHistory,
     loadedUsers,
     loadedPendingUsers,
     refetchUsers,
@@ -56,6 +64,14 @@ export function OverviewAnalyticsView() {
             refetchRewardPointsHistory={refetchRewardPointsHistory}
             loadingRewardPointsHistory={loadingRewardPointsHistory}
             errorRewardPointsHistory={errorRewardPointsHistory}
+            loadedRewardPointsGainedHistory={loadedRewardPointsGainedHistory}
+            refetchRewardPointsGainedHistory={refetchRewardPointsGainedHistory}
+            loadingRewardPointsGainedHistory={loadingRewardPointsGainedHistory}
+            errorRewardPointsGainedHistory={errorRewardPointsGainedHistory}
+            loadedRewardPointsSpentHistory={loadedRewardPointsSpentHistory}
+            refetchRewardPointsSpentHistory={refetchRewardPointsSpentHistory}
+            loadingRewardPointsSpentHistory={loadingRewardPointsSpentHistory}
+            errorRewardPointsSpentHistory={errorRewardPointsSpentHistory}
             loadedUsers={loadedUsers}
             loadedPendingUsers={loadedPendingUsers}
             refetchUsers={refetchUsers}

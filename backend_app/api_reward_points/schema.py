@@ -1,4 +1,5 @@
 import graphene
+from django.utils import timezone
 from api_reward_points.models import (
     RewardInvoice,
     RewardPointsHistory,
@@ -119,6 +120,7 @@ class Query(graphene.ObjectType):
     )
 
     def resolve_all_reward_points(self, info):
+        # approved_users = LoginUser.objects(is_approved=True).all()
         return RewardPoints.objects.all()
 
     def resolve_reward_points_by_user_id(self, info, user_id):
@@ -219,7 +221,10 @@ class Query(graphene.ObjectType):
         return list(carts) if carts else []
     
     def resolve_all_reward_store_product_selection_buys(self, info):
-        return RewardStoreProductSelectionBuy.objects.all() if RewardStoreProductSelectionBuy.objects else []
+        return RewardStoreProductSelectionBuy.objects(
+            is_removed=False,
+            expiration_time__gte=timezone.now()
+        ).all() if RewardStoreProductSelectionBuy.objects else []
 
     def resolve_reward_store_product_selection_buy_by_username(self, info, username):
         user = LoginUser.objects(username=username).first()
@@ -231,7 +236,9 @@ class Query(graphene.ObjectType):
             return [] 
 
         buys = RewardStoreProductSelectionBuy.objects(
-            store_product_selection__in=selections
+            store_product_selection__in=selections,
+            is_removed=False,
+            expiration_time__gte=timezone.now()
         ).all()
 
         return list(buys) if buys else []

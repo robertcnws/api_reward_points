@@ -20,20 +20,20 @@ export function RewardStoreProductSelectionBuyProvider({ children }) {
   const allQuery = useAllRewardStoreProductSelectionBuys(fields);
 
   const loadedAll = useMemo(
-    () => roleName === 'admin' || roleName === 'superadmin' ?
+    () => roleName !== 'client' ?
     allQuery.data : [],
     [allQuery, roleName]
   );
 
   const refetchAll = useMemo(
-    () => (roleName === 'admin' || roleName === 'superadmin') ? allQuery.refetch : () => {},
+    () => (roleName !== 'client') ? allQuery.refetch : () => {},
     [allQuery, roleName]
   );
 
-  const loadingAll = roleName === 'admin' || roleName === 'superadmin' ?
+  const loadingAll = roleName !== 'client' ?
     allQuery.loading : false;
 
-  const errorAll = roleName === 'admin' || roleName === 'superadmin' ?
+  const errorAll = roleName !== 'client' ?
     allQuery.error : null;
 
   const value = useMemo(

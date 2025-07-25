@@ -1,6 +1,8 @@
 from rest_framework.response import Response
 from django.utils import timezone
+from django.template.loader import render_to_string
 from api_authorization.models import LoginUser
+from api_authorization.views import send_generic_email
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardAttachment,
@@ -23,6 +25,7 @@ from utils.data_util import (
 )
 import json
 import logging
+from datetime import timedelta
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -235,7 +238,12 @@ def update_store_product(request, id):
             store_product.is_active = status == 'true' if status else False
             
             store_product.save()
-            
+                
+            file = store_product.attachments[0].file if \
+                    len(store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+            default_url = generate_default_file_url(file)
+            set_expiration_to_related_buys(product=store_product, default_url=default_url)
+
             tracking_info = transform_data_to_mongo(
                 store_product, 
                 exclude_fields=[
@@ -614,6 +622,11 @@ def manage_active_store_product(request, id):
             product.is_active = not product.is_active
             product.save()
             
+            file = product.attachments[0].file if \
+                    len(product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
+            default_url = generate_default_file_url(file)
+            set_expiration_to_related_buys(product=product, default_url=default_url)
+
             tracking_info = transform_data_to_mongo(
                 product, 
                 include_fields=[
@@ -653,3 +666,48 @@ def manage_active_store_product(request, id):
             return Response({'error': str(e)}, status=500)
     
     return Response({'error': 'User reporter not found'}, status=404)
+
+# EXTRAS
+
+def set_expiration_to_related_buys(product, default_url):
+    selections = RewardStoreProductSelection.objects(store_product=product).all()
+    if selections:
+        buys = RewardStoreProductSelectionBuy.objects(store_product_selection__in=selections).all()
+        if buys:
+            for buy in buys:
+                today = timezone.now()
+                next_date_30_days = today + timedelta(days=30)
+                buy.expiration_time = next_date_30_days if not product.is_active else None
+                buy.save()  
+            
+            if not product.is_active:
+                send_email_expire_confirmation(
+                    user=buy.store_product_selection.user,
+                    purchases=buys,
+                    default_url=default_url,
+                    # list_receivers=[buy.store_product_selection.user.email]
+                    list_receivers=['nnws15815@gmail.com']
+                )
+                
+                
+
+def send_email_expire_confirmation(user, purchases, default_url, list_receivers):
+    email_html_message = render_to_string(
+            f"api_reward_points/email_send_expire_confirmation.html",  
+            {
+             "username": user.username, 
+             "first_name": user.first_name, 
+             "last_name": user.last_name,
+             "list_purchases": purchases,
+             "default_url": default_url,
+            }, 
+    )
+    message = f"Hello {user.first_name} {user.last_name},\n\nThe following products are set to expire soon (within 30 days):\n"
+    today = to_aware(timezone.now())
+    today_str = today.strftime("%Y-%m-%d %H:%M:%S")
+    return send_generic_email(
+        list_receivers,
+        email_html_message,
+        f"Expiration Confirmation - {today_str}",
+        message_response=message
+    )

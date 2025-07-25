@@ -2,11 +2,11 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
 
-import { PurchaseListView, PurchaseOfficeListView } from 'src/sections/purchase/view';
+import { PurchaseCheckoutView } from 'src/sections/purchase/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Purchases list | Dashboard - ${CONFIG.appName}` };
+const metadata = { title: `Checkout | Dashboard - ${CONFIG.appName}` };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
 
@@ -19,7 +19,7 @@ export default function Page() {
         <title> {metadata.title}</title>
       </Helmet>
 
-      <PurchaseListView />
+      <PurchaseCheckoutView />
 
       {/* {roleName !== 'office staff' ? (
         <PurchaseListView />

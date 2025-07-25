@@ -27,7 +27,7 @@ export const fieldsRewardPoints = [
     },
     {
       name: 'user',
-      fields: ['id', 'companyName', 'firstName', 'email', 'lastName', 'phoneNumber'],
+      fields: ['id', 'companyName', 'firstName', 'email', 'lastName', 'phoneNumber', 'isApproved'],
     },
   ];
 
@@ -41,6 +41,12 @@ export const fieldsRewardPoints = [
     'info',
     {
       name: 'rewardPoints',
-      fields: ['id'],
+      fields: [
+        'id',
+        {
+          name: 'user',
+          fields: ['id', 'companyName', 'firstName', 'email', 'lastName', 'phoneNumber', 'isApproved'],
+        }
+      ],
     },
   ];

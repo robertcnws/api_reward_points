@@ -29,6 +29,7 @@ import { PurchaseUseModalForm } from './purchase-use-modal-form';
 
 export function PurchaseTableRow({
   row,
+  statusValue,
   selected,
   onEditRow,
   onSelectRow,
@@ -64,9 +65,20 @@ export function PurchaseTableRow({
 
   const total = useMemo(() => assignedPoints * quantity, [assignedPoints, quantity]);
 
+  const isSetExpired = useMemo(() => !!(row?.expirationTime && statusValue !== 'used'), [row, statusValue]);
+
   return (
     <>
-      <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} sx={{ cursor: 'pointer' }}>
+      <TableRow
+        hover
+        selected={selected}
+        aria-checked={selected}
+        tabIndex={-1}
+        sx={{ 
+          cursor: 'pointer',
+          bgcolor: isSetExpired ? 'rgba(243, 240, 240, 1)' : 'background.paper', 
+        }}
+      >
 
         {(!isClient(roleName) && !row?.hasBeenUsed) && (
 
@@ -86,7 +98,10 @@ export function PurchaseTableRow({
 
         {!isMobile ? (
           <>
-            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+            <TableCell sx={{
+              whiteSpace: 'nowrap',
+              fontStyle: isSetExpired ? 'italic' : 'normal',
+            }}>
               <StoreProductFolderItemCarousel
                 images={row?.storeProductSelection?.storeProduct?.attachments ?? []}
                 maxWidth={50}
@@ -95,7 +110,12 @@ export function PurchaseTableRow({
               />
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+            <TableCell sx={{
+              whiteSpace: 'nowrap',
+              fontStyle: isSetExpired ? 'italic' : 'normal',
+              color: isSetExpired ? 'text.disabled' : 'text.primary',
+            }}
+              onClick={openDetails.onTrue}>
               {row?.orderNumber || 'N/A'}
             </TableCell>
 
@@ -107,40 +127,65 @@ export function PurchaseTableRow({
                   fontWeight: 'bold',
                   fontFamily: 'Mono, monospace',
                   fontSize: 17,
+                  // fontStyle: isSetExpired ? 'italic' : 'normal',
+                  color: isSetExpired ? 'text.disabled' : 'text.primary',
                   cursor: 'pointer',
-                  color: 'text.primary',
                   '&:hover': { color: 'primary.main' }
                 }}>
                 {row?.confirmationNumber || 'N/A'}
               </Typography>
             </TableCell>
 
-            <TableCell onClick={openDetails.onTrue}>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: 15,
+                // fontStyle: isSetExpired ? 'italic' : 'normal',
+                color: isSetExpired ? 'text.disabled' : 'text.primary',
+              }}
+              onClick={openDetails.onTrue}>
+              {row?.pinNumber || 'N/A'}
+            </TableCell>
+
+            <TableCell sx={{
+              fontStyle: isSetExpired ? 'italic' : 'normal',
+              color: isSetExpired ? 'text.disabled' : 'text.primary',
+            }}
+              onClick={openDetails.onTrue}
+            >
               {row?.storeProductSelection?.storeProduct?.name}
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+            {/* <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               <Label
                 color={row?.storeProductSelection?.storeProduct?.isActive ? 'success' : 'warning'}
               >
                 {row?.storeProductSelection?.storeProduct?.isActive ? 'YES' : 'NO'}
               </Label>
-            </TableCell>
+            </TableCell> */}
 
             {!isClient(roleName) && (
-              <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+              <TableCell sx={{
+                whiteSpace: 'nowrap',
+                fontStyle: isSetExpired ? 'italic' : 'normal',
+                color: isSetExpired ? 'text.disabled' : 'text.primary',
+              }} onClick={openDetails.onTrue}>
                 {row?.storeProductSelection?.user?.firstName} {row?.storeProductSelection?.user?.lastName}
               </TableCell>
             )}
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
-              <Label color="success" sx={{ alignItems: 'center', fontSize: 14 }}>
+            <TableCell sx={{
+              whiteSpace: 'nowrap',
+              fontStyle: isSetExpired ? 'italic' : 'normal',
+              color: isSetExpired ? 'text.disabled' : 'text.primary',
+            }} onClick={openDetails.onTrue}>
+              <Label color={isSetExpired ? "default" : "success"} sx={{ alignItems: 'center', fontSize: 14 }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {fNumber(assignedPoints) || 0}
               </Label>
             </TableCell>
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+            {/* <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               x{quantity}
             </TableCell>
 
@@ -149,9 +194,9 @@ export function PurchaseTableRow({
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {fNumber(total) || 0}
               </Label>
-            </TableCell>
+            </TableCell> */}
 
-            <TableCell onClick={openDetails.onTrue}>
+            {/* <TableCell onClick={openDetails.onTrue}>
               <Label
                 variant="soft"
                 color={
@@ -168,13 +213,13 @@ export function PurchaseTableRow({
                       'Not Used'
                 }
               </Label>
-            </TableCell>
+            </TableCell> */}
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+            {/* <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
               <b>{row?.quantityUsed ? `x${row?.quantityUsed}` : 0}</b>
-            </TableCell>
+            </TableCell> */}
 
-            {isClient(roleName) && (
+            {/* {isClient(roleName) && (
               <TableCell
                 sx={{ whiteSpace: 'nowrap' }}
                 onClick={openDetails.onTrue}
@@ -191,11 +236,29 @@ export function PurchaseTableRow({
                   {row?.hasRequestedRefund ? 'YES!' : 'NO'}
                 </Label>
               </TableCell>
-            )}
+            )} */}
 
-            <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+            <TableCell sx={{
+              whiteSpace: 'nowrap',
+              fontStyle: isSetExpired ? 'italic' : 'normal',
+              color: isSetExpired ? 'text.disabled' : 'text.primary',
+            }} onClick={openDetails.onTrue}>
               {fDateTime(row?.createdTime)}
             </TableCell>
+
+            {statusValue === 'used' ? (
+              <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={openDetails.onTrue}>
+                {fDateTime(row?.redeemedTime)}
+              </TableCell>
+            ) : (
+              <TableCell sx={{
+                whiteSpace: 'nowrap',
+                fontStyle: isSetExpired ? 'italic' : 'normal',
+                color: isSetExpired ? 'text.disabled' : 'text.primary',
+              }} onClick={openDetails.onTrue}>
+                {fDateTime(row?.expirationTime) || 'N/A'}
+              </TableCell>
+            )}
 
           </>
         ) : (
@@ -225,10 +288,21 @@ export function PurchaseTableRow({
                     {row?.confirmationNumber || 'N/A'}
                   </Typography>
                 </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  PIN #:
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{
+                      fontWeight: 'bold',
+                    }}>
+                    {row?.pinNumber || 'N/A'}
+                  </Typography>
+                </Box>
                 <Typography>
                   Product: <b>{row?.storeProductSelection?.storeProduct?.name}</b>
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   Is Active?:
                   <Label
                     color={row?.storeProductSelection?.storeProduct?.isActive ? 'success' : 'warning'}
@@ -252,7 +326,7 @@ export function PurchaseTableRow({
                           'Not Used'
                     }
                   </Label>
-                </Box>
+                </Box> */}
                 {!isClient(roleName) && (
                   <Typography>
                     Client: <b>{row?.storeProductSelection?.user?.firstName} {row?.storeProductSelection?.user?.lastName}</b>
@@ -264,15 +338,15 @@ export function PurchaseTableRow({
                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                     {fNumber(assignedPoints) || 0}
                   </Label>
-                  Qty:
+                  {/* Qty:
                   <Typography><b>x{fNumber(quantity) || 0}</b></Typography>
                   Total:
                   <Label color="info" sx={{ alignItems: 'center', fontSize: 14 }}>
                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                     {fNumber(total) || 0}
-                  </Label>
+                  </Label> */}
                 </Box>
-                <Typography>Qty Used: <b>x{fNumber(row?.quantityUsed) || 0}</b></Typography>
+                {/* <Typography>Qty Used: <b>x{fNumber(row?.quantityUsed) || 0}</b></Typography>
                 {isClient(roleName) && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     Has Refund Request?
@@ -288,8 +362,13 @@ export function PurchaseTableRow({
                       {row?.hasRequestedRefund ? 'YES!' : 'NO'}
                     </Label>
                   </Box>
-                )}
+                )} */}
                 <Typography>Created At: <b>{fDateTime(row?.createdTime)}</b></Typography>
+                {statusValue === 'used' ? (
+                  <Typography>Redeemed At: <b>{fDateTime(row?.redeemedTime)}</b></Typography>
+                ) : (
+                  <Typography>Expiration At: <b>{fDateTime(row?.expirationTime) || 'N/A'}</b></Typography>
+                )}
               </Box>
             </Stack>
           </TableCell>
@@ -342,11 +421,12 @@ export function PurchaseTableRow({
             <MenuItem
               key="use-purchase"
               onClick={() => {
-                if (row.storeProductSelection?.storeProduct?.isActive) {
-                  openUse.onTrue();
-                } else {
-                  confirmInactive.onTrue();
-                }
+                // if (row.storeProductSelection?.storeProduct?.isActive) {
+                //   openUse.onTrue();
+                // } else {
+                //   confirmInactive.onTrue();
+                // }
+                openUse.onTrue();
                 popover.onClose();
               }}
             >

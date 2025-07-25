@@ -51,12 +51,12 @@ import { UserClientTableRow } from '../user-client-table-row';
 // ----------------------------------------------------------------------
 
 const USEL_CLIENT_OPTIONS = [
-  {value: 'active', label: 'Active'},
-  {value: 'inactive', label: 'Inactive'},
-  {value: 'approved', label: 'Approved'},
-  {value: 'unapproved', label: 'Unapproved'},
-  {value: 'verified', label: 'Verified'},
-  {value: 'unverified', label: 'Unverified'},
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'unapproved', label: 'Unapproved' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'unverified', label: 'Unverified' },
 ]
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USEL_CLIENT_OPTIONS];
@@ -91,11 +91,11 @@ export function UserClientListView() {
 
   const confirm = useBoolean();
 
-  const { 
-    loadedAllUsers, 
-    refetchUsers, 
+  const {
+    loadedAllUsers,
+    refetchUsers,
     loadedUserRoles,
-    loadedRewardPoints,  
+    loadedRewardPoints,
     refetchRewardPoints,
   } = useDataContext();
 
@@ -267,16 +267,22 @@ export function UserClientListView() {
   const handleChangeApprovalRow = useCallback(
     async (id) => {
 
-      const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
-          userReporter: userLogged?.data,
-      });
+      try {
 
-      if (response.data.message) {
-        refetchUsers?.();
-        toast.success(response.data.message);
-      }
-      else {
-        toast.error(response.data.error);
+        const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
+          userReporter: userLogged?.data,
+        });
+
+        if (response.data.message) {
+          refetchUsers?.();
+          toast.success(response.data.message);
+        }
+        else {
+          toast.error(response.data.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
       }
     },
     [userLogged, refetchUsers]
@@ -286,7 +292,7 @@ export function UserClientListView() {
     async (id) => {
 
       const response = await axios.post(`${CONFIG.apiUrl}/users/change-verify/${id}/`, {
-          userReporter: userLogged?.data,
+        userReporter: userLogged?.data,
       });
 
       if (response.data.message) {
@@ -541,7 +547,7 @@ function applyFilter({ inputData, comparator, filters }) {
     if (status === 'active') {
       inputData = inputData.filter((user) => user?.isActive);
     }
-    else if (status === 'inactive'){
+    else if (status === 'inactive') {
       inputData = inputData.filter((user) => !user?.isActive);
     }
     else if (status === 'approved') {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -10,7 +10,7 @@ import { Chart, useChart, ChartSelect, ChartLegends } from 'src/components/chart
 
 // ----------------------------------------------------------------------
 
-export function AdminStatistics({ title, subheader, chart, ...other }) {
+export function AdminStatistics({ list, title, subheader, chart, ...other }) {
   const theme = useTheme();
 
   const [selectedSeries, setSelectedSeries] = useState('Yearly');
@@ -31,6 +31,21 @@ export function AdminStatistics({ title, subheader, chart, ...other }) {
     setSelectedSeries(newValue);
   }, []);
 
+  const totals = useMemo(
+    () => {
+      let totalGained = 0;
+      let totalSpent = 0;
+
+      currentSeries?.data.forEach((item) => {
+        if (item.name === 'Gained') totalGained += item.data.reduce((acc, val) => acc + val, 0);
+        else totalSpent += item.data.reduce((acc, val) => acc + val, 0);
+      });
+
+      return { totalGained, totalSpent };
+    },
+    [currentSeries]
+  );
+
   return (
     <Card {...other}>
       <CardHeader
@@ -49,7 +64,7 @@ export function AdminStatistics({ title, subheader, chart, ...other }) {
       <ChartLegends
         colors={chartOptions?.colors}
         labels={chart.series[0].data.map((item) => item.name)}
-        values={[fShortenNumber(6789), fShortenNumber(1234)]}
+        values={[fShortenNumber(totals.totalGained), fShortenNumber(totals.totalSpent)]}
         sx={{ px: 3, gap: 3 }}
       />
 

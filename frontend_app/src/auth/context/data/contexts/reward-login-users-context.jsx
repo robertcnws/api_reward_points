@@ -22,20 +22,20 @@ export function RewardLoginUsersProvider({ children }) {
   const allLoginUsersQuery = useAllRewardLoginUsers(fields);
 
   const listAllRewardLoginUsers = useMemo(
-    () => (roleName === 'admin' || roleName === 'superadmin') ? 
+    () => (roleName !== 'client') ? 
     allLoginUsersQuery.data : [],
     [allLoginUsersQuery.data, roleName]
   );
 
   const refetchAllRewardLoginUsers = useMemo(
-    () => (roleName === 'admin' || roleName === 'superadmin') ? allLoginUsersQuery.refetch : () => {},
+    () => (roleName !== 'client') ? allLoginUsersQuery.refetch : () => {},
     [allLoginUsersQuery, roleName]
   );
 
-  const loadingAllRewardLoginUsers = roleName === 'admin' || roleName === 'superadmin' ?
+  const loadingAllRewardLoginUsers = roleName !== 'client' ?
     allLoginUsersQuery.loading : false;
 
-  const errorRewardLoginUsers = roleName === 'admin' || roleName === 'superadmin' ?
+  const errorRewardLoginUsers = roleName !== 'client' ?
     allLoginUsersQuery.error : null;
 
   const loadedAllRewardLoginUsers = useMemo(

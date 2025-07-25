@@ -25,19 +25,27 @@ export const listRolesAndSubroles = (role) =>
       CONFIG.roles.superadmin,
       CONFIG.roles.administrator,
       CONFIG.roles.client,
+      CONFIG.roles.officeStaff,
     ] :
     role?.toLowerCase().indexOf(CONFIG.roles.administrator.toLowerCase()) !== -1 ?
       [
         CONFIG.roles.administrator,
         CONFIG.roles.client,
+        CONFIG.roles.officeStaff,
       ] :
       role?.toLowerCase().indexOf(CONFIG.roles.client.toLowerCase()) !== -1 ?
-        [CONFIG.roles.client] : [];
+        [CONFIG.roles.client] : 
+        role?.toLowerCase().indexOf(CONFIG.roles.officeStaff.toLowerCase()) !== -1 ?
+        [CONFIG.roles.officeStaff] : [];
 
 export const isSuperAdmin = (role) => role?.toLowerCase().indexOf(CONFIG.roles.superadmin.toLowerCase()) !== -1;
-export const isAdministrator = (role) => role?.toLowerCase().indexOf(CONFIG.roles.administrator.toLowerCase()) !== -1;
+export const isAdministrator = (role) => (
+  role?.toLowerCase().indexOf(CONFIG.roles.administrator.toLowerCase()) !== -1 ||
+  isSuperAdmin(role)
+);
 export const isClient = (role) => role?.toLowerCase().indexOf(CONFIG.roles.client.toLowerCase()) !== -1;
+export const isOfficeStaff = (role) => role?.toLowerCase().indexOf(CONFIG.roles.officeStaff.toLowerCase()) !== -1;
 
 export const belongsToWorkingStaff = (role) => (
-  isSuperAdmin(role) || isAdministrator(role) 
+  isSuperAdmin(role) || isAdministrator(role) || isOfficeStaff(role)
 );

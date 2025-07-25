@@ -45,7 +45,7 @@ export function AdminDetails({ title, subheader, ...other }) {
             ))}
           </TableBody>
         </Table> */}
-      <PurchaseListView lengthLimit={5} />
+      <PurchaseListView lengthLimit={5} order='desc'/>
       {/* </Scrollbar> */}
 
       {/* <Divider sx={{ borderStyle: 'dashed' }} /> */}

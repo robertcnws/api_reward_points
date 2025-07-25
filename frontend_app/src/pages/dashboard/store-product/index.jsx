@@ -6,7 +6,7 @@ import { StoreProductView } from 'src/sections/store-product/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Store Products | Dashboard - ${CONFIG.appName}` };
+const metadata = { title: `Reward Store Products | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
   return (

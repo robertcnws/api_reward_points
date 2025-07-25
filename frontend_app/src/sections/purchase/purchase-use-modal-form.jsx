@@ -37,7 +37,7 @@ import { IncrementerButton } from '../items/components/incrementer-button';
 
 // ----------------------------------------------------------------------
 
-export function PurchaseUseModalForm({ currentBuy, open }) {
+export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -116,7 +116,7 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
         PaperProps={{ sx: { maxWidth: 620 } }}
       >
         <DialogTitle>
-          Use purchase of {productName}
+          Use redeemed order of {productName}
           {currentBuy?.hasRequestedRefund && (
             <Label color="secondary" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
               Refund Requested
@@ -138,8 +138,26 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
           <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
             Client: <b>{userFullName}</b>
             <Typography variant="subtitle2" sx={{ mt: 0.5, fontSize: 11 }}>
-              <b>Created at:</b> {fDateTime(currentBuy?.createdTime) || 'N/A'}<br />
-              <b>Modified at:</b> {fDateTime(currentBuy?.lastModifiedTime) || 'N/A'}<br />
+              <Box component="div">
+                <b>Created at:</b>{' '}
+                {currentBuy?.createdTime
+                  ? fDateTime(currentBuy.createdTime)
+                  : 'N/A'}
+              </Box>
+              <Box component="div">
+                <b>Modified at:</b>{' '}
+                {currentBuy?.lastModifiedTime
+                  ? fDateTime(currentBuy.lastModifiedTime)
+                  : 'N/A'}
+              </Box>
+              {currentBuy?.expirationTime && (
+                <Box component="div">
+                  <b>Expiration at:</b>{' '}
+                  {currentBuy.expirationTime
+                    ? fDateTime(currentBuy.expirationTime)
+                    : 'N/A'}
+                </Box>
+              )}
             </Typography>
           </Alert>
           <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
@@ -197,10 +215,13 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
               disabled={quantityUsed <= 0 || quantityUsed > available}
               onClick={() => confirmUse.onTrue()}
             >
-              Use this!
+              Checkout!
             </Button>
           )}
-          <Button variant="outlined" onClick={() => open.onFalse()}>
+          <Button variant="outlined" onClick={() => {
+            open.onFalse(); 
+            openDetails.onTrue();
+          }}>
             Cancel
           </Button>
         </DialogActions>
@@ -208,10 +229,10 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
       <ConfirmDialog
         open={confirmUse.value}
         onClose={confirmUse.onFalse}
-        title="Use Purchase Confirmation"
+        title="Confirmation"
         content={
           <>
-            Are you sure want to use this purchase <strong> {productName} </strong> with quantity <strong> {quantityUsed} </strong>?
+            Are you sure want to use this order <strong> {productName} </strong> with quantity <strong> {quantityUsed} </strong>?
           </>
         }
         action={
@@ -223,7 +244,7 @@ export function PurchaseUseModalForm({ currentBuy, open }) {
               confirmUse.onFalse();
             }}
           >
-            Use
+            Confirm
           </Button>
         }
       />

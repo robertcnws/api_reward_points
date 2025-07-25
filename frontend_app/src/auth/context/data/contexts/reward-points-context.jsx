@@ -37,45 +37,95 @@ export function RewardPointsProvider({ children }) {
     fieldsHistory
   );
 
+  const byActionGainedHistoryQuery = useRewardPointsHistoryByAction(
+    'gained',
+    fieldsHistory
+  );
+
+  const byActionSpentHistoryQuery = useRewardPointsHistoryByAction(
+    'spent',
+    fieldsHistory
+  );
+
   const loadedRewardPoints =
-    roleName === 'admin' || roleName === 'superadmin'
+    roleName !== 'client'
       ? allPointsQuery.data
       : byUsernameQuery.data;
 
   const refetchRewardPoints =
-    roleName === 'admin' || roleName === 'superadmin'
+    roleName !== 'client'
       ? allPointsQuery.refetch
       : byUsernameQuery.refetch;
 
   const loadingRewardPoints =
-    roleName === 'admin' || roleName === 'superadmin'
+    roleName !== 'client'
       ? allPointsQuery.loading
       : byUsernameQuery.loading;
 
   const errorRewardPoints =
-    roleName === 'admin' || roleName === 'superadmin'
+    roleName !== 'client'
       ? allPointsQuery.error
       : byUsernameQuery.error;
 
   const loadedRewardPointsHistory = 
-    roleName !== 'admin' && roleName !== 'superadmin'
+    roleName !== 'client'
       ? historyQuery.data
       : byActionHistoryQuery.data;
 
+  const loadedRewardPointsGainedHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionGainedHistoryQuery.data;
+
+  const loadedRewardPointsSpentHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionSpentHistoryQuery.data;
+
   const refetchRewardPointsHistory = 
-    roleName !== 'admin' && roleName !== 'superadmin'
+    roleName !== 'client'
       ? historyQuery.refetch
       : byActionHistoryQuery.refetch;
 
+  const refetchRewardPointsGainedHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionGainedHistoryQuery.refetch;
+
+  const refetchRewardPointsSpentHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionSpentHistoryQuery.refetch;
+
   const loadingRewardPointsHistory = 
-    roleName !== 'admin' && roleName !== 'superadmin'
+    roleName !== 'client'
       ? historyQuery.loading
       : byActionHistoryQuery.loading;
 
   const errorRewardPointsHistory = 
-    roleName !== 'admin' && roleName !== 'superadmin'
+    roleName !== 'client'
       ? historyQuery.error
       : byActionHistoryQuery.error;
+
+  const loadingRewardPointsGainedHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionGainedHistoryQuery.loading;
+
+  const errorRewardPointsGainedHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionGainedHistoryQuery.error;
+
+  const loadingRewardPointsSpentHistory = 
+    roleName !== 'client'
+      ? null
+      : byActionSpentHistoryQuery.loading;
+
+  const errorRewardPointsSpentHistory =
+    roleName !== 'client'
+      ? null
+      : byActionSpentHistoryQuery.error;
 
   const value = useMemo(
     () => ({
@@ -87,6 +137,14 @@ export function RewardPointsProvider({ children }) {
       refetchRewardPointsHistory,
       loadingRewardPointsHistory,
       errorRewardPointsHistory,
+      loadedRewardPointsGainedHistory,
+      refetchRewardPointsGainedHistory,
+      loadingRewardPointsGainedHistory,
+      errorRewardPointsGainedHistory,
+      loadedRewardPointsSpentHistory,
+      refetchRewardPointsSpentHistory,
+      loadingRewardPointsSpentHistory,
+      errorRewardPointsSpentHistory,
     }),
     [
       loadedRewardPoints,
@@ -97,6 +155,14 @@ export function RewardPointsProvider({ children }) {
       refetchRewardPointsHistory,
       loadingRewardPointsHistory,
       errorRewardPointsHistory,
+      loadedRewardPointsGainedHistory,
+      refetchRewardPointsGainedHistory,
+      loadingRewardPointsGainedHistory,
+      errorRewardPointsGainedHistory,
+      loadedRewardPointsSpentHistory,
+      refetchRewardPointsSpentHistory,
+      loadingRewardPointsSpentHistory,
+      errorRewardPointsSpentHistory,
     ]
   );
 

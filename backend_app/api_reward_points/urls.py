@@ -74,6 +74,11 @@ urlpatterns = [
         views.create_store_product_review,
         name='create_store_product_review'
     ),
+    path(
+        'delete/store-product-review/<str:id>/',
+        views.delete_store_product_review,
+        name='delete_store_product_review'
+    ),
     # STORE PRODUCT REVIEW REACTIONS
     path(
         'manage/store-product-review-reaction/<str:review_id>/',

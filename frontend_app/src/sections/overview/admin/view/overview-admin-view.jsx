@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { CONFIG } from 'src/config-global';
+import axios from 'axios';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
 
@@ -12,6 +14,10 @@ import {
 } from 'src/assets/illustrations';
 
 import dayjs from 'dayjs';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { LinearProgress, Typography } from '@mui/material';
+import { toast } from 'src/components/snackbar';
+import { fDate } from 'src/utils/format-time';
 
 import { PurchaseListView } from 'src/sections/purchase/view';
 import { AdminBooked } from '../admin-booked';
@@ -24,8 +30,6 @@ import { AdminWidgetSummary } from '../admin-widget-summary';
 import { AdminCheckInWidgets } from '../admin-check-in-widgets';
 import { AdminCustomerReviews } from '../admin-customer-reviews';
 
-
-
 // ----------------------------------------------------------------------
 
 export function OverviewAdminView({
@@ -37,6 +41,14 @@ export function OverviewAdminView({
   refetchRewardPointsHistory,
   loadingRewardPointsHistory,
   errorRewardPointsHistory,
+  loadedRewardPointsGainedHistory,
+  refetchRewardPointsGainedHistory,
+  loadingRewardPointsGainedHistory,
+  errorRewardPointsGainedHistory,
+  loadedRewardPointsSpentHistory,
+  refetchRewardPointsSpentHistory,
+  loadingRewardPointsSpentHistory,
+  errorRewardPointsSpentHistory,
   loadedUsers,
   loadedPendingUsers,
   refetchUsers,
@@ -47,6 +59,153 @@ export function OverviewAdminView({
   loadingStoreProducts,
   errorStoreProducts,
 }) {
+
+  const confirmDeleteReview = useBoolean();
+
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const onDeleteReview = useCallback(
+    async (id) => {
+      try {
+        await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product-review/${id}/`, {
+          data: {
+            userReporter: JSON.stringify(userLogged?.data),
+          }
+        });
+        toast.success('Review deletion successfull!');
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
+      }
+    },
+    [userLogged?.data]
+  );
+
+  useEffect(() => {
+    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-review/`);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        // console.log('WebSocket message received:', message);
+        refetchStoreProducts?.().catch((error) => {
+          console.error('Error refetching store products:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [refetchStoreProducts]);
+
+
+  useEffect(() => {
+    const socket = new WebSocket(
+      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-review-reaction/`
+    );
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        // console.log('WebSocket message received:', message);
+        refetchStoreProducts?.().catch((error) => {
+          console.error('Error refetching store products:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [refetchStoreProducts]);
+
+
+  useEffect(() => {
+    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/`);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchRewardPoints?.().catch((error) => {
+          console.error('Error refetching reward points:', error);
+        });
+        refetchRewardPointsHistory?.().catch((error) => {
+          console.error('Error refetching reward points history:', error);
+        });
+        refetchRewardPointsGainedHistory?.().catch((error) => {
+          console.error('Error refetching reward points gained history:', error);
+        });
+        refetchRewardPointsSpentHistory?.().catch((error) => {
+          console.error('Error refetching reward points spent history:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [
+    refetchRewardPoints, 
+    refetchRewardPointsHistory, 
+    refetchRewardPointsGainedHistory, 
+    refetchRewardPointsSpentHistory
+  ]);
+
+
+  useEffect(() => {
+    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchUsers?.().catch((error) => {
+          console.error('Error refetching users:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [refetchUsers]);
+
+
+  const approvedRewardPoints = useMemo(
+    () => loadedRewardPoints?.filter((point) => point.user?.isApproved) || [],
+    [loadedRewardPoints]
+  );
+
+  const approvedRewardPointsHistory = useMemo(
+    () => loadedRewardPointsHistory?.filter((point) => point.rewardPoints?.user?.isApproved) || [],
+    [loadedRewardPointsHistory]
+  );
+
+  const approvedRewardPointsGainedHistory = useMemo(
+    () => loadedRewardPointsGainedHistory?.filter((point) => point.rewardPoints?.user?.isApproved) || [],
+    [loadedRewardPointsGainedHistory]
+  );
+
+  const approvedRewardPointsSpentHistory = useMemo(
+    () => loadedRewardPointsSpentHistory?.filter((point) => point.rewardPoints?.user?.isApproved) || [],
+    [loadedRewardPointsSpentHistory]
+  );
 
   const totalApprovedClients = useMemo(
     () => loadedUsers?.filter((u) => u.userRole?.name === 'client')?.length || 0,
@@ -60,24 +219,44 @@ export function OverviewAdminView({
 
   const totalClients = totalApprovedClients + totalPendingClients;
 
-  const spentRewardPoints = useMemo(
-    () => loadedRewardPoints?.reduce((total, point) => total + point.totalSpentPoints, 0) || 0,
-    [loadedRewardPoints]
+  const totalSpentRewardPoints = useMemo(
+    () => approvedRewardPoints?.reduce((total, point) => total + point.totalSpentPoints, 0) || 0,
+    [approvedRewardPoints]
   );
 
-  const refundedRewardPoints = useMemo(
-    () => loadedRewardPointsHistory?.reduce((total, point) => total + point.gainedPoints, 0) || 0,
-    [loadedRewardPointsHistory]
+  const totalGainedRewardPoints = useMemo(
+    () => approvedRewardPoints?.reduce((total, point) => total + point.totalGainedPoints, 0) || 0,
+    [approvedRewardPoints]
+  );
+
+  const totalAssignedRewardPoints = useMemo(
+    () => approvedRewardPoints?.reduce((total, point) => total + point.totalAssignedPoints, 0) || 0,
+    [approvedRewardPoints]
+  );
+
+  const totalSubstractedRewardPoints = useMemo(
+    () => approvedRewardPoints?.reduce((total, point) => total + point.totalSubstractedPoints, 0) || 0,
+    [approvedRewardPoints]
+  );
+
+  const totalAllPoints = useMemo(
+    () => totalSpentRewardPoints + totalGainedRewardPoints + totalAssignedRewardPoints - totalSubstractedRewardPoints,
+    [totalSpentRewardPoints, totalGainedRewardPoints, totalAssignedRewardPoints, totalSubstractedRewardPoints]
+  );
+
+  const totalRefundedRewardPoints = useMemo(
+    () => approvedRewardPointsHistory?.reduce((total, point) => total + point.gainedPoints, 0) || 0,
+    [approvedRewardPointsHistory]
   );
 
   const invoicesAmount = useMemo(
-    () => loadedRewardPoints?.reduce((total, point) => total + point.totalAmountInvoices, 0) || 0,
-    [loadedRewardPoints]
+    () => approvedRewardPoints?.reduce((total, point) => total + point.totalAmountInvoices, 0) || 0,
+    [approvedRewardPoints]
   );
 
   const invoicesSeriesByMonth = useMemo(
-    () => accumulateByMonth(loadedRewardPoints || [], 'invoices', 'paymentMade', 'date'),
-    [loadedRewardPoints]
+    () => accumulateByMonth(approvedRewardPoints || [], 'invoices', 'paymentMade', 'date'),
+    [approvedRewardPoints]
   );
 
   const usersSeriesByMonth = useMemo(
@@ -111,8 +290,8 @@ export function OverviewAdminView({
   }, [pendingUsersSeriesByMonth]);
 
   const spentSeriesByMonth = useMemo(
-    () => accumulateByMonth(loadedRewardPoints || [], null, 'totalSpentPoints', 'createdTime'),
-    [loadedRewardPoints]
+    () => accumulateByMonth(approvedRewardPoints || [], null, 'totalSpentPoints', 'createdTime'),
+    [approvedRewardPoints]
   );
 
   const avgSpentTrendPercent = useMemo(() => {
@@ -126,8 +305,8 @@ export function OverviewAdminView({
   }, [spentSeriesByMonth]);
 
   const refundSeriesByMonth = useMemo(
-    () => accumulateByMonth(loadedRewardPointsHistory || [], null, 'gainedPoints', 'createdTime'),
-    [loadedRewardPointsHistory]
+    () => accumulateByMonth(approvedRewardPointsHistory || [], null, 'gainedPoints', 'createdTime'),
+    [approvedRewardPointsHistory]
   );
 
   const avgRefundTrendPercent = useMemo(() => {
@@ -142,10 +321,10 @@ export function OverviewAdminView({
 
   const seriesPoints = useMemo(
     () => {
-      const quantitySpent = loadedRewardPoints?.reduce((acc, point) => acc + point.totalSpentPoints, 0) || 0;
-      const quantityRefunded = loadedRewardPointsHistory?.reduce((acc, point) => acc + point.gainedPoints, 0) || 0;
-      const quantityGained = loadedRewardPoints?.reduce((acc, point) => acc + point.totalGainedPoints, 0) || 0;
-      const quantityAssigned = loadedRewardPoints?.reduce((acc, point) => acc + point.totalAssignedPoints, 0) || 0;
+      const quantitySpent = approvedRewardPoints?.reduce((acc, point) => acc + point.totalSpentPoints, 0) || 0;
+      const quantityRefunded = approvedRewardPointsHistory?.reduce((acc, point) => acc + point.gainedPoints, 0) || 0;
+      const quantityGained = approvedRewardPoints?.reduce((acc, point) => acc + point.totalGainedPoints, 0) || 0;
+      const quantityAssigned = approvedRewardPoints?.reduce((acc, point) => acc + point.totalAssignedPoints, 0) || 0;
       const total = quantitySpent + quantityRefunded + quantityGained + quantityAssigned;
       return [
         {
@@ -173,185 +352,291 @@ export function OverviewAdminView({
           value: total > 0 ? (quantityAssigned / total) * 100 : 0,
         }
       ]
-    }, [loadedRewardPoints, loadedRewardPointsHistory]
+    }, [approvedRewardPoints, approvedRewardPointsHistory]
   );
 
   const reviews = useMemo(
     () => loadedStoreProducts?.flatMap((product) =>
-      (product.reviews || []).map((review) => ({
+      (product?.reviews || [])?.map((review) => ({
         ...review,
         name: product.name,
-        description: review.description || '',
+        productId: product.id,
+        description: product.description || '',
+        attachments: product.attachments || [],
       }))
     ) || [],
     [loadedStoreProducts]
   );
 
+  // TIME CHARTS SERIES
+
+  const loadedSeriesHistory = useMemo(() => {
+    const gainedSeries = approvedRewardPointsGainedHistory || [];
+    const spentSeries = approvedRewardPointsSpentHistory || [];
+    return [...gainedSeries, ...spentSeries];
+  }, [approvedRewardPointsGainedHistory, approvedRewardPointsSpentHistory]);
+
+  const oldest = useMemo(() => {
+    if (!loadedSeriesHistory?.length) return dayjs();
+    return loadedSeriesHistory
+      .map(r => dayjs(r.createdTime))
+      .sort((a, b) => a.valueOf() - b.valueOf())[0];
+  }, [loadedSeriesHistory]);
+
+  const series = useMemo(() => {
+    const buckets = {
+      Weekly: {},
+      Monthly: {},
+      Yearly: {}
+    };
+    
+    loadedSeriesHistory?.forEach(rec => {
+      const dt = dayjs(rec.createdTime);
+      const sold = Number(rec.gainedPoints) || 0;
+      const canceled = Number(rec.spentPoints) || 0;
+      
+      const daysDiff = dt.diff(oldest, 'day');
+      const weekIdx = Math.floor(daysDiff / 7) + 1;
+      const startWeek = oldest.add((weekIdx - 1) * 7, 'day').startOf('day');
+      const endWeek = startWeek.add(6, 'day').endOf('day');
+      const wKey = `${fDate(startWeek)} - ${fDate(endWeek)}`;
+      if (!buckets.Weekly[wKey]) buckets.Weekly[wKey] = { sold: 0, canceled: 0 };
+      buckets.Weekly[wKey].sold += sold;
+      buckets.Weekly[wKey].canceled += canceled;
+      
+      const mKey = `${dt.format('MMM/YYYY')}`;
+      if (!buckets.Monthly[mKey]) buckets.Monthly[mKey] = { sold: 0, canceled: 0 };
+      buckets.Monthly[mKey].sold += sold;
+      buckets.Monthly[mKey].canceled += canceled;
+      
+      const yKey = `${dt.format('YYYY')}`;
+      if (!buckets.Yearly[yKey]) buckets.Yearly[yKey] = { sold: 0, canceled: 0 };
+      buckets.Yearly[yKey].sold += sold;
+      buckets.Yearly[yKey].canceled += canceled;
+    });
+    
+    return (['Weekly', 'Monthly', 'Yearly']).map(period => {
+      const entries = Object.entries(buckets[period]);
+      
+      entries.sort((a, b) => {
+        const [keyA] = a;
+        const [keyB] = b;
+        if (period === 'Weekly') {
+          const startA = dayjs(keyA.split(' to ')[0].replace('from ', ''), 'DD/MM/YYYY');
+          const startB = dayjs(keyB.split(' to ')[0].replace('from ', ''), 'DD/MM/YYYY');
+          return startA.valueOf() - startB.valueOf();
+        }
+        if (period === 'Monthly') {
+          const dateA = dayjs(keyA.slice(6), 'MM/YYYY');
+          const dateB = dayjs(keyB.slice(6), 'MM/YYYY');
+          return dateA.valueOf() - dateB.valueOf();
+        }
+        const yearA = parseInt(keyA.split(' ')[1], 10);
+        const yearB = parseInt(keyB.split(' ')[1], 10);
+        return yearA - yearB;
+      });
+      const top10 = entries.slice(0, 10);
+      return {
+        name: period,
+        categories: top10.map(([key]) => key),
+        data: [
+          { name: 'Gained', data: top10.map(([, v]) => v.sold) },
+          { name: 'Spent', data: top10.map(([, v]) => v.canceled) }
+        ]
+      };
+    });
+  }, [loadedSeriesHistory, oldest]);
+
   return (
     <DashboardContent maxWidth="xl">
-      <Grid container spacing={3} disableEqualOverflow>
-        <Grid xs={12} md={3}>
-          <AdminWidgetSummary
-            title="Total clients"
-            percent={avgUsersTrendPercent}
-            total={totalClients}
-            icon={<BookingIllustration />}
+      {(!loadedRewardPoints &&
+        !loadedStoreProducts &&
+        !loadedPendingUsers &&
+        !loadedRewardPointsHistory &&
+        !loadedRewardPointsGainedHistory &&
+        !loadedRewardPointsSpentHistory) ? (
+        <Box
+          sx={{
+            width: 350,
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: 'auto',
+          }}
+        >
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Loading data for admin dashboard...
+          </Typography>
+          <LinearProgress
+            sx={{
+              mb: 2,
+              width: '100%',
+              '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
+              backgroundColor: '#e0e0e0',
+            }}
           />
-        </Grid>
+        </Box>
+      ) : (
+        <Grid container spacing={3} disableEqualOverflow>
+          <Grid xs={12} md={3}>
+            <AdminWidgetSummary
+              title="Total clients"
+              percent={avgUsersTrendPercent}
+              total={totalClients}
+              icon={<BookingIllustration />}
+            />
+          </Grid>
 
-        <Grid xs={12} md={3}>
-          <AdminWidgetSummary
-            title="Pending approval clients"
-            percent={avgPendingUsersTrendPercent}
-            total={totalPendingClients}
-            icon={<ServerErrorIllustration />}
-          />
-        </Grid>
+          <Grid xs={12} md={3}>
+            <AdminWidgetSummary
+              title="Pending approval clients"
+              percent={avgPendingUsersTrendPercent}
+              total={totalPendingClients}
+              icon={<ServerErrorIllustration />}
+            />
+          </Grid>
 
-        <Grid xs={12} md={3}>
-          <AdminWidgetSummary
-            title="Spent reward points"
-            percent={avgSpentTrendPercent}
-            total={spentRewardPoints}
-            icon={<CheckInIllustration />}
-          />
-        </Grid>
+          <Grid xs={12} md={3}>
+            <AdminWidgetSummary
+              title="Spent reward points"
+              percent={avgSpentTrendPercent}
+              total={totalSpentRewardPoints}
+              icon={<CheckInIllustration />}
+            />
+          </Grid>
 
-        <Grid xs={12} md={3}>
-          <AdminWidgetSummary
-            title="Refunded reward points"
-            percent={avgRefundTrendPercent}
-            total={refundedRewardPoints}
-            icon={<CheckoutIllustration />}
-          />
-        </Grid>
+          <Grid xs={12} md={3}>
+            <AdminWidgetSummary
+              title="Refunded reward points"
+              percent={avgRefundTrendPercent}
+              total={totalRefundedRewardPoints}
+              icon={<CheckoutIllustration />}
+            />
+          </Grid>
 
-        <Grid container xs={12}>
-          <Grid xs={12} md={7} lg={8}>
-            <Box
-              sx={{
-                mb: 3,
-                p: { md: 1 },
-                display: 'flex',
-                gap: { xs: 3, md: 1 },
-                borderRadius: { md: 2 },
-                flexDirection: 'column',
-                bgcolor: { md: 'background.neutral' },
-              }}
-            >
+          <Grid container xs={12}>
+            <Grid xs={12} md={7} lg={8}>
               <Box
                 sx={{
+                  mb: 3,
                   p: { md: 1 },
-                  display: 'grid',
-                  gap: { xs: 3, md: 0 },
+                  display: 'flex',
+                  gap: { xs: 3, md: 1 },
                   borderRadius: { md: 2 },
-                  bgcolor: { md: 'background.paper' },
-                  gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
+                  flexDirection: 'column',
+                  bgcolor: { md: 'background.neutral' },
                 }}
               >
-                <AdminTotalIncomes
-                  title="Total Invoices Amount"
-                  total={invoicesAmount}
-                  percent={avgStepTrendPercent(invoicesSeriesByMonth.map((item) => item.total))}
-                  chart={{
-                    categories: invoicesSeriesByMonth.slice(
-                      invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                    ).map((item) => item.period),
-                    series: [{
-                      data: invoicesSeriesByMonth.slice(
-                        invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                      ).map((item) => item.total)
-                    }],
+                <Box
+                  sx={{
+                    p: { md: 1 },
+                    display: 'grid',
+                    gap: { xs: 3, md: 0 },
+                    borderRadius: { md: 2 },
+                    bgcolor: { md: 'background.paper' },
+                    gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
                   }}
-                />
+                >
+                  <AdminTotalIncomes
+                    title="Total Invoices Amount"
+                    total={invoicesAmount}
+                    percent={avgStepTrendPercent(invoicesSeriesByMonth?.map((item) => item.total))}
+                    chart={{
+                      categories: invoicesSeriesByMonth?.slice(
+                        invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                      )?.map((item) => item.period),
+                      series: [{
+                        data: invoicesSeriesByMonth?.slice(
+                          invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                        )?.map((item) => item.total)
+                      }],
+                    }}
+                  />
 
-                <AdminBooked
-                  title="Reward Points Overview"
-                  data={seriesPoints || []}
+                  <AdminBooked
+                    title="Reward Points Overview"
+                    data={seriesPoints || []}
+                    sx={{ boxShadow: { md: 'none' } }}
+                  />
+                </Box>
+
+                <AdminCheckInWidgets
+                  chart={{
+                    series: [
+                      {
+                        label: 'Spent',
+                        percent: (((totalSpentRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                        total: totalSpentRewardPoints,
+                        color: '#FF6B6B'
+                      },
+                      {
+                        label: 'Gained',
+                        percent: (((totalGainedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                        total: totalGainedRewardPoints,
+                        color: '#FFB74D'
+                      },
+                      {
+                        label: 'Assigned',
+                        percent: (((totalAssignedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                        total: totalAssignedRewardPoints,
+                        color: '#4DB6AC'
+                      },
+                    ],
+                  }}
                   sx={{ boxShadow: { md: 'none' } }}
                 />
               </Box>
 
-              <AdminCheckInWidgets
-                chart={{
-                  series: [
-                    { label: 'Sold', percent: 73.9, total: 38566 },
-                    { label: 'Pending for payment', percent: 45.6, total: 18472 },
-                  ],
-                }}
-                sx={{ boxShadow: { md: 'none' } }}
+              <AdminStatistics
+                title="Statistics (Top 10)"
+                chart={{ series }}
               />
-            </Box>
+            </Grid>
 
-            <AdminStatistics
-              title="Statistics"
-              chart={{
-                series: [
-                  {
-                    name: 'Weekly',
-                    categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-                    data: [
-                      { name: 'Sold', data: [24, 41, 35, 151, 49] },
-                      { name: 'Canceled', data: [20, 56, 77, 88, 99] },
+            <Grid xs={12} md={5} lg={4}>
+              <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
+                <AdminAvailable
+                  title="Users available"
+                  chart={{
+                    series: [
+                      { id: 'active_clients', label: 'Active Clients', value: totalApprovedClients },
+                      { id: 'pending_clients', label: 'Pending', value: totalPendingClients },
                     ],
-                  },
-                  {
-                    name: 'Monthly',
-                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-                    data: [
-                      { name: 'Sold', data: [83, 112, 119, 88, 103, 112, 114, 108, 93] },
-                      { name: 'Canceled', data: [46, 46, 43, 58, 40, 59, 54, 42, 51] },
-                    ],
-                  },
-                  {
-                    name: 'Yearly',
-                    categories: ['2018', '2019', '2020', '2021', '2022', '2023'],
-                    data: [
-                      { name: 'Sold', data: [76, 42, 29, 41, 27, 96] },
-                      { name: 'Canceled', data: [46, 44, 24, 43, 44, 43] },
-                    ],
-                  },
-                ],
-              }}
+                  }}
+                  seedAttr='active_clients'
+                />
+
+                <AdminCustomerReviews
+                  title="Customer reviews"
+                  subheader={`${reviews?.length} Reviews`}
+                  list={reviews}
+                  onDeleteReview={onDeleteReview}
+                  openConfirmDeleteReview={confirmDeleteReview.value}
+                  onConfirmDeleteReview={confirmDeleteReview.onTrue}
+                  onCancelDeleteReview={confirmDeleteReview.onFalse}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* <Grid xs={12}>
+            <AdminNewest
+              title="Newest booking"
+              subheader={`${_bookingNew.length} bookings`}
+              list={_bookingNew}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid xs={12} md={5} lg={4}>
-            <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-              <AdminAvailable
-                title="Tours available"
-                chart={{
-                  series: [
-                    { label: 'Sold out', value: 120 },
-                    { label: 'Available', value: 66 },
-                  ],
-                }}
-              />
-
-              <AdminCustomerReviews
-                title="Customer reviews"
-                subheader={`${reviews?.length} Reviews`}
-                list={reviews}
-              />
-            </Box>
+          <Grid xs={12}>
+            <AdminDetails
+              title="Last purchases (Top 5)"
+            />
+            {/* <PurchaseListView lengthLimit={5} /> */}
           </Grid>
         </Grid>
-
-        <Grid xs={12}>
-          <AdminNewest
-            title="Newest booking"
-            subheader={`${_bookingNew.length} bookings`}
-            list={_bookingNew}
-          />
-        </Grid>
-
-        <Grid xs={12}>
-          <AdminDetails
-            title="Last purchases"
-          />
-          {/* <PurchaseListView lengthLimit={5} /> */}
-        </Grid>
-      </Grid>
+      )}
     </DashboardContent>
   );
 }
@@ -364,17 +649,16 @@ function accumulateByMonth(
   joinAttribute = null
 ) {
 
-  const allData = attribute ? data.flatMap(entry => entry[attribute]) : data;
+  const allData = attribute ? data?.flatMap(entry => entry[attribute]) : data;
 
-  const byMonth = allData.reduce((acc, inv) => {
+  const byMonth = allData?.reduce((acc, inv) => {
     const d = dayjs(inv[joinAttribute]);
     const key = `${d.year()}-${String(d.month() + 1).padStart(2, '0')}`;
     acc[key] = (acc[key] || 0) + (cumulateAttribute ? inv[cumulateAttribute] : 1);
     return acc;
   }, {});
 
-  return Object.entries(byMonth)
-    .map(([period, total]) => ({ period, total }))
+  return Object.entries(byMonth)?.map(([period, total]) => ({ period, total }))
     .sort((a, b) => a.period.localeCompare(b.period));
 }
 

@@ -22,6 +22,7 @@ export const CONFIG = {
     superadmin: import.meta.env.VITE_ROLE_SUPERADMIN ?? '',
     administrator: import.meta.env.VITE_ROLE_ADMINISTRATOR ?? '',
     client: import.meta.env.VITE_ROLE_CLIENT ?? '',
+    officeStaff: import.meta.env.VITE_ROLE_OFFICE_STAFF ?? '',
   },
   // aws: {
   //   accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID ?? '',

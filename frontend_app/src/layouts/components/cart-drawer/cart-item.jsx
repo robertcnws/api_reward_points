@@ -371,21 +371,21 @@ export function CartItem({
       >
         <Tooltip
           title={totalPoints > totalAvailablePoints ?
-            `You need at least ${fNumber(totalPoints - totalAvailablePoints)} more points to buy this product` :
+            `You need at least ${fNumber(totalPoints - totalAvailablePoints)} more points to redeem this product` :
             !isActiveProduct ?
               "This product is inactive" :
-              "Click to buy this product"
+              "Click to redeem this product"
           }
           arrow
           placement='top'
-          sx={{ width: 45, height: 45 }}
+          sx={{ width: 40, height: 40 }}
         >
           <Iconify
             icon={(totalPoints > totalAvailablePoints || !isActiveProduct) ?
-              "streamline-freehand:e-commerce-click-buy" :
-              "streamline-freehand-color:e-commerce-click-buy"
+              "streamline-ultimate:e-commerce-touch-buy-bold" :
+              "streamline-ultimate-color:e-commerce-touch-buy"
             }
-            width={45} height={45}
+            width={40} height={40}
           />
         </Tooltip>
       </IconButton>
