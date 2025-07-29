@@ -366,7 +366,6 @@ CELERY_BEAT_SCHEDULE = {
 ZOHO_ORG_ID = env('ZOHO_ORG_ID', default='')
 ZOHO_ORG_NWS_ID = env('ZOHO_ORG_NWS_ID', default='')
 
-
 # MONGOENGINE
 
 warnings.filterwarnings("ignore", message="MongoClient opened before fork")

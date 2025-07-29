@@ -641,14 +641,12 @@ export function OverviewAdminView({
           </Grid> */}
 
           {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
-
             <Grid xs={12}>
               <AdminDetails
                 title="Last purchases (Top 5)"
               />
               {/* <PurchaseListView lengthLimit={5} /> */}
             </Grid>
-
           )}
         </Grid>
       )}
