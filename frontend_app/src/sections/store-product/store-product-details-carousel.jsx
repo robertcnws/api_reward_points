@@ -16,7 +16,7 @@ import { FormatAlignJustify } from '@mui/icons-material';
 
 // ----------------------------------------------------------------------
 
-export function StoreProductDetailsCarousel({ images, predefinedSize = null }) {
+export function StoreProductDetailsCarousel({ images, predefinedSize = null, forceSize = false }) {
   const carousel = useCarousel({
     thumbs: {
       slidesToShow: 'auto',
@@ -78,7 +78,9 @@ export function StoreProductDetailsCarousel({ images, predefinedSize = null }) {
     loadFiles();
   }, [images]);
 
-  const slides = initialFiles?.map((img) => ({ src: img.fileUrl })) || [];
+  const forcedSizeSlides = forceSize ? initialFiles?.slice(0, 1) : initialFiles;
+
+  const slides = forcedSizeSlides?.map((img) => ({ src: img.fileUrl })) || [];
 
   const lightbox = useLightBox(slides);
 

@@ -55,8 +55,8 @@ export function AdminAvailable({ title, subheader, chart, seedAttr, ...other }) 
         type="radialBar"
         series={[chartSeries]}
         options={chartOptions}
-        width={240}
-        height={240}
+        width={290}
+        height={300}
         sx={{ mx: 'auto' }}
       />
 

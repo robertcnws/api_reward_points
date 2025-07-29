@@ -83,14 +83,16 @@ export function PurchaseCheckoutView() {
 
         if (purchase) {
           setSelectedPurchase(purchase);
-          toast.success('Order found successfully!'); 
+          // toast.success('Order found successfully!'); 
+          setFilters({ confirmationNumber: '', pinNumber: '' });
+          filters.pinNufiltersmber = '';
           openPurchaseInfo.onTrue();
         } else {
-          toast.error('No order found with the provided CONFIRMATION and PIN NUMBERS.');
+          toast.error('No order found with the provided CONFIRMATION CODE and PIN NUMBER.');
         }
       }
     },
-    [filters.confirmationNumber, filters.pinNumber, loadedPurchases, refetchPurchases, openPurchaseInfo]
+    [filters, loadedPurchases, refetchPurchases, openPurchaseInfo, setFilters]
   );
 
   return (
@@ -113,7 +115,7 @@ export function PurchaseCheckoutView() {
         >
           <Box
             sx={{
-              p: { md: 1 },
+              p: { md: 3 },
               display: 'column',
               gap: { xs: 2, md: 2 },
               borderRadius: { md: 2 },
@@ -130,7 +132,7 @@ export function PurchaseCheckoutView() {
               Redeemed Order Checkout
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Box sx={{ fontWeight: 'bold' }}>Enter CONFIRMATION #:</Box>
+              <Box sx={{ fontWeight: 'bold' }}>Enter CONFIRMATION CODE:</Box>
               <Box sx={{ mb: 2, gap: 0 }}>
                 <TextField
                   fullWidth
@@ -139,7 +141,8 @@ export function PurchaseCheckoutView() {
                     const upper = e.target.value.toUpperCase();
                     handleFilterText({ target: { value: upper } }, 'confirmationNumber');
                   }}
-                  placeholder="CONFIRMATION #"
+                  onFocus={(e) => e.target.select()}
+                  placeholder="CONFIRMATION CODE"
                   error={confirmError}
                   inputProps={{
                     maxLength: 15,
@@ -186,9 +189,10 @@ export function PurchaseCheckoutView() {
                   fullWidth
                   value={filters.pinNumber}
                   onChange={(e) => handleFilterText(e, 'pinNumber')}
+                  onFocus={(e) => e.target.select()}
                   placeholder="PIN #"
                   error={pinError}
-                  inputProps={{ 
+                  inputProps={{
                     maxLength: 4,
                     style: {
                       fontFamily: 'monospace',
@@ -196,7 +200,7 @@ export function PurchaseCheckoutView() {
                       fontWeight: 'bold',
                       letterSpacing: '0.4em',
                       textAlign: 'center',
-                    } 
+                    }
                   }}
                   InputProps={{
                     startAdornment: (
@@ -233,6 +237,14 @@ export function PurchaseCheckoutView() {
             }}>
               <Button
                 variant="contained"
+                sx={{
+                  cursor: !validConfirmationNumber(filters.confirmationNumber) || !validPinNumber(filters.pinNumber) ?
+                    'not-allowed' : 'pointer',
+                  '&.Mui-disabled': {
+                    cursor: 'not-allowed !important',
+                    pointerEvents: 'auto',
+                  }
+                }}
                 disabled={!validConfirmationNumber(filters.confirmationNumber) || !validPinNumber(filters.pinNumber)}
                 onClick={handleFindOrder}
               >
@@ -244,12 +256,12 @@ export function PurchaseCheckoutView() {
 
         </Box>
       </DashboardContent>
-      <PurchaseDetailsModal 
+      <PurchaseDetailsModal
         currentBuy={selectedPurchase}
         open={openPurchaseInfo}
         openUse={openUsePurchase}
       />
-      <PurchaseUseModalForm 
+      <PurchaseUseModalForm
         currentBuy={selectedPurchase}
         open={openUsePurchase}
         openDetails={openPurchaseInfo}

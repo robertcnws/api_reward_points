@@ -37,6 +37,7 @@ const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-s
 // Purchases
 const PurchaseListPage = lazy(() => import('src/pages/dashboard/purchase/list'));
 const PurchaseCheckoutPage = lazy(() => import('src/pages/dashboard/purchase/checkout'));
+const PurchaseOverviewClientView = lazy(() => import('src/pages/dashboard/purchase/client'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -234,7 +235,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.officeStaff
+                  CONFIG.roles.administrator
                 ) ? <PurchaseListPage /> : <Page403 />,
                 index: true
               },
@@ -243,7 +244,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.officeStaff
+                  CONFIG.roles.administrator
                 ) ? <PurchaseListPage /> : <Page403 />
               },
               {
@@ -253,6 +254,14 @@ export const dashboardRoutes = (user) => [
                 ).includes(
                   CONFIG.roles.officeStaff
                 ) ? <PurchaseCheckoutPage /> : <Page403 />
+              },
+              {
+                path: 'client/:id',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.officeStaff
+                ) ? <PurchaseOverviewClientView /> : <Page403 />
               },
             ],
           },

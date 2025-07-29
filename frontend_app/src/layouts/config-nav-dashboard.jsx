@@ -162,202 +162,161 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       items: [
         ...(userLogged && !isClient(userRole) ? [
           ...(userLogged && isAdministrator(userRole) ? [
-          {
-            key: `${paths.dashboard.user.root}-4`,
-            title: (
-              <React.Fragment key='users-all-fragment'>
-                <Box component="span" key='users'
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: isNavMini ? 'center' : 'flex-start',
-                  }}
-                >
-                  <Typography
-                    key='users-title'
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
+            {
+              key: `${paths.dashboard.user.root}-4`,
+              title: (
+                <React.Fragment key='users-all-fragment'>
+                  <Box component="span" key='users'
                     sx={{
-                      mr: 1,
-                      color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
                       display: 'flex',
+                      flexDirection: 'row',
                       alignItems: 'center',
+                      justifyContent: isNavMini ? 'center' : 'flex-start',
                     }}
                   >
-                    Users
-                  </Typography>
-                  {(loadedPendingUsers?.length > 0 && !isNavMini) && (
-                    <Box
-                      key='pending-users-count'
+                    <Typography
+                      key='users-title'
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
                       sx={{
+                        mr: 1,
+                        color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'row'
-                      }}>
-                      <Label
-                        key='pending-users-label'
-                        color="error"
-                        sx={{ ml: 1, gap: 0 }}
-                      >
-                        {loadedPendingUsers?.length}
-                        <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
-                        <Typography
-                          key='pending-users-label-text'
-                          variant="subtitle2"
-                          sx={{ ml: 1 }}
-                        >
-                          Pending
-                        </Typography>
-                      </Label>
-                    </Box>
-                  )}
-                </Box>
-              </React.Fragment>
-            ),
-            path: paths.dashboard.user.root,
-            icon: ICONS.user,
-            children: [
-              {
-                key: `${paths.dashboard.user.pending}-5`,
-                title: (
-                  <React.Fragment key='pending-approval-users-fragment'>
-                    <Box
-                      key='pending-approval-users'
-                      component="span"
-                      sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          mr: 1,
-                          color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
-                        }}
-                      >
-                        Pending Approval
-                      </Typography>
-                      {loadedPendingUsers?.length > 0 && (
-                        <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
-                          {loadedPendingUsers?.length}
-                        </Label>
-                      )}
-                    </Box>
-                  </React.Fragment>
-                ),
-                path: paths.dashboard.user.pending,
-              },
-              {
-                key: `${paths.dashboard.user.client}-6`,
-                title: 'All Clients',
-                path: paths.dashboard.user.client,
-              },
-              {
-                key: `${paths.dashboard.user.list}-7`,
-                title: 'Approved Users',
-                path: paths.dashboard.user.list,
-              },
-              {
-                key: `${paths.dashboard.user.new}-8`,
-                title: 'Create',
-                path: paths.dashboard.user.new,
-              },
-            ],
-          },
-          ] : []),
-          {
-            key: `${paths.dashboard.purchase.root}-9`,
-            title: (
-              <React.Fragment key='purchases-all-fragment'>
-                <Box
-                  key='purchases-all'
-                  component="span"
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: isNavMini ? 'center' : 'flex-start',
-                  }}
-                >
-                  <Typography
-                    key='purchase-orders-title'
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'primary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Reward Orders
-                  </Typography>
-                  {([...oldPurchases, ...newPurchases]?.length > 0 && !isNavMini) && (
-                    <Box
-                      key='purchase-all-orders-count'
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'row',
                       }}
                     >
-                      <Label
-                        key='purchase-all-orders-label'
-                        color="info"
-                        sx={{ ml: 1, gap: 0 }}
+                      Users
+                    </Typography>
+                    {(loadedPendingUsers?.length > 0 && !isNavMini) && (
+                      <Box
+                        key='pending-users-count'
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexDirection: 'row'
+                        }}>
+                        <Label
+                          key='pending-users-label'
+                          color="error"
+                          sx={{ ml: 1, gap: 0 }}
+                        >
+                          {loadedPendingUsers?.length}
+                          <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
+                          <Typography
+                            key='pending-users-label-text'
+                            variant="subtitle2"
+                            sx={{ ml: 1 }}
+                          >
+                            Pending
+                          </Typography>
+                        </Label>
+                      </Box>
+                    )}
+                  </Box>
+                </React.Fragment>
+              ),
+              path: paths.dashboard.user.root,
+              icon: ICONS.user,
+              children: [
+                {
+                  key: `${paths.dashboard.user.pending}-5`,
+                  title: (
+                    <React.Fragment key='pending-approval-users-fragment'>
+                      <Box
+                        key='pending-approval-users'
+                        component="span"
+                        sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            mr: 1,
+                            color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
+                          }}
+                        >
+                          Pending Approval
+                        </Typography>
+                        {loadedPendingUsers?.length > 0 && (
+                          <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
+                            {loadedPendingUsers?.length}
+                          </Label>
+                        )}
+                      </Box>
+                    </React.Fragment>
+                  ),
+                  path: paths.dashboard.user.pending,
+                },
+                {
+                  key: `${paths.dashboard.user.client}-6`,
+                  title: 'All Clients',
+                  path: paths.dashboard.user.client,
+                },
+                {
+                  key: `${paths.dashboard.user.list}-7`,
+                  title: 'Approved Users',
+                  path: paths.dashboard.user.list,
+                },
+                {
+                  key: `${paths.dashboard.user.new}-8`,
+                  title: 'Create',
+                  path: paths.dashboard.user.new,
+                },
+              ],
+            },
+          ] : []),
+          ...(userLogged && isAdministrator(userRole) ? [
+            {
+              key: `${paths.dashboard.purchase.root}-9`,
+              title: (
+                <React.Fragment key='purchases-all-fragment'>
+                  <Box
+                    key='purchases-all'
+                    component="span"
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: isNavMini ? 'center' : 'flex-start',
+                    }}
+                  >
+                    <Typography
+                      key='purchase-orders-title'
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'primary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Reward Orders
+                    </Typography>
+                    {([...oldPurchases, ...newPurchases]?.length > 0 && !isNavMini) && (
+                      <Box
+                        key='purchase-all-orders-count'
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexDirection: 'row',
+                        }}
                       >
-                        {[...oldPurchases, ...newPurchases]?.length}
-                        <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
-                      </Label>
-                    </Box>
-                  )}
-                </Box>
-              </React.Fragment>
-            ),
-            path: paths.dashboard.purchase.root,
-            icon: ICONS.purchase,
-            // children: [
-            //   {
-            //     title: (
-            //       <>
-            //         <Box component="span" key="purchase-list"
-            //           sx={{
-            //             display: 'flex',
-            //             flexDirection: 'row',
-            //             alignItems: 'center',
-            //             justifyContent: isNavMini ? 'center' : 'flex-start',
-            //           }}
-            //         >
-            //           <Typography
-            //             variant={isNavMini ? 'caption' : 'subtitle2'}
-            //             sx={{
-            //               mr: 1,
-            //               color: 'text.primary',
-            //               display: 'flex',
-            //               alignItems: 'center',
-            //             }}
-            //           >
-            //             List
-            //           </Typography>
-            //           {([...oldPurchases, ...newPurchases]?.length > 0 && !isNavMini) && (
-            //             <Box
-            //               key='purchase-count'
-            //               sx={{
-            //                 display: 'flex',
-            //                 alignItems: 'center',
-            //                 justifyContent: 'center',
-            //                 flexDirection: 'row'
-            //               }}>
-            //               <Label color="info" sx={{ ml: 1, gap: 0 }}>
-            //                 {[...oldPurchases, ...newPurchases]?.length}
-            //               </Label>
-            //             </Box>
-            //           )}
-            //         </Box>
-            //       </>
-            //     ),
-            //     path: paths.dashboard.purchase.list,
-            //   },
-            // ],
-          },
+                        <Label
+                          key='purchase-all-orders-label'
+                          color="info"
+                          sx={{ ml: 1, gap: 0 }}
+                        >
+                          {[...oldPurchases, ...newPurchases]?.length}
+                          <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
+                        </Label>
+                      </Box>
+                    )}
+                  </Box>
+                </React.Fragment>
+              ),
+              path: paths.dashboard.purchase.root,
+              icon: ICONS.purchase,
+            },
+          ] : []),
           {
             key: `${paths.dashboard.purchase.checkout}-9`,
             title: (

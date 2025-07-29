@@ -18,6 +18,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { LinearProgress, Typography } from '@mui/material';
 import { toast } from 'src/components/snackbar';
 import { fDate } from 'src/utils/format-time';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
 
 import { PurchaseListView } from 'src/sections/purchase/view';
 import { AdminBooked } from '../admin-booked';
@@ -63,6 +64,8 @@ export function OverviewAdminView({
   const confirmDeleteReview = useBoolean();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
   const onDeleteReview = useCallback(
     async (id) => {
@@ -158,9 +161,9 @@ export function OverviewAdminView({
       }
     };
   }, [
-    refetchRewardPoints, 
-    refetchRewardPointsHistory, 
-    refetchRewardPointsGainedHistory, 
+    refetchRewardPoints,
+    refetchRewardPointsHistory,
+    refetchRewardPointsGainedHistory,
     refetchRewardPointsSpentHistory
   ]);
 
@@ -196,6 +199,8 @@ export function OverviewAdminView({
     () => loadedRewardPointsHistory?.filter((point) => point.rewardPoints?.user?.isApproved) || [],
     [loadedRewardPointsHistory]
   );
+
+  // console.log('loadedRewardPointsGainedHistory', loadedRewardPointsGainedHistory);
 
   const approvedRewardPointsGainedHistory = useMemo(
     () => loadedRewardPointsGainedHistory?.filter((point) => point.rewardPoints?.user?.isApproved) || [],
@@ -370,11 +375,15 @@ export function OverviewAdminView({
 
   // TIME CHARTS SERIES
 
+  // console.log('approvedRewardPointsGainedHistory', approvedRewardPointsGainedHistory);
+
   const loadedSeriesHistory = useMemo(() => {
     const gainedSeries = approvedRewardPointsGainedHistory || [];
     const spentSeries = approvedRewardPointsSpentHistory || [];
     return [...gainedSeries, ...spentSeries];
   }, [approvedRewardPointsGainedHistory, approvedRewardPointsSpentHistory]);
+
+  // console.log('loadedSeriesHistory', loadedSeriesHistory);
 
   const oldest = useMemo(() => {
     if (!loadedSeriesHistory?.length) return dayjs();
@@ -389,12 +398,12 @@ export function OverviewAdminView({
       Monthly: {},
       Yearly: {}
     };
-    
+
     loadedSeriesHistory?.forEach(rec => {
       const dt = dayjs(rec.createdTime);
       const sold = Number(rec.gainedPoints) || 0;
       const canceled = Number(rec.spentPoints) || 0;
-      
+
       const daysDiff = dt.diff(oldest, 'day');
       const weekIdx = Math.floor(daysDiff / 7) + 1;
       const startWeek = oldest.add((weekIdx - 1) * 7, 'day').startOf('day');
@@ -403,21 +412,21 @@ export function OverviewAdminView({
       if (!buckets.Weekly[wKey]) buckets.Weekly[wKey] = { sold: 0, canceled: 0 };
       buckets.Weekly[wKey].sold += sold;
       buckets.Weekly[wKey].canceled += canceled;
-      
+
       const mKey = `${dt.format('MMM/YYYY')}`;
       if (!buckets.Monthly[mKey]) buckets.Monthly[mKey] = { sold: 0, canceled: 0 };
       buckets.Monthly[mKey].sold += sold;
       buckets.Monthly[mKey].canceled += canceled;
-      
+
       const yKey = `${dt.format('YYYY')}`;
       if (!buckets.Yearly[yKey]) buckets.Yearly[yKey] = { sold: 0, canceled: 0 };
       buckets.Yearly[yKey].sold += sold;
       buckets.Yearly[yKey].canceled += canceled;
     });
-    
+
     return (['Weekly', 'Monthly', 'Yearly']).map(period => {
       const entries = Object.entries(buckets[period]);
-      
+
       entries.sort((a, b) => {
         const [keyA] = a;
         const [keyB] = b;
@@ -446,6 +455,8 @@ export function OverviewAdminView({
       };
     });
   }, [loadedSeriesHistory, oldest]);
+
+  // console.log('series', series);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -596,7 +607,7 @@ export function OverviewAdminView({
             </Grid>
 
             <Grid xs={12} md={5} lg={4}>
-              <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column', height: 1 }}>
                 <AdminAvailable
                   title="Users available"
                   chart={{
@@ -629,12 +640,16 @@ export function OverviewAdminView({
             />
           </Grid> */}
 
-          <Grid xs={12}>
-            <AdminDetails
-              title="Last purchases (Top 5)"
-            />
-            {/* <PurchaseListView lengthLimit={5} /> */}
-          </Grid>
+          {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
+
+            <Grid xs={12}>
+              <AdminDetails
+                title="Last purchases (Top 5)"
+              />
+              {/* <PurchaseListView lengthLimit={5} /> */}
+            </Grid>
+
+          )}
         </Grid>
       )}
     </DashboardContent>

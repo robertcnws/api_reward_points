@@ -23,6 +23,8 @@ import { StoreProductDetailsCarousel } from 'src/sections/store-product/store-pr
 import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { CONFIG } from 'src/config-global';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -51,46 +53,44 @@ export function AdminCustomerReviews({
 
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+
   return (
     <>
-      <Card {...other}>
+      <Card sx={{ height: 450 }} {...other}>
         <CardHeader
           title={title}
           subheader={subheader}
           action={<CarouselArrowBasicButtons {...carousel.arrows} />}
         />
 
-        <Carousel carousel={carousel}>
+        <Carousel sx={{mb: -1}} carousel={carousel}>
           {sortedList?.map((item) => (
-            <Item key={item.id} item={item} router={router} />
+            <Item key={item.id} item={item} router={router} sx={{height: 300}}/>
           ))}
         </Carousel>
 
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <Box sx={{ p: 3, gap: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'right' }}>
-          <Tooltip title="Delete customer review" placement="top" arrow>
-            <IconButton
-              color="error"
-              variant="soft"
-              onClick={() => {
-                setSelectedItem(customerInfo);
-                onConfirmDeleteReview();
-              }}
-            >
-              <Iconify icon="mdi:delete-alert" width={25} height={25} />
-            </IconButton>
-          </Tooltip>
-
-          {/* <Button
-          fullWidth
-          color="inherit"
-          variant="contained"
-          onClick={() => console.info('REJECT', customerInfo?.id)}
-        >
-          Accept
-        </Button> */}
-        </Box>
+        {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
+          <>
+            <Divider sx={{ borderStyle: 'dashed' }} />
+            <Box sx={{ p: 2, gap: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'right' }}>
+              <Tooltip title="Delete customer review" placement="top" arrow>
+                <IconButton
+                  color="error"
+                  variant="soft"
+                  onClick={() => {
+                    setSelectedItem(customerInfo);
+                    onConfirmDeleteReview();
+                  }}
+                >
+                  <Iconify icon="mdi:delete-alert" width={25} height={25} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </>
+        )}
       </Card>
       <ConfirmDialog
         open={openConfirmDeleteReview}

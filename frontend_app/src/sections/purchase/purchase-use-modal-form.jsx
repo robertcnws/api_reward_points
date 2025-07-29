@@ -17,6 +17,8 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { CONFIG } from 'src/config-global';
 import { USER_STATUS_OPTIONS } from 'src/_mock';
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -32,14 +34,18 @@ import { Iconify } from 'src/components/iconify';
 import { fDate, fDateTime } from 'src/utils/format-time';
 import { StoreProductDetailsCarousel } from '../store-product/store-product-details-carousel';
 import { IncrementerButton } from '../items/components/incrementer-button';
-
+import { PurchaseDetailsModalTemplate } from './purchase-details-modal-template';
 
 
 // ----------------------------------------------------------------------
 
 export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
+  const router = useRouter();
+
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name || '', [userLogged]);
 
   const { isMobile } = useContext(LoadingContext);
 
@@ -83,6 +89,8 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
   const confirmUse = useBoolean();
 
+  const confirmSuccess = useBoolean();
+
   useEffect(() => {
     if (open.value) {
       setNotes(currentBuy?.notes ?? '');
@@ -106,6 +114,16 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
     [userLogged?.data, quantityUsed, notes]
   );
 
+  const handleNavigateClient = () => {
+    const userId = currentBuy?.storeProductSelection?.user?.id;
+    if (userId) {
+      const userPath = paths.dashboard.purchase.client(userId);
+      router.openNew(userPath);
+    } else {
+      toast.error('User not found');
+    }
+  };
+
   return (
     <>
       <Dialog
@@ -113,10 +131,10 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
         maxWidth="lg"
         open={open.value}
         onClose={() => open.onFalse()}
-        PaperProps={{ sx: { maxWidth: 620 } }}
+        PaperProps={{ sx: { maxWidth: 820 } }}
       >
         <DialogTitle>
-          Use redeemed order of {productName}
+          Using Redeemed Order
           {currentBuy?.hasRequestedRefund && (
             <Label color="secondary" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
               Refund Requested
@@ -135,32 +153,16 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
         </DialogTitle>
 
         <DialogContent>
-          <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-            Client: <b>{userFullName}</b>
-            <Typography variant="subtitle2" sx={{ mt: 0.5, fontSize: 11 }}>
-              <Box component="div">
-                <b>Created at:</b>{' '}
-                {currentBuy?.createdTime
-                  ? fDateTime(currentBuy.createdTime)
-                  : 'N/A'}
-              </Box>
-              <Box component="div">
-                <b>Modified at:</b>{' '}
-                {currentBuy?.lastModifiedTime
-                  ? fDateTime(currentBuy.lastModifiedTime)
-                  : 'N/A'}
-              </Box>
-              {currentBuy?.expirationTime && (
-                <Box component="div">
-                  <b>Expiration at:</b>{' '}
-                  {currentBuy.expirationTime
-                    ? fDateTime(currentBuy.expirationTime)
-                    : 'N/A'}
-                </Box>
-              )}
-            </Typography>
-          </Alert>
-          <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
+          <PurchaseDetailsModalTemplate
+            currentBuy={currentBuy}
+            isMobile={isMobile}
+            assignedPoints={assignedPoints}
+            quantity={quantity}
+            totalPoints={totalPoints}
+            roleName={roleName}
+            handleNavigateClient={handleNavigateClient}
+          />
+          {/* <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
             <Typography variant="subtitle2" sx={{ flexGrow: 1, mt: 1 }}>
               Quantity to use:
             </Typography>
@@ -179,10 +181,10 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
                 Available: <b>{available}</b>
               </Typography>
             </Stack>
-          </Stack>
+          </Stack> */}
           <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
             <Typography variant="subtitle2" sx={{ flexGrow: 1, mt: 1 }}>
-              Notes:
+              NOTES:
             </Typography>
 
             <TextField
@@ -219,7 +221,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
             </Button>
           )}
           <Button variant="outlined" onClick={() => {
-            open.onFalse(); 
+            open.onFalse();
             openDetails.onTrue();
           }}>
             Cancel
@@ -239,13 +241,26 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
           <Button
             variant="contained"
             color="warning"
-            onClick={() => {
-              handleUsePurchase(currentBuy.id);
+            onClick={async () => {
+              await handleUsePurchase(currentBuy.id);
               confirmUse.onFalse();
+              open.onFalse();
+              openDetails.onFalse();
+              confirmSuccess.onTrue();
             }}
           >
             Confirm
           </Button>
+        }
+      />
+      <ConfirmDialog
+        open={confirmSuccess.value}
+        onClose={confirmSuccess.onFalse}
+        title="Success"
+        content={
+          <>
+            You have successfully used the order <strong> {productName} </strong> with quantity <strong> {quantityUsed} </strong>.
+          </>
         }
       />
     </>

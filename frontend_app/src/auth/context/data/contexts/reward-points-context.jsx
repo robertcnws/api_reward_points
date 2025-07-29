@@ -24,15 +24,17 @@ export function RewardPointsProvider({ children }) {
     userLogged?.data?.username,
     fields
   );
+
+  // NO CLIENTS
   const allPointsQuery = useAllRewardPoints(fields);
   const historyQuery = useRewardPointsHistoryByRewardPointsId(
-    roleName !== 'admin' && roleName !== 'superadmin'
+    roleName === 'client'
       ? byUsernameQuery.data?.id
       : null,
     fieldsHistory
   );
 
-  const byActionHistoryQuery = useRewardPointsHistoryByAction(
+  const byActionRefundedHistoryQuery = useRewardPointsHistoryByAction(
     'refunded', 
     fieldsHistory
   );
@@ -68,62 +70,62 @@ export function RewardPointsProvider({ children }) {
       : byUsernameQuery.error;
 
   const loadedRewardPointsHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? historyQuery.data
-      : byActionHistoryQuery.data;
+      : byActionRefundedHistoryQuery.data;
 
   const loadedRewardPointsGainedHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionGainedHistoryQuery.data;
 
   const loadedRewardPointsSpentHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionSpentHistoryQuery.data;
 
   const refetchRewardPointsHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? historyQuery.refetch
-      : byActionHistoryQuery.refetch;
+      : byActionRefundedHistoryQuery.refetch;
 
   const refetchRewardPointsGainedHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionGainedHistoryQuery.refetch;
 
   const refetchRewardPointsSpentHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionSpentHistoryQuery.refetch;
 
   const loadingRewardPointsHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? historyQuery.loading
-      : byActionHistoryQuery.loading;
+      : byActionRefundedHistoryQuery.loading;
 
   const errorRewardPointsHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? historyQuery.error
-      : byActionHistoryQuery.error;
+      : byActionRefundedHistoryQuery.error;
 
   const loadingRewardPointsGainedHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionGainedHistoryQuery.loading;
 
   const errorRewardPointsGainedHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionGainedHistoryQuery.error;
 
   const loadingRewardPointsSpentHistory = 
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionSpentHistoryQuery.loading;
 
   const errorRewardPointsSpentHistory =
-    roleName !== 'client'
+    roleName === 'client'
       ? null
       : byActionSpentHistoryQuery.error;
 

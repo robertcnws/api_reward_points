@@ -24,31 +24,37 @@ import { fDate, fDateTime } from 'src/utils/format-time';
 import { useRouter } from 'src/routes/hooks';
 
 
-import { EcommerceWelcome } from '../ecommerce-welcome';
-import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
-import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
-import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
-import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
+import { EcommerceWelcome } from 'src/sections/overview/e-commerce/ecommerce-welcome';
+import { EcommerceRewardPointsAttribute } from 'src/sections/overview/e-commerce/ecommerce-amount-spent';
+import { EcommerceInvoicesListItems } from 'src/sections/overview/e-commerce/ecommerce-invoices-list-items';
+import { EcommerceRewardPointsHistoryClientList } from 'src/sections/overview/e-commerce/ecommerce-reward-points-history-client-list';
+import { EcommerceNewrewardStoreProducts } from 'src/sections/overview/e-commerce/ecommerce-new-reward-store-products';
 
 // ----------------------------------------------------------------------
 
-export function OverviewEcommerceView({
+export function PurchaseOverviewClientView({
+  client,
   loadedRewardPoints,
   refetchRewardPoints,
   loadingRewardPoints,
   errorRewardPoints,
+  loadedRewardPointsHistory,
+  refetchRewardPointsHistory,
+  loadingRewardPointsHistory,
+  errorRewardPointsHistory
 }) {
+
+  console.log('loadedRewardPointsHistory', loadedRewardPointsHistory);
 
   const {
     loadedStoreProducts,
-    loadedRewardPointsHistory,
+    loadingStoreProducts,
   } = useDataContext();
 
   const router = useRouter();
 
-  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-  const displayFirstName = useMemo(() => userLogged?.data?.first_name, [userLogged]);
-  const displayLastName = useMemo(() => userLogged?.data?.last_name, [userLogged]);
+  const displayFirstName = useMemo(() => client?.firstName, [client]);
+  const displayLastName = useMemo(() => client?.lastName, [client]);
 
   const theme = useTheme();
 
@@ -97,7 +103,7 @@ export function OverviewEcommerceView({
     return series || [];
   }, [sortedInvoices]);
 
-  const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber=10) => {
+  const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber = 10) => {
     const initialList = loadedRewardPointsHistory || [];
     const sortedList = [...initialList].sort((a, b) => {
       if (a[attributeName] && b[attributeName]) return dayjs(b[attributeName]).diff(dayjs(a[attributeName]));
@@ -130,7 +136,7 @@ export function OverviewEcommerceView({
   }
 
   const invoicesDateArray = useMemo(
-    () => seriesFromInvoices('date', 'paymentMade').map(item => fDate(item.name)), 
+    () => seriesFromInvoices('date', 'paymentMade').map(item => fDate(item.name)),
     [seriesFromInvoices]
   );
 
@@ -145,7 +151,7 @@ export function OverviewEcommerceView({
   );
 
   const currentGainedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentGainedPointsArray = useMemo(
@@ -159,7 +165,7 @@ export function OverviewEcommerceView({
 
 
   const currentAssignedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentAssignedPointsArray = useMemo(
@@ -173,7 +179,7 @@ export function OverviewEcommerceView({
 
 
   const currentSpentDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentSpentPointsArray = useMemo(
@@ -187,7 +193,7 @@ export function OverviewEcommerceView({
 
 
   const currentSubstractedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => fDate(item.name)),
     [seriesFromHistory]
   );
   const currentSubstractedPointsArray = useMemo(
@@ -202,7 +208,14 @@ export function OverviewEcommerceView({
 
   return (
     <DashboardContent maxWidth="xl">
-      {!loadedRewardPoints ? (
+      {(!loadedRewardPoints
+        || loadingRewardPoints
+        || !client
+        || !loadedStoreProducts
+        || loadingStoreProducts
+        || !loadedRewardPointsHistory
+        || loadingRewardPointsHistory
+      ) ? (
         <Box
           sx={{
             width: 350,
@@ -215,7 +228,7 @@ export function OverviewEcommerceView({
           }}
         >
           <Typography variant="body2" sx={{ mb: 1 }}>
-            {`Loading reward points for ${displayFirstName} ${displayLastName}...`}
+            {`Loading reward points (${displayFirstName || ''} ${displayLastName || ''})...`}
           </Typography>
           <LinearProgress
             sx={{
@@ -228,9 +241,9 @@ export function OverviewEcommerceView({
         </Box>
       ) : (
         <Grid container spacing={3}>
-          <Grid xs={12} md={8}>
+          <Grid xs={12} md={12}>
             <EcommerceWelcome
-              title={`Congratulations 🎉  \n ${displayFirstName} ${displayLastName}`}
+              title={`Profile: \n ${displayFirstName} ${displayLastName}`}
               isCompound
               description={
                 <>
@@ -242,37 +255,34 @@ export function OverviewEcommerceView({
                     gap: -1,
                   }}>
                     <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
-                      You currently have a TOTAL of {' '}
+                      Currently: {' '}
                     </Typography>
                     <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
                       <strong>
                         {totalAvailablePoints || 0}
                       </strong>{' '}reward points
                     </Alert>
-                    <Typography variant="body2" sx={{ opacity: 0.64 }}>
-                      You can use them to get discounts on your next purchases.
-                    </Typography>
                   </Box>
                 </>
               }
               img={<MotivationIllustration hideBackground />}
-              action={
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    router.push(paths.dashboard.storeProduct.root);
-                  }}
-                >
-                  Go now
-                </Button>
-              }
+            // action={
+            //   <Button
+            //     variant="contained"
+            //     color="primary"
+            //     onClick={() => {
+            //       router.push(paths.dashboard.storeProduct.root);
+            //     }}
+            //   >
+            //     Go now
+            //   </Button>
+            // }
             />
           </Grid>
 
-          <Grid xs={12} md={4}>
+          {/* <Grid xs={12} md={4}>
             <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
-          </Grid>
+          </Grid> */}
 
           <Grid xs={12} md={2.4}>
             <EcommerceRewardPointsAttribute
@@ -444,11 +454,15 @@ export function OverviewEcommerceView({
 
           <Grid xs={12} md={6} lg={4}>
             {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
-            <EcommerceRewardPointsHistoryList
+            <EcommerceRewardPointsHistoryClientList
               title='Reward Points History'
               subheader='Latest reward points history'
               loadedRewardPoints={loadedRewardPoints}
               refetchRewardPoints={refetchRewardPoints}
+              loadedRewardPointsHistory={loadedRewardPointsHistory}
+              refetchRewardPointsHistory={refetchRewardPointsHistory}
+              loadingRewardPointsHistory={loadingRewardPointsHistory}
+              errorRewardPointsHistory={errorRewardPointsHistory}
             />
           </Grid>
         </Grid>

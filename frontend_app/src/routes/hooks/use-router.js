@@ -13,6 +13,7 @@ export function useRouter() {
       refresh: () => navigate(0),
       push: (href) => navigate(href),
       replace: (href) => navigate(href, { replace: true }),
+      openNew: (href) => window.open(href, '_blank'),
     }),
     [navigate]
   );
