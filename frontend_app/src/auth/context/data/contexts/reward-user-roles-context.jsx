@@ -2,8 +2,8 @@ import React, { useMemo, useContext, createContext } from 'react';
 
 import { useAllRewardUserRoles } from 'src/_mock/__reward-user-roles';
 
-import { fieldsUserRoles } from '../field-descriptors/field-descriptors-user-roles';
 import { useFilteredUserRoles } from '../hooks/use-filtered-user-roles';
+import { fieldsUserRoles } from '../field-descriptors/field-descriptors-user-roles';
 
 const RewardUserRolesContext = createContext();
 export const useRewardUserRoles = () => useContext(RewardUserRolesContext);

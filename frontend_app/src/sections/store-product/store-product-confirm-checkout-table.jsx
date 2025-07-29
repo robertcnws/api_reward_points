@@ -1,9 +1,14 @@
-import React, { useContext, useMemo } from 'react';
-import { LoadingContext } from "src/auth/context/loading-context";
-import { Box, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Typography } from "@mui/material";
+import React, { useMemo, useContext } from 'react';
+
+import { Box, Table, TableRow, TableBody, TableCell, TableHead, Typography, TableFooter, TableContainer } from "@mui/material";
+
+import { fNumber } from "src/utils/format-number";
+
 import { Label } from "src/components/label";
 import { Iconify } from "src/components/iconify";
-import { fNumber } from "src/utils/format-number";
+
+import { LoadingContext } from "src/auth/context/loading-context";
+
 import { StoreProductFolderItemCarousel } from "./store-product-folder-item-carousel";
 
 export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {

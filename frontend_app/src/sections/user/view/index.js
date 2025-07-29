@@ -8,6 +8,6 @@ export * from './user-create-view';
 
 export * from './user-profile-view';
 
-export * from './user-pending-list-view';
-
 export * from './user-client-list-view';
+
+export * from './user-pending-list-view';

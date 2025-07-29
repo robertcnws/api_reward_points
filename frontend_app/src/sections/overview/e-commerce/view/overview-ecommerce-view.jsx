@@ -1,34 +1,26 @@
-import { useCallback, useMemo } from 'react';
+import dayjs from 'dayjs';
+import { useMemo, useCallback } from 'react';
+
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Alert, Box, LinearProgress, Typography } from '@mui/material';
+import { Box, Alert, Typography, LinearProgress } from '@mui/material';
+
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { fDate, fDateTime } from 'src/utils/format-time';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
-import {
-  _ecommerceNewProducts,
-  _ecommerceBestSalesman,
-  _ecommerceSalesOverview,
-  _ecommerceLatestProducts,
-} from 'src/_mock';
-
-import { paths } from 'src/routes/paths';
-
-import dayjs from 'dayjs';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { fDate, fDateTime } from 'src/utils/format-time';
-
-
-import { useRouter } from 'src/routes/hooks';
-
 
 import { EcommerceWelcome } from '../ecommerce-welcome';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
-import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
+import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 
 // ----------------------------------------------------------------------
 
@@ -233,8 +225,7 @@ export function OverviewEcommerceView({
               title={`Congratulations 🎉  \n ${displayFirstName} ${displayLastName}`}
               isCompound
               description={
-                <>
-                  <Box sx={{
+                <Box sx={{
                     mb: 2,
                     display: 'flex',
                     flexDirection: 'column',
@@ -253,7 +244,6 @@ export function OverviewEcommerceView({
                       You can use them to get discounts on your next purchases.
                     </Typography>
                   </Box>
-                </>
               }
               img={<MotivationIllustration hideBackground />}
               action={

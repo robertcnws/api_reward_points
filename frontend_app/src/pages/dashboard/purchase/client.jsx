@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useRewardPointsByUsername } from 'src/_mock';
-import { useRewardPointsHistoryByRewardPointsId } from 'src/_mock/__reward-points-history';
-import { useDataContext } from 'src/auth/context/data/data-context';
-import { fieldsRewardPoints, fieldsRewardPointsHistory } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-points';
 
-import { CONFIG } from 'src/config-global';
 import { useParams } from 'src/routes/hooks';
 
+import { CONFIG } from 'src/config-global';
+import { useRewardPointsByUsername } from 'src/_mock';
+import { useRewardPointsHistoryByRewardPointsId } from 'src/_mock/__reward-points-history';
+
 import { PurchaseOverviewClientView } from 'src/sections/purchase/view';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
+import { fieldsRewardPoints, fieldsRewardPointsHistory } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-points';
 
 // ----------------------------------------------------------------------
 

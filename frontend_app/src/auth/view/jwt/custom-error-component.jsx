@@ -1,4 +1,5 @@
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Box, Alert, Button, Typography } from "@mui/material";
+
 import { useResendTimer } from "src/hooks/use-resend-timer";
 
 export function CustomErrorComponent({ errorMsg, handleResendCode, actionName }) {

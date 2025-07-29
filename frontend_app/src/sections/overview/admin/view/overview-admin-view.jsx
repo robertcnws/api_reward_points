@@ -1,11 +1,18 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { CONFIG } from 'src/config-global';
 import axios from 'axios';
+import dayjs from 'dayjs';
+import { useMemo, useEffect, useCallback } from 'react';
+
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
+import { Typography, LinearProgress } from '@mui/material';
 
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import { fDate } from 'src/utils/format-time';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
+
+import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _bookings, _bookingNew, _bookingReview, _bookingsOverview } from 'src/_mock';
 import {
   BookingIllustration,
   CheckInIllustration,
@@ -13,16 +20,9 @@ import {
   ServerErrorIllustration,
 } from 'src/assets/illustrations';
 
-import dayjs from 'dayjs';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { LinearProgress, Typography } from '@mui/material';
 import { toast } from 'src/components/snackbar';
-import { fDate } from 'src/utils/format-time';
-import { listRolesAndSubroles } from 'src/utils/check-permissions';
 
-import { PurchaseListView } from 'src/sections/purchase/view';
 import { AdminBooked } from '../admin-booked';
-import { AdminNewest } from '../admin-newest';
 import { AdminDetails } from '../admin-details';
 import { AdminAvailable } from '../admin-available';
 import { AdminStatistics } from '../admin-statistics';

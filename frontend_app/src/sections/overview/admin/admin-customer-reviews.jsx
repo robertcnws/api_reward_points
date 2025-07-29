@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import { useMemo, useState } from 'react';
 import AutoHeight from 'embla-carousel-auto-height';
 
 import Box from '@mui/material/Box';
@@ -5,26 +7,25 @@ import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Rating from '@mui/material/Rating';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
+import { Tooltip, IconButton } from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
 
-import { fDateTime } from 'src/utils/format-time';
-
-import { Carousel, useCarousel, CarouselArrowBasicButtons } from 'src/components/carousel';
-import { IconButton, Tooltip } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import dayjs from 'dayjs';
-import { StoreProductDetailsCarousel } from 'src/sections/store-product/store-product-details-carousel';
-import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
+import { useRouter } from 'src/routes/hooks';
+
+import { fDateTime } from 'src/utils/format-time';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
+
+import { CONFIG } from 'src/config-global';
+
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import { CONFIG } from 'src/config-global';
-import { listRolesAndSubroles } from 'src/utils/check-permissions';
+import { Carousel, useCarousel, CarouselArrowBasicButtons } from 'src/components/carousel';
+
+import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
 
 // ----------------------------------------------------------------------
 

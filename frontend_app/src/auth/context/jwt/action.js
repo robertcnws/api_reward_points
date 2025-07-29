@@ -1,8 +1,7 @@
+
 import axios, { endpoints, axiosInstanceBackend } from 'src/utils/axios';
-import { paths } from 'src/routes/paths';
 
 import { setSession } from './utils';
-import { STORAGE_KEY } from './constant';
 
 
 /** **************************************

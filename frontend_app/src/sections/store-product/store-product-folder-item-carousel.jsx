@@ -1,18 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
+
+import { CONFIG } from 'src/config-global';
 
 import { Image } from 'src/components/image';
 import { Lightbox, useLightBox } from 'src/components/lightbox';
 import {
   Carousel,
   useCarousel,
-  CarouselThumb,
-  CarouselThumbs,
-  CarouselArrowNumberButtons,
 } from 'src/components/carousel';
-import { CONFIG } from 'src/config-global';
-import { FormatAlignJustify } from '@mui/icons-material';
 
 // ----------------------------------------------------------------------
 

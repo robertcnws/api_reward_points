@@ -1,18 +1,14 @@
-import { CONFIG } from 'src/config-global';
-import { useEffect } from 'react';
-import { paths } from 'src/routes/paths';
+import { Box, Typography, LinearProgress } from '@mui/material';
 
-import { useDataContext } from 'src/auth/context/data/data-context';
+import { paths } from 'src/routes/paths';
 import { useParams } from 'src/routes/hooks';
 
-import { useRewardStoreProductById } from 'src/_mock/__reward-store-products';
-import { fieldsRewardStoreProducts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
-
-import { Box, LinearProgress, Typography } from '@mui/material';
-
 import { DashboardContent } from 'src/layouts/dashboard';
+import { useRewardStoreProductById } from 'src/_mock/__reward-store-products';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
+import { fieldsRewardStoreProducts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
 
 import { StoreProductNewEditForm } from '../store-product-new-edit-form';
 

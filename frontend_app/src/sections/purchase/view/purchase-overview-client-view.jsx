@@ -1,34 +1,23 @@
-import { useCallback, useMemo } from 'react';
-import Button from '@mui/material/Button';
+import dayjs from 'dayjs';
+import { useMemo, useCallback } from 'react';
+
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Alert, Box, LinearProgress, Typography } from '@mui/material';
-
-import { DashboardContent } from 'src/layouts/dashboard';
-import { MotivationIllustration } from 'src/assets/illustrations';
-import {
-  _ecommerceNewProducts,
-  _ecommerceBestSalesman,
-  _ecommerceSalesOverview,
-  _ecommerceLatestProducts,
-} from 'src/_mock';
-
-import { paths } from 'src/routes/paths';
-
-import dayjs from 'dayjs';
-
-import { useDataContext } from 'src/auth/context/data/data-context';
-import { fDate, fDateTime } from 'src/utils/format-time';
-
+import { Box, Alert, Typography, LinearProgress } from '@mui/material';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { fDate, fDateTime } from 'src/utils/format-time';
+
+import { DashboardContent } from 'src/layouts/dashboard';
+import { MotivationIllustration } from 'src/assets/illustrations';
 
 import { EcommerceWelcome } from 'src/sections/overview/e-commerce/ecommerce-welcome';
 import { EcommerceRewardPointsAttribute } from 'src/sections/overview/e-commerce/ecommerce-amount-spent';
 import { EcommerceInvoicesListItems } from 'src/sections/overview/e-commerce/ecommerce-invoices-list-items';
 import { EcommerceRewardPointsHistoryClientList } from 'src/sections/overview/e-commerce/ecommerce-reward-points-history-client-list';
-import { EcommerceNewrewardStoreProducts } from 'src/sections/overview/e-commerce/ecommerce-new-reward-store-products';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 // ----------------------------------------------------------------------
 
@@ -246,8 +235,7 @@ export function PurchaseOverviewClientView({
               title={`Profile: \n ${displayFirstName} ${displayLastName}`}
               isCompound
               description={
-                <>
-                  <Box sx={{
+                <Box sx={{
                     mb: 2,
                     display: 'flex',
                     flexDirection: 'column',
@@ -263,7 +251,6 @@ export function PurchaseOverviewClientView({
                       </strong>{' '}reward points
                     </Alert>
                   </Box>
-                </>
               }
               img={<MotivationIllustration hideBackground />}
             // action={

@@ -1,5 +1,6 @@
-import { gql, useQuery } from '@apollo/client';
 import { useMemo } from 'react';
+import { gql, useQuery } from '@apollo/client';
+
 import { buildSelection } from 'src/utils/graphql-client';
 
 export function useRewardPointsByUsername(username, fieldsDescriptor) {

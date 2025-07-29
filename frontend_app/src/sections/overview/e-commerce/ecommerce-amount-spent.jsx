@@ -1,14 +1,14 @@
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import { Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { fCurrency, fNumber, fPercent } from 'src/utils/format-number';
+import { fNumber, fPercent, fCurrency } from 'src/utils/format-number';
 
 import { varAlpha, stylesMode } from 'src/theme/styles';
 
 import { Iconify } from 'src/components/iconify';
 import { Chart, useChart } from 'src/components/chart';
-import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

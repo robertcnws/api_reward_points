@@ -1,7 +1,5 @@
 import { paths } from 'src/routes/paths';
 
-import { useDataContext } from 'src/auth/context/data/data-context';
-
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';

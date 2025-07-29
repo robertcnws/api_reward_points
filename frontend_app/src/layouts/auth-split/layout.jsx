@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 
@@ -7,6 +8,7 @@ import { paths } from 'src/routes/paths';
 import { CONFIG } from 'src/config-global';
 
 import { Logo } from 'src/components/logo';
+
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { Section } from './section';

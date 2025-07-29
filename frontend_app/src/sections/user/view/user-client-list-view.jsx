@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-
 import dayjs from 'dayjs';
+import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -22,7 +21,6 @@ import { useSetState } from 'src/hooks/use-set-state';
 
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
-import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Label } from 'src/components/label';
@@ -44,8 +42,8 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { UserTableToolbar } from '../user-table-toolbar';
-import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserClientTableRow } from '../user-client-table-row';
+import { UserTableFiltersResult } from '../user-table-filters-result';
 
 
 // ----------------------------------------------------------------------

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { IconButton, InputAdornment } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -16,11 +17,10 @@ import { stripHtmlUsingDOM } from 'src/utils/helper';
 import { CONFIG } from 'src/config-global';
 
 import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { Iconify } from 'src/components/iconify';
-import { IconButton, InputAdornment } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

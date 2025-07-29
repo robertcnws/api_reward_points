@@ -1,14 +1,17 @@
-import axios from 'axios';
-import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { useMemo, useState, useContext, useCallback } from 'react';
+
+import { Box, Button, TextField, Typography, FormHelperText, InputAdornment } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { LoadingContext } from 'src/auth/context/loading-context';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Box, Button, FormHelperText, InputAdornment, TextField, Typography } from '@mui/material';
+
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
+
+import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
+
 import { PurchaseDetailsModal } from '../purchase-details-modal';
 import { PurchaseUseModalForm } from '../purchase-use-modal-form';
 

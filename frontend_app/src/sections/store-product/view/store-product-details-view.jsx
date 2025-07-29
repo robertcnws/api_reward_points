@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -7,19 +7,17 @@ import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Unstable_Grid2';
-import Typography from '@mui/material/Typography';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import { CONFIG } from 'src/config-global';
-import { toast } from 'src/components/snackbar';
 
 import { useTabs } from 'src/hooks/use-tabs';
 
+import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
-import { PRODUCT_PUBLISH_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { EmptyContent } from 'src/components/empty-content';
 

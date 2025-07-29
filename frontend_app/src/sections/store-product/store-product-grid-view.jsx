@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -6,13 +6,15 @@ import Divider from '@mui/material/Divider';
 import Collapse from '@mui/material/Collapse';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
-import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
-import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
-import { useDataContext } from 'src/auth/context/data/data-context';
+
 import { CONFIG } from 'src/config-global';
+import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
+import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 
 import { Iconify } from 'src/components/iconify';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
+import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 
 import { StoreProductFolderItem } from './store-product-folder-item';
 import { StoreProductActionSelected } from './store-product-action-selected';
@@ -98,8 +100,7 @@ export function StoreProductGridView({
   }, [userLogged, refetchStoreProductSelectionBuys, refetchRewardPoints, refetchStoreProducts]);
 
   return (
-    <>
-      <Box ref={containerRef}>
+    <Box ref={containerRef}>
         {/* <ProjectPanel
           title="Folders"
           subtitle={`${dataFiltered.filter((item) => item.type === 'folder').length} folders`}
@@ -199,8 +200,7 @@ export function StoreProductGridView({
               )
             }
             action={
-              <>
-                <Button
+              <Button
                   size="small"
                   color="error"
                   variant="contained"
@@ -210,11 +210,9 @@ export function StoreProductGridView({
                 >
                   Delete
                 </Button>
-              </>
             }
           />
         )}
       </Box>
-    </>
   );
 }

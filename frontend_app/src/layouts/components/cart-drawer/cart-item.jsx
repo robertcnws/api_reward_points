@@ -1,32 +1,33 @@
 import axios from 'axios';
-import { useMemo, useCallback, useEffect, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import { Tooltip, IconButton } from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
-import { toast } from 'src/components/snackbar';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { fDateTime, fToNow } from 'src/utils/format-time';
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import { fNumber } from 'src/utils/format-number';
+import { fDateTime } from 'src/utils/format-time';
 
 import { CONFIG } from 'src/config-global';
 
 import { Label } from 'src/components/label';
+import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
-import { useDataContext } from 'src/auth/context/data/data-context';
 import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
-import { Iconify } from 'src/components/iconify';
-import { IconButton, Tooltip } from '@mui/material';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { fNumber } from 'src/utils/format-number';
+
 
 // ----------------------------------------------------------------------
 
@@ -156,8 +157,7 @@ export function CartItem({
         </Box>
       }
       secondary={
-        <>
-          <Stack
+        <Stack
             direction="row"
             alignItems="center"
             sx={{ typography: 'caption', color: 'text.disabled' }}
@@ -219,7 +219,6 @@ export function CartItem({
             </Box>
             {/* {notification.notification.module} */}
           </Stack>
-        </>
       }
     />
   );

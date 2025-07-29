@@ -1,42 +1,37 @@
 import axios from 'axios';
 import { m } from 'framer-motion';
-import { useMemo, useState, useEffect, useCallback, useContext } from 'react';
+import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
 
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
 import SvgIcon from '@mui/material/SvgIcon';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { StoreProductConfirmCheckoutTable } from 'src/sections/store-product/store-product-confirm-checkout-table';
-
-import { toast } from 'src/components/snackbar';
-
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { isClient } from 'src/utils/check-permissions';
+import { fNumber } from 'src/utils/format-number';
 
 import { CONFIG } from 'src/config-global';
+// import { NotificationItem } from './cart-item';
+import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 
 import { Label } from 'src/components/label';
+import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { varHover } from 'src/components/animate';
 import { Scrollbar } from 'src/components/scrollbar';
-import { CustomTabs } from 'src/components/custom-tabs';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+
+import { StoreProductConfirmCheckoutTable } from 'src/sections/store-product/store-product-confirm-checkout-table';
+
 import { LoadingContext } from 'src/auth/context/loading-context';
-
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { fNumber } from 'src/utils/format-number';
-
-// import { NotificationItem } from './cart-item';
-import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
+
 import { CartItem } from './cart-item';
 
 

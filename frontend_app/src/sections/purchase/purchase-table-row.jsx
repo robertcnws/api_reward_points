@@ -1,6 +1,5 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 
-import { Box, Stack, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -8,11 +7,13 @@ import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
+import { Box, Stack, Typography } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+
 import { fDateTime } from 'src/utils/format-time';
-import { isClient } from 'src/utils/check-permissions';
 import { fNumber } from 'src/utils/format-number';
+import { isClient } from 'src/utils/check-permissions';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -20,9 +21,10 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
+
 import { PurchaseDetailsModal } from './purchase-details-modal';
 import { PurchaseUseModalForm } from './purchase-use-modal-form';
+import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
 
 
 // ----------------------------------------------------------------------

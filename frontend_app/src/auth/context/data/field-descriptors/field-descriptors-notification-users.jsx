@@ -1,5 +1,5 @@
-import { fieldsNotifications } from './field-descriptors-notifications';
 import { fieldsLoginUsers } from './field-descriptors-login-users';
+import { fieldsNotifications } from './field-descriptors-notifications';
 
 export const fieldsNotificationUsers = [
     'count',

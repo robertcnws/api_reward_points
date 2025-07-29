@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -7,17 +8,17 @@ import { iconButtonClasses } from '@mui/material/IconButton';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { isClient } from 'src/utils/check-permissions';
+
 import { allLangs } from 'src/locales';
+import { CONFIG } from 'src/config-global';
+import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
-import { isClient } from 'src/utils/check-permissions';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
-import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
-import { CONFIG } from 'src/config-global';
-import dayjs from 'dayjs';
 
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
@@ -30,13 +31,13 @@ import { Searchbar } from '../components/searchbar';
 import { MenuButton } from '../components/menu-button';
 import { LayoutSection } from '../core/layout-section';
 import { HeaderSection } from '../core/header-section';
+import { CartsDrawer } from '../components/cart-drawer';
 import { StyledDivider, useNavColorVars } from './styles';
 import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
 import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
-import { CartsDrawer } from '../components/cart-drawer';
 
 
 // ----------------------------------------------------------------------

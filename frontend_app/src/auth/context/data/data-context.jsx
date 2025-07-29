@@ -1,20 +1,19 @@
 import React, { useMemo, useContext, createContext } from 'react';
 
 import { useRewardPoints, RewardPointsProvider } from './contexts/reward-points-context';
-import { RewardStoreProductsProvider, useRewardStoreProducts } from './contexts/reward-store-products-context';
-import { RewardUserRolesProvider, useRewardUserRoles } from './contexts/reward-user-roles-context';
-import { RewardNotificationUsersProvider, useRewardNotificationUsers } from './contexts/reward-notification-users-context';
-import { RewardLoginUsersProvider, useRewardLoginUsers } from './contexts/reward-login-users-context';
-import { RewardPointsSettingsProvider, useRewardPointsSettings } from './contexts/reward-points-settings';
+import { useRewardUserRoles, RewardUserRolesProvider } from './contexts/reward-user-roles-context';
+import { useRewardLoginUsers, RewardLoginUsersProvider } from './contexts/reward-login-users-context';
+import { useRewardPointsSettings, RewardPointsSettingsProvider } from './contexts/reward-points-settings';
+import { useRewardStoreProducts, RewardStoreProductsProvider } from './contexts/reward-store-products-context';
+import { useRewardNotificationUsers, RewardNotificationUsersProvider } from './contexts/reward-notification-users-context';
 import { 
-  RewardStoreProductSelectionCartProvider,
-  useRewardStoreProductSelectionCart 
-} from './contexts/reward-store-product-selection-cart-context';
-
-import { 
-  RewardStoreProductSelectionBuyProvider,
-  useRewardStoreProductSelectionBuy
+  useRewardStoreProductSelectionBuy,
+  RewardStoreProductSelectionBuyProvider
 } from './contexts/reward-store-product-selection-buy-context';
+import { 
+  useRewardStoreProductSelectionCart,
+  RewardStoreProductSelectionCartProvider 
+} from './contexts/reward-store-product-selection-cart-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);

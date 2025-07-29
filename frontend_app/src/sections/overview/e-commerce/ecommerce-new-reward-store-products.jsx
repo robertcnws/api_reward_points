@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 
 import Box from '@mui/material/Box';
@@ -6,14 +7,14 @@ import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
 
 import { Image } from 'src/components/image';
 import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
-import { CONFIG } from 'src/config-global';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 

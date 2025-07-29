@@ -3,13 +3,13 @@ import { Helmet } from 'react-helmet-async';
 import { useParams } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/config-global';
-import { useGetProduct } from 'src/actions/product';
+import { useRewardPointsByUsername } from 'src/_mock';
+import { useRewardStoreProductDetailsById } from 'src/_mock/__reward-store-products';
 
 import { StoreProductDetailsView } from 'src/sections/store-product/view';
-import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
-import { useRewardStoreProductDetailsById } from 'src/_mock/__reward-store-products';
-import { useRewardPointsByUsername } from 'src/_mock';
+
 import { fieldsRewardPoints } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-points';
+import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
 
 // ----------------------------------------------------------------------
 

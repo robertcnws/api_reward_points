@@ -5,7 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 
 import { fData } from 'src/utils/format-number';
-import { verifyPermissions, listRolesAndSubroles } from 'src/utils/check-permissions';
+import { listRolesAndSubroles } from 'src/utils/check-permissions';
 
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';

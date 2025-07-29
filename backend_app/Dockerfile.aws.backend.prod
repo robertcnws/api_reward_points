@@ -31,13 +31,12 @@ RUN mkdir -p /tmp/mongo_backup
 
 COPY . /app/
 
-EXPOSE 8001
+EXPOSE 8000
 
 CMD ["sh", "-c", "python manage.py makemigrations --no-input && \
                   python manage.py migrate --no-input && \
                   python manage.py collectstatic --no-input && \
                   python init_scripts.py && \
-                  python manage.py sync_scripts && \
                   celery -A system_reward_points worker --loglevel=info -E & \
                   celery -A system_reward_points beat --loglevel=info & \
-                  gunicorn system_reward_points.asgi:application -w 3 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8001"]
+                  gunicorn system_reward_points.asgi:application -w 3 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"]

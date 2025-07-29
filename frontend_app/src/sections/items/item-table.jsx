@@ -76,8 +76,7 @@ export function ItemTable({
   ];
 
   return (
-    <>
-      <Box
+    <Box
         sx={{
           position: 'relative',
           m: (theme) => ({ md: theme.spacing(-2, -3, 0, -3) }),
@@ -96,14 +95,11 @@ export function ItemTable({
             )
           }
           action={
-            <>
-
-              <Tooltip title="Delete" arrow>
+            <Tooltip title="Delete" arrow>
                 <IconButton color="error" onClick={onOpenConfirm}>
                   <Iconify icon="solar:trash-bin-trash-bold" />
                 </IconButton>
               </Tooltip>
-            </>
           }
           sx={{
             pl: 1,
@@ -203,6 +199,5 @@ export function ItemTable({
           </Table>
         </TableContainer>
       </Box>
-    </>
   );
 }

@@ -1,8 +1,11 @@
-import { Box, Card, Divider, IconButton, TextField, Tooltip, Typography } from "@mui/material";
-import { Iconify } from "src/components/iconify";
-import { Label } from "src/components/label";
+import { Box, Card, Divider, Tooltip, IconButton, Typography } from "@mui/material";
+
 import { fNumber } from "src/utils/format-number";
 import { fDateTime } from "src/utils/format-time";
+
+import { Label } from "src/components/label";
+import { Iconify } from "src/components/iconify";
+
 import { StoreProductDetailsCarousel } from "../store-product/store-product-details-carousel";
 
 export function PurchaseDetailsModalTemplate({
@@ -14,8 +17,7 @@ export function PurchaseDetailsModalTemplate({
     handleNavigateClient
 }) {
     return (
-        <>
-            <Box sx={{
+        <Box sx={{
                 display: 'flex',
                 flexDirection: !isMobile ? 'row' : 'column',
                 alignItems: 'center',
@@ -373,7 +375,5 @@ export function PurchaseDetailsModalTemplate({
             </Box> */}
                 </Card>
             </Box>
-
-        </>
     );
 }

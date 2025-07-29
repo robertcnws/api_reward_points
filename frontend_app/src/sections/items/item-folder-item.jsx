@@ -1,33 +1,27 @@
-import dayjs from 'dayjs';
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { Tooltip, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
+import { Tooltip, Typography } from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/material/styles';
-import AvatarGroup, { avatarGroupClasses } from '@mui/material/AvatarGroup';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 
-import { fDate } from 'src/utils/format-time';
 import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
 
 import { CONFIG } from 'src/config-global';
 
-import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+
 import { IncrementerButton } from './components/incrementer-button';
 
 // ----------------------------------------------------------------------
@@ -146,8 +140,7 @@ export function ItemFolderItem({
       }}
       primary={folder?.item?.name}
       secondary={
-        <>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Tooltip title="No Closing Date">
               <Iconify icon="streamline-sharp-color:shopping-bag-hand-bag-price-tag" sx={{ color: 'error.main' }} />
             </Tooltip>
@@ -163,7 +156,6 @@ export function ItemFolderItem({
             />
             <b>{folder.assignedPoints}</b>{'  '}point(s)
           </Box>
-        </>
       }
       primaryTypographyProps={{ noWrap: false, typography: 'subtitle1' }}
       secondaryTypographyProps={{

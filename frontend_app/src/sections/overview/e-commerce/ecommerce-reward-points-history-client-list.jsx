@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import dayjs from 'dayjs';
+import React, { useMemo, useEffect } from 'react';
+
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
-import Avatar from '@mui/material/Avatar';
 import CardHeader from '@mui/material/CardHeader';
+import { Typography, LinearProgress } from '@mui/material';
 
-import { fCurrency, fNumber } from 'src/utils/format-number';
-
-import { Scrollbar } from 'src/components/scrollbar';
-import { ColorPreview } from 'src/components/color-utils';
-import { LinearProgress, Typography } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
 import { fDateTime } from 'src/utils/format-time';
-import dayjs from 'dayjs';
+import { fNumber } from 'src/utils/format-number';
+
 import { CONFIG } from 'src/config-global';
-import { useDataContext } from 'src/auth/context/data/data-context';
+
+import { Iconify } from 'src/components/iconify';
+import { Scrollbar } from 'src/components/scrollbar';
+
 
 // ----------------------------------------------------------------------
 

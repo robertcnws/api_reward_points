@@ -1,22 +1,19 @@
 import { useMemo, useContext, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
-import { Autocomplete, Button, ListItemText } from '@mui/material';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
+import { Button, Autocomplete } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 
-import { fDate } from 'src/utils/format-time';
+import { isClient } from 'src/utils/check-permissions';
 
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { isClient } from 'src/utils/check-permissions';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 
 // ----------------------------------------------------------------------
 

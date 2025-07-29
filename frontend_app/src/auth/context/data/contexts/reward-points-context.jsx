@@ -1,8 +1,8 @@
 import React, { useMemo, useContext, createContext } from 'react';
 
-import { useRewardPointsByUsername, useAllRewardPoints } from 'src/_mock/__reward-points';
-
+import { useAllRewardPoints, useRewardPointsByUsername } from 'src/_mock/__reward-points';
 import { useRewardPointsHistoryByAction, useRewardPointsHistoryByRewardPointsId } from 'src/_mock/__reward-points-history';
+
 import { fieldsRewardPoints, fieldsRewardPointsHistory } from '../field-descriptors/field-descriptors-reward-points';
 
 const RewardPointsContext = createContext();

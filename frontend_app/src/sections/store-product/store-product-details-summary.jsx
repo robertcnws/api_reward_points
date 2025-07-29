@@ -1,34 +1,30 @@
-import React, { useEffect, useCallback, useState, useMemo, useContext } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-
-import { Chip, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { useForm } from 'react-hook-form';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import { Chip } from '@mui/material';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Rating from '@mui/material/Rating';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
-import { formHelperTextClasses } from '@mui/material/FormHelperText';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { fCurrency, fNumber, fShortenNumber } from 'src/utils/format-number';
-import { useDataContext } from 'src/auth/context/data/data-context';
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { fNumber, fShortenNumber } from 'src/utils/format-number';
+
 import { Label } from 'src/components/label';
+import { Form } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
-import { Form, Field } from 'src/components/hook-form';
-import { ColorPicker } from 'src/components/color-utils';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { IncrementerButton } from './components/incrementer-button';
-import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
 import { StoreProductConfirmCheckoutTable } from './store-product-confirm-checkout-table';
 
 
@@ -428,8 +424,7 @@ export function StoreProductDetailsSummary({
         // title={`Checking out: ${product?.name}`}
         title={`Proceed to confirm redeemed order of ${listMappedProducts.length} product(s)`}
         content={
-          <>
-            <Box sx={{
+          <Box sx={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -444,7 +439,6 @@ export function StoreProductDetailsSummary({
                 listMappedProducts={listMappedProducts}
               />
             </Box>
-          </>
         }
         action={
           <Button

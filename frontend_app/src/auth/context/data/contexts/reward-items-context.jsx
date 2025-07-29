@@ -2,9 +2,8 @@ import React, { useMemo, useContext, createContext } from 'react';
 
 import { useAllRewardItems } from 'src/_mock/__reward-items';
 
-import { fieldsRewardItems } from '../field-descriptors/field-descriptors-reward-items';
-
 import { useFilteredItems } from '../hooks/use-filtered-items';
+import { fieldsRewardItems } from '../field-descriptors/field-descriptors-reward-items';
 
 const RewardItemsContext = createContext();
 export const useRewardItems = () => useContext(RewardItemsContext);

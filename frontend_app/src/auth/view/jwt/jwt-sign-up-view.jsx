@@ -1,19 +1,15 @@
-import { z as zod } from 'zod';
-import { useContext, useEffect, useState } from 'react';
-import { CONFIG } from 'src/config-global';
 import axios from 'axios';
-import { Controller, useForm } from 'react-hook-form';
+import { z as zod } from 'zod';
+import { useState, useContext } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoadingContext } from 'src/auth/context/loading-context';
-import { useResendTimer } from 'src/hooks/use-resend-timer';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Button, LinearProgress, TextField, Typography } from '@mui/material';
+import { TextField, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -21,13 +17,16 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { CONFIG } from 'src/config-global';
+
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
+
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
-import { SignUpTerms } from '../../components/sign-up-terms';
 import { CustomErrorComponent } from './custom-error-component';
 
 // ----------------------------------------------------------------------

@@ -1,42 +1,35 @@
-import dayjs from 'dayjs';
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { Chip, Rating, Tooltip, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/material/styles';
-import AvatarGroup, { avatarGroupClasses } from '@mui/material/AvatarGroup';
+import { Chip, Rating, Tooltip, Typography } from '@mui/material';
 
-import { useBoolean } from 'src/hooks/use-boolean';
-import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
-
-import { fDate } from 'src/utils/format-time';
-import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
-import { fNumber, fShortenNumber } from 'src/utils/format-number';
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import { fNumber, fShortenNumber } from 'src/utils/format-number';
+import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
+
 import { CONFIG } from 'src/config-global';
-import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
-import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
-import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
 import { useRewardStoreProductDetailsById } from 'src/_mock/__reward-store-products';
-import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+
+import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-products';
+
 import { IncrementerButton } from './components/incrementer-button';
 import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
 import { StoreProductConfirmCheckoutTable } from './store-product-confirm-checkout-table';
@@ -499,8 +492,7 @@ export function StoreProductFolderItem({
         </Box>
       }
       secondary={
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Tooltip title="Value in points">
                 <Iconify icon="streamline-sharp-color:shopping-bag-hand-bag-price-tag" sx={{ color: 'error.main' }} />
@@ -518,7 +510,6 @@ export function StoreProductFolderItem({
               <b>{currentProduct?.assignedPoints} </b>{'  '} point(s)
             </Box>
           </Box>
-        </>
       }
       primaryTypographyProps={{ noWrap: false, typography: 'subtitle1' }}
       secondaryTypographyProps={{
@@ -686,8 +677,7 @@ export function StoreProductFolderItem({
         // title={`Checking out: ${product?.name}`}
         title={`Proceed to confirm redeemed order of ${listMappedProducts.length} product(s)`}
         content={
-          <>
-            <Box sx={{
+          <Box sx={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -702,7 +692,6 @@ export function StoreProductFolderItem({
                 listMappedProducts={listMappedProducts}
               />
             </Box>
-          </>
         }
         action={
           <Button

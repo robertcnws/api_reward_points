@@ -1,27 +1,28 @@
-import { z as zod } from 'zod';
-import { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Controller, useForm } from 'react-hook-form';
+import { z as zod } from 'zod';
+import { useState, useContext } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoadingContext } from 'src/auth/context/loading-context';
-import { useResendTimer } from 'src/hooks/use-resend-timer';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, LinearProgress, Typography } from '@mui/material';
+import { Button, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
-import { RESEND_COOLDOWN_SECONDS, STORAGE_KEY_RESEND_COOLDOWN } from 'src/auth/context/jwt';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+import { useResendTimer } from 'src/hooks/use-resend-timer';
+
 import { CONFIG } from 'src/config-global';
 
+import { Form } from 'src/components/hook-form';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 
-import { Form, Field } from 'src/components/hook-form';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
@@ -229,8 +230,7 @@ export function VerificationCodeView() {
                         title="Verification Code"
                         isCompound
                         description={
-                            <>
-                                <Box variant="body2" sx={{ color: 'text.secondary' }}>
+                            <Box variant="body2" sx={{ color: 'text.secondary' }}>
                                     {`Please enter the verification code for user: `}
                                     <strong>{userSignedUp?.data?.username}</strong>
                                     {` sent to your `}
@@ -251,7 +251,6 @@ export function VerificationCodeView() {
                                         Sign in
                                     </Link>
                                 </Box>
-                            </>
                         }
                         sx={{ textAlign: { xs: 'center', md: 'left' } }}
                     />

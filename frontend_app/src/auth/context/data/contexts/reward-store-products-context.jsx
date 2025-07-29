@@ -1,8 +1,8 @@
 import React, { useMemo, useContext, createContext } from 'react';
 
-import { useAllRewardStoreProducts, useAllRewardStoreProductDetails } from 'src/_mock/__reward-store-products';
+import { useAllRewardStoreProductDetails } from 'src/_mock/__reward-store-products';
 
-import { fieldsRewardStoreProducts, fieldsRewardStoreProductDetails } from '../field-descriptors/field-descriptors-reward-store-products';
+import { fieldsRewardStoreProductDetails } from '../field-descriptors/field-descriptors-reward-store-products';
 
 const RewardStoreProductsContext = createContext();
 export const useRewardStoreProducts = () => useContext(RewardStoreProductsContext);

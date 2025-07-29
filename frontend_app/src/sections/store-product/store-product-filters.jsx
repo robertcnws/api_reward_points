@@ -4,12 +4,12 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Tooltip, MenuItem, MenuList, IconButton, Typography, ListItemIcon, ListItemText } from '@mui/material';
+import { Tooltip, MenuItem, MenuList, IconButton, Typography } from '@mui/material';
+
 import { Iconify } from 'src/components/iconify';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { isClient } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 

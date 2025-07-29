@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -37,8 +37,7 @@ export function ItemGridView({
 
 
   return (
-    <>
-      <Box ref={containerRef}>
+    <Box ref={containerRef}>
         {/* <ProjectPanel
           title="Folders"
           subtitle={`${dataFiltered.filter((item) => item.type === 'folder').length} folders`}
@@ -124,8 +123,7 @@ export function ItemGridView({
               )
             }
             action={
-              <>
-                <Button
+              <Button
                   size="small"
                   color="error"
                   variant="contained"
@@ -135,11 +133,9 @@ export function ItemGridView({
                 >
                   Delete
                 </Button>
-              </>
             }
           />
         )}
       </Box>
-    </>
   );
 }
