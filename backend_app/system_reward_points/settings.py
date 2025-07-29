@@ -137,7 +137,6 @@ CORS_ALLOW_HEADERS = [
     'x-xsrf-token',
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
