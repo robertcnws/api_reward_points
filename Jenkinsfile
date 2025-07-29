@@ -83,7 +83,8 @@ pipeline {
         unstash 'source'
         dir('backend_app') {
           sh """
-            docker-compose -f ../docker-compose.aws.backend.prod.yml build
+            docker-compose -p ${JENKINS_HOOK} \
+                           -f ../docker-compose.aws.backend.prod.yml build
             docker tag "${JENKINS_HOOK}_aws_backend_app:latest" "${BACKEND_IMAGE}:latest"
             docker push "${BACKEND_IMAGE}:latest"
           """
@@ -106,7 +107,8 @@ pipeline {
           sh 'npm run lint -- --fix'
           sh 'npm run build'
           sh """
-            docker-compose -f ../docker-compose.aws.frontend.prod.yml build
+            docker-compose -p ${JENKINS_HOOK} \
+                           -f ../docker-compose.aws.frontend.prod.yml build
             docker tag "${JENKINS_HOOK}_aws_frontend_app:latest" "${FRONTEND_IMAGE}:latest"
             docker push "${FRONTEND_IMAGE}:latest"
           """
