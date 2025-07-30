@@ -18,6 +18,7 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { CONFIG } from 'src/config-global';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
@@ -28,6 +29,7 @@ import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
+
 
 // ----------------------------------------------------------------------
 
@@ -151,7 +153,7 @@ export function JwtSignUpView() {
         email: sessionStorage.getItem('userSignedUpEmail'),
         username: currentUsername,
       }
-      const resp = await axios.post(`${CONFIG.apiUrl}/authorization/send_verification_code/`, payload, {
+      const resp = await axiosInstanceBackend.post(endpoints.auth.sendVerificationCode, payload, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

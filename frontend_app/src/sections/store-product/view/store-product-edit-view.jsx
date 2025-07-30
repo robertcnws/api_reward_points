@@ -31,7 +31,7 @@ export function StoreProductEditView() {
 
   // useEffect(() => {
   //   const socket = new WebSocket(
-  //     `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/${storeProductId}/`
+  //     wsEndpoints.rewardPoints.storeProduct.byId(storeProductId)
   //   );
   //   socket.onmessage = (e) => {
   //     const msg = JSON.parse(e.data);

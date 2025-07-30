@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -24,6 +25,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { PurchaseDetailsModalTemplate } from './purchase-details-modal-template';
+
 
 
 // ----------------------------------------------------------------------
@@ -89,7 +91,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
   const handleUsePurchase = useCallback(
     async (id) => {
       try {
-        await axios.post(`${CONFIG.apiUrl}/reward-points/manage-use/store-product-selection-buy/${id}/`, {
+        await axiosInstanceBackend.post(endpoints.rewardPoints.manageUse.storeProductSelectionBuy.item(id), {
           userReporter: JSON.stringify(userLogged?.data),
           quantityUsed,
           notes,

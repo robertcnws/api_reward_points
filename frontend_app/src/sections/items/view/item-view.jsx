@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -31,6 +32,7 @@ import { ItemTable } from '../item-table';
 import { ItemFilters } from '../item-filters';
 import { ItemGridView } from '../item-grid-view';
 import { ItemFiltersResult } from '../item-filters-result';
+
 
 
 // ----------------------------------------------------------------------
@@ -97,80 +99,10 @@ export function ItemView() {
         }
     }, [loadedAllRewardItems, loadedFilteredRewardItems, userRole]);
 
-    // useEffect(() => {
-    //     const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/projects/ws/projects/`);
-    //     socket.onerror = (errorEvent) => {
-    //         console.dir(errorEvent);
-    //         console.error('WebSocket error (toString):', errorEvent.toString());
-    //     };
-    //     socket.onmessage = (event) => {
-    //         const message = JSON.parse(event.data);
-    //         if (message.type === 'created' || message.type === 'updated') {
-    //             setTableData((prevData) => {
-    //                 const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-    //                 if (existingItemIndex !== -1) {
-    //                     const updatedData = [...prevData];
-    //                     updatedData[existingItemIndex] = message.item;
-    //                     return updatedData;
-    //                 }
-    //                 const isInstallerRole = isInstaller(userLogged?.data?.user_role?.name);
-    //                 if (isInstallerRole) {
-    //                     const projInstaller = getProjectInstaller(message.item, CONFIG);
-    //                     if (projInstaller && projInstaller.id && projInstaller.username && projInstaller.username !== userLogged?.data?.username) {
-    //                         return [...prevData];
-    //                     }
-    //                 }
-    //                 return [message.item, ...prevData];
-    //             });
-    //         }
-    //         else if (message.type === 'deleted') {
-    //             setTableData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
-    //         }
-    //     };
-    //     return () => {
-    //         if (socket && socket.readyState === WebSocket.OPEN) {
-    //             socket.close();
-    //         }
-    //     };
-    // }, [userLogged?.data?.user_role?.name, userLogged?.data?.username]);
-
     const filters = useSetState({
-        // list: localStorage.getItem('projectFilterList') || 'in progress',
         name: localStorage.getItem('itemFilterName') || '',
-        // type: JSON.parse(localStorage.getItem('projectFilterType')) || [],
-        // startDate: localStorage.getItem('projectFilterStartDate') ? dayjs(localStorage.getItem('projectFilterStartDate')) : null,
-        // endDate: localStorage.getItem('projectFilterEndDate') ? dayjs(localStorage.getItem('projectFilterEndDate')) : null,
-        // installer: JSON.parse(localStorage.getItem('projectFilterInstaller')) || {
-        //     id: null,
-        //     name: null,
-        // },
-        // custom: JSON.parse(localStorage.getItem('projectFilterCustom')) || {
-        //     hasPermission: false,
-        //     isPreparation: {
-        //         name: 'preparation',
-        //         value: false,
-        //     },
-        //     isCoordination: {
-        //         name: 'coordination',
-        //         value: false,
-        //     },
-        //     isInstallation: {
-        //         name: 'installation',
-        //         value: false,
-        //     },
-        //     isPermission: {
-        //         name: 'permission',
-        //         value: false,
-        //     },
-        //     isClosing: {
-        //         name: 'closing',
-        //         value: false,
-        //     },
-        //     hasComments: false,
-        // }
     });
-
-    // const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+    
     const dateError = false;
 
     const dataFiltered = applyFilter({
@@ -184,17 +116,6 @@ export function ItemView() {
 
     const canReset =
         !!filters.state.name
-    // ||
-    // filters.state.type.length > 0 ||
-    // (!!filters.state.startDate && !!filters.state.endDate) ||
-    // filters.state.custom.hasPermission ||
-    // filters.state.custom.isPreparation?.value ||
-    // filters.state.custom.isCoordination?.value ||
-    // filters.state.custom.isInstallation?.value ||
-    // filters.state.custom.isPermission?.value ||
-    // filters.state.custom.isClosing?.value ||
-    // filters.state.custom.hasComments ||
-    // (!!filters.state.installer.id && !!filters.state.installer.name)
 
     const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -209,7 +130,7 @@ export function ItemView() {
     const handleDeleteItem = useCallback(
         async (id) => {
 
-            const promise = axios.delete(`${CONFIG.apiUrl}/items/delete/item/${id}/`, {
+            const promise = axiosInstanceBackend.delete(endpoints.item.delete.item(id), {
                 data: {
                     userReporter: userLogged?.data,
                 }
@@ -219,6 +140,8 @@ export function ItemView() {
             const deleteRow = tableData.filter((row) => row.id !== id);
 
             toast.success('Delete success!');
+
+            await promise;
 
             setTableData(deleteRow);
 
@@ -233,7 +156,7 @@ export function ItemView() {
         async () => {
             const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
 
-            const promise = axios.delete(`${CONFIG.apiUrl}/items/delete/items/`, {
+            const promise = axiosInstanceBackend.delete(endpoints.item.delete.list, {
                 data: {
                     ids: table.selected,
                     userReporter: userLogged?.data,
@@ -242,6 +165,8 @@ export function ItemView() {
 
 
             toast.success('Delete success!');
+
+            await promise;
 
             setTableData(deleteRows);
 

@@ -15,6 +15,7 @@ import { varAlpha } from 'src/theme/styles';
 
 import { Image } from 'src/components/image';
 import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -66,14 +67,12 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
             return attachment;
           }
           try {
-            const response = await fetch(
-              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(attachment.file)}`
-            );
-            if (!response.ok) {
+            const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(attachment.file));
+            if (!response.data) {
               console.error('Error fetching URL', response.statusText);
               return attachment;
             }
-            const values = await response.json();
+            const values = await response.data;
 
             return {
               ...attachment,

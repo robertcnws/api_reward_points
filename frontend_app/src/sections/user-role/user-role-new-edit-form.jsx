@@ -19,6 +19,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -76,10 +77,12 @@ export function UserRoleNewEditForm({ currentUserRoleId, onReturnList }) {
   const onSubmit = handleSubmit(async (data) => {
 
     const roleId = currentUserRole ? currentUserRole.id : null;
-    const url = roleId ? `${CONFIG.apiUrl}/users/edit/user-role/${roleId}/` : `${CONFIG.apiUrl}/users/create/user-role/`;
+    const url = roleId ? 
+    endpoints.user.edit.userRole(roleId) : 
+    endpoints.user.role.create;
 
     try {
-      await axios.post(url, {
+      await axiosInstanceBackend.post(url, {
         name: data.name,
         description: stripHtmlUsingDOM(data.description),
         userReporter: userLogged?.data,

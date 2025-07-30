@@ -22,6 +22,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -115,21 +116,12 @@ export function UserNewEditForm({ currentUser }) {
 
     try {
       const randomNumber = Math.floor(Math.random() * 25) + 1;
-      await axios.post(`${CONFIG.apiUrl}/users/create/user/`, {
+      await axiosInstanceBackend.post(endpoints.user.create.user, {
         ...data,
         userReporter: userLogged?.data,
         avatarUrl: _mock.image.avatar(randomNumber),
       });
       await refetchUsers?.();
-      // const dataAWS = createDefaultPermissions(roleName);
-      // await axios.post(`${CONFIG.apiUrl}/integration/manage_user_permissions/`, {
-      //   username,
-      //   data: dataAWS,
-      // }, {
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   }
-      // }).then((res) => res.data)
       reset();
       toast.success(currentUser ? 'Update success!' : 'Create success!');
       router.push(paths.dashboard.user.list);

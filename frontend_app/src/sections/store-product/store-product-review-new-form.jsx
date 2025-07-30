@@ -16,6 +16,7 @@ import { CONFIG } from 'src/config-global';
 
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -56,7 +57,7 @@ export function StoreProductReviewNewForm({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const promise = axios.post(`${CONFIG.apiUrl}/reward-points/create/store-product-review/${product?.id}/`, {
+      const promise = axiosInstanceBackend.post(endpoints.rewardPoints.create.storeProductReview.item(product?.id), {
         userReporter: JSON.stringify(userLogged?.data),
         rating: data.rating,
         comment: data.review,

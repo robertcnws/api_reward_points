@@ -1,21 +1,21 @@
 import { split, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
 
-import { CONFIG } from '../config-global';
+import { endpoints } from './axios';
 
 const httpLinkRewardPoints = new HttpLink({
-  uri: `${CONFIG.apiUrl}/reward-points/graphql/`,
+  uri: endpoints.graphql.rewardPoints,
 });
 
 const httpLinkUsers = new HttpLink({
-  uri: `${CONFIG.apiUrl}/users/graphql/`,
+  uri: endpoints.graphql.users,
 });
 
 const httpLinkRewardIntegration = new HttpLink({
-  uri: `${CONFIG.apiUrl}/integration/graphql/`,
+  uri: endpoints.graphql.rewardIntegration,
 });
 
 const httpLinkRewardAuthorization = new HttpLink({
-  uri: `${CONFIG.apiUrl}/authorization/graphql/`,
+  uri: endpoints.graphql.rewardAuthorization,
 });
 
 const splitLink = split(

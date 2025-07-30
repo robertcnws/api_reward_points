@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -45,6 +46,7 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserPendingTableRow } from '../user-pending-table-row';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+
 
 
 // ----------------------------------------------------------------------
@@ -121,7 +123,7 @@ export function UserPendingListView() {
 
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`);
+    const socket = new WebSocket(wsEndpoints.users.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
@@ -152,7 +154,7 @@ export function UserPendingListView() {
 
 
   // useEffect(() => {
-  //   const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/`);
+  //   const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.all);
   //   socket.onerror = (errorEvent) => {
   //     console.dir(errorEvent);
   //     console.error('WebSocket error (toString):', errorEvent.toString());
@@ -207,7 +209,7 @@ export function UserPendingListView() {
     async (id) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
 
-      const response = await axios.delete(`${CONFIG.apiUrl}/users/delete/user/${id}/`, {
+      const response = await axiosInstanceBackend.delete(endpoints.user.delete.user(id), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -237,7 +239,7 @@ export function UserPendingListView() {
         userReporter: userLogged?.data,
       }
 
-      const response = await axios.delete(`${CONFIG.apiUrl}/users/delete/users/`, {
+      const response = await axiosInstanceBackend.delete(endpoints.user.delete.users, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -268,7 +270,7 @@ export function UserPendingListView() {
 
       try {
 
-        const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
+        const response = await axiosInstanceBackend.post(endpoints.user.changeApproval.user(id), {
           userReporter: userLogged?.data,
         });
 

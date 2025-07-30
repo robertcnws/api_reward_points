@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { m } from 'framer-motion';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -33,8 +34,6 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 
 import { CartItem } from './cart-item';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -94,7 +93,7 @@ export function CartsDrawer({ sx, ...other }) {
   }, [storeProductSelectionCarts, loadingStoreProductSelectionCarts, errorStoreProductSelectionCarts]);
 
   useEffect(() => {
-    const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-cart/${userLogged?.data?.username}/`;
+    const url = wsEndpoints.rewardPoints.storeProductSelectionCart.byUsername(userLogged?.data?.username);
     const socket = new WebSocket(url);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
@@ -141,9 +140,9 @@ export function CartsDrawer({ sx, ...other }) {
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/delete/list/store-product-selection-carts/`;
+        const url = endpoints.rewardPoints.delete.storeProductSelectionCart.list;
 
-        const promise = axios.delete(url, {
+        const promise = axiosInstanceBackend.delete(url, {
           data: payload
         }, {
           headers: {
@@ -180,9 +179,9 @@ export function CartsDrawer({ sx, ...other }) {
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart-buy/${cart?.id}/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionCartBuy.item(cart?.id);
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -218,9 +217,9 @@ export function CartsDrawer({ sx, ...other }) {
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create-all/store-product-selection-cart-buy/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionCartBuy.all;
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },

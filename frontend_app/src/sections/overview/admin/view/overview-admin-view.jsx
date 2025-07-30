@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useMemo, useEffect, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -30,6 +31,7 @@ import { AdminTotalIncomes } from '../admin-total-incomes';
 import { AdminWidgetSummary } from '../admin-widget-summary';
 import { AdminCheckInWidgets } from '../admin-check-in-widgets';
 import { AdminCustomerReviews } from '../admin-customer-reviews';
+
 
 // ----------------------------------------------------------------------
 
@@ -70,7 +72,7 @@ export function OverviewAdminView({
   const onDeleteReview = useCallback(
     async (id) => {
       try {
-        await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product-review/${id}/`, {
+        await axiosInstanceBackend.delete(endpoints.rewardPoints.delete.storeProductReview.item(id), {
           data: {
             userReporter: JSON.stringify(userLogged?.data),
           }
@@ -85,7 +87,7 @@ export function OverviewAdminView({
   );
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-review/`);
+    const socket = new WebSocket(wsEndpoints.rewardPoints.storeProductReview.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
@@ -108,9 +110,7 @@ export function OverviewAdminView({
 
 
   useEffect(() => {
-    const socket = new WebSocket(
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-review-reaction/`
-    );
+    const socket = new WebSocket(wsEndpoints.rewardPoints.storeProductReviewReaction.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
@@ -133,7 +133,7 @@ export function OverviewAdminView({
 
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/`);
+    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
@@ -169,7 +169,7 @@ export function OverviewAdminView({
 
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`);
+    const socket = new WebSocket(wsEndpoints.users.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());

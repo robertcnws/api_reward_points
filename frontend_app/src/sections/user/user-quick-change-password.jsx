@@ -19,6 +19,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -75,7 +76,7 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
     };
 
     try {
-      const promise = axios.post(`${CONFIG.apiUrl}/users/change-password/${id}/`, payload, {
+      const promise = axiosInstanceBackend.post(endpoints.user.changePassword.user(id), payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

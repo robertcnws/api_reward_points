@@ -1,6 +1,6 @@
 import { paths } from 'src/routes/paths';
 
-import axios from 'src/utils/axios';
+import axios, { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { CONFIG } from 'src/config-global';
 
@@ -117,7 +117,7 @@ export async function renewToken(refreshToken) {
   }
 
   try {
-    const response = await axios.post(`${CONFIG.apiUrl}/authorization/token/refresh/`, { 
+    const response = await axiosInstanceBackend.post(endpoints.auth.tokenRefresh, { 
       refresh
     });
     const newAccessToken = response.data.accessToken;

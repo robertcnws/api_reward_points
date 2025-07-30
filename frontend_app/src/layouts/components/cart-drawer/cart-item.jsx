@@ -27,6 +27,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 
 // ----------------------------------------------------------------------
@@ -94,9 +95,9 @@ export function CartItem({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/delete/store-product-selection-cart/${currentCart?.id}/`;
+        const url = endpoints.rewardPoints.delete.storeProductSelectionCart.item(currentCart?.id);
 
-        const promise = axios.delete(url, {
+        const promise = axiosInstanceBackend.delete(url, {
           data: payload
         }, {
           headers: {

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -87,7 +88,7 @@ export function StoreProductView() {
     }, [loadedStoreProducts, userRole]);
 
     useEffect(() => {
-        const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/`);
+        const socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.all);
         socket.onerror = (errorEvent) => {
             console.dir(errorEvent);
             console.error('WebSocket error (toString):', errorEvent.toString());
@@ -182,7 +183,7 @@ export function StoreProductView() {
     const handleDeleteItem = useCallback(
         async (id) => {
             try {
-                const promise = await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product/${id}/`, {
+                const promise = await axiosInstanceBackend.delete(endpoints.rewardPoints.delete.storeProduct.item(id), {
                     data: {
                         userReporter: JSON.stringify(userLogged?.data),
                     }
@@ -211,7 +212,7 @@ export function StoreProductView() {
         async () => {
             try {
                 const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-                const promise = await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/list/store-product/`, {
+                await axiosInstanceBackend.delete(endpoints.rewardPoints.delete.storeProduct.list, {
                     data: {
                         ids: table.selected,
                         userReporter: JSON.stringify(userLogged?.data),
@@ -258,9 +259,11 @@ export function StoreProductView() {
     const handleManageActiveItem = useCallback(
         async (id) => {
             try {
-                const promise = await axios.post(`${CONFIG.apiUrl}/reward-points/manage-active/store-product/${id}/`, {
-                    userReporter: JSON.stringify(userLogged?.data),
-                });
+                const promise = await axiosInstanceBackend.post(
+                    endpoints.rewardPoints.manageActive.storeProduct.item(id),
+                    {
+                        userReporter: JSON.stringify(userLogged?.data),
+                    });
                 if (promise.status > 204) {
                     toast.error('Error managing store product. Please try again.');
                 }

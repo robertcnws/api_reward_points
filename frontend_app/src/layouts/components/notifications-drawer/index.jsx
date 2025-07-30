@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { m } from 'framer-motion';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -28,7 +29,6 @@ import { CustomTabs } from 'src/components/custom-tabs';
 import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { NotificationItem } from './notification-item';
-
 
 // ----------------------------------------------------------------------
 
@@ -67,9 +67,7 @@ export function NotificationsDrawer({ sx, ...other }) {
   }, [refetchNotifications]);
 
   useEffect(() => {
-    const socket = new WebSocket(
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`
-    );
+    const socket = new WebSocket(wsEndpoints.users.notificationUsers);
     socket.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if (['created', 'updated', 'deleted'].includes(msg.type)) {
@@ -131,7 +129,7 @@ export function NotificationsDrawer({ sx, ...other }) {
 
   const handleMarkAllAsRead = useCallback(async () => {
     const ids = roleFilteredNotifications.map((n) => n.id);
-    await axios.post(`${CONFIG.apiUrl}/users/mark-read/notifications/`, {
+    await axiosInstanceBackend.post(endpoints.user.notifications.markAsRead, {
       userReporter: userLogged.data,
       notificationIds: ids,
     });
@@ -146,10 +144,9 @@ export function NotificationsDrawer({ sx, ...other }) {
       ? roleFilteredNotifications.filter((n) => !n.read)
       : roleFilteredNotifications.filter((n) => n.read)
     ).map((n) => n.id);
-    await axios.delete(
-      `${CONFIG.apiUrl}/users/delete/notifications/`,
-      { data: { userReporter: userLogged.data, notificationIds: toDelete } }
-    );
+    await axiosInstanceBackend.delete(endpoints.user.notifications.deleteAll, {
+      data: { userReporter: userLogged.data, notificationIds: toDelete }
+    });
     setCurrentTab('all');
     refetchNotifications?.().catch(console.error);
   }, [roleFilteredNotifications, currentTab, userLogged, refetchNotifications]);

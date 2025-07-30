@@ -16,6 +16,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useResendTimer } from 'src/hooks/use-resend-timer';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { CONFIG } from 'src/config-global';
 
@@ -27,6 +28,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { VerificationCodeInput } from './verification-code-input';
+
 
 // ----------------------------------------------------------------------
 
@@ -85,7 +87,7 @@ export function VerificationCodeView() {
                 code: data.verificationCode,
                 username: userSignedUp?.data?.username,
             };
-            const resp = await axios.post(`${CONFIG.apiUrl}/authorization/verify_user/`, payload, {
+            const resp = await axiosInstanceBackend.post(endpoints.auth.verifyUser, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -120,7 +122,7 @@ export function VerificationCodeView() {
                 email: sessionStorage.getItem('userSignedUpEmail'),
                 username: userSignedUp?.data?.username,
             }
-            const resp = await axios.post(`${CONFIG.apiUrl}/authorization/send_verification_code/`, payload, {
+            const resp = await axiosInstanceBackend.post(endpoints.auth.sendVerificationCode, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',

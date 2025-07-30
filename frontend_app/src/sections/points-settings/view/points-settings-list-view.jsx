@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -47,9 +48,6 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { PointsSettingsTableRow } from '../points-settings-table-row';
 import { PointsSettingsTableToolbar } from '../points-settings-table-toolbar';
 import { PointsSettingsTableFiltersResult } from '../points-settings-table-filters-result';
-
-
-
 
 // ----------------------------------------------------------------------
 
@@ -151,7 +149,7 @@ export function PointsSettingsListView() {
   }, [loadedPointsSettings]);
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/points-settings/`);
+    const socket = new WebSocket(wsEndpoints.rewardPoints.pointsSettings.all);
     // socket.onopen = () => {
     //   console.log('WebSocket connected');
     // };
@@ -204,7 +202,7 @@ export function PointsSettingsListView() {
   const handleDeleteRow = useCallback(
     async (id) => {
       try {
-        await axios.delete(`${CONFIG.apiUrl}/users/delete/user-role/${id}/`, {
+        await axiosInstanceBackend.delete(endpoints.user.delete.userRole(id), {
           data: {
             userReporter: userLogged?.data,
           }
@@ -223,7 +221,7 @@ export function PointsSettingsListView() {
 
   const handleDeleteRows = useCallback(async () => {
     try {
-      await axios.delete(`${CONFIG.apiUrl}/users/delete/user-roles/`, {
+      await axiosInstanceBackend.delete(endpoints.user.delete.userRoles, {
         data: {
           pointsSettingsIds: table.selected,
           userReporter: userLogged?.data,

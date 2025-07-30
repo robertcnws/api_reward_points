@@ -23,6 +23,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -92,7 +93,7 @@ export function UserQuickEditForm({ currentUser, open, onClose }) {
       userReporter: userLogged?.data
     };
 
-    const promise = axios.post(`${CONFIG.apiUrl}/users/edit/user/${id}/`, data);
+    const promise = axiosInstanceBackend.post(endpoints.user.edit.user(id), data);
 
     try {
       reset();
@@ -118,19 +119,6 @@ export function UserQuickEditForm({ currentUser, open, onClose }) {
       }
 
       refetchUsers?.();
-
-      // const roleName = loadedUserRoles?.find((role) => role.id === data.role)?.name;
-      // const {username} = data;
-
-      // const dataAWS = createDefaultPermissions(roleName);
-      // await axios.post(`${CONFIG.apiUrl}/integration/manage_user_permissions/`, {
-      //   username,
-      //   data: dataAWS,
-      // }, {
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   }
-      // }).then((res) => res.data)
 
     } catch (error) {
       console.error(error);

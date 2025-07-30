@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -47,9 +48,6 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { UserRoleTableRow } from '../user-role-table-row';
 import { UserRoleTableToolbar } from '../user-role-table-toolbar';
 import { UserRoleTableFiltersResult } from '../user-role-table-filters-result';
-
-
-
 
 // ----------------------------------------------------------------------
 
@@ -150,8 +148,7 @@ export function UserRoleListView() {
   }, [loadedUserRoles]);
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/user-roles/`);
-    // socket.onopen = () => {
+    const socket = new WebSocket(wsEndpoints.userRoles.all);
     //   console.log('WebSocket connected');
     // };
     socket.onerror = (errorEvent) => {
@@ -202,7 +199,7 @@ export function UserRoleListView() {
   const handleDeleteRow = useCallback(
     async (id) => {
       try {
-        await axios.delete(`${CONFIG.apiUrl}/users/delete/user-role/${id}/`, {
+        await axiosInstanceBackend.delete(endpoints.user.delete.userRole(id), {
           data: {
             userReporter: userLogged?.data,
           }
@@ -221,7 +218,7 @@ export function UserRoleListView() {
 
   const handleDeleteRows = useCallback(async () => {
     try {
-      await axios.delete(`${CONFIG.apiUrl}/users/delete/user-roles/`, {
+      await axiosInstanceBackend.delete(endpoints.user.delete.userRoles, {
         data: {
           userRoleIds: table.selected,
           userReporter: userLogged?.data,

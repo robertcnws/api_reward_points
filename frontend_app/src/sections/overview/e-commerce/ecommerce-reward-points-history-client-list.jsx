@@ -14,6 +14,7 @@ import { CONFIG } from 'src/config-global';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
+import { wsEndpoints } from 'src/utils/axios';
 
 
 // ----------------------------------------------------------------------
@@ -35,7 +36,7 @@ export function EcommerceRewardPointsHistoryClientList({
 
 
   useEffect(() => {
-    const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-point-history/${username}/`;
+    const url = wsEndpoints.rewardPoints.rewardPointsHistory.byUsername(username);
     const socket = new WebSocket(url);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);

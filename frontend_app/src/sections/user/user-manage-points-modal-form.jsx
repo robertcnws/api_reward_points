@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -21,8 +22,6 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { IncrementerText } from '../items/components/incrementer-text';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -58,7 +57,7 @@ export function UserManagePointsModalForm({
   const handleManagePoints = useCallback(
     async () => {
       try {
-        await axios.post(`${CONFIG.apiUrl}/reward-points/manage-points/${currentUser?.id}/`, {
+        await axiosInstanceBackend.post(endpoints.rewardPoints.managePoints.user(currentUser?.id), {
           userReporter: JSON.stringify(userLogged?.data),
           newAssignedPoints,
           newSpentPoints,

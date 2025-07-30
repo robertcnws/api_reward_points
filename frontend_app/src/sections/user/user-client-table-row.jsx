@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useContext } from 'react';
+import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -71,7 +72,7 @@ export function UserClientTableRow({
   }, [rowRewardPoints]);
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/reward-points/${rowRewardPoints?.id}/`);
+    const socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.byId(rowRewardPoints?.id));
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -50,8 +51,6 @@ import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/fie
 import { PurchaseTableRow } from '../purchase-table-row';
 import { PurchaseOfficeTableToolbar } from '../purchase-office-table-toolbar';
 import { PurchaseOfficeTableFiltersResult } from '../purchase-office-table-filters-result';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -184,8 +183,8 @@ export function PurchaseOfficeListView() {
 
   useEffect(() => {
     const url = !isClient(roleName) ?
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/` :
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${userLogged?.data?.username}/`;
+      wsEndpoints.rewardPoints.storeProductSelectionBuy.all :
+      wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
     const socket = new WebSocket(url);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
@@ -254,7 +253,7 @@ export function PurchaseOfficeListView() {
   const handleDeleteRow = useCallback(
     async (id) => {
       try {
-        await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/store-product-selection-buy/${id}/`, {
+        await axiosInstanceBackend.delete(endpoints.rewardPoints.delete.storeProductSelectionBuy.item(id), {
           data: {
             userReporter: JSON.stringify(userLogged?.data),
           }
@@ -273,7 +272,7 @@ export function PurchaseOfficeListView() {
 
   const handleDeleteRows = useCallback(async () => {
     try {
-      await axios.delete(`${CONFIG.apiUrl}/reward-points/delete/list/store-product-selection-buys/`, {
+      await axiosInstanceBackend.delete(endpoints.rewardPoints.delete.storeProductSelectionBuy.list, {
         data: {
           ids: table.selected,
           userReporter: JSON.stringify(userLogged?.data),
@@ -299,7 +298,7 @@ export function PurchaseOfficeListView() {
   const handleCancelRefundRow = useCallback(
     async (id) => {
       try {
-        await axios.post(`${CONFIG.apiUrl}/reward-points/manage-refund/store-product-selection-buy/${id}/`, {
+        await axiosInstanceBackend.post(endpoints.rewardPoints.manageRefund.storeProductSelectionBuy.item(id), {
           userReporter: JSON.stringify(userLogged?.data),
         });
         toast.success('Manage refund success!');

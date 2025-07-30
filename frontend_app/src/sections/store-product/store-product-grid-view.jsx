@@ -1,4 +1,5 @@
 import { useRef, useMemo, useEffect } from 'react';
+import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -18,6 +19,7 @@ import { fieldsRewardStoreProductSelectionBuys, fieldsRewardStoreProductSelectio
 
 import { StoreProductFolderItem } from './store-product-folder-item';
 import { StoreProductActionSelected } from './store-product-action-selected';
+
 
 // ----------------------------------------------------------------------
 
@@ -72,7 +74,7 @@ export function StoreProductGridView({
     let socket;
     if (userLogged) {
       const username = userLogged?.data?.username;
-      const url = `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${username}/`;
+      const url = wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(username);
       socket = new WebSocket(url);
 
       socket.onerror = (errorEvent) => {

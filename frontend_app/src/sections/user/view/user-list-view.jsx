@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -103,7 +104,7 @@ export function UserListView() {
   }, [loadedUsers]);
 
   useEffect(() => {
-    const socket = new WebSocket(`${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`);
+    const socket = new WebSocket(wsEndpoints.users.all);
     // socket.onopen = () => {
     //   console.log('WebSocket connected');
     // };
@@ -159,7 +160,7 @@ export function UserListView() {
     async (id) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
 
-      const response = await axios.delete(`${CONFIG.apiUrl}/users/delete/user/${id}/`, {
+      const response = await axiosInstanceBackend.delete(endpoints.user.delete.user(id), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -189,7 +190,7 @@ export function UserListView() {
         userReporter: userLogged?.data,
       }
 
-      const response = await axios.delete(`${CONFIG.apiUrl}/users/delete/users/`, {
+      const response = await axiosInstanceBackend.delete(endpoints.user.delete.users, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -218,7 +219,7 @@ export function UserListView() {
   const handleChangeApprovalRow = useCallback(
     async (id) => {
 
-      const response = await axios.post(`${CONFIG.apiUrl}/users/change-approval/${id}/`, {
+      const response = await axiosInstanceBackend.post(endpoints.user.changeApproval.user(id), {
         userReporter: userLogged?.data,
       });
 

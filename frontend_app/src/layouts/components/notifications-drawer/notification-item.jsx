@@ -20,6 +20,7 @@ import { Label } from 'src/components/label';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -52,7 +53,7 @@ export function NotificationItem({ notification, drawer }) {
                         module === 'user_roles' ? paths.dashboard.role.list : ''
       );
       if (!notification.read) {
-        await axios.post(`${CONFIG.apiUrl}/users/mark-read/notifications/`, {
+        await axiosInstanceBackend.post(endpoints.user.notifications.markAsRead, {
           userReporter: userLogged?.data,
           notificationIds: [notification.id],
         });

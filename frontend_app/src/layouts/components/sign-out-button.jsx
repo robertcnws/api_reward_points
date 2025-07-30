@@ -13,6 +13,7 @@ import { toast } from 'src/components/snackbar';
 import { useAuthContext } from 'src/auth/hooks';
 import { STORAGE_KEY_REFRESH } from 'src/auth/context/jwt/constant';
 import { signOut as jwtSignOut } from 'src/auth/context/jwt/action';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ export function SignOutButton({ onClose, ...other }) {
 
   const handleLogout = useCallback(async () => {
     try {
-      const promise = await axios.post(`${CONFIG.apiUrl}/authorization/logout/`, {
+      const promise = await axiosInstanceBackend.post(endpoints.auth.logout, {
         userReporter: userLogged?.data,
         refreshToken,
       });

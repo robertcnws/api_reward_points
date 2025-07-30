@@ -17,6 +17,7 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { CONFIG } from 'src/config-global';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
@@ -27,6 +28,7 @@ import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
 import { signInWithUsernameAndPassword } from '../../context/jwt';
+
 
 // ----------------------------------------------------------------------
 
@@ -108,7 +110,7 @@ export function JwtSignInView() {
         email: sessionStorage.getItem('userSignedInEmail'),
         username: sessionStorage.getItem('userSignedInUsername'),
       }
-      const resp = await axios.post(`${CONFIG.apiUrl}/authorization/send_verification_code/`, payload, {
+      const resp = await axiosInstanceBackend.post(endpoints.auth.sendVerificationCode, payload, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

@@ -14,6 +14,7 @@ import { fDateTime } from 'src/utils/format-time';
 import { CONFIG } from 'src/config-global';
 
 import { Iconify } from 'src/components/iconify';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -30,10 +31,12 @@ export function StoreProductReviewItem({ review, refetch }) {
   const makeReaction = async (type) => {
     if (!currentUserHasReacted(type)) {
       try {
-        const promise = axios.post(`${CONFIG.apiUrl}/reward-points/manage/store-product-review-reaction/${review?.id}/`, {
-          userReporter: JSON.stringify(userLogged?.data),
-          reactionType: type,
-        });
+        const promise = axiosInstanceBackend.post(
+          endpoints.rewardPoints.manage.storeProductReviewReaction.item(review?.id),
+          {
+            userReporter: JSON.stringify(userLogged?.data),
+            reactionType: type,
+          });
         await promise;
         refetch?.();
       } catch (error) {

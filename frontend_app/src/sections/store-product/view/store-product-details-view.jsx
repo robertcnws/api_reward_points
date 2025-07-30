@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -27,8 +28,6 @@ import { StoreProductDetailsSummary } from '../store-product-details-summary';
 import { StoreProductDetailsToolbar } from '../store-product-details-toolbar';
 import { StoreProductDetailsCarousel } from '../store-product-details-carousel';
 import { StoreProductDetailsDescription } from '../store-product-details-description';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -94,9 +93,7 @@ export function StoreProductDetailsView({
     let socket;
 
     if (product && !error && !loading) {
-      socket = new WebSocket(
-        `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/${product.id}/`
-      );
+      socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.byId(product.id));
 
       socket.onerror = (errorEvent) => {
         console.error('WebSocket error:', errorEvent);
@@ -159,9 +156,9 @@ export function StoreProductDetailsView({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart/${currentProduct?.id}/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionCart.item(currentProduct?.id);
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -190,9 +187,9 @@ export function StoreProductDetailsView({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-buy/${currentProduct?.id}/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionBuy.item(currentProduct?.id);
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },

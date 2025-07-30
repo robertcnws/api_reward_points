@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -33,6 +34,7 @@ import { fieldsRewardStoreProductDetails } from 'src/auth/context/data/field-des
 import { IncrementerButton } from './components/incrementer-button';
 import { StoreProductFolderItemCarousel } from './store-product-folder-item-carousel';
 import { StoreProductConfirmCheckoutTable } from './store-product-confirm-checkout-table';
+
 
 // ----------------------------------------------------------------------
 
@@ -116,9 +118,7 @@ export function StoreProductFolderItem({
   useEffect(() => {
     let socket;
     if (product && !productLoading && !productError) {
-      socket = new WebSocket(
-        `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product/${product.id}/`
-      );
+      socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.item(product.id));
 
       socket.onerror = (errorEvent) => {
         console.error('WebSocket error:', errorEvent);
@@ -184,9 +184,9 @@ export function StoreProductFolderItem({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-cart/${currentProduct?.id}/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionCart.item(currentProduct?.id);
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -221,9 +221,9 @@ export function StoreProductFolderItem({
             userReporter: JSON.stringify(userLogged?.data),
           };
 
-          const url = `${CONFIG.apiUrl}/reward-points/delete/store-product-selection-cart/${cart?.id}/`;
+          const url = endpoints.rewardPoints.delete.storeProductSelectionCart.item(cart.id);
 
-          const promise = axios.delete(url, {
+          const promise = axiosInstanceBackend.delete(url, {
             data: payload
           }, {
             headers: {
@@ -255,9 +255,9 @@ export function StoreProductFolderItem({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = `${CONFIG.apiUrl}/reward-points/create/store-product-selection-buy/${currentProduct?.id}/`;
+        const url = endpoints.rewardPoints.create.storeProductSelectionCartBuy.item(currentProduct?.id);
 
-        const promise = axios.post(url, payload, {
+        const promise = axiosInstanceBackend.post(url, payload, {
           headers: {
             'Content-Type': 'application/json',
           },

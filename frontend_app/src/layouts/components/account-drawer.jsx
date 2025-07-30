@@ -12,6 +12,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter, usePathname } from 'src/routes/hooks';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -27,6 +28,7 @@ import { useMockedUser } from 'src/auth/hooks';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
+
 
 
 // ----------------------------------------------------------------------
@@ -84,7 +86,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
 
   const downloadBackup = async () => {
     try {
-      const response = await axios.get(`${CONFIG.apiUrl}/projects/download/backup/`, {
+      const response = await axiosInstanceBackend.get(endpoints.rewardPoints.download.backup, {
         responseType: 'blob',
       });
 

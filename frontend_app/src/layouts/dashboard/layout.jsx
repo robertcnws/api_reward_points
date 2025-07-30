@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { useMemo, useState, useEffect } from 'react';
+import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -38,7 +39,6 @@ import { SettingsButton } from '../components/settings-button';
 import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
-
 
 // ----------------------------------------------------------------------
 
@@ -120,8 +120,8 @@ export function DashboardLayout({ sx, children, header, data }) {
 
   useEffect(() => {
     const url = !isClient(roleName) ?
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/` :
-      `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/reward-points/ws/store-product-selection-buy/${userLogged?.data?.username}/`;
+      wsEndpoints.rewardPoints.storeProductSelectionBuy.all :
+      wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
     const socket = new WebSocket(url);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);

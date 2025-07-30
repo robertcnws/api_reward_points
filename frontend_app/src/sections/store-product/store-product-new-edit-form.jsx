@@ -23,6 +23,7 @@ import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProduct }) {
   const router = useRouter();
@@ -63,10 +64,8 @@ export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProdu
           }
           if (!att.file) return att;
           try {
-            const resp = await fetch(
-              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(att.file)}`
-            );
-            const { url } = await resp.json();
+            const resp = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(att.file));
+            const { url } = await resp.data;
             return {
               ...att,
               fileUrl: url,
@@ -122,12 +121,14 @@ export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProdu
     });
 
     const url = currentStoreProduct
-      ? `${CONFIG.apiUrl}/reward-points/update/store-product/${currentStoreProduct.id}/`
-      : `${CONFIG.apiUrl}/reward-points/create/store-product/`;
+      ? endpoints.rewardPoints.update.storeProduct.item(currentStoreProduct.id)
+      : endpoints.rewardPoints.create.storeProduct;
     const action = currentStoreProduct ? 'update' : 'create';
 
     try {
-      const promise = axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const promise = axiosInstanceBackend.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       toast.promise(promise, {
         loading: 'Loading...',
         success: `Store product ${action}d successfully!`,
@@ -161,8 +162,8 @@ export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProdu
       });
     } else {
       try {
-        await axios.delete(
-          `${CONFIG.apiUrl}/reward-points/delete/file/${currentStoreProduct.id}/store-product/${fileToRemove.file}/`,
+        await axiosInstanceBackend.delete(
+          endpoints.rewardPoints.delete.file.storeProduct.item(currentStoreProduct.id, fileToRemove.file),
           { data: { userReporter: userLogged.data } }
         );
         setInitialFiles((prev) => {
@@ -183,8 +184,8 @@ export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProdu
   const handleConfirmRemoveAll = useCallback(async () => {
     if (initialFiles.length) {
       try {
-        await axios.delete(
-          `${CONFIG.apiUrl}/reward-points/delete/files/${currentStoreProduct.id}/store-product/store_products/`,
+        await axiosInstanceBackend.delete(
+          endpoints.rewardPoints.delete.file.storeProduct.all(currentStoreProduct.id),
           { data: { userReporter: userLogged.data } }
         );
         toast.success('All files deleted successfully');

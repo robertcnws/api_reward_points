@@ -13,6 +13,7 @@ import {
   CarouselThumbs,
   CarouselArrowNumberButtons,
 } from 'src/components/carousel';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -53,15 +54,13 @@ export function StoreProductDetailsCarousel({ images, predefinedSize = null, for
             return attachment;
           }
           try {
-            const response = await fetch(
-              `${CONFIG.apiUrl}/reward-points/get-file-url/?key=${encodeURIComponent(attachment.file)}`
-            );
-            if (!response.ok) {
+            const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(attachment.file));
+            if (!response.data || !response.data.url) {
               console.error('Error fetching URL', response.statusText);
               return attachment;
             }
-            const values = await response.json();
-            
+            const values = await response.data;
+
             return {
               ...attachment,
               fileUrl: values.url,

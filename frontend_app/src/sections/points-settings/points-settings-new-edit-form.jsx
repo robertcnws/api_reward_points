@@ -21,6 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -105,11 +106,11 @@ export function PointsSettingsNewEditForm({ currentPointsSettingsId, onReturnLis
 
     const pointsSettingsId = currentPointsSettings ? currentPointsSettings.id : null;
     const url = pointsSettingsId ?
-      `${CONFIG.apiUrl}/reward-points/update/points-settings/${pointsSettingsId}/` :
-      `${CONFIG.apiUrl}/reward-points/create/points-settings/`;
+      endpoints.rewardPoints.update.pointsSettings(pointsSettingsId) :
+      endpoints.rewardPoints.create.pointsSettings;
 
     try {
-      await axios.post(url, {
+      await axiosInstanceBackend.post(url, {
         amount: data.amount,
         points: data.points,
         description: stripHtmlUsingDOM(data.description),
