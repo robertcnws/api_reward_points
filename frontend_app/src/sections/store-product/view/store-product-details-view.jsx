@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -14,7 +12,8 @@ import { RouterLink } from 'src/routes/components';
 
 import { useTabs } from 'src/hooks/use-tabs';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { varAlpha } from 'src/theme/styles';
 import { DashboardContent } from 'src/layouts/dashboard';
 

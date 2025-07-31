@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,7 +14,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { USER_STATUS_OPTIONS } from 'src/_mock';
 
 import { Label } from 'src/components/label';
@@ -23,7 +23,6 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 

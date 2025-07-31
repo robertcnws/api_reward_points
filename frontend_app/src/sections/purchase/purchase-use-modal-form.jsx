@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -15,7 +13,7 @@ import { useRouter } from 'src/routes/hooks';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -212,8 +210,8 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
             </Button>
           )}
           <Button variant="outlined" onClick={() => {
-            open.onFalse();
-            openDetails.onTrue();
+            open?.onFalse();
+            openDetails?.onTrue();
           }}>
             Cancel
           </Button>

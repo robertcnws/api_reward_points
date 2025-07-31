@@ -1,7 +1,5 @@
-import axios from 'axios';
 import { m } from 'framer-motion';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -15,8 +13,8 @@ import IconButton from '@mui/material/IconButton';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fNumber } from 'src/utils/format-number';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
 // import { NotificationItem } from './cart-item';
 import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 

@@ -7,14 +7,12 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import { Typography, LinearProgress } from '@mui/material';
 
+import { wsEndpoints } from 'src/utils/axios';
 import { fDateTime } from 'src/utils/format-time';
 import { fNumber } from 'src/utils/format-number';
 
-import { CONFIG } from 'src/config-global';
-
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { wsEndpoints } from 'src/utils/axios';
 
 
 // ----------------------------------------------------------------------

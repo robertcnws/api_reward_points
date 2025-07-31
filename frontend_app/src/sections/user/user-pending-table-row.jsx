@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect, useContext } from 'react';
-import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -17,9 +16,8 @@ import { Typography, ListItemText } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { wsEndpoints } from 'src/utils/axios';
 import { fDateTime } from 'src/utils/format-time';
-
-import { CONFIG } from 'src/config-global';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';

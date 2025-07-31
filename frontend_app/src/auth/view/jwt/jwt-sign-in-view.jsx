@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useState, useContext } from 'react';
@@ -16,8 +15,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';

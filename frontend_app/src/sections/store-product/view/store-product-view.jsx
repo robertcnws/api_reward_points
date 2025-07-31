@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -16,8 +14,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { isClient } from 'src/utils/check-permissions';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { toast } from 'src/components/snackbar';
@@ -78,7 +76,7 @@ export function StoreProductView() {
     const [tableData, setTableData] = useState([]);
 
     useEffect(() => {
-        if (loadedStoreProducts && loadedStoreProducts.length > 0) {
+        if (loadedStoreProducts && loadedStoreProducts?.length > 0) {
             setTableData(
                 !isClient(userRole) ?
                     loadedStoreProducts :
@@ -96,9 +94,10 @@ export function StoreProductView() {
         socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
-                refetchStoreProducts?.().catch((error) => {
-                    console.error('Error refetching store products:', error);
-                });
+                refetchStoreProducts?.()
+                    .catch((error) => {
+                        console.error('Error refetching store products:', error);
+                    });
             }
         };
         return () => {

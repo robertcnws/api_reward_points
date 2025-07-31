@@ -7,16 +7,14 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import { Typography, LinearProgress } from '@mui/material';
 
+import { wsEndpoints } from 'src/utils/axios';
 import { fDateTime } from 'src/utils/format-time';
 import { fNumber } from 'src/utils/format-number';
-
-import { CONFIG } from 'src/config-global';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { wsEndpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -76,10 +74,10 @@ export function EcommerceRewardPointsHistoryList({
   }, [loadedRewardPointsHistory]);
 
   return (
-    <Card {...other}>
+    <Card {...other} sx={{ height: 1, ...other.sx }}>
       <CardHeader title={title} subheader={subheader} />
 
-      <Scrollbar sx={{ maxHeight: 424 }}>
+      <Scrollbar sx={{ maxHeight: 1 }}>
         {loadingRewardPointsHistory ? (
           <Box
             sx={{

@@ -1,8 +1,6 @@
 import { paths } from 'src/routes/paths';
 
-import axios, { axiosInstanceBackend, endpoints } from 'src/utils/axios';
-
-import { CONFIG } from 'src/config-global';
+import axios, { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { STORAGE_KEY, STORAGE_KEY_REFRESH } from './constant';
 

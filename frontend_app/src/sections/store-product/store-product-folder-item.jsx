@@ -1,6 +1,4 @@
-import axios from 'axios';
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -20,6 +18,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fNumber, fShortenNumber } from 'src/utils/format-number';
 import { isClient, listRolesAndSubroles } from 'src/utils/check-permissions';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { CONFIG } from 'src/config-global';
 import { useRewardStoreProductDetailsById } from 'src/_mock/__reward-store-products';
@@ -118,7 +117,7 @@ export function StoreProductFolderItem({
   useEffect(() => {
     let socket;
     if (product && !productLoading && !productError) {
-      socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.item(product.id));
+      socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.byId(product.id));
 
       socket.onerror = (errorEvent) => {
         console.error('WebSocket error:', errorEvent);
@@ -255,7 +254,7 @@ export function StoreProductFolderItem({
           userReporter: JSON.stringify(userLogged?.data),
         };
 
-        const url = endpoints.rewardPoints.create.storeProductSelectionCartBuy.item(currentProduct?.id);
+        const url = endpoints.rewardPoints.create.storeProductSelectionBuy.item(currentProduct?.id);
 
         const promise = axiosInstanceBackend.post(url, payload, {
           headers: {

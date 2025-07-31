@@ -1,5 +1,6 @@
 import graphene
 from django.utils import timezone
+from mongoengine.queryset.visitor import Q
 from api_reward_points.models import (
     RewardInvoice,
     RewardPointsHistory,
@@ -221,24 +222,29 @@ class Query(graphene.ObjectType):
         return list(carts) if carts else []
     
     def resolve_all_reward_store_product_selection_buys(self, info):
-        return RewardStoreProductSelectionBuy.objects(
-            is_removed=False,
-            expiration_time__gte=timezone.now()
-        ).all() if RewardStoreProductSelectionBuy.objects else []
+        now = timezone.now()
+        return (
+            RewardStoreProductSelectionBuy
+            .objects(is_removed=False)
+            .filter(Q(expiration_time__gte=now) | Q(expiration_time=None))
+            .all()
+        ) if RewardStoreProductSelectionBuy.objects else []
 
     def resolve_reward_store_product_selection_buy_by_username(self, info, username):
         user = LoginUser.objects(username=username).first()
         if not user:
             return None
-        
         selections = RewardStoreProductSelection.objects(user=user).all()
         if not selections:
             return [] 
+        
+        now = timezone.now()
 
         buys = RewardStoreProductSelectionBuy.objects(
             store_product_selection__in=selections,
             is_removed=False,
-            expiration_time__gte=timezone.now()
+        ).filter(
+            Q(expiration_time__gte=now) | Q(expiration_time=None)
         ).all()
 
         return list(buys) if buys else []

@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import { useMemo, useState, useEffect } from 'react';
-import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -9,10 +8,10 @@ import { iconButtonClasses } from '@mui/material/IconButton';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { wsEndpoints } from 'src/utils/axios';
 import { isClient } from 'src/utils/check-permissions';
 
 import { allLangs } from 'src/locales';
-import { CONFIG } from 'src/config-global';
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { Logo } from 'src/components/logo';

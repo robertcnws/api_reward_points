@@ -1,4 +1,3 @@
-import axios from 'axios';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -10,11 +9,9 @@ import ButtonBase from '@mui/material/ButtonBase';
 import ListItemText from '@mui/material/ListItemText';
 
 import { fDateTime } from 'src/utils/format-time';
-
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 

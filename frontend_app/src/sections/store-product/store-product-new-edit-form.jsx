@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,13 +16,12 @@ import { useRouter } from 'src/routes/hooks';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProduct }) {
   const router = useRouter();

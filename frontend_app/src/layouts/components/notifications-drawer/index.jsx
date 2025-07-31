@@ -1,7 +1,5 @@
-import axios from 'axios';
 import { m } from 'framer-motion';
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -17,8 +15,7 @@ import IconButton from '@mui/material/IconButton';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { isClient } from 'src/utils/check-permissions';
-
-import { CONFIG } from 'src/config-global';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';

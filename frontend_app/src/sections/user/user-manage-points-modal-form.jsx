@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -12,7 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';

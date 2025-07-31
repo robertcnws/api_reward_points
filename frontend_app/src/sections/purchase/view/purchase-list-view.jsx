@@ -1,7 +1,5 @@
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -24,8 +22,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { isClient } from 'src/utils/check-permissions';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
@@ -149,10 +147,10 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     { id: '' },
   ];
 
-  const table = useTable({ 
-    defaultDense: true, 
-    defaultOrderBy: statusValue !== 'not_used' ? 'createdTime' : 'redeemedTime', 
-    defaultOrder: 'desc' 
+  const table = useTable({
+    defaultDense: true,
+    defaultOrderBy: statusValue !== 'not_used' ? 'createdTime' : 'redeemedTime',
+    defaultOrder: 'desc'
   });
 
   const router = useRouter();
@@ -177,9 +175,11 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   useEffect(() => {
     if (loadedPurchases && loadedPurchases?.length > 0) {
       if (lengthLimit && loadedPurchases.length > lengthLimit) {
-        const sortedPurchases = [...loadedPurchases].sort(
-          (a, b) => dayjs(b.createdTime).valueOf() - dayjs(a.createdTime).valueOf()
-        );
+        const sortedPurchases = [...loadedPurchases]
+          .filter((purchase) => !purchase.isRemoved)
+          .sort(
+            (a, b) => dayjs(b.createdTime).valueOf() - dayjs(a.createdTime).valueOf()
+          );
         setTableData(sortedPurchases.slice(0, lengthLimit));
       }
       else {
@@ -199,6 +199,8 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
+
+      // console.log('message', message);
 
       // setTableData((prev) => {
       //   switch (message.type) {
@@ -292,6 +294,29 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
       toast.error(error.response.data.error);
     }
   }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged?.data]);
+
+
+  const handleRemoveRow = useCallback(
+    async (id) => {
+      try {
+        await axiosInstanceBackend.post(endpoints.rewardPoints.manageRemove.storeProductSelectionBuy.item(id), {
+          userReporter: JSON.stringify(userLogged?.data),
+        });
+        const updatedRows = tableData.filter((row) => row.id !== id);
+        setTableData(updatedRows);
+        table.onUpdatePageDeleteRows({
+          totalRowsInPage: dataInPage.length,
+          totalRowsFiltered: dataFiltered.length,
+        });
+        toast.success('Remove success!');
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
+      }
+    },
+    [userLogged?.data, table, tableData, dataInPage.length, dataFiltered.length]
+  );
+
 
   const handleCancelRefundRow = useCallback(
     async (id) => {
@@ -649,6 +674,7 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
                             selected={table.selected.includes(row.id)}
                             onSelectRow={() => table.onSelectRow(row.id)}
                             onDeleteRow={() => handleDeleteRow(row.id)}
+                            onRemoveRow={() => handleRemoveRow(row.id)}
                             onEditRow={() => handleEditRow(row.id)}
                             onReturnList={() => handleReturnList()}
                             onViewRow={() => handleViewRow(row.id)}

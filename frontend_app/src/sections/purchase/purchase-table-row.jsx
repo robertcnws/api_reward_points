@@ -36,6 +36,7 @@ export function PurchaseTableRow({
   onEditRow,
   onSelectRow,
   onDeleteRow,
+  onRemoveRow,
   onViewRow,
   onReturnList,
   onCancelRefundRow,
@@ -402,7 +403,7 @@ export function PurchaseTableRow({
             <Iconify
               icon="hugeicons:view"
             />
-            View Purchase Details
+            View Order Details
           </MenuItem>
           {!row?.hasBeenUsed && (
             <MenuItem
@@ -433,7 +434,7 @@ export function PurchaseTableRow({
               }}
             >
               <Iconify icon="bxs:purchase-tag" />
-              Use Purchase
+              Use Order
             </MenuItem>
           ]}
           {(roleName !== 'client' && !row.hasBeenUsed) && [
@@ -446,7 +447,20 @@ export function PurchaseTableRow({
               sx={{ color: 'error.main' }}
             >
               <Iconify icon="solar:trash-bin-trash-bold" />
-              Delete Purchase
+              Delete Order
+            </MenuItem>
+          ]}
+          {(roleName !== 'client' && row.hasBeenUsed) && [
+            <MenuItem
+              key='edit-purchase'
+              onClick={() => {
+                confirm.onTrue();
+                popover.onClose();
+              }}
+              sx={{ color: 'error.main' }}
+            >
+              <Iconify icon="mdi:tag-remove" />
+              Remove Order
             </MenuItem>
           ]}
 
@@ -465,18 +479,22 @@ export function PurchaseTableRow({
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Delete"
-        content={`Are you sure want to delete purchase: (${row.storeProductSelection?.storeProduct?.name})?`}
+        title={row.hasBeenUsed ? "Remove" : "Delete"}
+        content={`Are you sure want to ${row.hasBeenUsed ? "remove" : "delete"} order: (${row.storeProductSelection?.storeProduct?.name})?`}
         action={
           <Button
             variant="contained"
             color="error"
             onClick={
               async () => {
-                await onDeleteRow(row?.id);
+                if (row.hasBeenUsed) {
+                  await onRemoveRow(row?.id);
+                } else {
+                  await onDeleteRow(row?.id);
+                }
                 confirm.onFalse();
               }}>
-            Delete
+            {row.hasBeenUsed ? "Remove Order" : "Delete Order"}
           </Button>
         } />
 

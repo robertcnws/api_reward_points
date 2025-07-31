@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useMemo, useState, useEffect } from 'react';
@@ -12,14 +11,12 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { stripHtmlUsingDOM } from 'src/utils/helper';
-
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useMemo, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -13,6 +12,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { fToNow } from 'src/utils/format-time';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { CONFIG } from 'src/config-global';
 
@@ -20,7 +20,6 @@ import { Label } from 'src/components/label';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 

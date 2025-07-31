@@ -1,4 +1,4 @@
-import { useMemo, useContext } from 'react';
+import { useMemo, useEffect, useContext } from 'react';
 
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
@@ -78,6 +78,15 @@ export function StoreProductTable({
     { id: 'status', label: 'Status' },
     { id: '' },
   ];
+
+  useEffect(() => {
+    if (refetchStoreProducts) {
+      refetchStoreProducts?.()
+        .catch((error) => {
+          console.error('Error refetching store products:', error);
+        });
+    }
+  }, [refetchStoreProducts]);
 
   return (
     <Box

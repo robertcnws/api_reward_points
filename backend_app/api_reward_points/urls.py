@@ -127,6 +127,12 @@ urlpatterns = [
         views.delete_list_store_product_selection_buys,
         name='delete_list_store_product_selection_buys'
     ),
+    # MANAGE STORE PRODUCT SELECTION BUY REMOVE
+    path(
+        'manage-remove/store-product-selection-buy/<str:id>/',
+        views.manage_remove_store_product_selection_buy,
+        name='manage_remove_store_product_selection_buy'
+    ),
     # MANAGE STORE PRODUCT SELECTION BUY REFUND
     path(
         'manage-refund/store-product-selection-buy/<str:id>/',

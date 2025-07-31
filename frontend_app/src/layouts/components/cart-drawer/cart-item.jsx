@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -17,8 +16,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fNumber } from 'src/utils/format-number';
 import { fDateTime } from 'src/utils/format-time';
-
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -27,7 +25,6 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 
 // ----------------------------------------------------------------------

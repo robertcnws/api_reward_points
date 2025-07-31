@@ -1,5 +1,4 @@
 import { useRef, useMemo, useEffect } from 'react';
-import { wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,7 +7,8 @@ import Collapse from '@mui/material/Collapse';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
+import { wsEndpoints } from 'src/utils/axios';
+
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 import { useRewardStoreProductSelectionCartByUsername } from 'src/_mock/__reward-store-product-selection-carts';
 

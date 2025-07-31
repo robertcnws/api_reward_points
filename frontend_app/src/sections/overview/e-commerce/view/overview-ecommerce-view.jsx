@@ -51,6 +51,21 @@ export function OverviewEcommerceView({
   const totalSubstractedPoints = useMemo(() => loadedRewardPoints?.totalSubstractedPoints || 0, [loadedRewardPoints]);
   const totalAvailablePoints = useMemo(() => loadedRewardPoints?.totalAvailablePoints || 0, [loadedRewardPoints]);
 
+  const images = useMemo(() => {
+    const imagesFiles = [];
+    if (loadedStoreProducts && loadedStoreProducts.length > 0) {
+      imagesFiles.push(...loadedStoreProducts.map((item) =>
+        item?.attachments?.map((attachment) => ({
+          ...attachment,
+          productName: item.name,
+          productId: item.id,
+        })).flat() || []
+      ).flat());
+    }
+    return imagesFiles;
+  }, [loadedStoreProducts]);
+
+
   const sortedInvoices = useMemo(() => {
     const invoices = loadedRewardPoints?.invoices ?? [];
     return [...invoices].sort((a, b) => {
@@ -89,7 +104,7 @@ export function OverviewEcommerceView({
     return series || [];
   }, [sortedInvoices]);
 
-  const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber=10) => {
+  const seriesFromHistory = useCallback((attributeName, types, attributeData, sliceNumber = 10) => {
     const initialList = loadedRewardPointsHistory || [];
     const sortedList = [...initialList].sort((a, b) => {
       if (a[attributeName] && b[attributeName]) return dayjs(b[attributeName]).diff(dayjs(a[attributeName]));
@@ -122,7 +137,7 @@ export function OverviewEcommerceView({
   }
 
   const invoicesDateArray = useMemo(
-    () => seriesFromInvoices('date', 'paymentMade').map(item => fDate(item.name)), 
+    () => seriesFromInvoices('date', 'paymentMade').map(item => fDate(item.name)),
     [seriesFromInvoices]
   );
 
@@ -137,7 +152,7 @@ export function OverviewEcommerceView({
   );
 
   const currentGainedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['gained', 'refunded'], 'gainedPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentGainedPointsArray = useMemo(
@@ -151,7 +166,7 @@ export function OverviewEcommerceView({
 
 
   const currentAssignedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['assigned'], 'gainedPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentAssignedPointsArray = useMemo(
@@ -165,7 +180,7 @@ export function OverviewEcommerceView({
 
 
   const currentSpentDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDateTime(item.name)), 
+    () => seriesFromHistory('createdTime', ['spent'], 'spentPoints').map(item => fDateTime(item.name)),
     [seriesFromHistory]
   );
   const currentSpentPointsArray = useMemo(
@@ -179,7 +194,7 @@ export function OverviewEcommerceView({
 
 
   const currentSubstractedDateArray = useMemo(
-    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => fDate(item.name)), 
+    () => seriesFromHistory('createdTime', ['substracted'], 'spentPoints').map(item => fDate(item.name)),
     [seriesFromHistory]
   );
   const currentSubstractedPointsArray = useMemo(
@@ -220,30 +235,30 @@ export function OverviewEcommerceView({
         </Box>
       ) : (
         <Grid container spacing={3}>
-          <Grid xs={12} md={8}>
+          <Grid xs={12} md={images.length > 0 ? 8 : 12}>
             <EcommerceWelcome
               title={`Congratulations 🎉  \n ${displayFirstName} ${displayLastName}`}
               isCompound
               description={
                 <Box sx={{
-                    mb: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: { xs: 'center', md: 'flex-start' },
-                    gap: -1,
-                  }}>
-                    <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
-                      You currently have a TOTAL of {' '}
-                    </Typography>
-                    <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
-                      <strong>
-                        {totalAvailablePoints || 0}
-                      </strong>{' '}reward points
-                    </Alert>
-                    <Typography variant="body2" sx={{ opacity: 0.64 }}>
-                      You can use them to get discounts on your next purchases.
-                    </Typography>
-                  </Box>
+                  mb: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: { xs: 'center', md: 'flex-start' },
+                  gap: -1,
+                }}>
+                  <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
+                    You currently have a TOTAL of {' '}
+                  </Typography>
+                  <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
+                    <strong>
+                      {totalAvailablePoints || 0}
+                    </strong>{' '}reward points
+                  </Alert>
+                  <Typography variant="body2" sx={{ opacity: 0.64 }}>
+                    You can use them to get discounts on your next purchases.
+                  </Typography>
+                </Box>
               }
               img={<MotivationIllustration hideBackground />}
               action={
@@ -260,11 +275,13 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={4}>
-            <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
-          </Grid>
+          {images.length > 0 && (
+            <Grid xs={12} md={4}>
+              <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
+            </Grid>
+          )}
 
-          <Grid xs={12} md={2.4}>
+          <Grid xs={12} md={3}>
             <EcommerceRewardPointsAttribute
               title="Spent Amount (USD)"
               icon='noto:money-with-wings'
@@ -280,7 +297,7 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={2.4}>
+          <Grid xs={12} md={3}>
             <EcommerceRewardPointsAttribute
               title="Current Points"
               icon='streamline-stickies-color:star'
@@ -295,7 +312,7 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={2.4}>
+          <Grid xs={12} md={3}>
             <EcommerceRewardPointsAttribute
               title="Assigned Points"
               icon='fluent-color:reward-24'
@@ -310,13 +327,13 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={2.4}>
+          <Grid xs={12} md={3}>
             <EcommerceRewardPointsAttribute
               title="Spent Points"
               icon='streamline-ultimate-color:warehouse-cart-package-ribbon'
               percent={currentSpentTrendPercent || 0}
               total={totalSpentPoints}
-              bgcolor='warning.lighter'
+              bgcolor='error.lighter'
               chart={{
                 colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
                 categories: currentSpentDateArray,
@@ -325,7 +342,7 @@ export function OverviewEcommerceView({
             />
           </Grid>
 
-          <Grid xs={12} md={2.4}>
+          {/* <Grid xs={12} md={2.4}>
             <EcommerceRewardPointsAttribute
               title="Substracted Points"
               icon='fluent-color:error-circle-16'
@@ -338,7 +355,7 @@ export function OverviewEcommerceView({
                 series: currentSubstractedPointsArray,
               }}
             />
-          </Grid>
+          </Grid> */}
 
           {/* <Grid xs={12} md={6} lg={4}>
             <EcommerceSaleByGender

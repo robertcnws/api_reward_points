@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useMemo, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -12,11 +11,11 @@ import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter, usePathname } from 'src/routes/hooks';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { varAlpha } from 'src/theme/styles';
 
 import { Label } from 'src/components/label';

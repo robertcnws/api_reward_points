@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -23,8 +21,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { isClient } from 'src/utils/check-permissions';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 

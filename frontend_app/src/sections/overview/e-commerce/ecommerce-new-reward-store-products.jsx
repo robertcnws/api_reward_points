@@ -10,12 +10,12 @@ import Typography from '@mui/material/Typography';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { varAlpha } from 'src/theme/styles';
 
 import { Image } from 'src/components/image';
 import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -26,12 +26,14 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
 
   const [initialFiles, setInitialFiles] = useState([]);
 
+  const [isEmpty, setIsEmpty] = useState(false);
+
   useEffect(() => {
 
     const images = []
 
     if (list && list.length > 0) {
-      images.push(...list.map((item) => 
+      images.push(...list.map((item) =>
         item?.attachments?.map((attachment) => ({
           ...attachment,
           productName: item.name,
@@ -49,6 +51,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
         isNew: false,
       }
       attachments.push(defaultFile);
+      setIsEmpty(true);
       // setInitialFiles([defaultFile]);
       // return;
     }
@@ -104,9 +107,9 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
         }}
       />
 
-      <Carousel carousel={carousel}>
+      <Carousel carousel={carousel} sx={{ height: 340 }}>
         {initialFiles?.map((item, index) => (
-          <CarouselItem key={`${item.id}-${index}`} item={item} router={router} />
+          <CarouselItem key={`${item.id}-${index}`} item={item} router={router} isEmpty={isEmpty} />
         ))}
       </Carousel>
     </Card>
@@ -115,7 +118,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
 
 // ----------------------------------------------------------------------
 
-function CarouselItem({ item, router, ...other }) {
+function CarouselItem({ item, router, isEmpty, ...other }) {
   return (
     <Box sx={{ width: 1, position: 'relative', ...other }}>
       <Box
@@ -139,16 +142,19 @@ function CarouselItem({ item, router, ...other }) {
           {item.productName || item.name || 'No Name'}
         </Link>
 
-        <Button
-          color="primary"
-          variant="contained"
-          sx={{ alignSelf: 'flex-start' }}
-          onClick={() => {
-            router.push(paths.dashboard.storeProduct.details(item.productId))
-          }}
-        >
-          Buy now
-        </Button>
+
+        {!isEmpty && (
+          <Button
+            color="primary"
+            variant="contained"
+            sx={{ alignSelf: 'flex-start' }}
+            onClick={() => {
+              router.push(paths.dashboard.storeProduct.details(item.productId))
+            }}
+          >
+            Buy now
+          </Button>
+        )}
       </Box>
 
       <Image

@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -15,8 +13,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import { isClient } from 'src/utils/check-permissions';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { toast } from 'src/components/snackbar';

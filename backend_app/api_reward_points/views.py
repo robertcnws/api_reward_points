@@ -268,6 +268,16 @@ def delete_list_store_product_selection_buys(request):
 
 
 #############################################
+# MANAGE STORE PRODUCT SELECTION BUY REMOVE
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def manage_remove_store_product_selection_buy(request, id):
+    return repository_store_product_selections.manage_remove_store_product_selection_buy(request, id)
+
+
+#############################################
 # MANAGE STORE PRODUCT SELECTION BUY REFUND
 #############################################
 

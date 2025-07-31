@@ -131,6 +131,11 @@ export const endpoints = {
         item: (id) => `/reward-points/manage-refund/store-product-selection-buy/${id}/`,
       },
     },
+    manageRemove: {
+      storeProductSelectionBuy: {
+        item: (id) => `/reward-points/manage-remove/store-product-selection-buy/${id}/`,
+      },
+    },
     manageActive: {
       storeProduct: {
         item: (productId) => `/reward-points/manage-active/store-product/${productId}/`,

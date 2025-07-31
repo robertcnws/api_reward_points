@@ -1,6 +1,4 @@
-import axios from 'axios';
 import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -20,7 +18,8 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { varAlpha } from 'src/theme/styles';
 import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';

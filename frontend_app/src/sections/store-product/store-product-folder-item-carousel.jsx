@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Image } from 'src/components/image';
 import { Lightbox, useLightBox } from 'src/components/lightbox';
@@ -10,7 +10,6 @@ import {
   Carousel,
   useCarousel,
 } from 'src/components/carousel';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z as zod } from 'zod';
 import { useState, useContext } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -16,9 +15,8 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useResendTimer } from 'src/hooks/use-resend-timer';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
-import { CONFIG } from 'src/config-global';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Form } from 'src/components/hook-form';
 import { ConfirmDialog } from 'src/components/custom-dialog';

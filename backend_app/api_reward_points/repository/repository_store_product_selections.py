@@ -1308,6 +1308,79 @@ def manage_use_store_product_selection_buy(request, id):
 
 
 
+#############################################
+# MANAGE IS REMOVED STORE PRODUCT SELECTION BUY
+#############################################
+
+def manage_remove_store_product_selection_buy(request, id):         
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        
+        if not user_reporter.is_approved:
+            logger.error("User reporter is not approved")
+            return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
+        
+        try: 
+            buy = RewardStoreProductSelectionBuy.objects(id=id).first()
+            if not buy:
+                logger.error("Store product selection buy not found")
+                return Response({'error': 'Store product selection buy not found'}, status=404)
+
+            buy.is_removed = not buy.is_removed
+            buy.last_modified_time = to_aware(timezone.now())
+            buy.save()
+            
+            tracking_info = transform_data_to_mongo(
+                buy,
+                include_fields=[
+                    'store_product_selection', 
+                    'created_time', 
+                    'last_modified_time', 
+                    'is_removed',
+                    'order_number', 
+                    'confirmation_number',
+                    'notes'
+                ]
+            )
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'manage store product selection buy remove',
+                object_id=buy.id,
+                object_type='RewardStoreProductSelectionBuy',
+                object_name=buy.store_product_selection.store_product.name,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+
+            info = f'has removed {buy.store_product_selection.store_product.name.upper()} \
+                for user {buy.store_product_selection.user.username} effectively'
+
+            module='store_product_selection_buys'
+            info=info
+            info_id=buy.id
+            type='manage_store_product_selection_buy_remove'
+            create_notification(module, info_id, info, type, user_reporter.username)
+                        
+            return Response({
+                'message': 'Store product selection buy remove status updated successfully',
+                'data': json.loads(buy.to_json())
+            }, status=201)
+        
+        except Exception as e:
+            logger.error(f"Error managing remove in store product selection buy: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)
+
+
+
 def send_email_confirmation(type, points, user, purchases, list_receivers):
     email_html_message = render_to_string(
             f"api_reward_points/email_send_{type}_confirmation.html",  

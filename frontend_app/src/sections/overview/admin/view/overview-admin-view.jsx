@@ -1,7 +1,5 @@
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { useMemo, useEffect, useCallback } from 'react';
-import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -11,6 +9,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fDate } from 'src/utils/format-time';
 import { listRolesAndSubroles } from 'src/utils/check-permissions';
+import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
