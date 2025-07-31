@@ -171,32 +171,34 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
               </Typography>
             </Stack>
           </Stack> */}
-          <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
-            <Typography variant="subtitle2" sx={{ flexGrow: 1, mt: 1 }}>
-              NOTES:
-            </Typography>
+          {!isUsed && (
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ flexGrow: 1, mt: 1 }}>
+                NOTES:
+              </Typography>
 
-            <TextField
-              name="notes"
-              value={notes || ''}
-              onChange={(e) => setNotes(e.target.value)}
-              variant="outlined"
-              size="small"
-              fullWidth
-              multiline
-              rows={3}
-              placeholder="Optional notes for this usage"
-              InputProps={{
-                startAdornment: (
-                  <Box sx={{ mr: 1 }}>
-                    <Iconify icon="mdi:note-text-outline" width={20} height={20} color='text.disabled' />
-                  </Box>
-                ),
-              }}
-              sx={{ flexGrow: 1 }}
-              disabled={isUsed}
-            />
-          </Stack>
+              <TextField
+                name="notes"
+                value={notes || ''}
+                onChange={(e) => setNotes(e.target.value)}
+                variant="outlined"
+                size="small"
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="Optional notes for this usage"
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ mr: 1 }}>
+                      <Iconify icon="mdi:note-text-outline" width={20} height={20} color='text.disabled' />
+                    </Box>
+                  ),
+                }}
+                sx={{ flexGrow: 1 }}
+                disabled={isUsed}
+              />
+            </Stack>
+          )}
         </DialogContent>
 
         <DialogActions>
