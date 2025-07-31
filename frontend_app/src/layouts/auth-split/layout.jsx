@@ -58,7 +58,7 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                   <Logo
                     isSingle={false}
                     sx={{
-                      width: 450,
+                      width: 350,
                       height: 'auto'
                     }}
                   />

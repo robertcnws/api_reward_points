@@ -29,6 +29,7 @@ import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
 
 
+
 // ----------------------------------------------------------------------
 
 export const SignUpSchema = zod.object({
@@ -180,57 +181,57 @@ export function JwtSignUpView() {
   const renderForm = (
     <Box gap={3} display="flex" flexDirection="column">
 
-      <Controller
-        name="username"
-        control={methods.control}
-        render={({ field, fieldState: { error } }) => (
-          <TextField
-            {...field}
-            label="Username"
-            error={!!error}
-            helperText={error?.message || ''}
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) => {
-              field.onChange(e);
-              if (errorMsg.message.length > 0) {
-                setErrorMsg({
-                  name: '',
-                  message: '',
-                  email: '',
-                });
-              }
-            }}
-          />
-        )}
-      />
+        <Controller
+          name="username"
+          control={methods.control}
+          render={({ field, fieldState: { error } }) => (
+            <TextField
+              {...field}
+              label="Username"
+              error={!!error}
+              helperText={error?.message || ''}
+              InputLabelProps={{ shrink: true }}
+              onChange={(e) => {
+                field.onChange(e);
+                if (errorMsg.message.length > 0) {
+                  setErrorMsg({
+                    name: '',
+                    message: '',
+                    email: '',
+                  });
+                }
+              }}
+            />
+          )}
+        />
 
-      <Field.Text name="companyName" label="Company name" InputLabelProps={{ shrink: true }} />
+        <Field.Text name="companyName" label="Company name" InputLabelProps={{ shrink: true }} />
 
-      <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
-        <Field.Text name="firstName" label="First name" InputLabelProps={{ shrink: true }} />
-        <Field.Text name="lastName" label="Last name" InputLabelProps={{ shrink: true }} />
-      </Box>
+        <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
+          <Field.Text name="firstName" label="First name" InputLabelProps={{ shrink: true }} />
+          <Field.Text name="lastName" label="Last name" InputLabelProps={{ shrink: true }} />
+        </Box>
 
-      <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
+        <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
 
-      <Field.Phone name="phoneNumber" label="Phone or Mobile" InputLabelProps={{ shrink: true }} />
+        <Field.Phone name="phoneNumber" label="Phone or Mobile" InputLabelProps={{ shrink: true }} />
 
-      <Field.Text
-        name="password"
-        label="Password"
-        placeholder="6+ characters"
-        type={password.value ? 'text' : 'password'}
-        InputLabelProps={{ shrink: true }}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={password.onToggle} edge="end">
-                <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+        <Field.Text
+          name="password"
+          label="Password"
+          placeholder="6+ characters"
+          type={password.value ? 'text' : 'password'}
+          InputLabelProps={{ shrink: true }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={password.onToggle} edge="end">
+                  <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
 
       <LoadingButton
         fullWidth
@@ -277,29 +278,46 @@ export function JwtSignUpView() {
         </Box>
       ) : (
         <Box sx={{
-          mt: !isMobile ? 0 : 35,
+          mt: !isMobile ? 0 : 30,
           width: { xs: '100%', sm: '550px' },
+          // maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 1,
+          position: 'relative',
         }}>
-          <FormHead
-            title="Get started absolutely free"
-            description={
-              <>
-                {`Already have an account? `}
-                <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-                  Sign in
-                </Link>
-              </>
-            }
-            sx={{ textAlign: { xs: 'center', md: 'left' } }}
-          />
-
-          {!!errorMsg.message && (
-            <CustomErrorComponent
-              errorMsg={errorMsg}
-              handleResendCode={handleResendCode}
-              actionName="Send"
+          <Box
+            sx={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              py: 1,
+              px: 1,
+              mb: 1
+            }}
+          >
+            <FormHead
+              title="Get started absolutely free"
+              description={
+                <>
+                  {`Already have an account? `}
+                  <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
+                    Sign in
+                  </Link>
+                </>
+              }
+              sx={{ textAlign: { xs: 'center', md: 'left' } }}
             />
-          )}
+
+            {!!errorMsg.message && (
+              <CustomErrorComponent
+                errorMsg={errorMsg}
+                handleResendCode={handleResendCode}
+                actionName="Send"
+              />
+            )}
+          </Box>
+
 
           <Form methods={methods} onSubmit={onSubmit}>
             {renderForm}

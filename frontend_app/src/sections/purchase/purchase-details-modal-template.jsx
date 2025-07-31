@@ -18,30 +18,38 @@ export function PurchaseDetailsModalTemplate({
 }) {
     return (
         <Box sx={{
+            display: 'flex',
+            flexDirection: !isMobile ? 'row' : 'column',
+            alignItems: 'center',
+            mb: 2,
+            gap: 2,
+            width: '100%',
+            height: '100%',
+        }}>
+
+            <Box sx={{
                 display: 'flex',
-                flexDirection: !isMobile ? 'row' : 'column',
+                justifyContent: 'center',
                 alignItems: 'center',
-                mb: 2,
+                maxWidth: '100%',
+                p: 0,
+
+            }}>
+                <StoreProductDetailsCarousel
+                    images={currentBuy?.storeProductSelection?.storeProduct?.attachments}
+                    forceSize
+                    predefinedSize={100}
+                />
+
+            </Box>
+
+            <Box sx={{
+                display: isMobile ? 'block' : 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
                 gap: 2,
                 width: '100%',
+                alignItems: 'stretch',
             }}>
-
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    maxWidth: '100%',
-                    p: 0,
-
-                }}>
-                    <StoreProductDetailsCarousel
-                        images={currentBuy?.storeProductSelection?.storeProduct?.attachments}
-                        forceSize
-                        predefinedSize={100}
-                    />
-
-                </Box>
-
                 <Card
                     sx={{
                         display: 'flex',
@@ -49,6 +57,7 @@ export function PurchaseDetailsModalTemplate({
                         justifyContent: 'center',
                         alignItems: 'flex-start',
                         width: '100%',
+                        height: '100%',
                         p: 2,
                     }}
                     ml={{ xs: 0, sm: 0, md: 0, lg: 0, xl: 0 }}
@@ -156,6 +165,7 @@ export function PurchaseDetailsModalTemplate({
                         justifyContent: 'center',
                         alignItems: 'flex-start',
                         width: '100%',
+                        height: '100%',
                         p: 2,
                     }}
                     ml={{ xs: 0, sm: 0, md: 0, lg: 0, xl: 0 }}
@@ -374,6 +384,8 @@ export function PurchaseDetailsModalTemplate({
               </Label>
             </Box> */}
                 </Card>
+
             </Box>
+        </Box>
     );
 }

@@ -15,7 +15,7 @@ pipeline {
     BACKEND_IMAGE            = "${AWS_ECR_REGISTRY}/reward-points-backend"
     FRONTEND_IMAGE           = "${AWS_ECR_REGISTRY}/reward-points-frontend"
     AWS_DEFAULT_REGION       = "us-east-2"
-    AWS_FRONTEND_ENV_CRED_ID = "AWS_FRONTEND_ENV_CRED_ID"
+    AWS_FRONTEND_ENV_CRED_ID = "AWS_FRONTEND_REWARD_POINTS_ENV_CRED_ID"
     AWS_CLUSTER              = "api-dealerportal-cluster"
     AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
     AWS_BACKEND_SERVICE      = "reward-points-backend-service"
