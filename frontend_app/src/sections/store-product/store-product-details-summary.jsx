@@ -89,7 +89,7 @@ export function StoreProductDetailsSummary({
     description: subDescription,
     newLabel = { enabled: false, content: '' },
     saleLabel = { enabled: false, content: '' },
-    inventoryType = 'in stock',
+    inventoryType = product?.isActive ? 'in stock' : 'out of stock',
   } = product || {};
 
   const defaultValues = {
