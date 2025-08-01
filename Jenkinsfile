@@ -20,6 +20,8 @@ pipeline {
     AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
     AWS_BACKEND_SERVICE      = "reward-points-backend-service"
     JENKINS_HOOK             = "reward-points-repository-hook"
+    SONARCLOUD_TOKEN         = "SONARCLOUD_TOKEN"
+    SONARCLOUD_HOST          = "https://sonarcloud.io"
   }
 
   stages {
@@ -34,17 +36,14 @@ pipeline {
 
     stage('2. SonarCloud Analysis') {
       agent { label 'docker' }
-      environment {
-        SONAR_HOST = 'https://sonarcloud.io'
-      }
       steps {
-        deleteDir()         
-        unstash 'source'    
-        withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+        deleteDir()
+        unstash 'source'
+        withCredentials([string(credentialsId: env.SONARCLOUD_TOKEN, variable: 'SONAR_TOKEN')]) {
           script {
             sh '''
               docker run --rm \
-                -e SONAR_HOST_URL=${SONAR_HOST} \
+                -e SONAR_HOST_URL=${SONARCLOUD_HOST} \
                 -e SONAR_TOKEN=$SONAR_TOKEN \
                 -v $PWD:/usr/src \
                 -w /usr/src \
