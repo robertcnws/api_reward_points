@@ -32,7 +32,49 @@ pipeline {
       }
     }
 
-    stage('2. Verify agent groups') {
+    stage('2. SonarCloud Analysis') {
+      agent { label 'docker' }
+      environment {
+        SONAR_HOST = 'https://sonarcloud.io'
+      }
+      steps {
+        deleteDir()         
+        unstash 'source'    
+        withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+          script {
+            sh '''
+              docker run --rm \
+                -e SONAR_HOST_URL=${SONAR_HOST} \
+                -e SONAR_TOKEN=$SONAR_TOKEN \
+                -v $PWD:/usr/src \
+                -w /usr/src \
+                sonarsource/sonar-scanner-cli \
+                -Dsonar.login=$SONAR_TOKEN
+            '''
+            sh '''
+              # get the project key from sonar.properties
+              PROJECT_KEY=$(grep '^sonar.projectKey=' sonar.properties | cut -d'=' -f2)
+              if [ -z "$PROJECT_KEY" ]; then
+                echo "Not able to find sonar.projectKey in sonar.properties"
+                exit 1
+              fi
+
+              STATUS=$(curl -s -u $SONAR_TOKEN: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" \
+                | jq -r '.projectStatus.status')
+
+              echo "SonarCloud Quality Gate status: $STATUS"
+              if [ "$STATUS" != "OK" ]; then
+                echo "❌ Quality Gate failed"
+                exit 1
+              fi
+            '''
+          }
+        }
+      }
+    }
+
+
+    stage('3. Verify agent groups') {
       agent { label 'docker' }
       steps {
         sh 'echo "Users: $(id -un)"'
@@ -40,7 +82,7 @@ pipeline {
       }
     }
 
-    stage('3. Smoke Test Docker') {
+    stage('4. Smoke Test Docker') {
       agent { label 'docker' }
       steps {
         echo "🔍 Testing Docker from this agent in EC2..."
@@ -50,7 +92,7 @@ pipeline {
       }
     }
 
-    stage('4. Login to ECR') {
+    stage('5. Login to ECR') {
       agent { label 'docker' }
       steps {
         withCredentials([[
@@ -68,14 +110,14 @@ pipeline {
       }
     }
 
-    stage('5. Prune Docker') {
+    stage('6. Prune Docker') {
       agent { label 'docker' }
       steps {
         sh 'docker system prune -af || true'
       }
     }
 
-    stage('6. Build & Push Backend') {
+    stage('7. Build & Push Backend') {
       when { changeset "**/backend_app/**" }
       agent { label 'docker' }
       steps {
@@ -91,7 +133,7 @@ pipeline {
       }
     }
 
-    stage('7. Build & Push Frontend') {
+    stage('8. Build & Push Frontend') {
       when { changeset "**/frontend_app/**" }
       agent { label 'docker' }
       steps {
@@ -114,7 +156,7 @@ pipeline {
       }
     }
 
-    stage('8. Deploy Backend') {
+    stage('9. Deploy Backend') {
       when { changeset "**/backend_app/**" }
       agent { label 'docker' }
       steps {
@@ -137,7 +179,7 @@ pipeline {
       }
     }
 
-    stage('9. Deploy Frontend') {
+    stage('10. Deploy Frontend') {
       when { changeset "**/frontend_app/**" }
       agent { label 'docker' }
       steps {
@@ -160,7 +202,7 @@ pipeline {
       }
     }
 
-    stage('10. Verify Deployments') {
+    stage('11. Verify Deployments') {
       agent { label 'docker' }
       steps {
         withCredentials([[
@@ -200,7 +242,7 @@ pipeline {
       }
     }
 
-    stage('11. Notify') {
+    stage('12. Notify') {
       when { expression { currentBuild.currentResult == 'SUCCESS' } }
       steps {
         emailext(

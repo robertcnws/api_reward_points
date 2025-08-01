@@ -90,7 +90,7 @@ export function StoreProductDetailsSummary({
     newLabel = { enabled: false, content: '' },
     saleLabel = { enabled: false, content: '' },
     inventoryType = product?.isActive ? 'in stock' : 'out of stock',
-  } = product || {};
+  } = useMemo(() => product || {}, [product]);
 
   const defaultValues = {
     id,
