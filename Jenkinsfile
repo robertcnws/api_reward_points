@@ -43,18 +43,17 @@ pipeline {
           script {
             sh '''
               docker run --rm \
-                -e SONAR_HOST_URL=${SONARCLOUD_HOST} \
-                -e SONAR_TOKEN=$SONAR_TOKEN \
-                -v $PWD:/usr/src \
-                -w /usr/src \
-                sonarsource/sonar-scanner-cli \
-                -Dsonar.login=$SONAR_TOKEN
+                  -e SONAR_TOKEN=$SONAR_TOKEN \
+                  -v $PWD:/usr/src \
+                  -w /usr/src \
+                  sonarsource/sonar-scanner-cli \
+                  -Dsonar.login=$SONAR_TOKEN \
             '''
             sh '''
               # get the project key from sonar.properties
-              PROJECT_KEY=$(grep '^sonar.projectKey=' sonar.properties | cut -d'=' -f2)
+              PROJECT_KEY=$(grep '^sonar.projectKey=' sonar-project.properties | cut -d'=' -f2)
               if [ -z "$PROJECT_KEY" ]; then
-                echo "Not able to find sonar.projectKey in sonar.properties"
+                echo "Not able to find sonar.projectKey in sonar-project.properties"
                 exit 1
               fi
 
