@@ -101,62 +101,65 @@ def is_user_verified(request):
 
 @csrf_exempt
 def transfer_login(request):
-    token = request.POST.get("token")
-    if not token:
-        return JsonResponse({"error": "Token required"}, status=400)
+    if request.method == 'POST':
+        data = json.loads(request.body)  
+        token = data.get("token")
+        if not token:
+            return JsonResponse({"error": "Token required"}, status=400)
 
-    # 1) Decode JWT
-    try:
-        payload = jwt.decode(
-            token,
-            settings.SSO_SHARED_SECRET,
-            algorithms=["HS256"],
-            issuer=settings.SSO_ISSUER,
-            audience=settings.SSO_AUDIENCE_CUSTOMERPORTAL,
+        # 1) Decode JWT
+        try:
+            payload = jwt.decode(
+                token,
+                settings.SSO_SHARED_SECRET,
+                algorithms=["HS256"],
+                issuer=settings.SSO_ISSUER,
+                audience=settings.SSO_AUDIENCE_CUSTOMERPORTAL,
+            )
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"error": "Token expired"}, status=401)
+        except jwt.InvalidTokenError:
+            return JsonResponse({"error": "Invalid token"}, status=401)
+
+        # 2) Get or create Django user
+        User = get_user_model()
+        username = payload["sub"]
+        email = payload.get("email", "")
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={"email": email},
         )
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({"error": "Token expired"}, status=401)
-    except jwt.InvalidTokenError:
-        return JsonResponse({"error": "Invalid token"}, status=401)
+        if created:
+            user.set_unusable_password()
+            user.save()
 
-    # 2) Get or create Django user
-    User = get_user_model()
-    username = payload["sub"]
-    email = payload.get("email", "")
+        # 3) Django login para que setee la cookie `sessionid`
+        django_login(request, user, backend='api_authorization.backends.MongoDBBackend')
 
-    user, created = User.objects.get_or_create(
-        username=username,
-        defaults={"email": email},
-    )
-    if created:
-        user.set_unusable_password()
-        user.save()
+        # 4) Repite aquí EXACTAMENTE lo que hace tu login view
+        request.session['user_id'] = str(user.id)
+        request.session[settings.BACKEND_SESSION_KEY] = 'api_authorization.backends.MongoDBBackend'
+        request.session.set_expiry(0)
+        request.session.modified = True
 
-    # 3) Django login para que setee la cookie `sessionid`
-    django_login(request, user, backend='api_authorization.backends.MongoDBBackend')
+        # 5) Actualizar last_login y tracking
+        login_user = LoginUser.objects(username=username).first()
+        login_user.last_login = timezone.now()
+        login_user.save()
 
-    # 4) Repite aquí EXACTAMENTE lo que hace tu login view
-    request.session['user_id'] = str(user.id)
-    request.session[settings.BACKEND_SESSION_KEY] = 'api_authorization.backends.MongoDBBackend'
-    request.session.set_expiry(0)
-    request.session.modified = True
+        create_tracking(
+            login_user,
+            'login',
+            object_id=str(login_user.id),
+            object_type='LoginUser',
+            object_name=login_user.username,
+            managed_data='User logged in via SSO'
+        )
 
-    # 5) Actualizar last_login y tracking
-    login_user = LoginUser.objects(username=username).first()
-    login_user.last_login = timezone.now()
-    login_user.save()
-
-    create_tracking(
-        login_user,
-        'login',
-        object_id=str(login_user.id),
-        object_type='LoginUser',
-        object_name=login_user.username,
-        managed_data='User logged in via SSO'
-    )
-
-    # 6) Redirige al front React con la sesión ya activa
-    return redirect(f"{settings.FRONTEND_URL}/dashboard")
+        # 6) Redirige al front React con la sesión ya activa
+        return redirect(f"{settings.FRONTEND_URL}/dashboard")
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt
