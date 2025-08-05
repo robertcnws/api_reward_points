@@ -86,6 +86,9 @@ SSO_SHARED_SECRET = env('SSO_SHARED_SECRET', default='')
 SSO_ISSUER = env('SSO_ISSUER', default='NWSIntegrationSystems')
 SSO_AUDIENCE_CUSTOMERPORTAL = env('SSO_AUDIENCE_CUSTOMERPORTAL', default='CustomerPortalSystem')
 
+# FRONTEND_URL
+FRONTEND_URL = env('FRONTEND_URL', default='https://customerportal.newwindowsystem.net')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -324,8 +327,6 @@ AWS_REGION = env('AWS_REGION', default='')
 AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME', default='')
 AWS_S3_FOLDER_STORE_PRODUCTS = env('AWS_S3_FOLDER_STORE_PRODUCTS', default='store_products/')
 AWS_S3_FOLDER_BACKUPS = env('AWS_S3_FOLDER_BACKUPS', default='backups/mongodb/')
-
-FRONTEND_URL = env('FRONTEND_URL', default='')
 
 # API MAIN DATA
 API_MAIN_DATA_URL = env('API_MAIN_DATA_URL', default='')

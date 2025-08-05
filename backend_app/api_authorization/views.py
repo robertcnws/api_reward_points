@@ -156,7 +156,7 @@ def transfer_login(request):
     )
 
     # 6) Redirige al front React con la sesión ya activa
-    return redirect("https://system-b.tudominio.com/app/dashboard")
+    return redirect(f"{settings.FRONTEND_URL}/dashboard")
 
 
 @csrf_exempt
