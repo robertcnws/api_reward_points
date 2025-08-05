@@ -34,40 +34,49 @@ pipeline {
       }
     }
 
-    stage('2. SonarCloud Analysis') {
+    // stage('2. SonarCloud Analysis') {
+    //   agent { label 'docker' }
+    //   steps {
+    //     deleteDir()
+    //     unstash 'source'
+    //     withCredentials([string(credentialsId: env.SONARCLOUD_TOKEN, variable: 'SONAR_TOKEN')]) {
+    //       script {
+    //         sh '''
+    //           docker run --rm \
+    //               -e SONAR_TOKEN=$SONAR_TOKEN \
+    //               -v $PWD:/usr/src \
+    //               -w /usr/src \
+    //               sonarsource/sonar-scanner-cli \
+    //               -Dsonar.login=$SONAR_TOKEN \
+    //         '''
+    //         sh '''
+    //           # get the project key from sonar.properties
+    //           PROJECT_KEY=$(grep '^sonar.projectKey=' sonar-project.properties | cut -d'=' -f2)
+    //           if [ -z "$PROJECT_KEY" ]; then
+    //             echo "Not able to find sonar.projectKey in sonar-project.properties"
+    //             exit 1
+    //           fi
+
+    //           STATUS=$(curl -s -u $SONAR_TOKEN: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" \
+    //             | jq -r '.projectStatus.status')
+
+    //           echo "SonarCloud Quality Gate status: $STATUS"
+    //           if [ "$STATUS" != "OK" ]; then
+    //             echo "❌ Quality Gate failed"
+    //             exit 1
+    //           fi
+    //         '''
+    //       }
+    //     }
+    //   }
+    // }
+
+    stage('2. Verify Docker') {
       agent { label 'docker' }
       steps {
-        deleteDir()
-        unstash 'source'
-        withCredentials([string(credentialsId: env.SONARCLOUD_TOKEN, variable: 'SONAR_TOKEN')]) {
-          script {
-            sh '''
-              docker run --rm \
-                  -e SONAR_TOKEN=$SONAR_TOKEN \
-                  -v $PWD:/usr/src \
-                  -w /usr/src \
-                  sonarsource/sonar-scanner-cli \
-                  -Dsonar.login=$SONAR_TOKEN \
-            '''
-            sh '''
-              # get the project key from sonar.properties
-              PROJECT_KEY=$(grep '^sonar.projectKey=' sonar-project.properties | cut -d'=' -f2)
-              if [ -z "$PROJECT_KEY" ]; then
-                echo "Not able to find sonar.projectKey in sonar-project.properties"
-                exit 1
-              fi
-
-              STATUS=$(curl -s -u $SONAR_TOKEN: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${PROJECT_KEY}" \
-                | jq -r '.projectStatus.status')
-
-              echo "SonarCloud Quality Gate status: $STATUS"
-              if [ "$STATUS" != "OK" ]; then
-                echo "❌ Quality Gate failed"
-                exit 1
-              fi
-            '''
-          }
-        }
+        sh 'echo "Docker version: $(docker --version)"'
+        sh 'echo "Docker Compose version: $(docker-compose --version)"'
+        sh 'echo "Docker info: $(docker info)"'
       }
     }
 

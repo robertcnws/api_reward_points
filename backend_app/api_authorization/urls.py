@@ -13,6 +13,7 @@ urlpatterns = [
     ),
     path("is_user_verified/", views.is_user_verified, name="is_user_verified"),
     path("login/", views.login, name="login"),
+    path("transfer_login/", views.transfer_login, name="transfer_login"),
     path("logout/", views.logout, name="logout"),
     path('register/', views.register, name='register'),
     path('verify_user/', views.verify_user, name='verify_user'),

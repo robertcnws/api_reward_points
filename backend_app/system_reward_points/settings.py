@@ -81,6 +81,11 @@ LOGGING = {
 DJANGO_REGISTER_USER_ROLE = env('DJANGO_REGISTER_USER_ROLE', default='client')
 DJANGO_LIST_ADMIN_EMAIL_RECEIPTS = env.list('DJANGO_LIST_ADMIN_EMAIL_RECEIPTS', default=[])
 
+# SSO
+SSO_SHARED_SECRET = env('SSO_SHARED_SECRET', default='')
+SSO_ISSUER = env('SSO_ISSUER', default='NWSIntegrationSystems')
+SSO_AUDIENCE_CUSTOMERPORTAL = env('SSO_AUDIENCE_CUSTOMERPORTAL', default='CustomerPortalSystem')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
