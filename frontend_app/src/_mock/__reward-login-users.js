@@ -106,3 +106,30 @@ export function useAllRewardLoginUsers(fieldsDescriptor) {
 
   return { loading, error, data: value, refetch };
 }
+
+// External Users by Username
+
+export function useRewardExternalUserByUsername(username, fieldsDescriptor) {
+  const QUERY = useMemo(() => {
+    const selection = buildSelection(fieldsDescriptor).join('\n      ');
+    return gql`
+      query RewardExternalUserByUsername($username: String!) {
+        externalUserByUsername(username: $username) {
+          ${selection}
+        }
+      }
+    `;
+  }, [fieldsDescriptor]);
+
+  const { loading, error, data, refetch } = useQuery(QUERY, {
+    context: {
+      clientName: 'RewardAuthorization',
+    },
+    variables: { username },
+    skip: !username,
+  });
+
+  const value = data?.externalUserByUsername || {};
+
+  return { loading, error, data: value, refetch };
+}

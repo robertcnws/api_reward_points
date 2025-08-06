@@ -62,3 +62,20 @@ def event_notification_user(type, document, full_selection_notification, full_se
             }
         }
     }
+    
+
+def event_external_user(type, document, full_selection):
+    return {
+        'type': 'external_user_update',
+        'message': {
+            'type': type,
+            "item": {
+                "id": str(document.id),
+                "isLoggedIn": document.is_logged_in,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+                "lastLogin": document.last_login,
+                "user": full_selection if document.user else None,
+            }
+        }
+    }

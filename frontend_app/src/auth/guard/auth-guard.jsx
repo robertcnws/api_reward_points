@@ -8,6 +8,7 @@ import { CONFIG } from 'src/config-global';
 import { SplashScreen } from 'src/components/loading-screen';
 
 import { useAuthContext } from '../hooks';
+import { useDataContext } from '../context/data/data-context';
 
 // ----------------------------------------------------------------------
 
@@ -31,6 +32,7 @@ export function AuthGuard({ children }) {
     },
     [searchParams]
   );
+
 
   const checkPermissions = async () => {
     if (loading) {

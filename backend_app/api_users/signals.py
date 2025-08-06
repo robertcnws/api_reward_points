@@ -7,6 +7,7 @@ from utils.data_util import (
 from api_authorization.models import (
     UserRole, 
     LoginUser,
+    ExternalUsers,
 )
 from api_users.models import (
     NotificationUser,
@@ -123,6 +124,41 @@ def notification_user_deleted(sender, document, **kwargs):
         full_selection_user=full_selection_user
     )
     async_to_sync(channel_layer.group_send)('notification_user', serialize_datetime(event))
+    
+    
+##########################################################################
+# ExternalUser
+##########################################################################
+
+def external_user_saved(sender, document, **kwargs):
+    created = kwargs.get('created', False)
+    channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = signal_events.event_external_user(
+        type='created' if created else 'updated',
+        document=document,
+        full_selection=full_selection
+    )
+    async_to_sync(channel_layer.group_send)('external_user', serialize_datetime(event))
+
+
+def external_user_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+    full_selection = transform_data_to_mongo(
+        document.user,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection = camelize(full_selection)
+    event = signal_events.event_external_user(
+        type='deleted',
+        document=document,
+        full_selection=full_selection
+    )
+    async_to_sync(channel_layer.group_send)('external_user', serialize_datetime(event))
     
 
 

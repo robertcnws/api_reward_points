@@ -2,7 +2,7 @@ from celery import shared_task
 from datetime import datetime
 from django.http import HttpRequest
 from django.utils import timezone
-from .views import (
+from api_authorization.repo_util.authorization_utils import (
     get_rewards_points
 )
 from .models import LoginUser, UserRole

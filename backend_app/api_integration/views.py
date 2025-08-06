@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils import timezone
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from .models import RewardItem
 from utils.data_util import assign_points_to_item
-import json
 import requests
 import logging
 

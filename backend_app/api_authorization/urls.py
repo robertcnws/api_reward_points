@@ -19,5 +19,6 @@ urlpatterns = [
     path('verify_user/', views.verify_user, name='verify_user'),
     path('send_verification_code/', views.send_verification_code, name='send_verification_code'),
     path('token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/transfer/', views.MyTokenObtainTransferPairView.as_view(), name='token_obtain_transfer_pair'),
     path('token/refresh/', views.MyTokenRefreshView.as_view(), name='token_refresh'),
 ]

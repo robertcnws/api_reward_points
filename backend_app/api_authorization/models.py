@@ -94,3 +94,19 @@ class RevokedToken(Document):
         'collection': 'revoked_tokens',
         'indexes': ['jti']
     }
+    
+
+class ExternalUsers(Document):
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    is_logged_in = BooleanField(default=False, required=False)
+    last_login = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+    created_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+    last_modified_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+    
+    meta = {
+        'collection': 'external_users',
+        'indexes': ['user'],
+    }
+    
+    def __str__(self):
+        return f"ExternalUser({self.user.username})"

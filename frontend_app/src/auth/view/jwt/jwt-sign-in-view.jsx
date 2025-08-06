@@ -1,6 +1,6 @@
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Box from '@mui/material/Box';
@@ -21,11 +21,13 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
-import { signInWithUsernameAndPassword } from '../../context/jwt';
+import { signInWithUsernameAndPassword, signInWithTransferLogin } from '../../context/jwt';
+
 
 
 // ----------------------------------------------------------------------
@@ -53,6 +55,24 @@ export function JwtSignInView() {
   const { isMobile } = useContext(LoadingContext);
 
   const { checkUserSession } = useAuthContext();
+
+  // const {
+  //   externalUser,
+  //   refetchExternalUser,
+  // } = useDataContext();
+
+  // console.log('externalUser:', externalUser);
+
+  // useEffect(() => {
+  //   async function performTransferLogin() {
+  //     if (externalUser && externalUser.isLoggedIn) {
+  //       await signInWithTransferLogin({ username: externalUser.username, rememberMe: true });
+  //       await checkUserSession?.();
+  //       router.refresh();
+  //     }
+  //   }
+  //   performTransferLogin();
+  // }, [externalUser, checkUserSession, router]);
 
   const [errorMsg, setErrorMsg] = useState({
     message: '',

@@ -6,14 +6,15 @@ import { useRewardLoginUsers, RewardLoginUsersProvider } from './contexts/reward
 import { useRewardPointsSettings, RewardPointsSettingsProvider } from './contexts/reward-points-settings';
 import { useRewardStoreProducts, RewardStoreProductsProvider } from './contexts/reward-store-products-context';
 import { useRewardNotificationUsers, RewardNotificationUsersProvider } from './contexts/reward-notification-users-context';
-import { 
+import {
   useRewardStoreProductSelectionBuy,
   RewardStoreProductSelectionBuyProvider
 } from './contexts/reward-store-product-selection-buy-context';
-import { 
+import {
   useRewardStoreProductSelectionCart,
-  RewardStoreProductSelectionCartProvider 
+  RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
+import { RewardExternalUsersProvider, useRewardExternalUsers } from './contexts/reward-external-users-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
@@ -25,13 +26,15 @@ export function DataProvider({ children }) {
         <RewardStoreProductSelectionBuyProvider>
           <RewardPointsSettingsProvider>
             <RewardUserRolesProvider>
-              <RewardLoginUsersProvider>
-                <RewardStoreProductsProvider>
-                  <RewardPointsProvider>
-                    <CombineProviders>{children}</CombineProviders>
-                  </RewardPointsProvider>
-                </RewardStoreProductsProvider>
-              </RewardLoginUsersProvider>
+              <RewardExternalUsersProvider>
+                <RewardLoginUsersProvider>
+                  <RewardStoreProductsProvider>
+                    <RewardPointsProvider>
+                      <CombineProviders>{children}</CombineProviders>
+                    </RewardPointsProvider>
+                  </RewardStoreProductsProvider>
+                </RewardLoginUsersProvider>
+              </RewardExternalUsersProvider>
             </RewardUserRolesProvider>
           </RewardPointsSettingsProvider>
         </RewardStoreProductSelectionBuyProvider>
@@ -42,15 +45,15 @@ export function DataProvider({ children }) {
 }
 
 function CombineProviders({ children }) {
-  const { 
-    loadedRewardPoints, 
-    refetchRewardPoints, 
-    loadingRewardPoints, 
+  const {
+    loadedRewardPoints,
+    refetchRewardPoints,
+    loadingRewardPoints,
     errorRewardPoints,
     loadedRewardPointsHistory,
     refetchRewardPointsHistory,
     loadingRewardPointsHistory,
-    errorRewardPointsHistory, 
+    errorRewardPointsHistory,
     loadedRewardPointsGainedHistory,
     refetchRewardPointsGainedHistory,
     loadingRewardPointsGainedHistory,
@@ -112,6 +115,13 @@ function CombineProviders({ children }) {
     errorAll: errorStoreProductSelectionBuys,
   } = useRewardStoreProductSelectionBuy();
 
+  const {
+    externalUser,
+    refetchExternalUser,
+    loadingExternalUser,
+    errorExternalUser,
+  } = useRewardExternalUsers();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -121,7 +131,7 @@ function CombineProviders({ children }) {
   // } = useRewardItems();
 
   // console.log('loadedAllRewardItems', loadedAllRewardItems);
-  
+
   const value = useMemo(() => ({
     loadedRewardPoints,
     refetchRewardPoints,
@@ -169,6 +179,10 @@ function CombineProviders({ children }) {
     refetchRewardPointsSpentHistory,
     loadingRewardPointsSpentHistory,
     errorRewardPointsSpentHistory,
+    externalUser,
+    refetchExternalUser,
+    loadingExternalUser,
+    errorExternalUser,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
@@ -221,6 +235,10 @@ function CombineProviders({ children }) {
     refetchRewardPointsSpentHistory,
     loadingRewardPointsSpentHistory,
     errorRewardPointsSpentHistory,
+    externalUser,
+    refetchExternalUser,
+    loadingExternalUser,
+    errorExternalUser,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,

@@ -63,6 +63,7 @@ export const endpoints = {
     login: '/authorization/login/',
     logout: '/authorization/logout/',
     token: '/authorization/token/',
+    tokenTransfer: '/authorization/token/transfer/',
     tokenRefresh: '/authorization/token/refresh/',
     register: '/authorization/register/',
     verify: '/authorization/verify/',

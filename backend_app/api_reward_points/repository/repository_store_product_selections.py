@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.template.loader import render_to_string
 from api_authorization.models import LoginUser
-from api_authorization.views import send_generic_email
+from api_authorization.repo_util.authorization_utils import send_generic_email
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardStoreProductSelection,

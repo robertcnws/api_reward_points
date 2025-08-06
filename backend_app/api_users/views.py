@@ -1,18 +1,13 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from django.utils import timezone
-from utils.data_util import (
-    transform_data_to_mongo,
-    create_notification,
-    create_tracking,
-    to_aware,
+
+from api_users.repository import (
+    repository_notifications, 
+    repository_trackings, 
+    repository_user_role,
+    repository_users,
 )
-from api_authorization.models import LoginUser, UserRole
 
-from api_users.repository import repository_notifications, repository_trackings
-
-from api_users.repo_util.users_util import inherit_from_unapproved_user
 import logging
 
 logging.basicConfig(level=logging.WARNING)
@@ -26,67 +21,7 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user_role(request): 
-    data = request.data
-    name = data.get('name')
-    description = data.get('description')
-    user_reporter = data.get('userReporter')
-    
-    if not name:
-        return Response({'error': 'Name is required'}, status=400)
-    
-    try:
-        user_role = UserRole.objects.filter(name=name).first()
-        if user_role:
-            return Response({'error': 'User role already exists'}, status=400)
-        
-        user_role = UserRole(
-            name=name,
-            description=description,
-            created_time=timezone.now(),
-            last_modified_time=timezone.now(),
-        )
-        
-        user_role.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user_role,
-            exclude_fields=[
-                'password', 
-                'is_staff', 
-                'is_active', 
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'create user role',
-                object_id=user_role.id,
-                object_type='UserRole',
-                object_name=user_role.name,
-                managed_data=tracking_info
-            )
-            
-            module='user_roles'
-            info=f'has created a new user role ({user_role.name})'
-            info_id=user_role.id
-            type='create_user_role'
-            create_notification(module, info_id, info, type, user_reporter.username)
-            
-            return Response({'success': 'User role created successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_user_role.create_user_role(request)
     
     
 #############################################
@@ -96,68 +31,7 @@ def create_user_role(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def edit_user_role(request, id): 
-    try:
-        user_role = UserRole.objects.filter(id=id).first()
-        if not user_role:
-            return Response({'error': 'User role does not exist'}, status=400)
-        
-        data = request.data
-        name = data.get('name')
-        description = data.get('description')
-        user_reporter = data.get('userReporter')
-        
-        if not name:
-            return Response({'error': 'Name is required'}, status=400)
-    
-        check_user_role = UserRole.objects(name=name).first()
-        if check_user_role and check_user_role.id != user_role.id:
-            return Response({'error': 'User role already exists'}, status=400)
-        
-        user_role.name = name
-        user_role.description = description
-        user_role.last_modified_time = timezone.now()
-        user_role.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user_role,
-            exclude_fields=[
-                'password', 
-                'is_staff', 
-                'is_active', 
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'update user role',
-                object_id=user_role.id,
-                object_type='UserRole',
-                object_name=user_role.name,
-                managed_data=tracking_info
-            )
-        
-        
-            module='user_roles'
-            info=f'has updated a user role ({user_role.name})'
-            info_id=user_role.id
-            type='update_user_role'
-            create_notification(module, info_id, info, type, user_reporter.username)
-        
-            return Response({'success': 'User role created successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_user_role.edit_user_role(request, id)
     
     
 
@@ -168,59 +42,7 @@ def edit_user_role(request, id):
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def delete_user_role(request, id): 
-    try:
-        user_role = UserRole.objects.filter(id=id).first()
-        if not user_role:
-            return Response({'error': 'User role does not exist'}, status=400)
-        
-        data = request.data
-        user_reporter = data.get('userReporter')
-        
-        existing_user_with_role = LoginUser.objects(user_role=user_role).first()
-        if existing_user_with_role:
-            return Response({'error': f'User role {existing_user_with_role.name} is in use'}, status=400)
-        
-        tracking_info = transform_data_to_mongo(
-            user_role,
-            exclude_fields=[
-                'password', 
-                'is_staff', 
-                'is_active', 
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'delete user role',
-                object_id=user_role.id,
-                object_type='UserRole',
-                object_name=user_role.name,
-                managed_data=tracking_info
-            )
-            
-            module='user_roles'
-            info=f'has deleted a user role ({user_role.name})'
-            info_id=user_role.id
-            type='delete_user_role'
-            create_notification(module, info_id, info, type, user_reporter.username)
-            
-            user_role.delete()
-        
-            return Response({'success': 'User role deleted successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_user_role.delete_user_role(request, id)
     
     
 #############################################
@@ -230,67 +52,7 @@ def delete_user_role(request, id):
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def delete_user_roles(request): 
-    try:
-        data = request.data
-        user_reporter = data.get('userReporter')
-        ids = data.get('userRoleIds')
-        
-        user_roles = UserRole.objects(id__in=ids)
-        if not user_roles:
-            return Response({'error': 'User roles not found'}, status=404)
-        
-        users = LoginUser.objects.all()
-        
-        for user_role in user_roles:
-            users = [user for user in users if str(user.user_role['id']) == str(user_role.id)]
-            if users:
-                return Response({'error': 'User role(s) in use'}, status=400)
-        
-        tracking_info = [
-            transform_data_to_mongo(
-                user_role,
-                exclude_fields=[
-                    'password', 
-                    'is_staff', 
-                    'is_active', 
-                    'is_verified', 
-                    'last_login', 
-                    'date_joined',
-                    'last_modified_time', 
-                    'created_time'
-                ]
-            ) for user_role in user_roles
-        ]
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            list_names = [user_role.name for user_role in user_roles]
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'delete list of {len(user_roles)} user roles',
-                object_id=','.join([str(user_role.id) for user_role in user_roles]),
-                object_type='UserRole',
-                object_name=','.join(list_names),
-                managed_data=tracking_info
-            )
-        
-            module='user_roles'
-            info=f'has deleted list of {len(user_roles)} user roles ({", ".join(list_names)})'
-            info_id='list'
-            type='delete_user_roles'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-            
-            user_roles.delete()
-            
-            return Response({'success': 'User roles deleted successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_user_role.delete_user_roles(request)
     
     
 #############################################
@@ -300,85 +62,7 @@ def delete_user_roles(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user(request): 
-    data = request.data
-    company_name = data.get('companyName', 'NWS') 
-    username = data.get('username')
-    email = data.get('email')
-    first_name = data.get('firstName')
-    last_name = data.get('lastName')
-    phone_number = data.get('phoneNumber')
-    role = data.get('role')
-    password = data.get('password')
-    user_reporter = data.get('userReporter')
-    avatar_url = data.get('avatarUrl', '')
-    
-    try:
-        user = LoginUser.objects.filter(username=username).first()
-        if user:
-            return Response({'error': 'User already exists'}, status=400)
-        
-        role = UserRole.objects.filter(id=role).first()
-        if not role:
-            return Response({'error': 'Role does not exist'}, status=400)
-        
-        user = LoginUser(
-            company_name=company_name,
-            username=username,
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            phone_number=phone_number,
-            user_role=role,
-            is_active=True,
-            is_verified=True,
-            is_approved=True,
-            avatar_url=avatar_url,
-            created_time=timezone.now(),
-            last_modified_time=timezone.now(),
-        )
-        
-        user.set_password(password)
-        user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user, 
-            exclude_fields=[
-                'password', 
-                'is_staff', 
-                'is_active', 
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'create user',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has created a new user ({user.username})'
-            info_id=user.id
-            type='create_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-            
-            return Response({'success': 'User created successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_users.create_user(request)
     
     
 #############################################
@@ -388,83 +72,7 @@ def create_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def edit_user(request, id): 
-    try:
-        user = LoginUser.objects.filter(id=id).first()
-        if not user:
-            return Response({'error': 'User does not exist'}, status=400)
-        
-        data = request.data
-        company_name = data.get('companyName', 'NWS')
-        username = data.get('username')
-        email = data.get('email')
-        first_name = data.get('firstName')
-        last_name = data.get('lastName')
-        phone_number = data.get('phoneNumber')
-        role = data.get('role')
-        password = data.get('password')
-        user_reporter = data.get('userReporter')
-        status = data.get('status', 'active')
-    
-    
-        check_user = LoginUser.objects.filter(username=username).first()
-        if check_user and check_user.id != user.id:
-            return Response({'error': 'User already exists'}, status=400)
-        
-        role = UserRole.objects.filter(id=role).first()
-        if not role:
-            return Response({'error': 'Role does not exist'}, status=400)
-        
-        user.username = username if username else user.username
-        user.company_name = company_name if company_name else user.company_name
-        user.email = email if email else user.email
-        user.first_name = first_name if first_name else user.first_name
-        user.last_name = last_name if last_name else user.last_name
-        user.phone_number = phone_number if phone_number else user.phone_number
-        user.user_role = role if role else user.user_role
-        user.is_active = True if status == 'active' else False
-        user.last_modified_time = timezone.now()
-        if password:
-            user.set_password(password)
-        user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user, 
-            exclude_fields=[
-                'password', 
-                'is_staff',
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'update user',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has updated a user ({user.username})'
-            info_id=user.id
-            type='update_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-            
-            return Response({'success': 'User updated successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    return repository_users.edit_user(request, id)
     
     
 
@@ -475,54 +83,7 @@ def edit_user(request, id):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def change_password(request, id):
-    data = request.data
-    same_user = data.get('isSameUser')
-    current_password = data.get('password')
-    new_password = data.get('newPassword')
-    confirm_password = data.get('confirmPassword')
-    
-    try:
-        user = LoginUser.objects(id=id).first()
-    except LoginUser.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
-    
-    if same_user == 'same' and not user.check_password(current_password):
-        return Response({'error': 'Current password is incorrect'}, status=400)
-    
-    if new_password != confirm_password:
-        return Response({'error': 'New password and confirm password must match'}, status=400)
-    
-    user.set_password(new_password)
-    user.save()
-    
-    tracking_info = transform_data_to_mongo(
-        user, 
-        exclude_fields=[
-            'password', 
-            'is_staff', 
-            'is_active', 
-            'is_verified', 
-            'last_login', 
-            'date_joined',
-            'last_modified_time', 
-            'created_time'
-        ]
-    )
-    
-    if user:
-        
-        create_tracking(
-            user_reporter=user,
-            action=f'change password',
-            object_id=user.id,
-            object_type='LoginUser',
-            object_name=user.username,
-            managed_data=tracking_info
-        )
-    
-        return Response({'message': 'Password updated successfully'}, status=200)
-    
-    return Response({'error': 'User not found'}, status=404)
+    return repository_users.change_password(request, id)
 
 
 #############################################
@@ -532,57 +93,7 @@ def change_password(request, id):
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def delete_user(request, id):
-    data = request.data
-    user_reporter = data.get('userReporter')
-    try:
-        user = LoginUser.objects(id=id).first()
-        if not user:
-            return Response({'error': 'User not found'}, status=404)
-        
-        if user.username == user_reporter['username']:
-            return Response({'error': 'You cannot delete your own account'}, status=400)
-        
-        tracking_info = transform_data_to_mongo(
-            user, 
-            exclude_fields=[
-                'password', 
-                'is_staff', 
-                'is_active', 
-                'is_verified', 
-                'last_login', 
-                'date_joined',
-                'last_modified_time', 
-                'created_time'
-            ]
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'delete user',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has deleted a user ({user.username})'
-            info_id=user.id
-            type='delete_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-                
-            user.delete()
-            
-            return Response({'message': 'User deleted successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except LoginUser.DoesNotExist:
-            return Response({'error': 'User not found'}, status=404)
+    return repository_users.delete_user(request, id)
         
         
 #############################################
@@ -592,62 +103,7 @@ def delete_user(request, id):
 @api_view(['DELETE'])
 @permission_classes([AllowAny])
 def delete_users(request):
-    data = request.data
-    user_reporter = data.get('userReporter')
-    ids = data.get('userIds')
-    try:
-        users = LoginUser.objects(id__in=ids)
-        if not users:
-            return Response({'error': 'Users not found'}, status=404)
-        
-        users = [user for user in users if user.username != user_reporter['username']] 
-        if not users:
-            return Response({'error': 'You cannot delete your own account'}, status=400)
-        
-        tracking_info = [
-            transform_data_to_mongo(
-                user, 
-                exclude_fields=[
-                    'password', 
-                    'is_staff', 
-                    'is_active', 
-                    'is_verified', 
-                    'last_login', 
-                    'date_joined',
-                    'last_modified_time', 
-                    'created_time'
-                ]
-            ) for user in users
-        ]
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'delete list of {len(users)} users',
-                object_id=','.join([str(user.id) for user in users]),
-                object_type='LoginUser',
-                object_name=','.join([user.username for user in users]),
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has deleted {len(users)} users'
-            info_id='list'
-            type='delete_users'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-                
-            for user in users:
-                user.delete()
-            
-            return Response({'message': 'Users deleted successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except LoginUser.DoesNotExist:
-            return Response({'error': 'Users not found'}, status=404)
+    return repository_users.delete_users(request)
         
 #############################################
 # CHANGE APPROVAL USER
@@ -656,67 +112,7 @@ def delete_users(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def change_approval_user(request, id):
-    data = request.data
-    user_reporter = data.get('userReporter')
-    try:
-        user = LoginUser.objects(id=id).first()
-        if not user:
-            return Response({'error': 'User not found'}, status=404)
-        
-        company_name = user.company_name
-        if company_name:
-            if not user.is_approved: 
-                user_exists_company = LoginUser.objects(company_name=company_name, is_approved=True).first()
-                if user_exists_company:
-                    return Response({
-                            'error': 'User cannot be approved because company already exists and is active', 
-                            'description': 'User cannot be approved because company already exists and is active', 
-                            'error_name': 'company_exists',
-                            'error_mail': None
-                    }, status=400)
-            else:
-                users_exists_company = LoginUser.objects(
-                    company_name=company_name, 
-                    is_approved=False,
-                    id__ne=user.id
-                ).first()
-                if users_exists_company:
-                    
-                    inherit_from_unapproved_user(user_exists_company, user)
-        
-        user.is_approved = not user.is_approved
-        user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user, 
-            include_fields=['is_approved', 'username', 'id']
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'change to {"approved" if user.is_approved else "NOT approved"}',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has change approval user ({user.username}) to {"approved" if user.is_approved else "not approved"}'
-            info_id=user.id
-            type='change_approval_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-            
-            return Response({'message': 'User approval change successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except LoginUser.DoesNotExist:
-            return Response({'error': 'User not found'}, status=404)
+    return repository_users.change_approval_user(request, id)
         
         
 #############################################
@@ -726,46 +122,7 @@ def change_approval_user(request, id):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def change_verify_user(request, id):
-    data = request.data
-    user_reporter = data.get('userReporter')
-    try:
-        user = LoginUser.objects(id=id).first()
-        if not user:
-            return Response({'error': 'User not found'}, status=404)
-
-        user.is_verified = not user.is_verified
-        user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user, 
-            include_fields=['is_verified', 'username', 'id']
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
-        if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'change to {"verified" if user.is_verified else "NOT verified"}',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has change verify user ({user.username}) to {"verified" if user.is_verified else "not verified"}'
-            info_id=user.id
-            type='change_verify_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-
-            return Response({'message': 'User verify change successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except LoginUser.DoesNotExist:
-            return Response({'error': 'User not found'}, status=404)
+    return repository_users.change_verify_user(request, id)
         
         
 #############################################

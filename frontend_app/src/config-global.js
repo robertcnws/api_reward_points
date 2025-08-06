@@ -16,7 +16,7 @@ export const CONFIG = {
   pollingInterval: import.meta.env.VITE_POLLING_INTERVAL ?? 10000,
   frontendHost: import.meta.env.VITE_FRONTEND_HOST ?? '',
   frontendUrl: import.meta.env.VITE_FRONTEND_URL ?? '',
-  frontendPort: import.meta.env.VITE_FRONTEND_PORT ?? 3000,
+  frontendPort: import.meta.env.VITE_FRONTEND_PORT ?? 3030,
   wsProtocol: import.meta.env.VITE_WEBSOCKET_PROTOCOL ?? 'ws',
   roles: {
     superadmin: import.meta.env.VITE_ROLE_SUPERADMIN ?? '',

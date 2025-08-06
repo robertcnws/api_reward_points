@@ -6,6 +6,7 @@ from bson import ObjectId
 from api_authorization.models import (
     UserRole,
     LoginUser,
+    ExternalUsers,
 )
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
 
@@ -56,6 +57,29 @@ class LoginUserType(MongoengineObjectType):
     
     def resolve_date_joined(self, info):
         return datetime_to_timezone(self.date_joined) if self.date_joined else None
+    
+    
+class ExternalUserType(MongoengineObjectType):
+    user = graphene.Field(LoginUserType)
+    created_time = graphene.String()
+    last_modified_time = graphene.String()
+    last_login = graphene.String()
+
+    class Meta:
+        model = ExternalUsers
+        exclude_fields = ("password",)
+
+    def resolve_user(self, info):
+        return self.user
+    
+    def resolve_created_time(self, info):
+        return datetime_to_timezone(self.created_time) if self.created_time else None
+    
+    def resolve_last_modified_time(self, info):
+        return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
+    
+    def resolve_last_login(self, info):
+        return datetime_to_timezone(self.last_login) if self.last_login else None
         
         
 class Query(graphene.ObjectType):
@@ -65,6 +89,8 @@ class Query(graphene.ObjectType):
     login_user_by_id = graphene.Field(LoginUserType, id=graphene.String(required=True))
     login_user_by_username = graphene.Field(LoginUserType, username=graphene.String(required=True))
     login_users_by_user_role = graphene.List(LoginUserType, user_role_id=graphene.String(required=True))
+    external_user_by_username = graphene.Field(ExternalUserType, username=graphene.String(required=True))
+    last_logged_external_users = graphene.List(ExternalUserType)
     
     def resolve_all_user_roles(self, info):
         return UserRole.objects.all()
@@ -98,3 +124,15 @@ class Query(graphene.ObjectType):
             return []
         except UserRole.DoesNotExist:
             return []
+        
+    def resolve_external_user_by_username(self, info, username):
+        try:
+            user = LoginUser.objects(username=username).first()
+            if user:
+                return ExternalUsers.objects(user=user).first()
+            return None
+        except ExternalUsers.DoesNotExist:
+            return None
+        
+    def resolve_last_logged_external_users(self, info):
+        return ExternalUsers.objects(is_logged_in=True).order_by('-last_login')[:10]

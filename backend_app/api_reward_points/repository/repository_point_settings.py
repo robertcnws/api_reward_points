@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from django.utils import timezone
 from api_authorization.models import LoginUser, UserRole
-from api_authorization.views import get_rewards_points
+from api_authorization.repo_util.authorization_utils import get_rewards_points
 from api_reward_points.models import (
      RewardPointsSettings,
 )

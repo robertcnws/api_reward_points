@@ -20,3 +20,15 @@ export const fieldsLoginUsers = [
     fields: ['id', 'name'],
   },
 ];
+
+export const fieldsExternalUsers = [
+  'id',
+  'createdTime',
+  'lastModifiedTime',
+  'lastLogin',
+  'isLoggedIn',
+  {
+    name: 'user',
+    fields: fieldsLoginUsers,
+  },
+];
