@@ -73,19 +73,54 @@ class RewardInvoiceLineItem(Document):
     }
 
 
+class RewardSalesOrder(Document):
+    salesorder_id = StringField(required=True, unique=True)
+    salesorder_number = StringField(required=True, unique=True)
+    date = DateTimeField(default=timezone.now, null=True)
+    status = StringField(null=True, blank=True)
+    total_quantity = IntField(required=True, default=0)
+    sub_total = FloatField(required=True, default=0.0)
+    tax_total = FloatField(required=True, default=0.0)
+    total = FloatField(required=True, default=0.0)
+    line_items = ListField(ReferenceField(RewardInvoiceLineItem, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
+    customer_id = StringField(null=True, blank=True)
+    customer_name = StringField(null=True, blank=True)
+    salesperson_id = StringField(null=True, blank=True)
+    salesperson_name = StringField(null=True, blank=True)
+    created_by_email = StringField(null=True, blank=True)
+    created_by_name = StringField(null=True, blank=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+
+    meta = {
+        'collection': 'reward_sales_orders',
+        'indexes': [
+            'salesorder_id', 'salesorder_number', 'date'
+        ],
+        'verbose_name': 'Reward Sales Order',
+        'verbose_name_plural': 'Reward Sales Orders'
+    }
+    
+
 class RewardInvoice(Document):
     invoice_id = StringField(required=True, unique=True)
     invoice_number = StringField(required=True, unique=True)
+    status = StringField(null=True, blank=True)
     date = DateTimeField(default=timezone.now, null=True)
     sub_total = FloatField(required=True, default=0.0)
     payment_made = FloatField(required=True, default=0.0)
+    tax_total = FloatField(required=True, default=0.0)
+    balance = FloatField(required=True, default=0.0)
     line_items = ListField(ReferenceField(RewardInvoiceLineItem, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
     taxes = ListField(ReferenceField(RewardInvoiceTax, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
+    salesorder = ReferenceField(RewardSalesOrder, null=True, blank=True, reverse_delete_rule=2)  # CASCADE
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
 
     meta = {
         'collection': 'reward_invoices',
         'indexes': [
-            'invoice_id', 'invoice_number', 'date'
+            'invoice_id', 'invoice_number', 'date', 'salesorder'
         ],
         'verbose_name': 'Reward Invoice',
         'verbose_name_plural': 'Reward Invoices'
@@ -102,7 +137,12 @@ class RewardPoints(Document):
     total_substracted_points = IntField(default=0)
     total_refunded_points = IntField(default=0)
     total_amount_invoices = FloatField(default=0.0)
+    total_paid_amount_invoices = FloatField(default=0.0)
+    total_opened_balance_invoices = FloatField(default=0.0)
+    total_tax_amount_invoices = FloatField(default=0.0)
+    qty_pending_orders = IntField(default=0)
     invoices = ListField(ReferenceField(RewardInvoice, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
+    sales_orders = ListField(ReferenceField(RewardSalesOrder, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
 

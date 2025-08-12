@@ -14,6 +14,7 @@ import { Chart, useChart } from 'src/components/chart';
 
 export function EcommerceRewardPointsAttribute({
   title,
+  subheader=`(Current Year ${new Date().getFullYear()})`,
   icon = null,
   percent,
   total,
@@ -109,6 +110,7 @@ export function EcommerceRewardPointsAttribute({
     >
       <Box sx={{ flexGrow: 1 }}>
         <Box sx={{ typography: 'subtitle2' }}>{title}</Box>
+        <Box sx={{ typography: 'caption' }}>{subheader}</Box>
         <Box sx={{ my: 1.5, typography: 'h3', flexDirection: 'row', display: 'flex' }}>
           {icon && (
             <Box

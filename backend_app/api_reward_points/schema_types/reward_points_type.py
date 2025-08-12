@@ -7,10 +7,12 @@ from api_reward_points.models import (
 from api_users.schema import LoginUserType
 from utils.json_datetime import datetime_to_timezone
 from api_reward_points.schema_types.reward_invoice_type import RewardInvoiceType
+from api_reward_points.schema_types.reward_sales_order_type import RewardSalesOrderType
     
 class RewardPointsType(MongoengineObjectType):
     user = graphene.Field(LoginUserType)
     invoices = graphene.List(RewardInvoiceType)
+    sales_orders = graphene.List(RewardSalesOrderType)
     created_time = graphene.String()
     last_modified_time = graphene.String()
     total_available_points = graphene.Int()
@@ -23,6 +25,9 @@ class RewardPointsType(MongoengineObjectType):
     
     def resolve_invoices(self, info):
         return self.invoices
+    
+    def resolve_sales_orders(self, info):
+        return self.sales_orders
     
     def resolve_created_time(self, info):
         return datetime_to_timezone(self.created_time) if self.created_time else None

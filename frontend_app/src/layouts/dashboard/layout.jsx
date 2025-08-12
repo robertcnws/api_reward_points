@@ -227,7 +227,7 @@ export function DashboardLayout({ sx, children, header, data }) {
                 {/* -- Logo -- */}
                 {isNavHorizontal && (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Logo isSingle={false} sx={{ width: '100px', height: 'auto' }} />
+                    <Logo isSingle={false} sx={{ width: '60px', height: 'auto' }} />
                   </Box>
                   // <Logo
                   //   isSingle={false}
@@ -266,7 +266,7 @@ export function DashboardLayout({ sx, children, header, data }) {
                   <CartsDrawer />
                 )}
                 {/* -- Notifications popover -- */}
-                <NotificationsDrawer />
+                {/* <NotificationsDrawer /> */}
                 {/* -- Contacts popover -- */}
                 {/* <ContactsPopover data={_contacts} /> */}
                 {/* -- Settings button -- */}

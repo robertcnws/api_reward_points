@@ -14,7 +14,7 @@ from api_users.tasks import (
 @shared_task
 def task_sequence_every_10_min():
     workflow = chain(
-        task_update_items_to_rewards.si(),
+        # task_update_items_to_rewards.si(),
         task_get_rewards_points.si(),
         # task_delete_old_trackings.si(),
         # task_generate_db_backup.si(),

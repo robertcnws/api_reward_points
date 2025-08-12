@@ -22,15 +22,17 @@ export function Section({
 }) {
   const theme = useTheme();
 
+  console.log('theme', theme.vars.palette);
+
   return (
     <Box
       sx={{
         ...bgGradient({
-          color: `0deg, ${varAlpha(
-            theme.vars.palette.background.defaultChannel,
-            0.92
-          )}, ${varAlpha(theme.vars.palette.background.defaultChannel, 0.92)}`,
-          imgUrl: `${CONFIG.assetsDir}/assets/background/background-3-blur.webp`,
+          color: `6deg, ${varAlpha(
+            theme.vars.palette.success.lightChannel,
+            0.9
+          )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.9)}`,
+          // imgUrl: `${CONFIG.assetsDir}/assets/background/background-4.jpg`,
         }),
         px: 2,
         pb: 2,

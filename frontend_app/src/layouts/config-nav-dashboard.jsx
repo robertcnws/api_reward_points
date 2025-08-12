@@ -88,7 +88,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
     items: [
       {
         key: `${paths.dashboard.general.analytics}-1`,
-        title: 'Analytics',
+        title: isClient(userRole) ? 'Dashboard' : 'Analytics',
         path: paths.dashboard.general.analytics,
         icon: ICONS.analytics
       },
@@ -152,6 +152,12 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           ),
           path: paths.dashboard.purchase.root,
           icon: ICONS.purchase,
+        },
+        {
+          key: `${paths.dashboard.invoice.root}-2`,
+          title: 'Invoices',
+          path: paths.dashboard.invoice.root,
+          icon: ICONS.invoice,
         },
       ] : []),
     ],

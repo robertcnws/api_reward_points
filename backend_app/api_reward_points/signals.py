@@ -556,11 +556,17 @@ def reward_points_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
+    full_selection_sales_orders = transform_data_to_mongo(
+        document.sales_orders,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_sales_orders = camelize(full_selection_sales_orders)
     event = signal_events.event_reward_points(
         type='created' if created else 'updated',
         document=document,
         full_selection_user=full_selection_user,
-        full_selection_invoices=full_selection_invoices
+        full_selection_invoices=full_selection_invoices,
+        full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
     
@@ -577,11 +583,17 @@ def reward_points_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
+    full_selection_sales_orders = transform_data_to_mongo(
+        document.sales_orders,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_sales_orders = camelize(full_selection_sales_orders)
     event = signal_events.event_reward_points(
         type='deleted',
         document=document,
         full_selection_user=full_selection_user,
-        full_selection_invoices=full_selection_invoices
+        full_selection_invoices=full_selection_invoices,
+        full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
     
@@ -603,11 +615,17 @@ def reward_points_by_id_saved(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
+    full_selection_sales_orders = transform_data_to_mongo(
+        document.sales_orders,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_sales_orders = camelize(full_selection_sales_orders)
     event = signal_events.event_reward_points(
         type='created' if created else 'updated',
         document=document,
         full_selection_user=full_selection_user,
-        full_selection_invoices=full_selection_invoices
+        full_selection_invoices=full_selection_invoices,
+        full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     
@@ -625,11 +643,17 @@ def reward_points_by_id_deleted(sender, document, **kwargs):
         exclude_fields=[ 'password' ],
     )
     full_selection_invoices = camelize(full_selection_invoices)
+    full_selection_sales_orders = transform_data_to_mongo(
+        document.sales_orders,
+        exclude_fields=[ 'password' ],
+    )
+    full_selection_sales_orders = camelize(full_selection_sales_orders)
     event = signal_events.event_reward_points(
         type='deleted',
         document=document,
         full_selection_user=full_selection_user,
-        full_selection_invoices=full_selection_invoices
+        full_selection_invoices=full_selection_invoices,
+        full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
     

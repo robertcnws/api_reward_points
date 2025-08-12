@@ -2,32 +2,23 @@ import graphene
 import api_reward_points.schema_types.converters
 from graphene_mongo import MongoengineObjectType
 from api_reward_points.models import (
-    RewardInvoice,
+    RewardSalesOrder,
 )
 from utils.json_datetime import datetime_to_timezone
 from api_users.schema import LoginUserType
 from api_reward_points.schema_types.reward_invoice_line_item_type import RewardInvoiceLineItemType
 from api_reward_points.schema_types.reward_invoice_tax_type import RewardInvoiceTaxType
-from api_reward_points.schema_types.reward_sales_order_type import RewardSalesOrderType
     
-class RewardInvoiceType(MongoengineObjectType):
+class RewardSalesOrderType(MongoengineObjectType):
     line_items = graphene.List(RewardInvoiceLineItemType)
-    taxes = graphene.List(RewardInvoiceTaxType)
-    salesorder = graphene.Field(RewardSalesOrderType)
     last_modified_time = graphene.String()
     user = graphene.Field(LoginUserType)
 
     class Meta:
-        model = RewardInvoice
+        model = RewardSalesOrder
 
     def resolve_line_items(self, info):
         return self.line_items
-
-    def resolve_taxes(self, info):
-        return self.taxes
-    
-    def resolve_salesorder(self, info):
-        return self.salesorder
     
     def resolve_last_modified_time(self, info):
         return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None

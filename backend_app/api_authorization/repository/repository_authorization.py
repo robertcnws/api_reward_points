@@ -213,16 +213,7 @@ def login(request):
                 
                 user = transform_data_to_mongo(
                     current_user, 
-                    exclude_fields=[
-                        'password', 
-                        'is_staff', 
-                        'is_active', 
-                        'is_verified', 
-                        'last_login', 
-                        'date_joined',
-                        'last_modified_time', 
-                        'created_time'
-                    ]
+                    exclude_fields=['password', 'is_staff']
                 )
                 
                 return JsonResponse({'data': user}, status=200)

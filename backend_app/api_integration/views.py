@@ -22,6 +22,63 @@ def config_headers():
     }
     return headers
 
+
+#############################################
+# LOAD SALES ORDERS TO REWARDS
+#############################################
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_sales_orders(request):
+    data = request.query_params if hasattr(request, 'query_params') else request.GET
+    if not data:
+        return JsonResponse({'error': 'No data provided'}, status=400)
+    response = fetch_sales_orders(data)
+    if 'error' in response:
+        return JsonResponse({'error': response['error']}, status=500)   
+    return JsonResponse(response, status=200)
+
+
+#############################################
+# FETCH SALES ORDERS TO REWARDS
+#############################################
+
+def fetch_sales_orders(data):
+    print(f"Fetching sales orders with data: {data}")
+    headers = config_headers()
+    company_name = data.get('companyName', None)
+    last_modified_time = data.get('lastModifiedTime', None)
+    
+    params = []
+    url = f'{settings.API_MAIN_DATA_URL}/zoho/sales_orders_to_service/?'
+    if company_name and company_name != '':
+        params.append(f"company_name={company_name}")
+    if last_modified_time and last_modified_time != '':
+        params.append(f"last_modified_time={last_modified_time}")
+    
+    params.append("is_recent=true")
+    
+    if len(params) > 0:
+        url = f"{url}{'&'.join(params)}"
+    
+    items_to_get = []
+    session = requests.Session()
+    while True:
+        try:
+            response = session.get(url, headers=headers)
+            response.raise_for_status()
+            items = response.json()
+            items_confirmed = [item for item in items.get('results', [])]
+            items_to_get.extend(items_confirmed)
+            if not items.get('next', None):
+                break
+            params['page'] += 1
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching sales orders: {e}")
+            return {'error': 'Failed to fetch sales orders to reward points'}
+    return {'count': len(items_to_get), 'results': items_to_get}
+
+
 #############################################
 # LOAD CLIENT INVOICES TO REWARDS
 #############################################
@@ -51,6 +108,7 @@ def fetch_client_invoices(data):
     phone = data.get('phone', None)
     email = data.get('email', None)
     status = data.get('status', None)
+    last_modified_time = data.get('lastModifiedTime', None)
     
     params = []
     url = f'{settings.API_MAIN_DATA_URL}/zoho/invoices_to_rewards_points/?'
@@ -66,6 +124,8 @@ def fetch_client_invoices(data):
         params.append(f"email={email}")
     if status and status != '':
         params.append(f"status={status}")  
+    if last_modified_time and last_modified_time != '':
+        params.append(f"last_modified_time={last_modified_time}")
     
     if len(params) > 0:
         url = f"{url}{'&'.join(params)}"

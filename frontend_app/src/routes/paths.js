@@ -87,6 +87,10 @@ export const paths = {
       checkout: `${ROOTS.DASHBOARD}/purchase/checkout`,
       client: (id) => `${ROOTS.DASHBOARD}/purchase/client/${id}`,
     },
+    invoice: {
+      root: `${ROOTS.DASHBOARD}/invoice`,
+      list: `${ROOTS.DASHBOARD}/invoice/list`,
+    },
     item: {
       root: `${ROOTS.DASHBOARD}/item`,
       list: `${ROOTS.DASHBOARD}/item/list`,

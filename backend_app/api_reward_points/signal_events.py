@@ -129,7 +129,13 @@ def event_points_settings(type, document):
     }
     
     
-def event_reward_points(type, document, full_selection_user, full_selection_invoices):
+def event_reward_points(
+    type, 
+    document, 
+    full_selection_user, 
+    full_selection_invoices,
+    full_selection_sales_orders
+):
     total_available_points = document.total_gained_points + \
                              document.total_assigned_points - \
                              document.total_substracted_points
@@ -147,7 +153,12 @@ def event_reward_points(type, document, full_selection_user, full_selection_invo
                 "totalRefundedPoints": document.total_refunded_points,
                 "totalAvailablePoints": total_available_points,
                 "totalAmountInvoices": document.total_amount_invoices,
+                "totalPaidAmountInvoices": document.total_paid_amount_invoices,
+                "totalOpenedBalanceInvoices": document.total_opened_balance_invoices,
+                "totalTaxAmountInvoices": document.total_tax_amount_invoices,
+                "qtyPendingOrders": document.qty_pending_orders,
                 "invoices": full_selection_invoices if document.invoices else [],
+                "salesOrders": full_selection_sales_orders if document.sales_orders else [],
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
             }

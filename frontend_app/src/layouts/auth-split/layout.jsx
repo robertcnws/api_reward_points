@@ -36,7 +36,11 @@ export function AuthSplitLayout({ sx, section, children, header }) {
           disableElevation
           layoutQuery={layoutQuery}
           slotProps={{ container: { maxWidth: false } }}
-          sx={{ position: { [layoutQuery]: 'fixed' }, ...header?.sx }}
+          sx={{
+            position:
+              { [layoutQuery]: 'fixed' },
+            ...header?.sx
+          }}
           slots={{
             topArea: (
               <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
@@ -44,8 +48,6 @@ export function AuthSplitLayout({ sx, section, children, header }) {
               </Alert>
             ),
             leftArea: (
-              <>
-                {/* -- Logo -- */}
                 <Box sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -63,7 +65,6 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                     }}
                   />
                 </Box>
-              </>
             ),
             // rightArea: (
             //   <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }}>
@@ -102,33 +103,34 @@ export function AuthSplitLayout({ sx, section, children, header }) {
           // imgUrl='/logo/logo.png'
           method={CONFIG.auth.method}
           subtitle={section?.subtitle}
-          methods={[
-            {
-              label: 'Jwt',
-              path: paths.auth.jwt.signIn,
-              icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-jwt.svg`,
-            },
-            {
-              label: 'Firebase',
-              path: paths.auth.firebase.signIn,
-              icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-firebase.svg`,
-            },
-            {
-              label: 'Amplify',
-              path: paths.auth.amplify.signIn,
-              icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-amplify.svg`,
-            },
-            {
-              label: 'Auth0',
-              path: paths.auth.auth0.signIn,
-              icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-auth0.svg`,
-            },
-            {
-              label: 'Supabase',
-              path: paths.auth.supabase.signIn,
-              icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-supabase.svg`,
-            },
-          ]}
+          sx={{ bgcolor: 'error.main' }}
+          // methods={[
+          //   {
+          //     label: 'Jwt',
+          //     path: paths.auth.jwt.signIn,
+          //     icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-jwt.svg`,
+          //   },
+          //   {
+          //     label: 'Firebase',
+          //     path: paths.auth.firebase.signIn,
+          //     icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-firebase.svg`,
+          //   },
+          //   {
+          //     label: 'Amplify',
+          //     path: paths.auth.amplify.signIn,
+          //     icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-amplify.svg`,
+          //   },
+          //   {
+          //     label: 'Auth0',
+          //     path: paths.auth.auth0.signIn,
+          //     icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-auth0.svg`,
+          //   },
+          //   {
+          //     label: 'Supabase',
+          //     path: paths.auth.supabase.signIn,
+          //     icon: `${CONFIG.assetsDir}/assets/icons/platforms/ic-supabase.svg`,
+          //   },
+          // ]}
         />
 
         <Content layoutQuery={layoutQuery}>{children}</Content>

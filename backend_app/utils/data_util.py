@@ -3,8 +3,8 @@ from mongoengine import Document
 from mongoengine.fields import ReferenceField, ListField
 from mongoengine.queryset import QuerySet
 from django.utils import timezone
-from datetime import timezone as dt_timezone
-from datetime import datetime
+from django.utils.dateparse import parse_datetime
+from datetime import datetime, timezone as dt_timezone
 from dateutil import parser
 from phonenumbers import NumberParseException
 from api_users.models import Notification, NotificationUser
@@ -305,7 +305,20 @@ def generate_pin_number():
         return generate_pin_number()
     return pin_number
 
-
+def to_dt(value):
+    """Convierte str/naive dt/aware dt a datetime aware (UTC). Devuelve None si no se puede."""
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=dt_timezone.utc)
+    s = str(value).replace('Z', '+00:00')
+    try:
+        d = datetime.fromisoformat(s)   
+    except ValueError:
+        d = parse_datetime(value)      
+    if not d:
+        return None
+    return d if d.tzinfo else d.replace(tzinfo=dt_timezone.utc)
 
 class DateTimeJSONEncoder(json.JSONEncoder):
     def default(self, o):

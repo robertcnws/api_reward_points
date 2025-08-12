@@ -39,6 +39,8 @@ const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-s
 const PurchaseListPage = lazy(() => import('src/pages/dashboard/purchase/list'));
 const PurchaseCheckoutPage = lazy(() => import('src/pages/dashboard/purchase/checkout'));
 const PurchaseOverviewClientView = lazy(() => import('src/pages/dashboard/purchase/client'));
+// Invoices
+const InvoicesListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -70,6 +72,10 @@ export const dashboardRoutes = (user) => [
         {
           path: 'purchase',
           element: <PurchaseListPage />
+        },
+        {
+          path: 'invoice',
+          element: <InvoicesListPage />
         },
       ] : [],
       ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
