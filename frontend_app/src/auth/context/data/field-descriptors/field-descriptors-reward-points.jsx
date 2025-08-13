@@ -56,6 +56,8 @@ export const fieldsRewardPoints = [
       'createdByEmail',
       'createdByName',
       'status',
+      'total',
+      'taxTotal',
       {
         name: 'lineItems',
         fields: ['quantity', 'name', 'rate', 'sku', 'itemTotal'],

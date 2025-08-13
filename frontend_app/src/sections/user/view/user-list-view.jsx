@@ -23,6 +23,7 @@ import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 import { varAlpha } from 'src/theme/styles';
 import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { isClient } from 'src/utils/check-permissions';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -45,6 +46,7 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+
 
 // ----------------------------------------------------------------------
 
@@ -89,18 +91,23 @@ export function UserListView() {
 
   const filters = useSetState({ name: '', role: [], status: 'all' });
 
+  const loadedOnlyUsers = useMemo(
+    () => loadedUsers?.filter(user => !isClient(user?.userRole?.name)) || [], 
+    [loadedUsers]
+  );
+
   useEffect(() => {
     if (refetchUsers) {
       refetchUsers();
     }
-    setTableData(loadedUsers || []);
-  }, [refetchUsers, loadedUsers]);
+    setTableData(loadedOnlyUsers || []);
+  }, [refetchUsers, loadedOnlyUsers]);
 
   useEffect(() => {
-    if (loadedUsers) {
-      setTableData(loadedUsers);
+    if (loadedOnlyUsers) {
+      setTableData(loadedOnlyUsers);
     }
-  }, [loadedUsers]);
+  }, [loadedOnlyUsers]);
 
   useEffect(() => {
     const socket = new WebSocket(wsEndpoints.users.all);

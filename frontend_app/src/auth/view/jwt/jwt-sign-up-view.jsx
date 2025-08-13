@@ -8,7 +8,8 @@ import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import { TextField, Typography, LinearProgress } from '@mui/material';
+import { TextField, Typography, LinearProgress, Card } from '@mui/material';
+import { Scrollbar } from 'src/components/scrollbar';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -27,6 +28,7 @@ import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
+
 
 
 
@@ -178,60 +180,154 @@ export function JwtSignUpView() {
     }
   }
 
+  const formSlightGrow = {
+    // Aumenta suavemente la altura del input (~+5px)
+    '& .MuiOutlinedInput-input': {
+      paddingTop: 1,
+      paddingBottom: 4,
+    },
+    // Placeholder centrado también
+    '& .MuiInputBase-input::placeholder': {
+      textAlign: 'center',
+      opacity: 1,
+    },
+
+    // Tipografías un poco más grandes
+    '& .MuiInputBase-root': { fontSize: 16 },
+    '& .MuiInputLabel-root': { fontSize: 16 },
+    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
+  };
+
   const renderForm = (
     <Box gap={3} display="flex" flexDirection="column">
 
-        <Controller
-          name="username"
-          control={methods.control}
-          render={({ field, fieldState: { error } }) => (
-            <TextField
-              {...field}
-              label="Username"
-              error={!!error}
-              helperText={error?.message || ''}
-              InputLabelProps={{ shrink: true }}
-              onChange={(e) => {
-                field.onChange(e);
-                if (errorMsg.message.length > 0) {
-                  setErrorMsg({
-                    name: '',
-                    message: '',
-                    email: '',
-                  });
-                }
-              }}
-            />
-          )}
-        />
+      <Controller
+        name="username"
+        control={methods.control}
+        render={({ field, fieldState: { error } }) => (
+          <TextField
+            {...field}
+            label="Username"
+            error={!!error}
+            helperText={error?.message || ''}
+            // InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: { height: 61 },
+              inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="solar:user-bold" width={20} height={20} />
+                </InputAdornment>
+              ),
+            }}
+            onChange={(e) => {
+              field.onChange(e);
+              if (errorMsg.message.length > 0) {
+                setErrorMsg({
+                  name: '',
+                  message: '',
+                  email: '',
+                });
+              }
+            }}
+          />
+        )}
+      />
 
-        <Field.Text name="companyName" label="Company name" InputLabelProps={{ shrink: true }} />
+      <Field.Text
+        name="companyName"
+        label="Company name"
+        // InputLabelProps={{ shrink: true }} 
+        InputProps={{
+          sx: { height: 61 },
+          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+          startAdornment: (
+            <InputAdornment position="start">
+              <Iconify icon="mdi:company" width={20} height={20} />
+            </InputAdornment>
+          ),
+        }}
+      />
 
-        <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
-          <Field.Text name="firstName" label="First name" InputLabelProps={{ shrink: true }} />
-          <Field.Text name="lastName" label="Last name" InputLabelProps={{ shrink: true }} />
-        </Box>
-
-        <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
-
-        <Field.Phone name="phoneNumber" label="Phone or Mobile" InputLabelProps={{ shrink: true }} />
-
+      <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
         <Field.Text
-          name="password"
-          label="Password"
-          placeholder="6+ characters"
-          type={password.value ? 'text' : 'password'}
-          InputLabelProps={{ shrink: true }}
+          name="firstName"
+          label="First name"
+          // InputLabelProps={{ shrink: true }}
           InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={password.onToggle} edge="end">
-                  <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-                </IconButton>
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="mdi:rename" width={20} height={20} />
               </InputAdornment>
             ),
           }}
         />
+        <Field.Text
+          name="lastName"
+          label="Last name"
+          // InputLabelProps={{ shrink: true }}
+          InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="qlementine-icons:rename-16" width={20} height={20} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
+      <Field.Text
+        name="email"
+        label="Email address"
+        // InputLabelProps={{ shrink: true }}
+        InputProps={{
+          sx: { height: 61 },
+          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+          startAdornment: (
+            <InputAdornment position="start">
+              <Iconify icon="entypo:email" width={20} height={20} />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <Field.Phone
+        name="phoneNumber"
+        label="Phone or Mobile"
+        // InputLabelProps={{ shrink: true }}
+        InputProps={{
+          sx: { height: 61 },
+          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+        }}
+      />
+
+      <Field.Text
+        name="password"
+        label="Password"
+        placeholder="6+ characters"
+        type={password.value ? 'text' : 'password'}
+        // InputLabelProps={{ shrink: true }}
+        InputProps={{
+          sx: { height: 61 },
+          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+          startAdornment: (
+            <InputAdornment position="start">
+              <Iconify icon="solar:lock-bold" width={20} height={20} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={password.onToggle} edge="end">
+                <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
 
       <LoadingButton
         fullWidth
@@ -241,6 +337,12 @@ export function JwtSignUpView() {
         variant="contained"
         loading={isSubmitting}
         loadingIndicator="Create account..."
+        sx={{
+          backgroundColor: 'primary.dark',
+          '&:hover': {
+            backgroundColor: 'primary.main',
+          },
+        }}
       >
         Create account
       </LoadingButton>
@@ -277,53 +379,80 @@ export function JwtSignUpView() {
           />
         </Box>
       ) : (
+
         <Box sx={{
-          mt: !isMobile ? 0 : 30,
-          width: { xs: '100%', sm: '550px' },
-          // maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: 1,
-          position: 'relative',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: !isMobile ? '150%' : '100%',
+          ml: !isMobile ? -10 : 0
         }}>
-          <Box
+          <Card
             sx={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
-              py: 1,
-              px: 1,
-              mb: 1
+              mt: !isMobile ? 0 : 35,
+              p: 3,
+              width: 1,
+              ml: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+              ...formSlightGrow,
             }}
           >
-            <FormHead
-              title="Get started absolutely free"
-              description={
-                <>
-                  {`Already have an account? `}
-                  <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-                    Sign in
-                  </Link>
-                </>
-              }
-              sx={{ textAlign: { xs: 'center', md: 'left' } }}
-            />
-
-            {!!errorMsg.message && (
-              <CustomErrorComponent
-                errorMsg={errorMsg}
-                handleResendCode={handleResendCode}
-                actionName="Send"
+            <Scrollbar sx={{ height: 1 }}>
+              <FormHead
+                title={
+                  <Typography variant="h3" paragraph>
+                    Get started absolutely free
+                  </Typography>
+                }
+                description={
+                  <>
+                    <Box
+                      display="flex"
+                      justifyContent={isMobile ? 'center' : 'flex-start'}
+                      alignItems="center"
+                      gap={1}
+                      mb={1}
+                      mt={-3}
+                    >
+                      <Typography variant="h5" paragraph>
+                        Already have an account?
+                      </Typography>
+                      <Link
+                        component={RouterLink}
+                        href={paths.auth.jwt.signIn}
+                        variant="subtitle2"
+                        mt={-2}
+                        sx={{
+                          fontWeight: 'bold',
+                          fontSize: 20,
+                        }}>
+                        Sign in
+                      </Link>
+                    </Box>
+                  </>
+                }
+                sx={{ textAlign: { xs: 'center', md: 'left' } }}
               />
-            )}
-          </Box>
+
+              {!!errorMsg.message && (
+                <CustomErrorComponent
+                  errorMsg={errorMsg}
+                  handleResendCode={handleResendCode}
+                  actionName="Send"
+                />
+              )}
 
 
-          <Form methods={methods} onSubmit={onSubmit}>
-            {renderForm}
-          </Form>
+              <Form methods={methods} onSubmit={onSubmit}>
+                {renderForm}
+              </Form>
 
-          {/* <SignUpTerms /> */}
+              {/* <SignUpTerms /> */}
+            </Scrollbar>
+
+          </Card>
         </Box>
       )}
     </>

@@ -41,6 +41,8 @@ const PurchaseCheckoutPage = lazy(() => import('src/pages/dashboard/purchase/che
 const PurchaseOverviewClientView = lazy(() => import('src/pages/dashboard/purchase/client'));
 // Invoices
 const InvoicesListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
+// Sales Orders
+const SalesOrdersListPage = lazy(() => import('src/pages/dashboard/sales-order/list'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
 
@@ -77,6 +79,10 @@ export const dashboardRoutes = (user) => [
           path: 'invoice',
           element: <InvoicesListPage />
         },
+        {
+          path: 'sales-order',
+          element: <SalesOrdersListPage />
+        }
       ] : [],
       ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
         [

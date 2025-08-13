@@ -140,7 +140,7 @@ export function OverviewEcommerceView({
 
   const seriesFromInvoices = useCallback((attributeName, attributeData, sliceNumber = null, conditions = null) => {
     if (!sortedInvoices) return [];
-    const initialList = conditions ? sortedInvoices.filter(conditions) : sortedInvoices;
+    const initialList = conditions ? sortedInvoices?.filter(conditions) : sortedInvoices;
     const finalList = sliceNumber ? initialList.slice(0, sliceNumber) : initialList;
     const series = finalList.map((invoice) => {
       const xData = invoice[attributeName] || '';

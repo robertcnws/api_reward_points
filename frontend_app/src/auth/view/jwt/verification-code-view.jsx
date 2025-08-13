@@ -102,7 +102,7 @@ export function VerificationCodeView() {
         } catch (error) {
             console.error(error);
             setErrorMsg({
-                message: typeof error === 'string' ? error : error.response.data.description,
+                message: typeof error === 'string' ? error : error.description,
                 name: error.error_name || '',
             });
         } finally {
@@ -170,6 +170,12 @@ export function VerificationCodeView() {
                     loading={isSubmitting}
                     loadingIndicator="Verifying..."
                     disabled={isSubmitting || !(value.length === 6)}
+                    sx={{
+                        backgroundColor: 'primary.dark',
+                        '&:hover': {
+                            backgroundColor: 'primary.main',
+                        },
+                    }}
                 >
                     Verify
                 </LoadingButton>
@@ -231,26 +237,26 @@ export function VerificationCodeView() {
                         isCompound
                         description={
                             <Box variant="body2" sx={{ color: 'text.secondary' }}>
-                                    {`Please enter the verification code for user: `}
-                                    <strong>{userSignedUp?.data?.username}</strong>
-                                    {` sent to your `}
-                                    {`${sessionStorage.getItem('isNewUserSignedUp') === 'true' ? '' : 'existing'}`}
-                                    {` email address: `}
-                                    <strong>{sessionStorage.getItem('userSignedUpEmail')}</strong>
-                                    <Alert severity="info" sx={{ mt: 2, fontSize: '0.75rem' }}>
-                                        <Box component="span">
-                                            {`If you do not receive the code, please check your spam folder or click on "Resend code".`}
-                                            <br />
-                                            <strong>Note:</strong> This code is valid for 10 minutes.
-                                        </Box>
-                                    </Alert>
-                                    <br />
-                                    <br />
-                                    {`Already have an account? `}
-                                    <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-                                        Sign in
-                                    </Link>
-                                </Box>
+                                {`Please enter the verification code for user: `}
+                                <strong>{userSignedUp?.data?.username}</strong>
+                                {` sent to your `}
+                                {`${sessionStorage.getItem('isNewUserSignedUp') === 'true' ? '' : 'existing'}`}
+                                {` email address: `}
+                                <strong>{sessionStorage.getItem('userSignedUpEmail')}</strong>
+                                <Alert severity="info" sx={{ mt: 2, fontSize: '0.75rem' }}>
+                                    <Box component="span">
+                                        {`If you do not receive the code, please check your spam folder or click on "Resend code".`}
+                                        <br />
+                                        <strong>Note:</strong> This code is valid for 10 minutes.
+                                    </Box>
+                                </Alert>
+                                <br />
+                                <br />
+                                {`Already have an account? `}
+                                <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
+                                    Sign in
+                                </Link>
+                            </Box>
                         }
                         sx={{ textAlign: { xs: 'center', md: 'left' } }}
                     />

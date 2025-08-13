@@ -155,9 +155,15 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
         },
         {
           key: `${paths.dashboard.invoice.root}-2`,
-          title: 'Invoices',
+          title: "My Invoices",
           path: paths.dashboard.invoice.root,
           icon: ICONS.invoice,
+        },
+        {
+          key: `${paths.dashboard.salesOrder.root}-2`,
+          title: "My Sales Orders",
+          path: paths.dashboard.salesOrder.root,
+          icon: ICONS.salesOrder,
         },
       ] : []),
     ],
@@ -366,7 +372,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
         ...(userLogged && !isClient(userRole) ? [
           {
             key: `${paths.dashboard.storeProduct.root}-10`,
-            title: 'Products',
+            title: 'Rewards',
             path: paths.dashboard.storeProduct.root,
             icon: ICONS.item,
             children: [

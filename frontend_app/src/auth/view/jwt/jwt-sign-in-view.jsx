@@ -2,9 +2,10 @@ import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useState, useContext, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { styled } from '@mui/material/styles';
 
 import Box from '@mui/material/Box';
-import { Link } from '@mui/material';
+import { Card, Link, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -55,6 +56,19 @@ export function JwtSignInView() {
   const { isMobile } = useContext(LoadingContext);
 
   const { checkUserSession } = useAuthContext();
+
+  const BoxEmpty = styled('span')(({ theme }) => ({
+    width: 18,
+    height: 18,
+    display: 'inline-block',
+    borderRadius: 4,
+    border: `2px solid ${theme.palette.text.secondary}`,
+  }));
+
+  const BoxFilled = styled(BoxEmpty)(({ theme }) => ({
+    borderColor: theme.palette.primary.dark,
+    backgroundColor: theme.palette.primary.dark,
+  }));
 
   // const {
   //   externalUser,
@@ -154,10 +168,46 @@ export function JwtSignInView() {
     }
   }
 
+  const formSlightGrow = {
+    // Aumenta suavemente la altura del input (~+5px)
+    '& .MuiOutlinedInput-input': {
+      paddingTop: 1,
+      paddingBottom: 4,
+    },
+    // Placeholder centrado también
+    '& .MuiInputBase-input::placeholder': {
+      textAlign: 'center',
+      opacity: 1,
+    },
+
+    // Tipografías un poco más grandes
+    '& .MuiInputBase-root': { fontSize: 16 },
+    '& .MuiInputLabel-root': { fontSize: 16 },
+    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
+  };
+
   const renderForm = (
-    <Box gap={3} display="flex" flexDirection="column">
+    <Box gap={3} display="flex" flexDirection="column" sx={{ width: 1 }}>
       {/* <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} /> */}
-      <Field.Text name="username" label="Username" InputLabelProps={{ shrink: true }} />
+      <Field.Text
+        name="username"
+        label="Username"
+        // InputLabelProps={{
+        //   shrink: true,
+        // }}
+        InputProps={{
+          sx: { height: 61 },
+          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+          startAdornment: (
+            <InputAdornment position="start">
+              <Iconify icon="solar:user-bold" width={20} height={20} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          minWidth: { xs: 1, sm: 1 },
+        }}
+      />
 
       <Box gap={1.5} display="flex" flexDirection="column">
         {/* <Link
@@ -175,8 +225,15 @@ export function JwtSignInView() {
           label="Password"
           placeholder="6+ characters"
           type={password.value ? 'text' : 'password'}
-          InputLabelProps={{ shrink: true }}
+          // InputLabelProps={{ shrink: true }}
           InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="solar:lock-bold" width={20} height={20} />
+              </InputAdornment>
+            ),
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton onClick={password.onToggle} edge="end">
@@ -189,6 +246,13 @@ export function JwtSignInView() {
 
         <Field.Checkbox
           name="rememberMe"
+          slotProps={{
+            checkbox: {
+              icon: <BoxEmpty />,
+              checkedIcon: <BoxFilled />,
+              disableRipple: true,
+            },
+          }}
           label={
             <span>
               Remember me
@@ -203,12 +267,17 @@ export function JwtSignInView() {
 
       <LoadingButton
         fullWidth
-        color="inherit"
         size="large"
         type="submit"
         variant="contained"
         loading={isSubmitting}
         loadingIndicator="Sign in..."
+        sx={{
+          backgroundColor: 'primary.dark',
+          '&:hover': {
+            backgroundColor: 'primary.main',
+          },
+        }}
       >
         Sign in
       </LoadingButton>
@@ -216,17 +285,44 @@ export function JwtSignInView() {
   );
 
   return (
-    <Box sx={{
+    <Card sx={{
       mt: !isMobile ? 0 : 35,
+      p: 3,
+      width: 1,
+      ml: 0,
+      ...formSlightGrow,
     }}>
       <FormHead
-        title="Sign in to your account"
+        title={
+          <Typography variant="h3" paragraph>
+            Sign in to your account
+          </Typography>
+        }
         description={
           <>
-            {`Don’t have an account? `}
-            <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
-              Sign up
-            </Link>
+            <Box
+              display="flex"
+              justifyContent={isMobile ? 'center' : 'flex-start'}
+              alignItems="center"
+              gap={1}
+              mb={1}
+              mt={-3}
+            >
+              <Typography variant="h5" paragraph>
+                Don’t have an account?
+              </Typography>
+              <Link
+                component={RouterLink}
+                href={paths.auth.jwt.signUp}
+                variant="subtitle2"
+                mt={-2}
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                }}>
+                Sign up
+              </Link>
+            </Box>
           </>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
@@ -249,6 +345,6 @@ export function JwtSignInView() {
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}
       </Form>
-    </Box>
+    </Card>
   );
 }

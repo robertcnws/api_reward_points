@@ -22,22 +22,20 @@ export function Section({
 }) {
   const theme = useTheme();
 
-  console.log('theme', theme.vars.palette);
-
   return (
     <Box
       sx={{
         ...bgGradient({
-          color: `6deg, ${varAlpha(
-            theme.vars.palette.success.lightChannel,
-            0.9
-          )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.9)}`,
-          // imgUrl: `${CONFIG.assetsDir}/assets/background/background-4.jpg`,
+          color: `1deg, ${varAlpha(
+            theme.vars.palette.background.neutralChannel,
+            0.1
+          )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
+          imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
         }),
         px: 2,
         pb: 2,
         width: 1,
-        maxWidth: 480,
+        maxWidth: 900,
         display: 'none',
         position: 'relative',
         pt: 'var(--layout-header-desktop-height)',

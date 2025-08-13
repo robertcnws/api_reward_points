@@ -220,7 +220,8 @@ export const CustomFooter = () => {
         bottom: 0,
         left: 0,
         width: '100%',
-        backgroundColor: '#053334',
+        // backgroundColor: '#053334',
+        backgroundColor: 'background.paper',
         borderTop: '1px solid #ddd',
         py: 1,
         textAlign: 'center',
@@ -234,7 +235,7 @@ export const CustomFooter = () => {
         <Grid item xs={12} sm={12}>
           <Typography
             variant="body2"
-            color="whitesmoke"
+            color="grey.600"
             sx={{ fontSize: '12px', fontWeight: 'bold', mt: -0.6 }}
           >
             © {currentYear}{' '}

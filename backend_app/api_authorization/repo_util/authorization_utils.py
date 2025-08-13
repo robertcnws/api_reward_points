@@ -246,7 +246,7 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or 'Initial reward points created based on invoices',
+                description=description or f'You have gained {delta_points} points based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
     else:
@@ -271,7 +271,7 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or 'Additional reward points created based on invoices',
+                description=description or f'You have gained {delta_points} points based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
         elif delta_points < 0:
@@ -281,7 +281,7 @@ def get_rewards_points(user, description=None):
                 action='substracted',  # si tu sistema ya usa este literal, mantenlo
                 gained_points=0,
                 spent_points=-delta_points,
-                description=description or 'Reward points substracted based on new configuration',
+                description=description or f'You have lost {-delta_points} points based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
 

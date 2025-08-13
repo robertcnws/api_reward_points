@@ -1,4 +1,5 @@
-import { useContext } from 'react';
+import { useCallback, useContext } from 'react';
+import { useSetState } from 'src/hooks/use-set-state';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -6,6 +7,7 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import CardHeader from '@mui/material/CardHeader';
+import { Box } from '@mui/material';
 
 import { fDate } from 'src/utils/format-time';
 import { fNumber, fCurrency } from 'src/utils/format-number';
@@ -17,6 +19,7 @@ import { TableNoData, TableHeadCustom, useTable } from 'src/components/table';
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
+import { SalesOrdersListFilters } from '../sales-order/sales-orders-list-filters';
 
 // ----------------------------------------------------------------------
 
@@ -30,17 +33,64 @@ export function InvoicesList({ title, subheader, tableData, headLabel, ...other 
     defaultOrder: 'desc'
   });
 
+  const allStatuses = tableData.reduce((acc, order) => {
+    if (order.status && !acc.includes(order.status)) {
+      acc.push(order.status);
+    }
+    return acc;
+  }, []);
+
+  const filters = useSetState({
+    status: null,
+    salesorderNumber: ''
+  });
+
+  const filteredData = applyFilters(tableData, filters.state);
+
+  const setTitle = useCallback(() => {
+    let initialTitle = 'Invoices History';
+    if (filters.state.status) {
+      initialTitle += ` - Status: ${filters.state.status.toUpperCase()}`;
+    }
+    if (filters.state.salesorderNumber) {
+      initialTitle += ` - SO Number: ~${filters.state.salesorderNumber}`;
+    }
+    return `${initialTitle} (Qty: ${filteredData.length})`;
+  }, [filters.state, filteredData.length]);
+
   return (
     <DashboardContent>
       <Card {...other}>
-        <CardHeader title={title} subheader={subheader} sx={{ mb: 3 }} />
+        <Box sx={{
+          display: 'flex',
+          flexDirection: !isMobile ? 'row' : 'column',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 1,
+          width: '100%'
+        }}>
+          <CardHeader
+            title={setTitle()}
+            subheader={subheader}
+            sx={{
+              mb: !isMobile ? 3 : 0,
+              width: '100%'
+            }}
+          />
+          <SalesOrdersListFilters
+            filters={filters}
+            allSalespersons={[]}
+            allStatuses={allStatuses}
+            isMobile={isMobile}
+          />
+        </Box>
 
         <Scrollbar sx={{ overflowY: 'auto' }}>
           <Table sx={{ position: 'relative' }} stickyHeader>
             <TableHeadCustom headLabel={headLabel} />
-            {tableData?.length > 0 ? (
+            {filteredData?.length > 0 ? (
               <TableBody>
-                {tableData.slice(
+                {filteredData.slice(
                   table.page * table.rowsPerPage,
                   table.page * table.rowsPerPage + table.rowsPerPage
                 ).map((row, index) => (
@@ -48,7 +98,7 @@ export function InvoicesList({ title, subheader, tableData, headLabel, ...other 
                 ))}
                 <TableCustomPaginationZohoStyleRow
                   columnsLength={headLabel.length}
-                  data={tableData}
+                  data={filteredData}
                   page={table.page}
                   rowsPerPage={table.rowsPerPage}
                   handleChangePage={(event, newPage) => {
@@ -65,7 +115,7 @@ export function InvoicesList({ title, subheader, tableData, headLabel, ...other 
               </TableBody>
             ) : (
               <TableBody>
-                <TableNoData notFound={tableData?.length === 0} />
+                <TableNoData notFound={filteredData?.length === 0} />
               </TableBody>
             )}
           </Table>
@@ -90,7 +140,7 @@ function RowItem({ row, isMobile }) {
 
       <TableCell align="center">{fNumber(row?.lineItems?.length)}</TableCell>
 
-      <TableCell align="right">
+      <TableCell align="center">
         <Label color={
           row?.status === 'paid' ?
             'success' : row?.status === 'partially_paid' ?
@@ -148,4 +198,15 @@ function RowItem({ row, isMobile }) {
       </TableCell> */}
     </TableRow>
   );
+}
+
+function applyFilters(list, filters) {
+  const { status, salesorderNumber } = filters;
+  if (status) {
+    list = list.filter(item => item?.status === status);
+  }
+  if (salesorderNumber) {
+    list = list.filter(item => item?.salesorder?.salesorderNumber.includes(filters.salesorderNumber));
+  }
+  return list;
 }

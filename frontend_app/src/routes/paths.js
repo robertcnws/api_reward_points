@@ -91,6 +91,10 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/invoice`,
       list: `${ROOTS.DASHBOARD}/invoice/list`,
     },
+    salesOrder: {
+      root: `${ROOTS.DASHBOARD}/sales-order`,
+      list: `${ROOTS.DASHBOARD}/sales-order/list`,
+    },
     item: {
       root: `${ROOTS.DASHBOARD}/item`,
       list: `${ROOTS.DASHBOARD}/item/list`,
