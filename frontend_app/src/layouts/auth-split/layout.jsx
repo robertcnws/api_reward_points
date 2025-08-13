@@ -55,15 +55,15 @@ export function AuthSplitLayout({ sx, section, children, header }) {
               <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: !isMobile ? 'center' : 'flex-start',
-                justifyContent: !isMobile ? 'center' : 'flex-start',
+                alignItems: 'center',
+                justifyContent: 'center',
                 // minHeight: '100dvh',
                 width: 850,
-                px: 2,
+                px: 1,
                 // mt: !isMobile ? 150 : 120,
                 // ml: !isMobile ? 1 : 0,
                 // mb: !isMobile ? 0 : 10,
-                mt: !isMobile ? 100 : 10,
+                mt: !isMobile ? 100 : 20,
                 // ml: !isMobile ? 25 : '15%',
                 mb: 0
               }}>
@@ -74,19 +74,37 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                     height: 'auto',
                   }}
                 />
-                {!isMobile &&
+
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  mt: !isMobile ? 0 : 2,
+                  mb: !isMobile ? 0 : 2,
+                }}>
                   <Typography
-                    variant="h2"
+                    variant="h3"
+                    paragraph
                     sx={{
                       ml: 0,
-                      mt: -8,
+                      mt: -4,
                       alignItems: 'center',
                       textAlign: 'center',
-                      fontFamily: 'Poppins',
                     }}>
-                    Manage and Track<br />Reward Points<br />Effortlessly
+                    New Window System
                   </Typography>
-                }
+                  <Typography
+                    variant="h3"
+                    paragraph
+                    sx={{
+                      ml: 0,
+                      mt: -4,
+                      alignItems: 'center',
+                      textAlign: 'center',
+                    }}>
+                    Customer Portal
+                  </Typography>
+                </Box>
               </Box>
             ),
             // rightArea: (
@@ -111,7 +129,7 @@ export function AuthSplitLayout({ sx, section, children, header }) {
       // footerSection={null}
       // footerSection={homePage ? <HomeFooter /> : <Footer layoutQuery={layoutQuery} />}
       // footerSection={<Footer layoutQuery={layoutQuery} />}
-      footerSection={<CustomFooter />}
+      footerSection={< CustomFooter />}
       /** **************************************
        * Style
        *************************************** */

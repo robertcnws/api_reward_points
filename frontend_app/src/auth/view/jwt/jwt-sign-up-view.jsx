@@ -390,7 +390,7 @@ export function JwtSignUpView() {
         }}>
           <Card
             sx={{
-              mt: !isMobile ? 0 : 5,
+              mt: !isMobile ? 0 : 12,
               p: 3,
               width: 1,
               ml: 0,

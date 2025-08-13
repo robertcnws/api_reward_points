@@ -14,7 +14,7 @@ import { Chart, useChart } from 'src/components/chart';
 
 export function EcommerceRewardPointsAttribute({
   title,
-  subheader=`(Current Year ${new Date().getFullYear()})`,
+  subheader= '',
   icon = null,
   percent,
   total,

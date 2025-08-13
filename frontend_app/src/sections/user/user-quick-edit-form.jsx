@@ -50,7 +50,7 @@ export const UserQuickEditSchema = zod.object({
 
 // ----------------------------------------------------------------------
 
-export function UserQuickEditForm({ currentUser, open, onClose }) {
+export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -226,6 +226,11 @@ export function UserQuickEditForm({ currentUser, open, onClose }) {
           <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
             Update
           </LoadingButton>
+          {onProfileRow && (
+            <Button variant="contained" color="primary" onClick={onProfileRow}>
+              View Profile
+            </Button>
+          )}
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>

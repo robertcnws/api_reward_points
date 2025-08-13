@@ -26,9 +26,6 @@ import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 
-
-
-
 // ----------------------------------------------------------------------
 
 export function OverviewEcommerceView({
@@ -275,18 +272,24 @@ export function OverviewEcommerceView({
                     flexDirection: 'column',
                   }}>
                     <Typography variant="h4">
-                      Welcome 🎉 to your Customer Portal
+                      Welcome 🎉 {!isMobile ? 'to your Customer Portal' : `${displayFirstName} ${displayLastName}`}
                     </Typography>
-                    <Typography variant="h6">
-                      Client: <b>{displayFirstName} {displayLastName}</b>
-                    </Typography>
-                    <Typography variant="h6">
-                      Company: <b>{displayCompanyName}</b>
-                    </Typography>
+                    {!isMobile && (
+                      <>
+                        <Typography variant="h6">
+                          Client: <b>{displayFirstName} {displayLastName}</b>
+                        </Typography>
+                        <Typography variant="h6">
+                          Company: <b>{displayCompanyName}</b>
+                        </Typography>
+                      </>
+                    )}
                   </Box>
-                  <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
-                    Last login: <b>{fDateTime(userLogged?.data?.last_login)}</b>
-                  </Typography>
+                  {!isMobile && (
+                    <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
+                      Last login: <b>{fDateTime(userLogged?.data?.last_login)}</b>
+                    </Typography>
+                  )}
                 </Box>
               }
               isCompound
@@ -336,7 +339,7 @@ export function OverviewEcommerceView({
                   </Typography>
                 </Box>
               }
-              img={<MotivationIllustration hideBackground />}
+              img={!isMobile ? <MotivationIllustration hideBackground /> : null}
               action={
                 <Button
                   variant="contained"
@@ -345,7 +348,7 @@ export function OverviewEcommerceView({
                     router.push(paths.dashboard.storeProduct.root);
                   }}
                 >
-                  Go now
+                  Redeem rewards!
                 </Button>
               }
             />
@@ -357,52 +360,55 @@ export function OverviewEcommerceView({
             </Grid>
           )}
 
-          <Grid xs={12} md={3}>
+          <Grid xs={6} md={3}>
             <EcommerceRewardPointsAttribute
               title="Orders Amount (USD)"
+              subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
               icon='noto:money-with-wings'
               percent={invoicesTrendPercent || 0}
               total={totalAmountInvoices}
               bgcolor='info.lighter'
               isMoney
-              indicatorName='(10 days)'
-              chart={{
+              indicatorName={!isMobile ? '(10 days)' : ''}
+              chart={!isMobile ?{
                 categories: invoicesDateArray,
                 series: invoicesPaymentMadeArray,
-              }}
+              } : {}}
             />
           </Grid>
 
-          <Grid xs={12} md={3}>
+          <Grid xs={6} md={3}>
             <EcommerceRewardPointsAttribute
               title="Opened Balance Amount (USD)"
+              subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
               icon='streamline-ultimate-color:accounting-coins'
               percent={openedBalanceInvoicesTrendPercent || 0}
               total={totalOpenedBalanceInvoices}
               bgcolor='error.lighter'
               isMoney
-              indicatorName='(10 days)'
-              chart={{
+              indicatorName={!isMobile ? '(10 days)' : ''}
+              chart={!isMobile ? {
                 colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
                 categories: openedBalanceInvoicesDateArray,
                 series: openedBalanceInvoicesPaymentMadeArray,
-              }}
+              } : {}}
             />
           </Grid>
 
-          <Grid xs={12} md={3}>
+          <Grid xs={6} md={3}>
             <EcommerceRewardPointsAttribute
               title="Orders Count"
+              subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
               icon='streamline-ultimate-color:performance-increase'
               percent={currentAssignedTrendPercent || 0}
               total={qtyAllOrders}
               bgcolor='success.lighter'
-              indicatorName='(10 days)'
-              chart={{
+              indicatorName={!isMobile ? '(10 days)' : ''}
+              chart={!isMobile ? {
                 colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
                 categories: currentAssignedDateArray,
                 series: currentAssignedPointsArray,
-              }}
+              } : {}}
             />
           </Grid>
 
@@ -422,20 +428,21 @@ export function OverviewEcommerceView({
             />
           </Grid> */}
 
-          <Grid xs={12} md={3}>
+          <Grid xs={6} md={3}>
             <EcommerceRewardPointsAttribute
               title="Pending Orders"
+              subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
               // icon='fluent-color:reward-24'
               icon='streamline-ultimate-color:time-clock-hand-1'
               percent={currentAssignedTrendPercent || 0}
               total={qtyPendingOrders}
               bgcolor='secondary.lighter'
-              indicatorName='(10 days)'
-              chart={{
+              indicatorName={!isMobile ? '(10 days)' : ''}
+              chart={!isMobile ? {
                 colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
-                categories: currentAssignedDateArray,
-                series: currentAssignedPointsArray,
-              }}
+                categories: !isMobile ? currentAssignedDateArray : [],
+                series: !isMobile ? currentAssignedPointsArray : [],
+              } : {}}
             />
           </Grid>
 

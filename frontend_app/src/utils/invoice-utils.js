@@ -54,7 +54,7 @@ export function buildInvoicesChart(invoices, { year, by = 'count' } = {}) {
 export const reduceList = (list, conditions = null, { by = 'count' } = {}) => {
   const filtered = conditions ? list?.filter(conditions) : list;
   if (by === 'count') {
-    return filtered.length;
+    return filtered?.length;
   }
-  return filtered.reduce((acc, item) => acc + (Number(item?.[by]) || 0), 0);
+  return filtered?.reduce((acc, item) => acc + (Number(item?.[by]) || 0), 0);
 };

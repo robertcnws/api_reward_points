@@ -318,6 +318,13 @@ export function UserClientListView() {
     [filters, table]
   );
 
+  const handleProfileRow = useCallback(
+    (id) => {
+      router.push(paths.dashboard.purchase.client(id));
+    },
+    [router]
+  );
+
   return (
     <>
       <DashboardContent>
@@ -450,6 +457,7 @@ export function UserClientListView() {
                         onEditRow={() => handleEditRow(row.id)}
                         onApprovalRow={() => handleChangeApprovalRow(row.id)}
                         onVerifyRow={() => handleChangeVerifyRow(row.id)}
+                        onProfileRow={() => handleProfileRow(row.id)}
                       />
                     ))}
 

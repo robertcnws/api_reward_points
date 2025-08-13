@@ -41,6 +41,7 @@ export function UserClientTableRow({
   onDeleteRow,
   onApprovalRow,
   onVerifyRow,
+  onProfileRow,
 }) {
 
   const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -348,6 +349,7 @@ export function UserClientTableRow({
         currentUser={row}
         open={quickEdit.value}
         onClose={quickEdit.onFalse}
+        onProfileRow={onProfileRow}
       />
 
       <UserQuickChangePasswordForm
@@ -370,6 +372,13 @@ export function UserClientTableRow({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
+          <MenuItem
+            onClick={onProfileRow}
+          >
+            <Iconify icon='carbon:user-profile' sx={{ fontWeight: 'bold' }} />
+            View profile
+            {/* <Label color="info" sx={{ ml: 1 }}>NEW</Label> */}
+          </MenuItem>
           <MenuItem
             onClick={() => {
               confirmManagePoints.onTrue();

@@ -108,7 +108,8 @@ export function EcommerceRewardPointsHistoryClientList({
               p: 3,
               gap: 3,
               minWidth: 360,
-              maxHeight: 380,
+              maxHeight: 360,
+              minHeight: 360,
               display: 'flex',
               flexDirection: 'column',
             }}
