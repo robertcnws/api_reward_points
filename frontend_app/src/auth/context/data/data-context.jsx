@@ -5,6 +5,7 @@ import { useRewardUserRoles, RewardUserRolesProvider } from './contexts/reward-u
 import { useRewardLoginUsers, RewardLoginUsersProvider } from './contexts/reward-login-users-context';
 import { useRewardPointsSettings, RewardPointsSettingsProvider } from './contexts/reward-points-settings';
 import { useRewardStoreProducts, RewardStoreProductsProvider } from './contexts/reward-store-products-context';
+import { useRewardExternalUsers, RewardExternalUsersProvider } from './contexts/reward-external-users-context';
 import { useRewardNotificationUsers, RewardNotificationUsersProvider } from './contexts/reward-notification-users-context';
 import {
   useRewardStoreProductSelectionBuy,
@@ -14,7 +15,6 @@ import {
   useRewardStoreProductSelectionCart,
   RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
-import { RewardExternalUsersProvider, useRewardExternalUsers } from './contexts/reward-external-users-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);

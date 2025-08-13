@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
+import { Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import { varAlpha, hideScrollY } from 'src/theme/styles';
-import { Typography } from '@mui/material';
 
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';

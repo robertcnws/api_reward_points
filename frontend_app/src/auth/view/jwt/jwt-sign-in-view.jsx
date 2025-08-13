@@ -1,13 +1,13 @@
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { styled } from '@mui/material/styles';
 
 import Box from '@mui/material/Box';
-import { Card, Link, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { Card, Link, Typography } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
@@ -22,12 +22,11 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
-import { signInWithUsernameAndPassword, signInWithTransferLogin } from '../../context/jwt';
+import { signInWithUsernameAndPassword } from '../../context/jwt';
 
 
 
@@ -176,7 +175,7 @@ export function JwtSignInView() {
     },
     // Placeholder centrado también
     '& .MuiInputBase-input::placeholder': {
-      textAlign: 'center',
+      // textAlign: 'center',
       opacity: 1,
     },
 
@@ -286,7 +285,7 @@ export function JwtSignInView() {
 
   return (
     <Card sx={{
-      mt: !isMobile ? 0 : 35,
+      mt: !isMobile ? 0 : 5,
       p: 3,
       width: 1,
       ml: 0,
@@ -299,8 +298,7 @@ export function JwtSignInView() {
           </Typography>
         }
         description={
-          <>
-            <Box
+          <Box
               display="flex"
               justifyContent={isMobile ? 'center' : 'flex-start'}
               alignItems="center"
@@ -323,7 +321,6 @@ export function JwtSignInView() {
                 Sign up
               </Link>
             </Box>
-          </>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />

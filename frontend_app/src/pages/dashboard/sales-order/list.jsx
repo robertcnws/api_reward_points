@@ -1,11 +1,12 @@
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { CONFIG } from 'src/config-global';
 
 import { SalesOrdersList } from 'src/sections/sales-order/view';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 // ----------------------------------------------------------------------
 

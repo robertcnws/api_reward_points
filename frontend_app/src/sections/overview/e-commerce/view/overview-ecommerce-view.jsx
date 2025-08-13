@@ -1,30 +1,30 @@
 import dayjs from 'dayjs';
-import { useMemo, useCallback, useContext } from 'react';
+import { useMemo, useContext, useCallback } from 'react';
 
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Box, Alert, Typography, LinearProgress } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
+import { Box, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
-import { buildInvoicesChart, reduceList } from 'src/utils/invoice-utils';
+import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
 
-import { useDataContext } from 'src/auth/context/data/data-context';
+import { Iconify } from 'src/components/iconify';
+
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { EcommerceWelcome } from '../ecommerce-welcome';
+import { EcommerceWebsiteVisits } from '../ecommerce-website-visits';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
-import { EcommerceInvoicesListItems } from '../ecommerce-invoices-list-items';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
-import { EcommerceWebsiteVisits } from '../ecommerce-website-visits';
 
 
 

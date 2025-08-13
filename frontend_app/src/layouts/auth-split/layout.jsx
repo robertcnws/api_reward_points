@@ -2,17 +2,15 @@ import { useContext } from 'react';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
-
-import { paths } from 'src/routes/paths';
+import { Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 import { CONFIG } from 'src/config-global';
+import { varAlpha, bgGradient } from 'src/theme/styles';
 
 import { Logo } from 'src/components/logo';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { varAlpha, bgGradient } from 'src/theme/styles';
 
 import { Section } from './section';
 import { Main, Content } from './main';
@@ -57,22 +55,22 @@ export function AuthSplitLayout({ sx, section, children, header }) {
               <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100dvh',
+                alignItems: !isMobile ? 'center' : 'flex-start',
+                justifyContent: !isMobile ? 'center' : 'flex-start',
+                // minHeight: '100dvh',
                 width: 850,
                 px: 2,
                 // mt: !isMobile ? 150 : 120,
                 // ml: !isMobile ? 1 : 0,
                 // mb: !isMobile ? 0 : 10,
-                mt: !isMobile ? 100 : 40,
+                mt: !isMobile ? 100 : 10,
                 // ml: !isMobile ? 25 : '15%',
-                mb: !isMobile ? 0 : 1
+                mb: 0
               }}>
                 <Logo
                   isSingle={false}
                   sx={{
-                    width: !isMobile ? 450 : 300,
+                    width: !isMobile ? 450 : 100,
                     height: 'auto',
                   }}
                 />

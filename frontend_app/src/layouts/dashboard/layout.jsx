@@ -11,7 +11,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { wsEndpoints } from 'src/utils/axios';
 import { isClient } from 'src/utils/check-permissions';
 
-import { allLangs } from 'src/locales';
 import { useRewardStoreProductSelectionBuyByUsername } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { Logo } from 'src/components/logo';
@@ -35,9 +34,7 @@ import { CartsDrawer } from '../components/cart-drawer';
 import { StyledDivider, useNavColorVars } from './styles';
 import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
-import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
-import { NotificationsDrawer } from '../components/notifications-drawer';
 
 // ----------------------------------------------------------------------
 

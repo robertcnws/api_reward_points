@@ -1,4 +1,5 @@
-import { Autocomplete, Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Autocomplete } from "@mui/material";
+
 import { Iconify } from "src/components/iconify";
 
 export function SalesOrdersListFilters({ filters, allSalespersons, allStatuses, isMobile }) {

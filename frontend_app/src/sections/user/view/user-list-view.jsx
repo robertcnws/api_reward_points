@@ -18,12 +18,12 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
+import { isClient } from 'src/utils/check-permissions';
 import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { varAlpha } from 'src/theme/styles';
 import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { isClient } from 'src/utils/check-permissions';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';

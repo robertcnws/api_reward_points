@@ -8,8 +8,7 @@ import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import { TextField, Typography, LinearProgress, Card } from '@mui/material';
-import { Scrollbar } from 'src/components/scrollbar';
+import { Card, TextField, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -20,6 +19,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
+import { Scrollbar } from 'src/components/scrollbar';
 import { Form, Field } from 'src/components/hook-form';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
@@ -390,7 +390,7 @@ export function JwtSignUpView() {
         }}>
           <Card
             sx={{
-              mt: !isMobile ? 0 : 35,
+              mt: !isMobile ? 0 : 5,
               p: 3,
               width: 1,
               ml: 0,
@@ -407,8 +407,7 @@ export function JwtSignUpView() {
                   </Typography>
                 }
                 description={
-                  <>
-                    <Box
+                  <Box
                       display="flex"
                       justifyContent={isMobile ? 'center' : 'flex-start'}
                       alignItems="center"
@@ -431,7 +430,6 @@ export function JwtSignUpView() {
                         Sign in
                       </Link>
                     </Box>
-                  </>
                 }
                 sx={{ textAlign: { xs: 'center', md: 'left' } }}
               />

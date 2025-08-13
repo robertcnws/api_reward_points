@@ -8,6 +8,7 @@ import { usePathname } from 'src/routes/hooks';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionVertical } from 'src/components/nav-section';
+import { Typography } from '@mui/material';
 
 
 // ----------------------------------------------------------------------
@@ -36,8 +37,20 @@ export function NavMobile({ data, open, onClose, slots, sx, ...other }) {
       }}
     >
       {slots?.topArea ?? (
-        <Box sx={{ pl: 9, pt: 2.5, pb: 2, mt: 0 }}>
-          <Logo isSingle={false} sx={{ width: '200px', height: 'auto' }}/>
+        <Box sx={{ pl: 3.5, pt: 1, pb: 0, mt: 0, mb: 0, ml: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', width: 1, justifyContent: 'flex-start' }}>
+            <Logo isSingle />
+              <Typography sx={{
+                ml: -9,
+                mt: 1.5,
+                color: 'primary.dark',
+                fontWeight: 'bold',
+                fontFamily: 'Arial',
+                fontSize: 20
+              }}>
+                Customer Portal
+              </Typography>
+          </Box>
         </Box>
       )}
 

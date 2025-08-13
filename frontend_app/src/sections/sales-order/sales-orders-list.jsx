@@ -1,5 +1,6 @@
-import { useCallback, useContext } from 'react';
+import { useContext, useCallback } from 'react';
 
+import { Box } from '@mui/material';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import TableRow from '@mui/material/TableRow';
@@ -7,19 +8,20 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import CardHeader from '@mui/material/CardHeader';
 
+import { useSetState } from 'src/hooks/use-set-state';
+
 import { fDate } from 'src/utils/format-time';
 import { fNumber, fCurrency } from 'src/utils/format-number';
 
+import { DashboardContent } from 'src/layouts/dashboard';
+
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
-import { TableNoData, TableHeadCustom, useTable } from 'src/components/table';
+import { useTable, TableNoData, TableHeadCustom } from 'src/components/table';
+import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
-import { Autocomplete, Box, Button, TextField } from '@mui/material';
-import { useSetState } from 'src/hooks/use-set-state';
-import { Iconify } from 'src/components/iconify';
+
 import { SalesOrdersListFilters } from './sales-orders-list-filters';
 
 // ----------------------------------------------------------------------
