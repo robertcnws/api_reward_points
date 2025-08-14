@@ -30,7 +30,7 @@ export function StoreProductFolderItemCarousel({
   useEffect(() => {
     const attachments = images?.length ? [...images] : [];
 
-    if (!attachments.length) {
+    if (!attachments?.length) {
       const defaultFile = {
         file: 'store_products/nws_reward_points_preview.png',
         name: 'Default Image',
@@ -42,7 +42,7 @@ export function StoreProductFolderItemCarousel({
     }
     const loadFiles = async () => {
       const loaded = await Promise.all(
-        attachments.map(async (attachment) => {
+        attachments?.map(async (attachment) => {
           if (attachment instanceof File) {
             return {
               ...attachment,

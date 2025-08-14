@@ -430,7 +430,7 @@ export function StoreProductFolderItem({
         //   }
         // /> */}
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 2 }}>
-        <StoreProductFolderItemCarousel images={currentProduct?.attachments ?? []} />
+        <StoreProductFolderItemCarousel images={currentProduct?.attachments} />
         <Tooltip title={`Rating ${totalRatings.toFixed(2)}`} arrow placement="top">
           <Box sx={{ display: 'flex', flexDirection: 'column' }} onClick={onViewRow}>
             <Rating readOnly value={totalRatings} precision={0.1} />
