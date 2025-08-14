@@ -95,7 +95,21 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       ...(userLogged && isClient(userRole) ? [
         {
           key: `${paths.dashboard.storeProduct.root}-2`,
-          title: 'Reward Store',
+          title: (
+            <Box component="span" id='reward-store-link'>
+              <Typography
+                variant={isNavMini ? 'caption' : 'subtitle2'}
+                sx={{
+                  mr: 1,
+                  color: 'text.secondary',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                Rewards Store
+              </Typography>
+            </Box>
+          ),
           path: paths.dashboard.storeProduct.root,
           icon: ICONS.store,
         },
@@ -115,7 +129,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                   variant={isNavMini ? 'caption' : 'subtitle2'}
                   sx={{
                     mr: 1,
-                    color: 'text.primary',
+                    color: 'text.secondary',
                     display: 'flex',
                     alignItems: 'center',
                   }}
@@ -153,15 +167,29 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           path: paths.dashboard.purchase.root,
           icon: ICONS.purchase,
         },
-        {
-          key: `${paths.dashboard.invoice.root}-2`,
-          title: "My Invoices",
-          path: paths.dashboard.invoice.root,
-          icon: ICONS.invoice,
-        },
+        // {
+        //   key: `${paths.dashboard.invoice.root}-2`,
+        //   title: "My Invoices",
+        //   path: paths.dashboard.invoice.root,
+        //   icon: ICONS.invoice,
+        // },
         {
           key: `${paths.dashboard.salesOrder.root}-2`,
-          title: "My Sales Orders",
+          title: (
+            <Box component="span" id='my-sales-orders-link'>
+              <Typography
+                variant={isNavMini ? 'caption' : 'subtitle2'}
+                sx={{
+                  mr: 1,
+                  color: 'text.secondary',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                My Orders
+              </Typography>
+            </Box>
+          ),
           path: paths.dashboard.salesOrder.root,
           icon: ICONS.salesOrder,
         },
@@ -191,7 +219,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                       variant={isNavMini ? 'caption' : 'subtitle2'}
                       sx={{
                         mr: 1,
-                        color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
+                        color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
                         display: 'flex',
                         alignItems: 'center',
                       }}
@@ -242,7 +270,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                           variant="subtitle2"
                           sx={{
                             mr: 1,
-                            color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.primary',
+                            color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
                           }}
                         >
                           Pending Approval

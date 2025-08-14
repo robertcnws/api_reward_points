@@ -428,3 +428,24 @@ class RewardStoreProductSelectionBuy(Document):
     
     def __str__(self):
         return f"{self.store_product_selection.user.username} - {self.store_product_selection.store_product.name} - {self.created_time.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    
+class RewardJoyRide(Document):
+    title = StringField(null=True, blank=True)
+    description = StringField(null=True, blank=True)
+    component_id = StringField(null=True, blank=True)
+    created_time = DateTimeField(default=timezone.now, null=True)
+    last_modified_time = DateTimeField(default=timezone.now, null=True)
+    module = StringField(null=True, blank=True)
+
+    meta = {
+        'collection': 'reward_joy_ride',
+        'indexes': [
+            'title', 'created_time', 'last_modified_time', 'component_id', 'module'
+        ],
+        'verbose_name': 'Reward Joy Ride',
+        'verbose_name_plural': 'Reward Joy Rides'
+    }
+
+    def __str__(self):
+        return f"{self.title} - {self.created_time.strftime('%Y-%m-%d')} - {self.points_earned} points"

@@ -1,12 +1,33 @@
-import React, { useMemo, useContext, createContext } from 'react';
+import React, { useState, useCallback, useMemo, useContext, createContext } from 'react';
 
-import { useRewardPoints, RewardPointsProvider } from './contexts/reward-points-context';
-import { useRewardUserRoles, RewardUserRolesProvider } from './contexts/reward-user-roles-context';
-import { useRewardLoginUsers, RewardLoginUsersProvider } from './contexts/reward-login-users-context';
-import { useRewardPointsSettings, RewardPointsSettingsProvider } from './contexts/reward-points-settings';
-import { useRewardStoreProducts, RewardStoreProductsProvider } from './contexts/reward-store-products-context';
-import { useRewardExternalUsers, RewardExternalUsersProvider } from './contexts/reward-external-users-context';
-import { useRewardNotificationUsers, RewardNotificationUsersProvider } from './contexts/reward-notification-users-context';
+import {
+  useRewardPoints,
+  RewardPointsProvider
+} from './contexts/reward-points-context';
+import {
+  useRewardUserRoles,
+  RewardUserRolesProvider
+} from './contexts/reward-user-roles-context';
+import {
+  useRewardLoginUsers,
+  RewardLoginUsersProvider
+} from './contexts/reward-login-users-context';
+import {
+  useRewardPointsSettings,
+  RewardPointsSettingsProvider
+} from './contexts/reward-points-settings';
+import {
+  useRewardStoreProducts,
+  RewardStoreProductsProvider
+} from './contexts/reward-store-products-context';
+import {
+  useRewardExternalUsers,
+  RewardExternalUsersProvider
+} from './contexts/reward-external-users-context';
+import {
+  useRewardNotificationUsers,
+  RewardNotificationUsersProvider
+} from './contexts/reward-notification-users-context';
 import {
   useRewardStoreProductSelectionBuy,
   RewardStoreProductSelectionBuyProvider
@@ -16,30 +37,37 @@ import {
   RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
 
+import {
+  useRewardJoyRides,
+  RewardJoyRidesProvider
+} from './contexts/reward-joy-rides-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
   return (
     // <RewardItemsProvider>
-    <RewardNotificationUsersProvider>
-      <RewardStoreProductSelectionCartProvider>
-        <RewardStoreProductSelectionBuyProvider>
-          <RewardPointsSettingsProvider>
-            <RewardUserRolesProvider>
-              <RewardExternalUsersProvider>
-                <RewardLoginUsersProvider>
-                  <RewardStoreProductsProvider>
-                    <RewardPointsProvider>
-                      <CombineProviders>{children}</CombineProviders>
-                    </RewardPointsProvider>
-                  </RewardStoreProductsProvider>
-                </RewardLoginUsersProvider>
-              </RewardExternalUsersProvider>
-            </RewardUserRolesProvider>
-          </RewardPointsSettingsProvider>
-        </RewardStoreProductSelectionBuyProvider>
-      </RewardStoreProductSelectionCartProvider>
-    </RewardNotificationUsersProvider>
+    <RewardJoyRidesProvider>
+      <RewardNotificationUsersProvider>
+        <RewardStoreProductSelectionCartProvider>
+          <RewardStoreProductSelectionBuyProvider>
+            <RewardPointsSettingsProvider>
+              <RewardUserRolesProvider>
+                <RewardExternalUsersProvider>
+                  <RewardLoginUsersProvider>
+                    <RewardStoreProductsProvider>
+                      <RewardPointsProvider>
+                        <CombineProviders>{children}</CombineProviders>
+                      </RewardPointsProvider>
+                    </RewardStoreProductsProvider>
+                  </RewardLoginUsersProvider>
+                </RewardExternalUsersProvider>
+              </RewardUserRolesProvider>
+            </RewardPointsSettingsProvider>
+          </RewardStoreProductSelectionBuyProvider>
+        </RewardStoreProductSelectionCartProvider>
+      </RewardNotificationUsersProvider>
+    </RewardJoyRidesProvider>
     // </RewardItemsProvider>
   );
 }
@@ -122,6 +150,13 @@ function CombineProviders({ children }) {
     errorExternalUser,
   } = useRewardExternalUsers();
 
+  const {
+    loadedAllRewardJoyRides,
+    refetchAllRewardJoyRides,
+    loadingAllRewardJoyRides,
+    errorAllRewardJoyRides,
+  } = useRewardJoyRides();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -131,6 +166,20 @@ function CombineProviders({ children }) {
   // } = useRewardItems();
 
   // console.log('loadedAllRewardItems', loadedAllRewardItems);
+
+  // Onboarding Vars
+
+  const [runDashboard, setRunDashboard] = useState(true);
+  const [runNavVertical, setRunNavVertical] = useState(false);
+
+  const finishDashboard = useCallback(() => {
+    setRunDashboard(false);
+    setRunNavVertical(true);
+  }, [setRunDashboard, setRunNavVertical]);
+
+  const finishNavVertical = useCallback(() => {
+    setRunNavVertical(false);
+  }, [setRunNavVertical]);
 
   const value = useMemo(() => ({
     loadedRewardPoints,
@@ -183,11 +232,21 @@ function CombineProviders({ children }) {
     refetchExternalUser,
     loadingExternalUser,
     errorExternalUser,
+    loadedAllRewardJoyRides,
+    refetchAllRewardJoyRides,
+    loadingAllRewardJoyRides,
+    errorAllRewardJoyRides,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
     // loadingAllRewardItems,
     // errorRewardItems,
+    runDashboard,
+    setRunDashboard,
+    finishDashboard,
+    runNavVertical,
+    setRunNavVertical,
+    finishNavVertical,
   }), [
     loadedRewardPoints,
     refetchRewardPoints,
@@ -239,11 +298,21 @@ function CombineProviders({ children }) {
     refetchExternalUser,
     loadingExternalUser,
     errorExternalUser,
+    loadedAllRewardJoyRides,
+    refetchAllRewardJoyRides,
+    loadingAllRewardJoyRides,
+    errorAllRewardJoyRides,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
     // loadingAllRewardItems,
     // errorRewardItems,
+    runDashboard,
+    setRunDashboard,
+    finishDashboard,
+    runNavVertical,
+    setRunNavVertical,
+    finishNavVertical,
   ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

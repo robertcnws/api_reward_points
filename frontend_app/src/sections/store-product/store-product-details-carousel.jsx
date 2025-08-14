@@ -28,7 +28,7 @@ export function StoreProductDetailsCarousel({ images, predefinedSize = null, for
   useEffect(() => {
     const attachments = [...images] || [];
 
-    if (!attachments.length) {
+    if (attachments?.length === 0) {
       const defaultFile = {
         file: 'store_products/nws_reward_points_preview.png',
         name: 'Default Image',
@@ -40,7 +40,7 @@ export function StoreProductDetailsCarousel({ images, predefinedSize = null, for
     }
     const loadFiles = async () => {
       const loaded = await Promise.all(
-        attachments.map(async (attachment) => {
+        attachments?.map(async (attachment) => {
           if (attachment instanceof File) {
             return {
               ...attachment,

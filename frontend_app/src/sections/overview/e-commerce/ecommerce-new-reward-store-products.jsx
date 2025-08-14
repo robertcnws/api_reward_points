@@ -16,6 +16,7 @@ import { varAlpha } from 'src/theme/styles';
 
 import { Image } from 'src/components/image';
 import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
         }}
       />
 
-      <Carousel carousel={carousel} sx={{ height: 340 }}>
+      <Carousel carousel={carousel} sx={{ height: 395 }}>
         {initialFiles?.map((item, index) => (
           <CarouselItem key={`${item.id}-${index}`} item={item} router={router} isEmpty={isEmpty} />
         ))}
@@ -145,14 +146,21 @@ function CarouselItem({ item, router, isEmpty, ...other }) {
 
         {!isEmpty && (
           <Button
-            color="primary"
             variant="contained"
-            sx={{ alignSelf: 'flex-start' }}
+            sx={{
+              alignSelf: 'flex-start',
+              backgroundColor: 'primary.dark',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+              },
+              color: 'whitesmoke',
+            }}
             onClick={() => {
               router.push(paths.dashboard.storeProduct.details(item.productId))
             }}
           >
-            Buy now
+            <Iconify icon="icons8:buy" sx={{ mr: 1 }} />
+            Redeem now!
           </Button>
         )}
       </Box>

@@ -29,6 +29,7 @@ import client from './utils/graphql-client';
 import { RouteProvider } from './auth/context/router-context';
 import { DataProvider } from './auth/context/data/data-context';
 import BackdropBackground from './layouts/components/backdrop-background';
+import OnboardingGuide from './layouts/dashboard/onboarding-guide';
 
 
 

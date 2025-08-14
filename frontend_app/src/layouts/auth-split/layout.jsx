@@ -61,19 +61,19 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 // minHeight: '100dvh',
-                width: 850,
+                width: 450,
                 px: 1,
                 // mt: !isMobile ? 150 : 120,
                 // ml: !isMobile ? 1 : 0,
                 // mb: !isMobile ? 0 : 10,
-                mt: !isMobile ? 100 : 20,
+                mt: !isMobile ? '45%' : 20,
                 // ml: !isMobile ? 25 : '15%',
                 mb: 0
               }}>
                 <Logo
                   isSingle={false}
                   sx={{
-                    width: !isMobile ? 450 : 100,
+                    width: !isMobile ? 400 : 100,
                     height: 'auto',
                   }}
                 />

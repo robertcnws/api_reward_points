@@ -12,6 +12,7 @@ from api_reward_points.models import (
     RewardStoreProductSelection,
     RewardStoreProductSelectionCart,
     RewardStoreProductSelectionBuy,
+    RewardJoyRide,
 )
 from api_authorization.models import LoginUser
 from api_reward_points.schema_types.reward_points_type import RewardPointsType
@@ -23,6 +24,7 @@ from api_reward_points.schema_types.reward_store_product_type import RewardStore
 from api_reward_points.schema_types.reward_points_settings_type import RewardPointsSettingsType  
 from api_reward_points.schema_types.reward_store_product_selection_cart_type import RewardStoreProductSelectionCartType
 from api_reward_points.schema_types.reward_store_product_selection_buy_type import RewardStoreProductSelectionBuyType
+from api_reward_points.schema_types.reward_joy_ride_type import RewardJoyRideType
      
 class Query(graphene.ObjectType):
     all_reward_points = graphene.List(
@@ -119,6 +121,11 @@ class Query(graphene.ObjectType):
         RewardStoreProductSelectionBuyType,
         username=graphene.String(required=True)
     )
+    
+    all_reward_joyrides = graphene.List(
+        RewardJoyRideType
+    )
+    
 
     def resolve_all_reward_points(self, info):
         # approved_users = LoginUser.objects(is_approved=True).all()
@@ -248,5 +255,8 @@ class Query(graphene.ObjectType):
         ).all()
 
         return list(buys) if buys else []
+    
+    def resolve_all_reward_joyrides(self, info):
+        return RewardJoyRide.objects.all()
 
     

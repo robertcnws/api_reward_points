@@ -34,8 +34,12 @@ export function Section({
         }),
         px: 2,
         pb: 2,
-        width: 1,
-        maxWidth: 900,
+        flex: '0 0 auto',
+
+        // Tamaño: fijo por breakpoint + relación de aspecto estable
+        width: { xs: '100%', md: 200, lg: 500, xl: 500 },
+        maxWidth: { xs: '100%', md: 200, lg: 500, xl: 500 },
+        aspectRatio: '16 / 9',
         display: 'none',
         position: 'relative',
         pt: 'var(--layout-header-desktop-height)',
@@ -54,7 +58,7 @@ export function Section({
         {/* <Box sx={{ mb: -5 }} >
           <img src='/logo/logo.png' alt="img" style={{ width: '200px' }} />
         </Box> */}
-        
+
         {/* <Typography variant="h4" sx={{ textAlign: 'center' }}>
           {title || ''}
         </Typography> */}
