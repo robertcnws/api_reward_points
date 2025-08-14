@@ -71,6 +71,12 @@ export function StoreProductGridView({
   );
 
   useEffect(() => {
+    if (refetchStoreProducts) {
+      refetchStoreProducts().catch((err) => console.error('Error fetching store products:', err));
+    }
+  }, [refetchStoreProducts]);
+
+  useEffect(() => {
     let socket;
     if (userLogged) {
       const username = userLogged?.data?.username;

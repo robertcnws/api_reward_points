@@ -28,9 +28,9 @@ export function StoreProductFolderItemCarousel({
   const [initialFiles, setInitialFiles] = useState([]);
 
   useEffect(() => {
-    const attachments = images?.length ? [...images] : [];
+    const attachments = images?.length > 0 ? [...images] : [];
 
-    if (!attachments?.length) {
+    if (attachments?.length === 0) {
       const defaultFile = {
         file: 'store_products/nws_reward_points_preview.png',
         name: 'Default Image',
