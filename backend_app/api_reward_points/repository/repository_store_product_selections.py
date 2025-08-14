@@ -856,8 +856,8 @@ def delete_store_product_selection_buy(request, id):
             
             gained_points = reward_points.total_gained_points + refund_gained_points
             if gained_points < 0:
-                logger.error("Gained points cannot be negative")
-                return Response({'error': 'Gained points cannot be negative'}, status=400)
+                logger.error("Earned points cannot be negative")
+                return Response({'error': 'Earned points cannot be negative'}, status=400)
             assigned_points = reward_points.total_assigned_points + refund_spent_points
             if assigned_points < 0:
                 logger.error("Assigned points cannot be negative")
@@ -1037,8 +1037,8 @@ def delete_list_store_product_selection_buys(request):
                 
                 gained_points = reward_points.total_gained_points + refund_gained_points
                 if gained_points < 0:
-                    logger.error("Gained points cannot be negative")
-                    return Response({'error': 'Gained points cannot be negative'}, status=400)
+                    logger.error("Earned points cannot be negative")
+                    return Response({'error': 'Earned points cannot be negative'}, status=400)
                 assigned_points = reward_points.total_assigned_points + refund_spent_points
                 if assigned_points < 0:
                     logger.error("Assigned points cannot be negative")

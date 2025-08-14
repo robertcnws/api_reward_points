@@ -162,7 +162,7 @@ class RewardPoints(Document):
     }
     
     def __str__(self):
-        return f"Reward Points for {self.user.username} - Total Gained: {self.total_gained_points}, Total Spent: {self.total_spent_points}"
+        return f"Reward Points for {self.user.username} - Total Earned: {self.total_gained_points}, Total Spent: {self.total_spent_points}"
     
 class RewardPointsHistory(Document):
     created_time = DateTimeField(default=timezone.now, null=True)
@@ -186,7 +186,7 @@ class RewardPointsHistory(Document):
     }
     
     def __str__(self):
-        return f"{self.action.capitalize()} - {self.gained_points} points gained, {self.spent_points} points spent on {self.created_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"{self.action.capitalize()} - {self.gained_points} points earned, {self.spent_points} points spent on {self.created_time.strftime('%Y-%m-%d %H:%M:%S')}"
     
     
 class RewardPointsSettings(Document):

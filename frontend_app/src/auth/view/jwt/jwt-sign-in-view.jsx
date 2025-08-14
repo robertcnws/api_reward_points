@@ -243,7 +243,7 @@ export function JwtSignInView() {
           }}
         />
 
-        <Field.Checkbox
+        {/* <Field.Checkbox
           name="rememberMe"
           slotProps={{
             checkbox: {
@@ -255,9 +255,23 @@ export function JwtSignInView() {
           label={
             <span>
               Remember me
-              {/* <Link component={RouterLink} href="#" variant="subtitle2" sx={{ ml: 1 }}>
-                Terms of Service
-              </Link> */}
+            </span>
+          }
+          sx={{ alignSelf: 'flex-start' }}
+        /> */}
+
+        <Field.Switch
+          name="rememberMe"
+          slotProps={{
+            switch: {
+              // icon: <BoxEmpty />,
+              // checkedIcon: <BoxFilled />,
+              disableRipple: true,
+            },
+          }}
+          label={
+            <span>
+              Remember me
             </span>
           }
           sx={{ alignSelf: 'flex-start' }}
@@ -292,6 +306,7 @@ export function JwtSignInView() {
       ...formSlightGrow,
     }}>
       <FormHead
+        isCompound
         title={
           <Typography variant="h3" paragraph>
             Sign in to your account
@@ -299,28 +314,27 @@ export function JwtSignInView() {
         }
         description={
           <Box
-              display="flex"
-              justifyContent={isMobile ? 'center' : 'flex-start'}
-              alignItems="center"
-              gap={1}
-              mb={1}
-              mt={-3}
-            >
-              <Typography variant="h5" paragraph>
-                Don’t have an account?
-              </Typography>
-              <Link
-                component={RouterLink}
-                href={paths.auth.jwt.signUp}
-                variant="subtitle2"
-                mt={-2}
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                }}>
-                Sign up
-              </Link>
-            </Box>
+            display="flex"
+            justifyContent={isMobile ? 'center' : 'flex-start'}
+            alignItems="center"
+            gap={1}
+            mb={1}
+            mt={-3}
+          >
+            <Typography variant="h5" component="div">
+              Don’t have an account?
+            </Typography>
+            <Link
+              component={RouterLink}
+              href={paths.auth.jwt.signUp}
+              variant="subtitle2"
+              sx={{
+                fontWeight: 'bold',
+                fontSize: 20,
+              }}>
+              Sign up
+            </Link>
+          </Box>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />

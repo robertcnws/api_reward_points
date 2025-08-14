@@ -188,7 +188,7 @@ export function JwtSignUpView() {
     },
     // Placeholder centrado también
     '& .MuiInputBase-input::placeholder': {
-      textAlign: 'center',
+      textAlign: 'start',
       opacity: 1,
     },
 
@@ -401,6 +401,7 @@ export function JwtSignUpView() {
           >
             <Scrollbar sx={{ height: 1 }}>
               <FormHead
+                isCompound
                 title={
                   <Typography variant="h3" paragraph>
                     Get started absolutely free
@@ -408,28 +409,27 @@ export function JwtSignUpView() {
                 }
                 description={
                   <Box
-                      display="flex"
-                      justifyContent={isMobile ? 'center' : 'flex-start'}
-                      alignItems="center"
-                      gap={1}
-                      mb={1}
-                      mt={-3}
-                    >
-                      <Typography variant="h5" paragraph>
-                        Already have an account?
-                      </Typography>
-                      <Link
-                        component={RouterLink}
-                        href={paths.auth.jwt.signIn}
-                        variant="subtitle2"
-                        mt={-2}
-                        sx={{
-                          fontWeight: 'bold',
-                          fontSize: 20,
-                        }}>
-                        Sign in
-                      </Link>
-                    </Box>
+                    display="flex"
+                    justifyContent={isMobile ? 'center' : 'flex-start'}
+                    alignItems="center"
+                    gap={1}
+                    mb={1}
+                    mt={-3}
+                  >
+                    <Typography variant="h5" component="div">
+                      Already have an account?
+                    </Typography>
+                    <Link
+                      component={RouterLink}
+                      href={paths.auth.jwt.signIn}
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: 20,
+                      }}>
+                      Sign in
+                    </Link>
+                  </Box>
                 }
                 sx={{ textAlign: { xs: 'center', md: 'left' } }}
               />

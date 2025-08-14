@@ -51,38 +51,33 @@ export function OverviewAnalyticsView() {
   return (
     <>
       {currentRole !== 'client' ? (
-        <DashboardContent maxWidth="xl">
-          <WelcomeTypography
-            userLogged={userLogged}
-          />
-          <OverviewAdminView
-            loadedRewardPoints={loadedRewardPoints}
-            refetchRewardPoints={refetchRewardPoints}
-            loadingRewardPoints={loadingRewardPoints}
-            errorRewardPoints={errorRewardPoints}
-            loadedRewardPointsHistory={loadedRewardPointsHistory}
-            refetchRewardPointsHistory={refetchRewardPointsHistory}
-            loadingRewardPointsHistory={loadingRewardPointsHistory}
-            errorRewardPointsHistory={errorRewardPointsHistory}
-            loadedRewardPointsGainedHistory={loadedRewardPointsGainedHistory}
-            refetchRewardPointsGainedHistory={refetchRewardPointsGainedHistory}
-            loadingRewardPointsGainedHistory={loadingRewardPointsGainedHistory}
-            errorRewardPointsGainedHistory={errorRewardPointsGainedHistory}
-            loadedRewardPointsSpentHistory={loadedRewardPointsSpentHistory}
-            refetchRewardPointsSpentHistory={refetchRewardPointsSpentHistory}
-            loadingRewardPointsSpentHistory={loadingRewardPointsSpentHistory}
-            errorRewardPointsSpentHistory={errorRewardPointsSpentHistory}
-            loadedUsers={loadedUsers}
-            loadedPendingUsers={loadedPendingUsers}
-            refetchUsers={refetchUsers}
-            loadingUsers={loadingUsers}
-            errorUsers={errorUsers}
-            loadedStoreProducts={loadedStoreProducts}
-            refetchStoreProducts={refetchStoreProducts}
-            loadingStoreProducts={loadingStoreProducts}
-            errorStoreProducts={errorStoreProducts}
-          />
-        </DashboardContent>
+        <OverviewAdminView
+          loadedRewardPoints={loadedRewardPoints}
+          refetchRewardPoints={refetchRewardPoints}
+          loadingRewardPoints={loadingRewardPoints}
+          errorRewardPoints={errorRewardPoints}
+          loadedRewardPointsHistory={loadedRewardPointsHistory}
+          refetchRewardPointsHistory={refetchRewardPointsHistory}
+          loadingRewardPointsHistory={loadingRewardPointsHistory}
+          errorRewardPointsHistory={errorRewardPointsHistory}
+          loadedRewardPointsGainedHistory={loadedRewardPointsGainedHistory}
+          refetchRewardPointsGainedHistory={refetchRewardPointsGainedHistory}
+          loadingRewardPointsGainedHistory={loadingRewardPointsGainedHistory}
+          errorRewardPointsGainedHistory={errorRewardPointsGainedHistory}
+          loadedRewardPointsSpentHistory={loadedRewardPointsSpentHistory}
+          refetchRewardPointsSpentHistory={refetchRewardPointsSpentHistory}
+          loadingRewardPointsSpentHistory={loadingRewardPointsSpentHistory}
+          errorRewardPointsSpentHistory={errorRewardPointsSpentHistory}
+          loadedUsers={loadedUsers}
+          loadedPendingUsers={loadedPendingUsers}
+          refetchUsers={refetchUsers}
+          loadingUsers={loadingUsers}
+          errorUsers={errorUsers}
+          loadedStoreProducts={loadedStoreProducts}
+          refetchStoreProducts={refetchStoreProducts}
+          loadingStoreProducts={loadingStoreProducts}
+          errorStoreProducts={errorStoreProducts}
+        />
       ) : (
         <OverviewEcommerceView
           loadedRewardPoints={loadedRewardPoints}

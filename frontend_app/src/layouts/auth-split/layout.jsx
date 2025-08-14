@@ -38,6 +38,7 @@ export function AuthSplitLayout({ sx, section, children, header }) {
          *************************************** */
         <HeaderSection
           disableElevation
+          disableOffset
           layoutQuery={layoutQuery}
           slotProps={{ container: { maxWidth: false } }}
           sx={{
@@ -47,9 +48,11 @@ export function AuthSplitLayout({ sx, section, children, header }) {
           }}
           slots={{
             topArea: (
-              <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
-                This is an info Alert.
-              </Alert>
+              <Box sx={{ display: 'none' }}>
+                <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
+                  This is an info Alert.
+                </Alert>
+              </Box>
             ),
             leftArea: (
               <Box sx={{

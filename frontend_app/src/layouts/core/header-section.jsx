@@ -69,6 +69,7 @@ export function HeaderSection({
       className={layoutClasses.header}
       sx={{
         zIndex: 'var(--layout-header-zIndex)',
+        // opacity: 0.1,
         ...sx,
       }}
       {...other}

@@ -37,7 +37,7 @@ export function AdminStatistics({ list, title, subheader, chart, ...other }) {
       let totalSpent = 0;
 
       currentSeries?.data.forEach((item) => {
-        if (item.name === 'Gained') totalGained += item.data.reduce((acc, val) => acc + val, 0);
+        if (item.name === 'Earned') totalGained += item.data.reduce((acc, val) => acc + val, 0);
         else totalSpent += item.data.reduce((acc, val) => acc + val, 0);
       });
 

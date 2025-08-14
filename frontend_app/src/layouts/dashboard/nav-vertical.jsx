@@ -19,12 +19,12 @@ export function NavVertical({ sx, data, slots, isNavMini, layoutQuery, onToggleN
   const renderNavVertical = (
     <>
       {slots?.topArea ?? (
-        <Box sx={{ pl: 3.5, pt: 1, pb: 0, mt: 0, mb: 0, ml: 0 }}>
+        <Box sx={{ pl: 2.5, pt: 1, pb: 0, mt: 0, mb: 0, ml: 0 }}>
           <Box sx={{ display: 'flex', flexDirection: 'row', width: 1, justifyContent: 'flex-start' }}>
             <Logo isSingle />
             {!isNavMini && (
               <Typography sx={{
-                ml: -9,
+                ml: -11,
                 mt: 1.5,
                 color: 'primary.dark',
                 fontWeight: 'bold',

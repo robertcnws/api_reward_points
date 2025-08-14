@@ -64,33 +64,45 @@ export function AdminCustomerReviews({
         <CardHeader
           title={title}
           subheader={subheader}
-          action={<CarouselArrowBasicButtons {...carousel.arrows} />}
+          action={list?.length > 0 ? <CarouselArrowBasicButtons {...carousel.arrows} /> : null}
         />
 
-        <Carousel sx={{mb: -1}} carousel={carousel}>
-          {sortedList?.map((item) => (
-            <Item key={item.id} item={item} router={router} sx={{height: 300}}/>
-          ))}
-        </Carousel>
+        {list?.length > 0 ? (
 
-        {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
           <>
-            <Divider sx={{ borderStyle: 'dashed' }} />
-            <Box sx={{ p: 2, gap: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'right' }}>
-              <Tooltip title="Delete customer review" placement="top" arrow>
-                <IconButton
-                  color="error"
-                  variant="soft"
-                  onClick={() => {
-                    setSelectedItem(customerInfo);
-                    onConfirmDeleteReview();
-                  }}
-                >
-                  <Iconify icon="mdi:delete-alert" width={25} height={25} />
-                </IconButton>
-              </Tooltip>
-            </Box>
+
+            <Carousel sx={{ mb: -1 }} carousel={carousel}>
+              {sortedList?.map((item) => (
+                <Item key={item.id} item={item} router={router} sx={{ height: 300 }} />
+              ))}
+            </Carousel>
+
+            {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
+              <>
+                <Divider sx={{ borderStyle: 'dashed' }} />
+                <Box sx={{ p: 2, gap: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'right' }}>
+                  <Tooltip title="Delete customer review" placement="top" arrow>
+                    <IconButton
+                      color="error"
+                      variant="soft"
+                      onClick={() => {
+                        setSelectedItem(customerInfo);
+                        onConfirmDeleteReview();
+                      }}
+                    >
+                      <Iconify icon="mdi:delete-alert" width={25} height={25} />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </>
+            )}
           </>
+        ) : (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="subtitle1" color="text.secondary">
+              No customer reviews found
+            </Typography>
+          </Box>
         )}
       </Card>
       <ConfirmDialog

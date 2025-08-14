@@ -246,7 +246,7 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or f'You have gained {delta_points} points based on order invoices',
+                description=description or f'You have earned {delta_points} points based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
     else:
@@ -271,7 +271,7 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or f'You have gained {delta_points} points based on order invoices',
+                description=description or f'You have earned {delta_points} points based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
         elif delta_points < 0:

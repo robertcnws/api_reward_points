@@ -25,8 +25,8 @@ export function AdminCheckInWidgets({
   const [activeIndex, setActiveIndex] = useState(null);
 
   const chartColors = chart.colors ?? [
-    [theme.palette.error.light, theme.palette.error.main],
     [theme.palette.success.light, theme.palette.success.main],
+    [theme.palette.error.light, theme.palette.error.main],
     [theme.palette.warning.light, theme.palette.warning.main],
   ];
 

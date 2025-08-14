@@ -83,7 +83,7 @@ export function AdminAvailable({ title, subheader, chart, seedAttr, ...other }) 
               }}
             />
             <Box sx={{ color: 'text.secondary', flexGrow: 1 }}>{item.label}</Box>
-            {item.value} users
+            {item.value} user(s)
           </Box>
         ))}
       </Box>
