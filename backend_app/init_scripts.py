@@ -161,6 +161,30 @@ def create_reward_joyrides():
                 "last_modified_time": datetime.now(),
                 "module": "dashboard"
             },
+            {
+                "title": "My Cart",
+                "description": "Here you’ll see your cart items and their details, just click on it.",
+                "component_id": "my-cart",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "nav_top"
+            },
+            {
+                "title": "My Navigation Links",
+                "description": "Here you’ll see your navigation links in all modules, just click on it.",
+                "component_id": "my-navigation-links",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "nav_top"
+            },
+            {
+                "title": "My UI Settings",
+                "description": "Here you’ll see your UI settings for the application, just click on it.",
+                "component_id": "my-ui-settings",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "nav_top"
+            },
     ]
     for step in array_of_steps:
         joyride_step = RewardJoyRide.objects(component_id=step['component_id']).first()

@@ -348,21 +348,23 @@ export function CartsDrawer({ sx, ...other }) {
 
   return (
     <>
-      <IconButton
-        component={m.button}
-        whileTap="tap"
-        whileHover="hover"
-        variants={varHover(1.05)}
-        onClick={drawer.onTrue}
-        sx={sx}
-        {...other}
-      >
-        <Badge badgeContent={currentStoreProductSelectionCart?.length} color="error">
-          <SvgIcon sx={{ width: 33, height: 33, mt: -0.7 }}>
-            <Iconify icon="solar:cart-check-bold-duotone" width={33} height={33} />
-          </SvgIcon>
-        </Badge>
-      </IconButton>
+      <Box id='my-cart'>
+        <IconButton
+          component={m.button}
+          whileTap="tap"
+          whileHover="hover"
+          variants={varHover(1.05)}
+          onClick={drawer.onTrue}
+          sx={sx}
+          {...other}
+        >
+          <Badge badgeContent={currentStoreProductSelectionCart?.length} color="error">
+            <SvgIcon sx={{ width: 33, height: 33, mt: -0.7 }}>
+              <Iconify icon="solar:cart-check-bold-duotone" width={33} height={33} />
+            </SvgIcon>
+          </Badge>
+        </IconButton>
+      </Box>
 
       <Drawer
         open={drawer.value}

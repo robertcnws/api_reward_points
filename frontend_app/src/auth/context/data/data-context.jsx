@@ -171,6 +171,7 @@ function CombineProviders({ children }) {
 
   const [runDashboard, setRunDashboard] = useState(true);
   const [runNavVertical, setRunNavVertical] = useState(false);
+  const [runNavTop, setRunNavTop] = useState(false);
 
   const finishDashboard = useCallback(() => {
     setRunDashboard(false);
@@ -179,7 +180,12 @@ function CombineProviders({ children }) {
 
   const finishNavVertical = useCallback(() => {
     setRunNavVertical(false);
-  }, [setRunNavVertical]);
+    setRunNavTop(true);
+  }, [setRunNavVertical, setRunNavTop]);
+
+  const finishNavTop = useCallback(() => {
+    setRunNavTop(false);
+  }, [setRunNavTop]);
 
   const value = useMemo(() => ({
     loadedRewardPoints,
@@ -247,6 +253,9 @@ function CombineProviders({ children }) {
     runNavVertical,
     setRunNavVertical,
     finishNavVertical,
+    runNavTop,
+    setRunNavTop,
+    finishNavTop,
   }), [
     loadedRewardPoints,
     refetchRewardPoints,
@@ -313,6 +322,9 @@ function CombineProviders({ children }) {
     runNavVertical,
     setRunNavVertical,
     finishNavVertical,
+    runNavTop,
+    setRunNavTop,
+    finishNavTop,
   ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

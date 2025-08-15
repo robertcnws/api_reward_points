@@ -106,6 +106,7 @@ export function Searchbar({ data: navItems = [], sx, ...other }) {
 
   const renderButton = (
     <Box
+      id='my-navigation-links'
       display="flex"
       alignItems="center"
       onClick={search.onTrue}

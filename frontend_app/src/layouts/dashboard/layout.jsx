@@ -96,6 +96,9 @@ export function DashboardLayout({ sx, children, header, data }) {
     setRunNavVertical,
     finishNavVertical,
     runDashboard,
+    runNavTop,
+    setRunNavTop,
+    finishNavTop,
   } = dataContextHook;
 
   const loadedPurchases = roleName === 'client' ? clientData : otherData;
@@ -335,7 +338,7 @@ export function DashboardLayout({ sx, children, header, data }) {
       >
         <Main isNavHorizontal={isNavHorizontal}>{children}</Main>
       </LayoutSection>
-      {runNavVertical && (
+      {runNavVertical && !runDashboard && !runNavTop && (
         <OnboardingGuide
           run={runNavVertical}
           setRun={setRunNavVertical}
@@ -343,6 +346,16 @@ export function DashboardLayout({ sx, children, header, data }) {
           onFinish={finishNavVertical}
           stepFilters={(step) => step.module === 'nav_vertical'}
           disableBeacon={!runDashboard}
+        />
+      )}
+      {runNavTop && !runDashboard && !runNavVertical && (
+        <OnboardingGuide
+          run={runNavTop}
+          setRun={setRunNavTop}
+          ready={!runNavVertical}
+          onFinish={finishNavTop}
+          stepFilters={(step) => step.module === 'nav_top'}
+          disableBeacon={!runNavVertical}
         />
       )}
 
