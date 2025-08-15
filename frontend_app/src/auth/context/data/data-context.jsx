@@ -169,7 +169,7 @@ function CombineProviders({ children }) {
 
   // Onboarding Vars
 
-  const [runDashboard, setRunDashboard] = useState(true);
+  const [runDashboard, setRunDashboard] = useState(false);
   const [runNavVertical, setRunNavVertical] = useState(false);
   const [runNavTop, setRunNavTop] = useState(false);
 

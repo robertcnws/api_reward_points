@@ -36,6 +36,7 @@ import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import OnboardingGuide from './onboarding-guide';
+import { GuideTourButton } from '../components/guide-tour-button';
 
 // ----------------------------------------------------------------------
 
@@ -262,23 +263,31 @@ export function DashboardLayout({ sx, children, header, data }) {
                 </>
               ),
               rightArea: (
-                <Box display="flex" alignItems="center" gap={{ xs: 0, sm: 0.75 }}>
-                  {/* -- Searchbar -- */}
-                  <Searchbar data={navData} />
-                  {/* -- Language popover -- */}
-                  {/* <LanguagePopover data={allLangs} /> */}
-                  {/* -- Cart popover -- */}
-                  {isClient(roleName) && (
-                    <CartsDrawer />
-                  )}
-                  {/* -- Notifications popover -- */}
-                  {/* <NotificationsDrawer /> */}
-                  {/* -- Contacts popover -- */}
-                  {/* <ContactsPopover data={_contacts} /> */}
-                  {/* -- Settings button -- */}
-                  <SettingsButton />
-                  {/* -- Account drawer -- */}
-                  <AccountDrawer data={_account({ role: userLogged?.data?.user_role?.name })} />
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: runDashboard || runNavVertical || runNavTop ? 'flex-end' : 'space-between',
+                  width: '100%' }}>
+                  <GuideTourButton />
+
+                  <Box display="flex" alignItems="center" gap={{ xs: 0, sm: 0.75 }}>
+                    {/* -- Searchbar -- */}
+                    <Searchbar data={navData} />
+                    {/* -- Language popover -- */}
+                    {/* <LanguagePopover data={allLangs} /> */}
+                    {/* -- Cart popover -- */}
+                    {isClient(roleName) && (
+                      <CartsDrawer />
+                    )}
+                    {/* -- Notifications popover -- */}
+                    {/* <NotificationsDrawer /> */}
+                    {/* -- Contacts popover -- */}
+                    {/* <ContactsPopover data={_contacts} /> */}
+                    {/* -- Settings button -- */}
+                    <SettingsButton />
+                    {/* -- Account drawer -- */}
+                    <AccountDrawer data={_account({ role: userLogged?.data?.user_role?.name })} />
+                  </Box>
                 </Box>
               ),
             }}

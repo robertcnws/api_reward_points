@@ -493,6 +493,7 @@ export function OverviewEcommerceView({
           ready={loadingRewardPoints && loadingRewardPointsHistory}
           onFinish={finishDashboard}
           stepFilters={(step) => step.module === 'dashboard'}
+          disableBeacon
         />
       )}
     </>
