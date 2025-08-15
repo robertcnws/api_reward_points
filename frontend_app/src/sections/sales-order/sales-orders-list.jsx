@@ -9,6 +9,8 @@ import TableBody from '@mui/material/TableBody';
 import CardHeader from '@mui/material/CardHeader';
 
 import { useSetState } from 'src/hooks/use-set-state';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { fDate } from 'src/utils/format-time';
 import { fNumber, fCurrency } from 'src/utils/format-number';
@@ -24,11 +26,14 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { SalesOrdersListFilters } from './sales-orders-list-filters';
 
+
 // ----------------------------------------------------------------------
 
 export function SalesOrdersList({ title, subheader, tableData, headLabel, ...other }) {
 
   const { isMobile } = useContext(LoadingContext);
+
+  const router = useRouter();
 
   const table = useTable({
     defaultDense: true,
@@ -72,6 +77,10 @@ export function SalesOrdersList({ title, subheader, tableData, headLabel, ...oth
     return `${initialTitle} (Qty: ${filteredData.length})`;
   }, [filters.state, filteredData.length]);
 
+  const handleDetailsView = (id) => {
+    router.push(paths.dashboard.salesOrder.details(id));
+  };
+
   return (
     <DashboardContent>
       <Card {...other}>
@@ -108,7 +117,12 @@ export function SalesOrdersList({ title, subheader, tableData, headLabel, ...oth
                   table.page * table.rowsPerPage,
                   table.page * table.rowsPerPage + table.rowsPerPage
                 ).map((row, index) => (
-                  <RowItem key={`${row.id}-${index}`} row={row} isMobile={isMobile} />
+                  <RowItem
+                    key={`${row.id}-${index}`}
+                    row={row}
+                    isMobile={isMobile}
+                    onView={() => handleDetailsView(row.id)}
+                  />
                 ))}
                 <TableCustomPaginationZohoStyleRow
                   columnsLength={headLabel.length}
@@ -141,46 +155,55 @@ export function SalesOrdersList({ title, subheader, tableData, headLabel, ...oth
 
 // ----------------------------------------------------------------------
 
-function RowItem({ row, isMobile }) {
+function RowItem({ row, isMobile, onView }) {
 
   return (
-    <TableRow>
+    <TableRow sx={{
+      cursor: 'pointer',
+      '&:hover': { backgroundColor: 'action.hover' },
+    }}>
 
-      <TableCell align="left">{fDate(row?.date)}</TableCell>
+      <TableCell align="left" onClick={onView}>{fDate(row?.date)}</TableCell>
 
-      <TableCell width={!isMobile ? 300 : 'auto'}>{row?.salesorderNumber}</TableCell>
+      <TableCell width={!isMobile ? 300 : 'auto'} onClick={onView}>{row?.salesorderNumber}</TableCell>
 
       {/* <TableCell width={!isMobile ? 300 : 'auto'}>{row?.invoiceNumber}</TableCell> */}
 
-      <TableCell align="center">{fNumber(row?.lineItems?.length)}</TableCell>
+      {!isMobile && (
+        <TableCell align="center" onClick={onView}>{fNumber(row?.lineItems?.length)}</TableCell>
+      )}
 
-      <TableCell align="center">
+      <TableCell align="center" onClick={onView}>
         <Label color={
           row?.status === 'fulfilled' ?
             'success' : row?.status === 'partially_shipped' ?
               'info' : row?.status === 'confirmed' ?
                 'warning' : row?.status === 'overdue' ?
                   'error' : 'default'
-        }>
+        } sx={{ cursor: 'pointer' }}>
           {row?.status}
         </Label>
       </TableCell>
 
-      <TableCell align="right">
+      <TableCell align="right" onClick={onView}>
         <Label color={row?.total > 0 ? 'success' : 'error'}>
           {fCurrency(row?.total)}
         </Label>
       </TableCell>
 
-      <TableCell align="right">
-        <Label color={row?.taxTotal > 0 ? 'success' : 'error'}>
-          {fCurrency(row?.taxTotal)}
-        </Label>
-      </TableCell>
+      {!isMobile && (
+        <>
+          <TableCell align="right" onClick={onView}>
+            <Label color={row?.taxTotal > 0 ? 'success' : 'error'}>
+              {fCurrency(row?.taxTotal)}
+            </Label>
+          </TableCell>
 
-      <TableCell align="center">
-        {row?.salespersonName || 'N/A'}
-      </TableCell>
+          <TableCell align="center" onClick={onView}>
+            {row?.salespersonName || 'N/A'}
+          </TableCell>
+        </>
+      )}
 
     </TableRow>
   );

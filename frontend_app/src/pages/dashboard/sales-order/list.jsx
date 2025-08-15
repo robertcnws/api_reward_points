@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
@@ -7,12 +7,15 @@ import { CONFIG } from 'src/config-global';
 import { SalesOrdersList } from 'src/sections/sales-order/view';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 // ----------------------------------------------------------------------
 
 const metadata = { title: `Sales Orders list | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
+
+    const { isMobile } = useContext(LoadingContext);
 
     const {
         loadedRewardPoints,
@@ -44,11 +47,15 @@ export default function Page() {
                     { id: 'date', label: 'Date', align: 'left' },
                     { id: 'order', label: 'Sales Order' },
                     // { id: 'order', label: 'INV #' },
-                    { id: 'totalItems', label: 'Qty of Items', align: 'center' },
+                    ...!isMobile ? [
+                        { id: 'totalItems', label: 'Qty of Items', align: 'center' },
+                    ] : [],
                     { id: 'status', label: 'Status', align: 'center' },
                     { id: 'paymentMade', label: 'Total', align: 'right' },
-                    { id: 'taxTotal', label: 'Total Tax', align: 'right' },
-                    { id: 'salespersonName', label: 'Salesperson', align: 'center' },
+                    ...!isMobile ? [
+                        { id: 'taxTotal', label: 'Total Tax', align: 'right' },
+                        { id: 'salespersonName', label: 'Salesperson', align: 'center' },
+                    ] : []
                 ]}
             />
 

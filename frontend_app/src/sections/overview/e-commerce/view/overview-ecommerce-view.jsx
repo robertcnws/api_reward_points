@@ -279,13 +279,10 @@ export function OverviewEcommerceView({
                         flexDirection: 'column',
                       }}>
                         <Typography variant="h4">
-                          Welcome 🎉 {!isMobile ? 'to your Customer Portal' : `${displayFirstName} ${displayLastName}`}
+                          Welcome 🎉 {`${displayFirstName} ${displayLastName}`}
                         </Typography>
                         {!isMobile && (
                           <>
-                            <Typography variant="h6">
-                              Client: <b>{displayFirstName} {displayLastName}</b>
-                            </Typography>
                             <Typography variant="h6">
                               Company: <b>{displayCompanyName}</b>
                             </Typography>

@@ -94,6 +94,7 @@ export const paths = {
     salesOrder: {
       root: `${ROOTS.DASHBOARD}/sales-order`,
       list: `${ROOTS.DASHBOARD}/sales-order/list`,
+      details: (id) => `${ROOTS.DASHBOARD}/sales-order/${id}/details`,
     },
     item: {
       root: `${ROOTS.DASHBOARD}/item`,

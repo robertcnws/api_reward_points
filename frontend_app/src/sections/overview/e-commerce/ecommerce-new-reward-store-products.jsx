@@ -108,7 +108,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
         }}
       />
 
-      <Carousel carousel={carousel} sx={{ height: 395 }}>
+      <Carousel carousel={carousel} sx={{ height: 370 }}>
         {initialFiles?.map((item, index) => (
           <CarouselItem key={`${item.id}-${index}`} item={item} router={router} isEmpty={isEmpty} />
         ))}

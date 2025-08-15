@@ -33,6 +33,7 @@ export const fieldsRewardPoints = [
       {
         name: 'salesorder',
         fields: [
+          'id',
           'date',
           'salesorderNumber',
           'salesorderId',
@@ -48,6 +49,7 @@ export const fieldsRewardPoints = [
   {
     name: 'salesOrders',
     fields: [
+      'id',
       'date',
       'salesorderNumber',
       'salesorderId',
@@ -58,6 +60,8 @@ export const fieldsRewardPoints = [
       'status',
       'total',
       'taxTotal',
+      'customerName',
+      'lastModifiedTime',
       {
         name: 'lineItems',
         fields: ['quantity', 'name', 'rate', 'sku', 'itemTotal'],
