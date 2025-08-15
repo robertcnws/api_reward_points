@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import { iconButtonClasses } from '@mui/material/IconButton';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useRouter } from 'src/routes/hooks';
 
 import { wsEndpoints } from 'src/utils/axios';
 import { isClient } from 'src/utils/check-permissions';
@@ -38,6 +39,7 @@ import { navData as dashboardNavData } from '../config-nav-dashboard';
 import OnboardingGuide from './onboarding-guide';
 import { GuideTourButton } from '../components/guide-tour-button';
 
+
 // ----------------------------------------------------------------------
 
 export function DashboardLayout({ sx, children, header, data }) {
@@ -46,11 +48,9 @@ export function DashboardLayout({ sx, children, header, data }) {
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
-  // const {
-  //   countLostItems,
-  // } = useDataContext();
+  const router = useRouter();
 
-  // const countLostItems = 11;
+  const isAnalyticsUrl = router.currentUrl().includes('/analytics');
 
   const theme = useTheme();
 
@@ -263,12 +263,14 @@ export function DashboardLayout({ sx, children, header, data }) {
                 </>
               ),
               rightArea: (
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: runDashboard || runNavVertical || runNavTop ? 'flex-end' : 'space-between',
-                  width: '100%' }}>
-                  <GuideTourButton />
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: runDashboard || runNavVertical || runNavTop || !isAnalyticsUrl || !isClient(roleName)?
+                    'flex-end' : 'space-between',
+                  width: '100%'
+                }}>
+                  {isClient(roleName) && <GuideTourButton />}
 
                   <Box display="flex" alignItems="center" gap={{ xs: 0, sm: 0.75 }}>
                     {/* -- Searchbar -- */}

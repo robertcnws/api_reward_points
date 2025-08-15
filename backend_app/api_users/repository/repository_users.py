@@ -55,6 +55,8 @@ def create_user(request):
             avatar_url=avatar_url,
             created_time=timezone.now(),
             last_modified_time=timezone.now(),
+            approved_time=timezone.now(),
+            disapproval_count=0,
         )
         
         user.set_password(password)
@@ -372,7 +374,10 @@ def change_approval_user(request, id):
         user = LoginUser.objects(id=id).first()
         if not user:
             return Response({'error': 'User not found'}, status=404)
-        
+
+        approval_status = user.is_approved
+        disapproval_count = user.disapproval_count
+
         company_name = user.company_name
         if company_name:
             if not user.is_approved: 
@@ -395,6 +400,11 @@ def change_approval_user(request, id):
                     inherit_from_unapproved_user(user_exists_company, user)
         
         user.is_approved = not user.is_approved
+        if not approval_status and disapproval_count == 0:
+            user.approved_time = timezone.now()
+        if approval_status:
+            disapproval_count += 1
+            user.disapproval_count = disapproval_count
         user.save()
         
         tracking_info = transform_data_to_mongo(

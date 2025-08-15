@@ -207,7 +207,10 @@ def get_rewards_points(user, description=None):
 
     # 3) Cálculo de métricas y puntos
     #   Usa fecha de inicio configurable si existe; fallback a constante actual
-    starting_sum_date_str = getattr(settings, "REWARDS_START_DATE", "2025-08-01T00:00:00Z")
+    starting_sum_date = user.approved_time if user.approved_time else timezone.now()
+    starting_sum_date_str = starting_sum_date.strftime("%Y-%m-%d")
+    starting_sum_date_str = f'{starting_sum_date_str}T00:00:00Z'
+    # starting_sum_date_str = getattr(settings, "REWARDS_START_DATE", "2025-08-01T00:00:00Z")
     cutoff = to_dt(starting_sum_date_str)
     if cutoff is None:
         raise ValueError(f"starting_sum_date inválido: {starting_sum_date_str!r}")

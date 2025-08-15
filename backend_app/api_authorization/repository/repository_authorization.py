@@ -135,6 +135,8 @@ def transfer_login(request):
                 phone_number=None,
                 created_time=timezone.now(),
                 last_modified_time=timezone.now(),
+                approved_time=timezone.now(),
+                disapproval_count=0,
             )
             
             user.set_password(f"Guest-{username}") 
@@ -365,6 +367,7 @@ def register(request):
                 is_verified=data.get('is_verified', False),
                 user_role=user_role,
                 avatar_url=data.get('avatarUrl', ''),
+                disapproval_count=0,
             )
             user.set_password(password)
             user.save()

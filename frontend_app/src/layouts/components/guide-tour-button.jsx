@@ -8,11 +8,16 @@ import { useSettingsContext } from 'src/components/settings/context';
 import { Box, Tooltip } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { useRouter } from 'src/routes/hooks';
 
 // ----------------------------------------------------------------------
 
 export function GuideTourButton({ sx, ...other }) {
   const settings = useSettingsContext();
+
+  const router = useRouter();
+
+  const isAnalyticsUrl = router.currentUrl().includes('/analytics');
 
   const {
     runDashboard,
@@ -22,7 +27,7 @@ export function GuideTourButton({ sx, ...other }) {
   } = useDataContext();
 
   return (
-    <Box hidden={runDashboard || runNavVertical || runNavTop}>
+    <Box hidden={runDashboard || runNavVertical || runNavTop || !isAnalyticsUrl}>
       <Tooltip title="Guide Tour" arrow placement="bottom">
         <IconButton
           aria-label="settings"

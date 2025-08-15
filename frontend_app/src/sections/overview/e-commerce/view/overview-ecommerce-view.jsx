@@ -383,7 +383,7 @@ export function OverviewEcommerceView({
             )}
 
 
-            <Box id='orders-metrics' sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+            <Grid container id='orders-metrics' sx={{ width: '100%' }}>
 
               <Grid xs={6} md={3}>
                 <EcommerceRewardPointsAttribute
@@ -455,11 +455,11 @@ export function OverviewEcommerceView({
                 />
               </Grid>
 
-            </Box>
+            </Grid>
 
 
             <Grid xs={12} md={6} lg={8}>
-              <Box id='invoice-history-chart'>
+              <Box id='invoice-history-chart' sx={{ width: '100%' }}>
                 <EcommerceWebsiteVisits
                   title='Invoice History'
                   metricUnit="USD"

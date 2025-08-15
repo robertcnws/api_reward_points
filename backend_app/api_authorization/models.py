@@ -6,6 +6,7 @@ from mongoengine import (
     DateTimeField, 
     DynamicField,
     ReferenceField,
+    IntField,
 )
 from django.contrib.auth.hashers import (
     make_password, 
@@ -48,6 +49,8 @@ class LoginUser(Document):
     avatar_url = StringField(max_length=255, required=False)
     is_verified = BooleanField(default=False, required=False)
     is_approved = BooleanField(default=False, required=False)
+    approved_time = DateTimeField(default=None, required=False, null=True, blank=True)
+    disapproval_count = IntField(default=0, required=False)
 
     meta = {
         'collection': 'login_users',
