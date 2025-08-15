@@ -95,9 +95,8 @@ def set_active_products():
         
 
 def create_reward_joyrides():
-    if not RewardJoyRide.objects().first():
-        print("Creating default reward joyrides...")
-        array_of_steps = [
+    print("Creating default reward joyrides...")
+    array_of_steps = [
             {
                 "title": "Welcome to the Dashboard",
                 "description": "This card shows your reward points, last login, and has a button to redeem rewards.",
@@ -131,26 +130,51 @@ def create_reward_joyrides():
                 "module": "nav_vertical"
             },
             {
-                "title": "My Invoices",
+                "title": "My Sales Orders",
                 "description": "See details of your sales orders and filter by status or salesperson.",
-                "component_id": "my-invoices-link",
+                "component_id": "my-sales-orders-link",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
                 "module": "nav_vertical"
             },
-        ]
-        for step in array_of_steps:
+            {
+                "title": "My Rewards Orders",
+                "description": "See your rewards orders made and its detailed info, such as CONFIRMATION CODE and PIN.",
+                "component_id": "my-rewards-orders-link",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "nav_vertical"
+            },
+            {
+                "title": "Rewards Carrousel",
+                "description": "You can see your available rewards in a carousel format, and clicking button Redeem now!, you can access the reward details, cart it, redeem it, rate it or write a review about this reward.",
+                "component_id": "rewards-carrousel",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "dashboard"
+            },
+            {
+                "title": "Reward Points History",
+                "description": "Here you’ll see your reward points history list, what you earned and redeemed.",
+                "component_id": "reward-points-history-list",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "dashboard"
+            },
+    ]
+    for step in array_of_steps:
+        joyride_step = RewardJoyRide.objects(component_id=step['component_id']).first()
+        if not joyride_step:
             joyride_step = RewardJoyRide(
                 title=step['title'],
                 description=step['description'],
                 component_id=step['component_id'],
                 created_time=step['created_time'],
-                last_modified_time=step['last_modified_time']
+                last_modified_time=step['last_modified_time'],
+                module=step['module']
             )
             joyride_step.save()
-        print("Default reward joyrides created.")
-    else:
-        print("Reward joyrides already exist.")
+    print("Default reward joyrides created.")
 
 
 if __name__ == "__main__":

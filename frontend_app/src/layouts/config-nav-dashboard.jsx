@@ -117,7 +117,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           key: `${paths.dashboard.purchase.root}-3`,
           title: (
             <React.Fragment key='purchase-orders-fragment'>
-              <Box component="span" key='purchase-orders'
+              <Box component="span" key='purchase-orders' id='my-rewards-orders-link'
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',

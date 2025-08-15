@@ -375,11 +375,11 @@ export function OverviewEcommerceView({
             </Grid>
 
             {images?.length > 0 && (
-              // <Box id='reward-store-link'>
               <Grid xs={12} md={4}>
-                <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
+                <Box id='rewards-carrousel'>
+                  <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
+                </Box>
               </Grid>
-              // </Box>
             )}
 
 
@@ -474,12 +474,14 @@ export function OverviewEcommerceView({
 
             <Grid xs={12} md={6} lg={4}>
               {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
-              <EcommerceRewardPointsHistoryList
-                title='Reward Points History'
-                subheader='Latest reward points history'
-                loadedRewardPoints={loadedRewardPoints}
-                refetchRewardPoints={refetchRewardPoints}
-              />
+              <Box id='reward-points-history-list'>
+                <EcommerceRewardPointsHistoryList
+                  title='Reward Points History'
+                  subheader='Latest reward points history'
+                  loadedRewardPoints={loadedRewardPoints}
+                  refetchRewardPoints={refetchRewardPoints}
+                />
+              </Box>
             </Grid>
           </Grid>
         )}
@@ -488,7 +490,7 @@ export function OverviewEcommerceView({
         <OnboardingGuide
           run={runDashboard}
           setRun={setRunDashboard}
-          ready={!loadingRewardPoints && !loadingRewardPointsHistory}
+          ready={loadingRewardPoints && loadingRewardPointsHistory}
           onFinish={finishDashboard}
           stepFilters={(step) => step.module === 'dashboard'}
         />

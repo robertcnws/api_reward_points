@@ -253,7 +253,7 @@ export function StoreProductDetailsView({
 
       <Grid container spacing={{ xs: 3, md: 5, lg: 8 }}>
         <Grid xs={12} md={6} lg={7}>
-          <StoreProductDetailsCarousel images={currentProduct?.attachments} />
+          <StoreProductDetailsCarousel images={currentProduct?.attachments ?? []} />
         </Grid>
 
         <Grid xs={12} md={6} lg={5}>

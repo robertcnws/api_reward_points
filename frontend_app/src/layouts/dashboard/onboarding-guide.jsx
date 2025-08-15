@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Joyride, { STATUS, ACTIONS, EVENTS } from 'react-joyride';
 import { useDataContext } from 'src/auth/context/data/data-context';
 
-const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null }) => {
+const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, disableBeacon = false }) => {
 
     const {
         loadedAllRewardJoyRides: joyRides,
@@ -15,7 +15,7 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null }) =
     useEffect(() => {
         if (joyRides && joyRides.length > 0) {
             const finalJoyRides = stepFilters ? joyRides.filter(stepFilters) : joyRides;
-            setSteps(finalJoyRides.map(({ componentId, title, description, placement }) => ({
+            setSteps(finalJoyRides.map(({ componentId, title, description, placement }, index) => ({
                 target: `#${componentId}`,
                 content: (
                     <>
@@ -24,9 +24,10 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null }) =
                     </>
                 ),
                 placement: placement || 'bottom',
+                disableBeacon: disableBeacon || index !== 0,
             })));
         }
-    }, [joyRides, stepFilters]);
+    }, [joyRides, stepFilters, disableBeacon]);
 
     useEffect(() => {
         let intervalId;

@@ -95,6 +95,7 @@ export function DashboardLayout({ sx, children, header, data }) {
     runNavVertical,
     setRunNavVertical,
     finishNavVertical,
+    runDashboard,
   } = dataContextHook;
 
   const loadedPurchases = roleName === 'client' ? clientData : otherData;
@@ -338,9 +339,10 @@ export function DashboardLayout({ sx, children, header, data }) {
         <OnboardingGuide
           run={runNavVertical}
           setRun={setRunNavVertical}
-          ready
+          ready={!runDashboard}
           onFinish={finishNavVertical}
           stepFilters={(step) => step.module === 'nav_vertical'}
+          disableBeacon={!runDashboard}
         />
       )}
 
