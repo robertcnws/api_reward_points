@@ -23,6 +23,18 @@ export const Logo = forwardRef(
     const PRIMARY_MAIN = theme.vars.palette.primary.main;
     const PRIMARY_DARKER = theme.vars.palette.primary.dark;
 
+    const fullLogoPNG = (
+      <img
+        src="/logo/logo-removebg.png"
+        alt="Logo"
+        width={width}
+        height={height}
+        className={className}
+        style={{ objectFit: 'contain', ...sx }}
+        {...other}
+      />
+    )
+
     const fullLogo = (
       <svg
         version="1.1"
@@ -113,7 +125,7 @@ export const Logo = forwardRef(
         }}
         {...other}
       >
-        {isSingle ? singleLogo : fullLogo}
+        {isSingle ? singleLogo : fullLogoPNG}
         {/* {fullLogo} */}
         {/* {localStorage.getItem('userLogged') !== null && ( */}
         {/* <img src="/files/color_white_back" alt="logo" style={{ width: '50%', height: '70%'}}/> */}
