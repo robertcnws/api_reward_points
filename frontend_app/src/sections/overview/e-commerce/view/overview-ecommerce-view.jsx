@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo, useContext, useCallback } from 'react';
+import { useMemo, useContext, useCallback, useEffect } from 'react';
 
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
@@ -242,8 +242,11 @@ export function OverviewEcommerceView({
 
   // console.log('User by username:', userByUsername);
 
-  const showModalTour = useBoolean(userByUsername?.showTourGuideModal);
+  const showModalTour = useBoolean();
 
+  useEffect(() => {
+    showModalTour.setValue(userByUsername?.showTourGuideModal);
+  }, [userByUsername, showModalTour]);
 
   const handleShowTourGuide = useCallback(async() => {
     try {
@@ -516,9 +519,9 @@ export function OverviewEcommerceView({
         />
       )}
       <ConfirmDialog
-        open={showModalTour.value}
+        open={showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory}
         onClose={async() => {
-          showModalTour.onFalse();
+          // showModalTour.onFalse();
           await handleShowTourGuide();
         }}
         title="Tour Guide"
@@ -528,9 +531,9 @@ export function OverviewEcommerceView({
             variant="contained"
             color="primary"
             onClick={async() => {
-              setRunDashboard(true);
-              showModalTour.onFalse();
               await handleShowTourGuide();
+              setRunDashboard(true);
+              // showModalTour.onFalse();
             }}
           >
             Show Tour
