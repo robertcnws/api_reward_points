@@ -25,13 +25,17 @@ export function Section({
   return (
     <Box
       sx={{
-        ...bgGradient({
-          color: `1deg, ${varAlpha(
-            theme.vars.palette.background.neutralChannel,
-            0.1
-          )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
-          imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
-        }),
+        // ...bgGradient({
+        //   color: `1deg, ${varAlpha(
+        //     theme.vars.palette.background.neutralChannel,
+        //     0.1
+        //   )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
+        //   imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
+        // }),
+        backgroundImage: `url(${CONFIG.assetsDir}/assets/background/bgrewards1.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         px: 2,
         pb: 2,
         flex: '0 0 auto',
