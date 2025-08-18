@@ -10,6 +10,7 @@ from api_authorization.models import LoginUser, UserRole
 
 from api_users.repo_util.users_util import inherit_from_unapproved_user
 import logging
+import json
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -479,6 +480,53 @@ def change_verify_user(request, id):
             create_notification(module, info_id, info, type, user_reporter['username'])
 
             return Response({'message': 'User verify change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE SHOW TOUR GUIDE USER
+#############################################
+
+def change_show_tour_guide_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.show_tour_guide_modal = not user.show_tour_guide_modal
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['show_tour_guide_modal', 'username', 'id']
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change to {"show" if user.show_tour_guide_modal else "NOT show"}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change show tour guide user ({user.username}) to {"show" if user.show_tour_guide_modal else "not show"}'
+            info_id=user.id
+            type='change_show_tour_guide_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User show tour guide change successfully'}, status=200)
         
         return Response({'error': 'User reporter not found'}, status=404)
     

@@ -22,6 +22,7 @@ urlpatterns = [
     path('change-password/<str:id>/', views.change_password, name='change_password'),
     path('change-verify/<str:id>/', views.change_verify_user, name='change_verify_user'),
     path('change-approval/<str:id>/', views.change_approval_user, name='change_approval_user'),
+    path('change-show-tour-guide/<str:id>/', views.change_show_tour_guide_user, name='change_show_tour_guide_user'),
     # NOTIFICATIONS
     path('delete/old-notifications/', views.remove_old_notifications, name='remove_old_notifications'),
     path('mark-read/notifications/', views.mark_as_read_notifications, name='mark_as_read_notifications'),

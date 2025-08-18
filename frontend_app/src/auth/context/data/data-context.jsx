@@ -120,6 +120,10 @@ function CombineProviders({ children }) {
     refetchAllRewardLoginUsers: refetchUsers,
     loadingAllRewardLoginUsers: loadingUsers,
     errorRewardLoginUsers: errorUsers,
+    userByUsername,
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername,
   } = useRewardLoginUsers();
 
   const {
@@ -242,6 +246,10 @@ function CombineProviders({ children }) {
     refetchAllRewardJoyRides,
     loadingAllRewardJoyRides,
     errorAllRewardJoyRides,
+    userByUsername,
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,
@@ -311,6 +319,10 @@ function CombineProviders({ children }) {
     refetchAllRewardJoyRides,
     loadingAllRewardJoyRides,
     errorAllRewardJoyRides,
+    userByUsername,
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername,
     // loadedAllRewardItems,
     // loadedFilteredRewardItems,
     // refetchAllRewardItems,

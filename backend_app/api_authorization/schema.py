@@ -38,6 +38,7 @@ class LoginUserType(MongoengineObjectType):
     last_modified_time = graphene.String()
     last_login = graphene.String()
     date_joined = graphene.String()
+    approved_time = graphene.String()
 
     class Meta:
         model = LoginUser
@@ -57,8 +58,11 @@ class LoginUserType(MongoengineObjectType):
     
     def resolve_date_joined(self, info):
         return datetime_to_timezone(self.date_joined) if self.date_joined else None
-    
-    
+
+    def resolve_approved_time(self, info):
+        return datetime_to_timezone(self.approved_time) if self.approved_time else None
+
+
 class ExternalUserType(MongoengineObjectType):
     user = graphene.Field(LoginUserType)
     created_time = graphene.String()

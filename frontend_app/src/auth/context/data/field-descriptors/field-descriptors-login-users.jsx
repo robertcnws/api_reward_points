@@ -15,6 +15,9 @@ export const fieldsLoginUsers = [
   'lastName',
   'phoneNumber',
   'username',
+  'approvedTime',
+  'showTourGuideModal',
+  'disapprovalCount',
   {
     name: 'userRole',
     fields: ['id', 'name'],

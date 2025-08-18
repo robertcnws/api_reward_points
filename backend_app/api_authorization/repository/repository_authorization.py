@@ -137,6 +137,7 @@ def transfer_login(request):
                 last_modified_time=timezone.now(),
                 approved_time=timezone.now(),
                 disapproval_count=0,
+                show_tour_guide_modal=True,
             )
             
             user.set_password(f"Guest-{username}") 
@@ -202,6 +203,7 @@ def login(request):
                 
                 current_user = LoginUser.objects(username=username).first()
                 current_user.last_login = timezone.now()
+                current_user.show_tour_guide_modal = True
                 current_user.save()
                 
                 create_tracking(
@@ -288,6 +290,7 @@ def logout(request):
         current_user = LoginUser.objects(username=user_reporter['username']).first()
         if current_user:
             current_user.last_login = timezone.now()
+            current_user.show_tour_guide_modal = True
             current_user.save()
             external_user = ExternalUsers.objects(user=current_user).first()
             if external_user:
@@ -368,6 +371,7 @@ def register(request):
                 user_role=user_role,
                 avatar_url=data.get('avatarUrl', ''),
                 disapproval_count=0,
+                show_tour_guide_modal=True,
             )
             user.set_password(password)
             user.save()

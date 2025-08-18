@@ -54,6 +54,8 @@ def create_superuser():
             last_name='NWS Reward Points',
             is_verified=True,
             is_approved=True,
+            approved_time=datetime.now(),
+            disapproval_count=0,
         )
         superuser.set_password(password)
         superuser.save()
@@ -64,15 +66,8 @@ def create_reward_points_settings():
     if not RewardPointsSettings.objects().first():
         print("Creating default reward points settings...")
         settings = RewardPointsSettings(
-            amount=100.0,
+            amount=1.0,
             points=1,
-            created_time=datetime.now(),
-            last_modified_time=datetime.now()
-        )
-        settings.save()
-        settings = RewardPointsSettings(
-            amount=1000.0,
-            points=11,
             created_time=datetime.now(),
             last_modified_time=datetime.now()
         )

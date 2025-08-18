@@ -123,6 +123,16 @@ def change_approval_user(request, id):
 @permission_classes([AllowAny])
 def change_verify_user(request, id):
     return repository_users.change_verify_user(request, id)
+
+
+#############################################
+# CHANGE SHOW TOUR GUIDE USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_show_tour_guide_user(request, id):
+    return repository_users.change_show_tour_guide_user(request, id)
         
         
 #############################################

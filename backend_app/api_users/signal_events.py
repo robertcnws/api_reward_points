@@ -41,6 +41,9 @@ def event_user(type, document, full_selection):
                 "avatarUrl": document.avatar_url,
                 "isVerified": document.is_verified,
                 "isApproved": document.is_approved,
+                "approvedTime": document.approved_time,
+                "disapprovalCount": document.disapproval_count,
+                "showTourGuideModal": document.show_tour_guide_modal,
             }
         }
     }

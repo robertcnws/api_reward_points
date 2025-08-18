@@ -8,6 +8,7 @@ import { Box, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
 import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
@@ -16,17 +17,18 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
 
 import { Iconify } from 'src/components/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import OnboardingGuide from 'src/layouts/dashboard/onboarding-guide';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { EcommerceWelcome } from '../ecommerce-welcome';
 import { EcommerceWebsiteVisits } from '../ecommerce-website-visits';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
-
 
 // ----------------------------------------------------------------------
 
@@ -44,6 +46,10 @@ export function OverviewEcommerceView({
     runDashboard,
     setRunDashboard,
     finishDashboard,
+    userByUsername,
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername
   } = useDataContext();
 
   const router = useRouter();
@@ -233,6 +239,22 @@ export function OverviewEcommerceView({
     () => avgStepTrendPercent(currentAssignedPointsArray),
     [currentAssignedPointsArray]
   );
+
+  // console.log('User by username:', userByUsername);
+
+  const showModalTour = useBoolean(userByUsername?.showTourGuideModal);
+
+
+  const handleShowTourGuide = useCallback(async() => {
+    try {
+      await axiosInstanceBackend.post(endpoints.user.changeShowTourGuide.user(userByUsername?.id), {
+        userReporter: JSON.stringify(userLogged?.data),
+      });
+      refetchUserByUsername?.().catch(console.error);
+    } catch (error) {
+      console.error('Error showing tour guide:', error);
+    }
+  }, [userByUsername, userLogged, refetchUserByUsername]);
 
   return (
     <>
@@ -493,6 +515,28 @@ export function OverviewEcommerceView({
           disableBeacon
         />
       )}
+      <ConfirmDialog
+        open={showModalTour.value}
+        onClose={async() => {
+          showModalTour.onFalse();
+          await handleShowTourGuide();
+        }}
+        title="Tour Guide"
+        content="Would you like to take a tour of this site?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={async() => {
+              setRunDashboard(true);
+              showModalTour.onFalse();
+              await handleShowTourGuide();
+            }}
+          >
+            Show Tour
+          </Button>
+        }
+      />
     </>
   );
 }

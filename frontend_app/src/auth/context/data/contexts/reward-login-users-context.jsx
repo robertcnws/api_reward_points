@@ -1,6 +1,6 @@
 import React, { useMemo, useContext, createContext } from 'react';
 
-import { useAllRewardLoginUsers } from 'src/_mock/__reward-login-users';
+import { useAllRewardLoginUsers, useRewardLoginUserByUsername } from 'src/_mock/__reward-login-users';
 
 import { fieldsLoginUsers } from '../field-descriptors/field-descriptors-login-users';
 // import { useFilteredLoginUsers } from '../hooks/use-filtered-user-roles';
@@ -48,6 +48,25 @@ export function RewardLoginUsersProvider({ children }) {
     [listAllRewardLoginUsers]
   );
 
+  const userByUsernameQuery = useRewardLoginUserByUsername(userLogged?.data?.username, fields);
+
+  const userByUsername = useMemo(
+    () => (roleName === 'client') ? 
+    userByUsernameQuery.data : [],
+    [userByUsernameQuery.data, roleName]
+  );
+
+  const refetchUserByUsername = useMemo(
+    () => (roleName === 'client') ? userByUsernameQuery.refetch : () => {},
+    [userByUsernameQuery, roleName]
+  );
+
+  const loadingUserByUsername = roleName === 'client' ?
+    userByUsernameQuery.loading : false;
+
+  const errorUserByUsername = roleName === 'client' ?
+    userByUsernameQuery.error : null;
+
   const value = useMemo(
     () => ({
       listAllRewardLoginUsers,
@@ -56,6 +75,10 @@ export function RewardLoginUsersProvider({ children }) {
       refetchAllRewardLoginUsers,
       loadingAllRewardLoginUsers,
       errorRewardLoginUsers,
+      userByUsername,
+      refetchUserByUsername,
+      loadingUserByUsername,
+      errorUserByUsername,
     }),
     [
       listAllRewardLoginUsers,
@@ -64,6 +87,10 @@ export function RewardLoginUsersProvider({ children }) {
       refetchAllRewardLoginUsers,
       loadingAllRewardLoginUsers,
       errorRewardLoginUsers,
+      userByUsername,
+      refetchUserByUsername,
+      loadingUserByUsername,
+      errorUserByUsername,
     ]
   );
 

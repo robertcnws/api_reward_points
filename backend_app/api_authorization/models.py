@@ -51,6 +51,7 @@ class LoginUser(Document):
     is_approved = BooleanField(default=False, required=False)
     approved_time = DateTimeField(default=None, required=False, null=True, blank=True)
     disapproval_count = IntField(default=0, required=False)
+    show_tour_guide_modal = BooleanField(default=True, required=False)
 
     meta = {
         'collection': 'login_users',
