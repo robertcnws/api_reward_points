@@ -168,14 +168,15 @@ def get_rewards_points(user, description=None):
     # 0) Datos locales y corte de consulta remota
     local_invoices = list(RewardInvoice.objects(user=user).all())
     local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
-    payload = build_fetch_payload(user, has_local_data=bool(local_invoices or local_sales_orders))
+    payload_invoices = build_fetch_payload(user, has_local_data=bool(local_invoices))
+    payload_sales_orders = build_fetch_payload(user, has_local_data=bool(local_sales_orders))
 
     # 1) Trae remoto (invoices / salesorders)
-    response_inv = fetch_client_invoices(payload) or {}
+    response_inv = fetch_client_invoices(payload_invoices) or {}
     if 'count' not in response_inv or 'results' not in response_inv:
         return None
 
-    response_so = fetch_sales_orders(payload) or {}
+    response_so = fetch_sales_orders(payload_sales_orders) or {}
     if 'results' in response_so:
         logger.info(f"Fetched {len(response_so.get('results', []))} sales orders to process.")
         for so in response_so.get('results', []):
