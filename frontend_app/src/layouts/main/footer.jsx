@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+import { isClient } from 'src/utils/check-permissions';
 
 import { _socials } from 'src/_mock';
 import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/assets/icons';
@@ -20,6 +21,8 @@ import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/asse
 import { Logo } from 'src/components/logo';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { GuideTourButton } from '../components/guide-tour-button';
+
 
 // ----------------------------------------------------------------------
 
@@ -177,7 +180,7 @@ export function HomeFooter({ sx }) {
 
 // ----------------------------------------------------------------------
 
-export const CustomFooter = () => {
+export const CustomFooter = ({roleName}) => {
 
   const currentYear = new Date().getFullYear();
 
@@ -231,39 +234,41 @@ export const CustomFooter = () => {
         minHeight: '25px',
       }}
     >
-      <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12} sm={12}>
+      <Box display='flex' flexDirection="row" justifyContent="space-between" sx={{ width: '100%' }}>
+        <Box display='flex' justifyContent="flex-start" sx={{ width: '100%', px: 1 }}>
           <Typography
             variant="body2"
-            color="grey.600"
+            // color="grey.600"
+            color="primary.dark"
             sx={{ fontSize: '12px', fontWeight: 'bold', mt: -0.6 }}
           >
             © {currentYear}{' '}
             {isMobile
-              ? 'NWS Reward Points. All rights reserved.'
-              : 'Reward Points. New Window System. All rights reserved.'}
+              ? 'NWS Customer Portal'
+              : 'Customer Portal. New Window System. All rights reserved.'}
           </Typography>
-        </Grid>
+        </Box>
 
-        {/* <Grid item xs={12} sm={6}>
+        <Box display='flex' justifyContent="flex-end" sx={{ width: '100%', px: 1 }}>
           <Stack
             direction="row"
             spacing={1}
             justifyContent="center"
             alignItems="center"
-            sx={{ mt: { xs: -1, sm: -1 }, mb: { xs: -1, sm: -1 } }}
+            sx={{ mt: { xs: -1.2, sm: -1.2 } }}
           >
-            {_socials.map((social) => (
+            {/* {_socials.map((social) => (
               <IconButton key={social.label} color="inherit">
                 {social.value === 'twitter' && <TwitterIcon />}
                 {social.value === 'facebook' && <FacebookIcon />}
                 {social.value === 'instagram' && <InstagramIcon />}
                 {social.value === 'linkedin' && <LinkedinIcon />}
               </IconButton>
-            ))}
+            ))} */}
+            {isClient(roleName) && <GuideTourButton width={25}/>}
           </Stack>
-        </Grid> */}
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   )
 };

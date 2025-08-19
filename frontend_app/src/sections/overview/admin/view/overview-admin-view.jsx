@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useCallback, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -68,6 +68,31 @@ export function OverviewAdminView({
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+
+  const seriesDoughnut = useMemo(() => ([
+      {
+        value: 'today',
+        name: 'today',
+      },
+      {
+        value: 'week',
+        name: 'week',
+      },
+      {
+        value: 'month',
+        name: 'month',
+      },
+      {
+        value: 'year',
+        name: 'year',
+      },
+    ]), []);
+
+  const [selectedSeriesDoughnut, setSelectedSeriesDoughnut] = useState(seriesDoughnut[0].name);
+
+  const handleChangeSeriesDoughnut = useCallback((newValue) => {
+    setSelectedSeriesDoughnut(newValue);
+  }, []);
 
   const onDeleteReview = useCallback(
     async (id) => {
@@ -213,16 +238,64 @@ export function OverviewAdminView({
   );
 
   const totalApprovedClients = useMemo(
-    () => loadedUsers?.filter((u) => u.userRole?.name === 'client')?.length || 0,
-    [loadedUsers]
+    () => {
+      let approvedClients = loadedUsers?.filter((u) => u.userRole?.name === 'client')
+      if (selectedSeriesDoughnut === 'today') {
+        const today = new Date();
+        approvedClients = approvedClients?.filter((u) => dayjs(u.createdTime).format('YYYY-MM-DD') === dayjs(today).format('YYYY-MM-DD'));
+      }
+      else if (selectedSeriesDoughnut === 'week') {
+        const startOfWeek = dayjs().startOf('week');
+        const endOfWeek = dayjs().endOf('week');
+        approvedClients = approvedClients?.filter((u) => dayjs(u.createdTime).isBetween(startOfWeek, endOfWeek, null, '[]'));
+      }
+      else if (selectedSeriesDoughnut === 'month') {
+        const startOfMonth = dayjs().startOf('month');
+        const endOfMonth = dayjs().endOf('month');
+        approvedClients = approvedClients?.filter((u) => dayjs(u.createdTime).isBetween(startOfMonth, endOfMonth, null, '[]'));
+      }
+      else {
+        const startOfYear = dayjs().startOf('year');
+        const endOfYear = dayjs().endOf('year');
+        approvedClients = approvedClients?.filter((u) => dayjs(u.createdTime).isBetween(startOfYear, endOfYear, null, '[]'));
+      }
+      return approvedClients?.length || 0
+    },
+    [loadedUsers, selectedSeriesDoughnut]
   );
 
   const totalPendingClients = useMemo(
-    () => loadedPendingUsers?.filter((u) => u.userRole?.name === 'client')?.length || 0,
-    [loadedPendingUsers]
+    () => {
+      let pendingUsers = loadedPendingUsers?.filter((u) => u.userRole?.name === 'client')
+      if (selectedSeriesDoughnut === 'today') {
+        const today = new Date();
+        pendingUsers = pendingUsers?.filter((u) => dayjs(u.createdTime).format('YYYY-MM-DD') === dayjs(today).format('YYYY-MM-DD'));
+      }
+      else if (selectedSeriesDoughnut === 'week') {
+        const startOfWeek = dayjs().startOf('week');
+        const endOfWeek = dayjs().endOf('week');
+        pendingUsers = pendingUsers?.filter((u) => dayjs(u.createdTime).isBetween(startOfWeek, endOfWeek, null, '[]'));
+      }
+      else if (selectedSeriesDoughnut === 'month') {
+        const startOfMonth = dayjs().startOf('month');
+        const endOfMonth = dayjs().endOf('month');
+        pendingUsers = pendingUsers?.filter((u) => dayjs(u.createdTime).isBetween(startOfMonth, endOfMonth, null, '[]'));
+      }
+      else {
+        const startOfYear = dayjs().startOf('year');
+        const endOfYear = dayjs().endOf('year');
+        pendingUsers = pendingUsers?.filter((u) => dayjs(u.createdTime).isBetween(startOfYear, endOfYear, null, '[]'));
+      }
+      return pendingUsers?.length || 0
+    },
+    [loadedPendingUsers, selectedSeriesDoughnut]
   );
 
-  const totalClients = totalApprovedClients + totalPendingClients;
+  const totalClients = useMemo(() => {
+    const tApprovedClients = loadedUsers?.filter((u) => u.userRole?.name === 'client')?.length || 0;
+    const tPendingClients = loadedPendingUsers?.filter((u) => u.userRole?.name === 'client')?.length || 0;
+    return tApprovedClients + tPendingClients;
+  }, [loadedUsers, loadedPendingUsers]);
 
   const totalSpentRewardPoints = useMemo(
     () => approvedRewardPoints?.reduce((total, point) => total + point.totalSpentPoints, 0) || 0,
@@ -613,11 +686,15 @@ export function OverviewAdminView({
               <Grid xs={12} md={5} lg={4}>
                 <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column', height: 1 }}>
                   <AdminAvailable
-                    title="Active Clients (today/week)"
+                    title="Clients (today/week/month/year)"
+                    seriesDoughnut={seriesDoughnut}
+                    selectedSeriesDoughnut={selectedSeriesDoughnut}
+                    setSelectedSeriesDoughnut={setSelectedSeriesDoughnut}
+                    handleChangeSeriesDoughnut={handleChangeSeriesDoughnut}
                     chart={{
                       series: [
                         { id: 'active_clients', label: 'Active Clients', value: totalApprovedClients },
-                        { id: 'pending_clients', label: 'Pending', value: totalPendingClients },
+                        { id: 'pending_clients', label: 'Pending Approval', value: totalPendingClients },
                       ],
                     }}
                     seedAttr='active_clients'

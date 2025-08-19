@@ -243,6 +243,7 @@ export function OverviewEcommerceView({
   // console.log('User by username:', userByUsername);
 
   const showModalTour = useBoolean();
+  const tookTourGuide = useMemo(() => userByUsername?.tookTourGuide, [userByUsername]);
 
   useEffect(() => {
     showModalTour.setValue(userByUsername?.showTourGuideModal);
@@ -519,7 +520,7 @@ export function OverviewEcommerceView({
         />
       )}
       <ConfirmDialog
-        open={showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory}
+        open={showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookTourGuide}
         onClose={async() => {
           // showModalTour.onFalse();
           await handleShowTourGuide();

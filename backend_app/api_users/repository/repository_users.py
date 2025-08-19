@@ -500,6 +500,7 @@ def change_show_tour_guide_user(request, id):
             return Response({'error': 'User not found'}, status=404)
 
         user.show_tour_guide_modal = not user.show_tour_guide_modal
+        user.took_tour_guide = not user.took_tour_guide
         user.save()
         
         tracking_info = transform_data_to_mongo(

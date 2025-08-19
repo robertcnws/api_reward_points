@@ -266,11 +266,12 @@ export function DashboardLayout({ sx, children, header, data }) {
                 <Box sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: runDashboard || runNavVertical || runNavTop || !isAnalyticsUrl || !isClient(roleName)?
-                    'flex-end' : 'space-between',
+                  // justifyContent: runDashboard || runNavVertical || runNavTop || !isAnalyticsUrl || !isClient(roleName)?
+                  //   'flex-end' : 'space-between',
+                  justifyContent: 'flex-end',
                   width: '100%'
                 }}>
-                  {isClient(roleName) && <GuideTourButton />}
+                  {/* {isClient(roleName) && <GuideTourButton width={30} />} */}
 
                   <Box display="flex" alignItems="center" gap={{ xs: 0, sm: 0.75 }}>
                     {/* -- Searchbar -- */}
@@ -319,7 +320,7 @@ export function DashboardLayout({ sx, children, header, data }) {
          *************************************** */
         // footerSection={null}
         // footerSection={<Footer layoutQuery={layoutQuery} />}
-        footerSection={<CustomFooter />}
+        footerSection={<CustomFooter roleName={roleName} />}
         /** **************************************
          * Style
          *************************************** */

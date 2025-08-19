@@ -44,6 +44,7 @@ def event_user(type, document, full_selection):
                 "approvedTime": document.approved_time,
                 "disapprovalCount": document.disapproval_count,
                 "showTourGuideModal": document.show_tour_guide_modal,
+                "tookTourGuide": document.took_tour_guide,
             }
         }
     }

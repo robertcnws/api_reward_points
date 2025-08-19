@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { useTheme } from '@mui/material/styles';
@@ -8,20 +9,42 @@ import { fNumber } from 'src/utils/format-number';
 
 import { varAlpha } from 'src/theme/styles';
 
-import { Chart, useChart } from 'src/components/chart';
+import { Chart, ChartSelect, useChart } from 'src/components/chart';
+
 
 // ----------------------------------------------------------------------
 
-export function AdminAvailable({ title, subheader, chart, seedAttr, ...other }) {
+export function AdminAvailable({
+  title,
+  subheader,
+  seriesDoughnut,
+  selectedSeriesDoughnut,
+  setSelectedSeriesDoughnut,
+  handleChangeSeriesDoughnut,
+  chart,
+  seedAttr,
+  ...other
+}) {
   const theme = useTheme();
 
-  const total = sumBy(chart.series, (series) => series.value);
+  const total = useMemo(
+    () => sumBy(chart.series, (series) => series?.value),
+    [chart.series]
+  );
 
-  const chartSeries = (chart.series.filter((i) => i.id === seedAttr)[0].value / total) * 100;
+  const chartSeries = useMemo(
+    () => (chart.series.filter((i) => i.id === seedAttr)[0].value / total) * 100,
+    [chart.series, seedAttr, total]
+  )
 
-  const chartColors = chart.colors ?? [theme.palette.primary.light, theme.palette.primary.main];
+  const chartColors = useMemo(
+    () => chart.colors ?? [theme.palette.primary.light, theme.palette.primary.dark],
+    [chart.colors, theme.palette.primary.light, theme.palette.primary.dark]
+  );
 
-  const chartOptions = useChart({
+  const chartId = `admin-available-${seedAttr}`;
+
+  const baseOptions = useMemo(() => ({
     chart: { sparkline: { enabled: true } },
     stroke: { width: 0 },
     fill: {
@@ -36,22 +59,43 @@ export function AdminAvailable({ title, subheader, chart, seedAttr, ...other }) 
     plotOptions: {
       radialBar: {
         hollow: { margin: -20 },
-        track: { margin: -20, background: varAlpha(theme.vars.palette.grey['500Channel'], 0.08) },
+        track: {
+          margin: -20,
+          background: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
+        },
         dataLabels: {
           name: { offsetY: -12 },
           value: { offsetY: 6 },
-          total: { label: 'Users', formatter: () => fNumber(total) },
+          total: { label: 'Total Clients', formatter: () => fNumber(total) },
         },
       },
     },
+  }), [chartColors, theme, total]);
+
+  const chartOptions = useChart({
+    ...baseOptions,
     ...chart.options,
   });
 
+  const optionsKey = `${seedAttr}|${total}`;
+
   return (
     <Card {...other}>
-      <CardHeader title={title} subheader={subheader} sx={{ mb: 5 }} />
+      <CardHeader
+        title={title}
+        subheader={subheader}
+        sx={{ mb: 5 }}
+        action={
+          <ChartSelect
+            options={seriesDoughnut?.map((item) => item.name)}
+            value={selectedSeriesDoughnut}
+            onChange={handleChangeSeriesDoughnut}
+          />
+        }
+      />
 
       <Chart
+        key={optionsKey}
         type="radialBar"
         series={[chartSeries]}
         options={chartOptions}

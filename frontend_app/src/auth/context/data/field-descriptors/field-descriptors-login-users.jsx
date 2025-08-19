@@ -18,6 +18,7 @@ export const fieldsLoginUsers = [
   'approvedTime',
   'showTourGuideModal',
   'disapprovalCount',
+  'tookTourGuide',
   {
     name: 'userRole',
     fields: ['id', 'name'],
