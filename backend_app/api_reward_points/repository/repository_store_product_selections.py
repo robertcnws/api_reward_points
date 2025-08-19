@@ -406,7 +406,7 @@ def create_store_product_selection_cart_buy(request, id):
                 ]
             )
             
-            description = f'Used {purchased_points} points to redeem {selection.quantity} of {store_product.name}'
+            description = f'You have used {purchased_points} points to redeem {selection.quantity} of {store_product.name}'
             
             history = RewardPointsHistory(
                 created_time=timezone.now(),
@@ -531,7 +531,7 @@ def create_all_store_product_selection_cart_buy(request):
                 list_tracking_info.append(tracking_info)
                 list_buys.append(buy)
             
-            description = f'Used {total_purchased_points} points to redeem {len(carts)} products from cart'
+            description = f'You have used {total_purchased_points} points to redeem {len(carts)} products from cart'
             
             history = RewardPointsHistory(
                 created_time=timezone.now(),
@@ -723,7 +723,7 @@ def create_store_product_selection_buy(request, id):
                     ]
                 )
 
-                description = f'Used {purchased_points} points to redeem {default_qty} {store_product.name}'
+                description = f'You have used {purchased_points} points to redeem {default_qty} {store_product.name}'
 
                 history = RewardPointsHistory(
                     created_time=timezone.now(),

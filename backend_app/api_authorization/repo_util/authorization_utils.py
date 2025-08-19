@@ -133,12 +133,12 @@ def compute_sales_orders_pending(sales_orders):
     ]
 
 def compute_invoice_metrics(invoices, cutoff_dt):
-    """Devuelve métricas ya normalizadas en Decimal."""
-    # Filtra por cutoff para puntos
     eligible = []
     for inv in invoices:
         inv_dt = to_dt(getattr(inv, "date", None))
-        if inv_dt and inv_dt >= cutoff_dt and money(inv.payment_made) > 0:
+        if inv_dt and inv_dt >= cutoff_dt and \
+             money(inv.payment_made) > 0 and \
+                (getattr(inv, "status", None) or "").lower() == "paid":
             eligible.append(inv)
 
     total_amount_invoices = sum(money(inv.payment_made) for inv in invoices)
@@ -250,15 +250,15 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or f'You have earned {delta_points} points based on order invoices',
+                description=description or f'You have earned {delta_points} point(s) based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
     else:
         # Actualizar: recalcula y aplica delta solo sobre total_gained_points
-        old_total = rp.total_gained_points
+        old_total = rp.total_gained_points + rp.total_spent_points
         delta_points = total_gained_points_new - old_total
 
-        rp.total_gained_points = total_gained_points_new
+        rp.total_gained_points = total_gained_points_new - rp.total_spent_points
         rp.total_amount_invoices = metrics["total_amount_invoices"]
         rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"]
         rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"]
@@ -275,7 +275,7 @@ def get_rewards_points(user, description=None):
                 action='gained',
                 gained_points=delta_points,
                 spent_points=0,
-                description=description or f'You have earned {delta_points} points based on order invoices',
+                description=description or f'You have earned {delta_points} point(s) based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
         elif delta_points < 0:
@@ -285,7 +285,7 @@ def get_rewards_points(user, description=None):
                 action='substracted',  # si tu sistema ya usa este literal, mantenlo
                 gained_points=0,
                 spent_points=-delta_points,
-                description=description or f'You have lost {-delta_points} points based on order invoices',
+                description=description or f'You have lost {-delta_points} point(s) based on order invoices',
                 info=[transform_data_to_mongo(inv) for inv in sorted_invoices],
             )
 
