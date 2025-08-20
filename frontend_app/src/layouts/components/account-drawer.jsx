@@ -43,6 +43,8 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     errorUserByUsername
   } = useDataContext();
 
+  const { mockUser } = useMockedUser();
+
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -103,7 +105,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     // </AnimateAvatar>
     <AvatarWithUpdate
       name={user?.firstName || user?.first_name}
-      avatarUrl={user?.avatarUrl}
+      avatarUrl={user?.keyAvatar ? user?.avatarUrl : mockUser?.photoUrl}
       keyAvatar={user?.keyAvatar}
     />
   );
@@ -169,7 +171,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     <>
       <AccountButton
         onClick={handleOpenDrawer}
-        photoURL={currentUrl}
+        photoURL={user?.keyAvatar ? currentUrl : mockUser?.photoUrl}
         displayName={user?.displayName}
         sx={sx}
         {...other}

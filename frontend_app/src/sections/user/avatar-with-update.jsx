@@ -19,20 +19,25 @@ function AvatarWithUpdate({ name, avatarUrl, keyAvatar, onSelectFile = null }) {
 
     useEffect(() => {
         async function fetchData() {
-            try {
-                const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(keyAvatar));
-                if (!response.data || !response.data.url) {
-                    console.error('Error fetching URL', response.statusText);
-                }
-                const values = await response.data;
+            if (keyAvatar) {
+                try {
+                    const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(keyAvatar));
+                    if (!response.data || !response.data.url) {
+                        console.error('Error fetching URL', response.statusText);
+                    }
+                    const values = await response.data;
 
-                setCurrentUrl(values.url);
-            } catch (error) {
-                console.error('Error al obtener la URL:', error);
+                    setCurrentUrl(values.url);
+                } catch (error) {
+                    console.error('Error al obtener la URL:', error);
+                }
+            }
+            else {
+                setCurrentUrl(avatarUrl);
             }
         }
         fetchData();
-    }, [keyAvatar]);
+    }, [keyAvatar, avatarUrl]);
 
     return (
         <Box

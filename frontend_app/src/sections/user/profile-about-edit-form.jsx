@@ -87,12 +87,17 @@ export function ProfileAboutEditForm({ currentUser, open, onClose, refetchUserBy
     }
   });
 
+  const onCloseAndReset = async () => {
+    await onClose();
+    reset();
+  };
+
   return (
     <Dialog
       fullWidth
       maxWidth="lg"
       open={open}
-      onClose={onClose}
+      onClose={onCloseAndReset}
       PaperProps={{ sx: { maxWidth: 920 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
@@ -124,7 +129,7 @@ export function ProfileAboutEditForm({ currentUser, open, onClose, refetchUserBy
           <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
             Update
           </LoadingButton>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={onCloseAndReset}>
             Cancel
           </Button>
         </DialogActions>

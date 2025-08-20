@@ -48,8 +48,11 @@ export function ProfileSchoolEditForm({ currentUser, open, onClose, refetchUserB
   const {
     reset,
     handleSubmit,
+    watch,
     formState: { isSubmitting },
   } = methods;
+
+  const hasChanges = watch('school') !== currentUser?.school;
 
   useEffect(() => {
       reset({
@@ -86,12 +89,18 @@ export function ProfileSchoolEditForm({ currentUser, open, onClose, refetchUserB
     }
   });
 
+  const onCloseAndReset = async () => {
+    await onClose();
+    reset();
+  };
+
+
   return (
     <Dialog
       fullWidth
       maxWidth="lg"
       open={open}
-      onClose={onClose}
+      onClose={onCloseAndReset}
       PaperProps={{ sx: { maxWidth: 920 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
@@ -120,10 +129,10 @@ export function ProfileSchoolEditForm({ currentUser, open, onClose, refetchUserB
         </DialogContent>
 
         <DialogActions>
-          <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+          <LoadingButton type="submit" variant="contained" loading={isSubmitting} disabled={!hasChanges}>
             Update
           </LoadingButton>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={onCloseAndReset}>
             Cancel
           </Button>
         </DialogActions>

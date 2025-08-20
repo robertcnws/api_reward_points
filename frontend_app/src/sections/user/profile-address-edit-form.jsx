@@ -56,19 +56,27 @@ export function ProfileAddressEditForm({ currentUser, open, onClose, refetchUser
   const {
     reset,
     handleSubmit,
+    watch,
     formState: { isSubmitting },
   } = methods;
 
+  const values = watch();
+
+  const hasChanges = useMemo(
+    () => JSON.stringify(values) !== JSON.stringify(defaultValues),
+    [values, defaultValues]
+  );
+
   useEffect(() => {
-      reset({
-        id: currentUser?.id || '',
-        country: currentUser?.country || '',
-        state: currentUser?.state || '',
-        city: currentUser?.city || '',
-        address: currentUser?.address || '',
-        zipCode: currentUser?.zipCode || '',
-      });
-    }, [currentUser, reset]);
+    reset({
+      id: currentUser?.id || '',
+      country: currentUser?.country || '',
+      state: currentUser?.state || '',
+      city: currentUser?.city || '',
+      address: currentUser?.address || '',
+      zipCode: currentUser?.zipCode || '',
+    });
+  }, [currentUser, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     const { id } = currentUser;
@@ -98,12 +106,18 @@ export function ProfileAddressEditForm({ currentUser, open, onClose, refetchUser
     }
   });
 
+  const onCloseAndReset = async () => {
+    await onClose();
+    reset();
+  };
+
+
   return (
     <Dialog
       fullWidth
       maxWidth="lg"
       open={open}
-      onClose={onClose}
+      onClose={onCloseAndReset}
       PaperProps={{ sx: { maxWidth: 920 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
@@ -136,10 +150,10 @@ export function ProfileAddressEditForm({ currentUser, open, onClose, refetchUser
         </DialogContent>
 
         <DialogActions>
-          <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+          <LoadingButton type="submit" variant="contained" loading={isSubmitting} disabled={!hasChanges}>
             Update
           </LoadingButton>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={onCloseAndReset}>
             Cancel
           </Button>
         </DialogActions>
