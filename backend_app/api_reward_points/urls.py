@@ -157,4 +157,10 @@ urlpatterns = [
         views.get_default_file_url,
         name='get_file_url'
     ),
+    # DOWNLOAD BACKUP
+    path(
+        'download/backup/', 
+        views.download_mongo_db,
+        name='download_mongo_db'
+    ),
 ]

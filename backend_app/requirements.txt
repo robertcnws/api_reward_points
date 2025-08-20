@@ -48,3 +48,4 @@ vine
 wcwidth
 websockets
 whitenoise
+zipstream-new

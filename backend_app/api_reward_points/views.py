@@ -8,6 +8,7 @@ from .repository import (
     repository_store_product_review_reactions,
     repository_store_product_selections,
     repository_points,
+    repository_db
 )
 
 
@@ -312,3 +313,21 @@ def manage_use_store_product_selection_buy(request, id):
 @permission_classes([AllowAny])
 def manage_points(request, user_id):
     return repository_points.manage_points(request, user_id)
+
+
+#*******************************************#   
+#*******************************************#   
+# DATABASE
+#*******************************************#
+#*******************************************#
+
+
+#############################################
+# DOWNLOAD MONGO DB
+#############################################
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def download_mongo_db(request):
+    return repository_db.download_mongo_db(request)
