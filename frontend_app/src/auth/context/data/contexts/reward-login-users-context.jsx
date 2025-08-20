@@ -51,21 +51,18 @@ export function RewardLoginUsersProvider({ children }) {
   const userByUsernameQuery = useRewardLoginUserByUsername(userLogged?.data?.username, fields);
 
   const userByUsername = useMemo(
-    () => (roleName === 'client') ? 
-    userByUsernameQuery.data : [],
-    [userByUsernameQuery.data, roleName]
+    () => userByUsernameQuery.data,
+    [userByUsernameQuery.data]
   );
 
   const refetchUserByUsername = useMemo(
-    () => (roleName === 'client') ? userByUsernameQuery.refetch : () => {},
-    [userByUsernameQuery, roleName]
+    () => userByUsernameQuery.refetch,
+    [userByUsernameQuery]
   );
 
-  const loadingUserByUsername = roleName === 'client' ?
-    userByUsernameQuery.loading : false;
+  const loadingUserByUsername = userByUsernameQuery.loading;
 
-  const errorUserByUsername = roleName === 'client' ?
-    userByUsernameQuery.error : null;
+  const errorUserByUsername = userByUsernameQuery.error;
 
   const value = useMemo(
     () => ({

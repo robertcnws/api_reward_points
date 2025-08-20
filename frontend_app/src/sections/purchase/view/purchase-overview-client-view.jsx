@@ -273,18 +273,15 @@ export function PurchaseOverviewClientView({
                       flexDirection: 'column',
                     }}>
                       <Typography variant="h4">
-                        Welcome 🎉 {!isMobile ? 'to your Customer Portal' : `${displayFirstName} ${displayLastName}`}
-                      </Typography>
-                      {!isMobile && (
-                        <>
-                          <Typography variant="h6">
-                            Client: <b>{displayFirstName} {displayLastName}</b>
-                          </Typography>
-                          <Typography variant="h6">
-                            Company: <b>{displayCompanyName}</b>
-                          </Typography>
-                        </>
-                      )}
+                          Client: 🎉 {`${displayFirstName} ${displayLastName}`}
+                        </Typography>
+                        {!isMobile && (
+                          <>
+                            <Typography variant="h6">
+                              Company: <b>{displayCompanyName}</b>
+                            </Typography>
+                          </>
+                        )}
                     </Box>
                     {!isMobile && (
                       <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
@@ -303,7 +300,7 @@ export function PurchaseOverviewClientView({
                     gap: -1,
                   }}>
                     <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
-                      You currently have a TOTAL of {' '}
+                      This client has a TOTAL of: {' '}
                     </Typography>
                     {/* <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
                       <strong>
@@ -335,9 +332,6 @@ export function PurchaseOverviewClientView({
                         reward points
                       </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ opacity: 0.64 }}>
-                      You can use them to get discounts on your next purchases.
-                    </Typography>
                   </Box>
                 }
                 img={!isMobile ? <MotivationIllustration hideBackground /> : null}

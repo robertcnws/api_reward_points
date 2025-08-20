@@ -23,6 +23,11 @@ urlpatterns = [
     path('change-verify/<str:id>/', views.change_verify_user, name='change_verify_user'),
     path('change-approval/<str:id>/', views.change_approval_user, name='change_approval_user'),
     path('change-show-tour-guide/<str:id>/', views.change_show_tour_guide_user, name='change_show_tour_guide_user'),
+    path('change-about/<str:id>/', views.change_about_user, name='change_about_user'),
+    path('change-school/<str:id>/', views.change_school_user, name='change_school_user'),
+    path('change-address/<str:id>/', views.change_address_user, name='change_address_user'),
+    path('change-social/<str:id>/', views.change_social_user, name='change_social_user'),
+    path('upload-avatar/<str:id>/', views.upload_avatar_user, name='upload_avatar_user'),
     # NOTIFICATIONS
     path('delete/old-notifications/', views.remove_old_notifications, name='remove_old_notifications'),
     path('mark-read/notifications/', views.mark_as_read_notifications, name='mark_as_read_notifications'),

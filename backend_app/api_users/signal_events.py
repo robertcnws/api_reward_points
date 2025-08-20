@@ -38,6 +38,7 @@ def event_user(type, document, full_selection):
                 "dateJoined": document.date_joined,
                 "token": document.token,
                 "userRole": full_selection if document.user_role else None,
+                "keyAvatar": document.key_avatar,
                 "avatarUrl": document.avatar_url,
                 "isVerified": document.is_verified,
                 "isApproved": document.is_approved,
@@ -45,6 +46,17 @@ def event_user(type, document, full_selection):
                 "disapprovalCount": document.disapproval_count,
                 "showTourGuideModal": document.show_tour_guide_modal,
                 "tookTourGuide": document.took_tour_guide,
+                "country": document.country,
+                "address": document.address,
+                "zipCode": document.zip_code,
+                "state": document.state,
+                "city": document.city,
+                "school": document.school,
+                "about": document.about,
+                "facebookLink": document.facebook_link,
+                "instagramLink": document.instagram_link,
+                "linkedinLink": document.linkedin_link,
+                "twitterLink": document.twitter_link
             }
         }
     }

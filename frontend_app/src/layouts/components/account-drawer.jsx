@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -11,6 +11,9 @@ import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter, usePathname } from 'src/routes/hooks';
+import { UserQuickChangePasswordForm } from 'src/sections/user/user-quick-change-password';
+import { useDataContext } from 'src/auth/context/data/data-context';
+import AvatarWithUpdate from 'src/sections/user/avatar-with-update';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -29,19 +32,36 @@ import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
 
 
-
 // ----------------------------------------------------------------------
 
 export function AccountDrawer({ data = [], sx, ...other }) {
 
+  const {
+    userByUsername,
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername
+  } = useDataContext();
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (userByUsername) {
+      setUser(userByUsername);
+    }
+  }, [userByUsername]);
+
+  useEffect(() => {
+    if (refetchUserByUsername) {
+      refetchUserByUsername();
+    }
+  }, [refetchUserByUsername]);
 
   const theme = useTheme();
 
   const router = useRouter();
 
   const pathname = usePathname();
-
-  const { user } = useMockedUser();
 
   const quickChangePassword = useBoolean();
 
@@ -68,19 +88,24 @@ export function AccountDrawer({ data = [], sx, ...other }) {
   );
 
   const renderAvatar = (
-    <AnimateAvatar
-      width={96}
-      slotProps={{
-        avatar: { src: user?.photoURL, alt: userLogged?.data.firstName || userLogged?.data.first_name },
-        overlay: {
-          border: 2,
-          spacing: 3,
-          color: `linear-gradient(135deg, ${varAlpha(theme.vars.palette.primary.mainChannel, 0)} 25%, ${theme.vars.palette.primary.main} 100%)`,
-        },
-      }}
-    >
-      {userLogged?.data.firstName?.charAt(0).toUpperCase() || userLogged?.data.first_name?.charAt(0).toUpperCase()}
-    </AnimateAvatar>
+    // <AnimateAvatar
+    //   width={96}
+    //   slotProps={{
+    //     avatar: { src: user?.photoURL, alt: userLogged?.data.firstName || userLogged?.data.first_name },
+    //     overlay: {
+    //       border: 2,
+    //       spacing: 3,
+    //       color: `linear-gradient(135deg, ${varAlpha(theme.vars.palette.primary.mainChannel, 0)} 25%, ${theme.vars.palette.primary.main} 100%)`,
+    //     },
+    //   }}
+    // >
+    //   {userLogged?.data.firstName?.charAt(0).toUpperCase() || userLogged?.data.first_name?.charAt(0).toUpperCase()}
+    // </AnimateAvatar>
+    <AvatarWithUpdate
+      name={user?.firstName || user?.first_name}
+      avatarUrl={user?.avatarUrl}
+      keyAvatar={user?.keyAvatar}
+    />
   );
 
   const downloadBackup = async () => {
@@ -90,7 +115,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
       });
 
       const contentDisposition = response.headers['content-disposition'];
-      
+
       let fileName = 'download.zip';
       if (contentDisposition) {
         const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -122,11 +147,29 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     }
   };
 
+  const [currentUrl, setCurrentUrl] = useState(user?.avatarUrl);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(user?.keyAvatar));
+        if (!response.data || !response.data.url) {
+          console.error('Error fetching URL', response.statusText);
+        }
+        const values = await response.data;
+        setCurrentUrl(values.url);
+      } catch (error) {
+        console.error('Error al obtener la URL:', error);
+      }
+    }
+    fetchData();
+  }, [user?.keyAvatar]);
+
   return (
     <>
       <AccountButton
         onClick={handleOpenDrawer}
-        photoURL={user?.photoURL}
+        photoURL={currentUrl}
         displayName={user?.displayName}
         sx={sx}
         {...other}
@@ -262,12 +305,12 @@ export function AccountDrawer({ data = [], sx, ...other }) {
           <SignOutButton onClose={handleCloseDrawer} />
         </Box>
       </Drawer>
-      {/* <UserQuickChangePasswordForm
+      <UserQuickChangePasswordForm
         currentUser={userLogged?.data}
         open={quickChangePassword.value}
         onClose={quickChangePassword.onFalse}
         isSameUser={!!userLogged}
-      /> */}
+      />
     </>
   );
 }

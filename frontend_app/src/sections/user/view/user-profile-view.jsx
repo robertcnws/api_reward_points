@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -11,6 +11,8 @@ import { useTabs } from 'src/hooks/use-tabs';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { _userAbout, _userFeeds, _userFriends, _userGallery, _userFollowers } from 'src/_mock';
+import { isClient } from 'src/utils/check-permissions';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
@@ -23,27 +25,57 @@ import { ProfileFriends } from '../profile-friends';
 import { ProfileGallery } from '../profile-gallery';
 import { ProfileFollowers } from '../profile-followers';
 
+
+
 // ----------------------------------------------------------------------
 
 const TABS = [
-  { value: 'profile', label: 'Profile', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
-  { value: 'followers', label: 'Followers', icon: <Iconify icon="solar:heart-bold" width={24} /> },
-  {
-    value: 'friends',
-    label: 'Friends',
-    icon: <Iconify icon="solar:users-group-rounded-bold" width={24} />,
+  { 
+    value: 'profile', 
+    label: 'Profile', 
+    icon: <Iconify icon="solar:user-id-bold" width={24} /> 
   },
-  {
-    value: 'gallery',
-    label: 'Gallery',
-    icon: <Iconify icon="solar:gallery-wide-bold" width={24} />,
-  },
+  // { 
+  //   value: 'followers', 
+  //   label: 'Followers', 
+  //   icon: <Iconify icon="solar:heart-bold" width={24} /> 
+  // },
+  // {
+  //   value: 'friends',
+  //   label: 'Friends',
+  //   icon: <Iconify icon="solar:users-group-rounded-bold" width={24} />,
+  // },
+  // {
+  //   value: 'gallery',
+  //   label: 'Gallery',
+  //   icon: <Iconify icon="solar:gallery-wide-bold" width={24} />,
+  // },
 ];
 
 // ----------------------------------------------------------------------
 
 export function UserProfileView() {
-  const { user } = useMockedUser();
+
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
+
+  const {
+    userByUsername, 
+    refetchUserByUsername,
+    loadingUserByUsername,
+    errorUserByUsername
+  } = useDataContext();
+
+  // const { user } = useMockedUser();
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (userByUsername) {
+      setUser(userByUsername);
+    }
+  }, [userByUsername]);
 
   const [searchFriends, setSearchFriends] = useState('');
 
@@ -53,24 +85,28 @@ export function UserProfileView() {
     setSearchFriends(event.target.value);
   }, []);
 
+  // console.log('user:', user);
+
   return (
     <DashboardContent>
       <CustomBreadcrumbs
         heading="Profile"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'User', href: paths.dashboard.user.root },
-          { name: user?.displayName },
+          ...!isClient(roleName) ? [{ name: 'User', href: paths.dashboard.user.root }] : [],
+          { name: `${user?.firstName} ${user?.lastName}` },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
       <Card sx={{ mb: 3, height: 290 }}>
         <ProfileCover
-          role={_userAbout.role}
-          name={user?.displayName}
-          avatarUrl={user?.photoURL}
+          role={roleName}
+          name={`${user?.firstName} ${user?.lastName}`}
+          avatarUrl={user?.avatarUrl}
+          keyAvatar={user?.keyAvatar}
           coverUrl={_userAbout.coverUrl}
+          refetchUserByUsername={refetchUserByUsername}
         />
 
         <Box
@@ -93,7 +129,14 @@ export function UserProfileView() {
         </Box>
       </Card>
 
-      {tabs.value === 'profile' && <ProfileHome info={_userAbout} posts={_userFeeds} />}
+      {tabs.value === 'profile' && (
+        <ProfileHome 
+          info={_userAbout} 
+          posts={_userFeeds} 
+          user={user} 
+          refetchUserByUsername={refetchUserByUsername} 
+        />
+      )}
 
       {tabs.value === 'followers' && <ProfileFollowers followers={_userFollowers} />}
 

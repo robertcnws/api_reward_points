@@ -71,6 +71,10 @@ export const dashboardRoutes = (user) => [
         path: 'analytics',
         element: <OverviewAnalyticsPage />
       },
+      {
+        path: 'user/profile',
+        element: <UserProfilePage />
+      },
       ...isClient(user?.user_role?.name) ? [
         {
           path: 'purchase',

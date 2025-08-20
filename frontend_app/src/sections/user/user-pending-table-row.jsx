@@ -16,7 +16,7 @@ import { Typography, ListItemText } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { wsEndpoints } from 'src/utils/axios';
+import { axiosInstanceBackend, endpoints, wsEndpoints } from 'src/utils/axios';
 import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
@@ -101,6 +101,25 @@ export function UserPendingTableRow({
     [currentRowRewardPoints]
   );
 
+  const [currentUrl, setCurrentUrl] = useState(row?.avatarUrl);
+  
+    useEffect(() => {
+      async function fetchData() {
+        try {
+          const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(row?.keyAvatar));
+          if (!response.data || !response.data.url) {
+            console.error('Error fetching URL', response.statusText);
+          }
+          const values = await response.data;
+  
+          setCurrentUrl(values.url);
+        } catch (error) {
+          console.error('Error al obtener la URL:', error);
+        }
+      }
+      fetchData();
+    }, [row?.keyAvatar]);
+
   return (
     <>
       {!isMobile ? (
@@ -113,7 +132,7 @@ export function UserPendingTableRow({
 
           <TableCell sx={{ cursor: 'pointer' }}>
             <Stack spacing={2} direction="row" alignItems="center">
-              <Avatar alt={row.username} src={row.avatarUrl} />
+              <Avatar alt={row.username} src={currentUrl} />
 
               <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
                 <Link color="inherit" onClick={quickEdit.onTrue} sx={{ cursor: 'pointer' }}>

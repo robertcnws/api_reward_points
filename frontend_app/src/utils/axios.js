@@ -182,6 +182,19 @@ export const endpoints = {
     changeShowTourGuide: {
       user: (id) => `/users/change-show-tour-guide/${id}/`,
     },
+    changeAbout: {
+      user: (id) => `/users/change-about/${id}/`,
+    },
+    changeSchool: {
+      user: (id) => `/users/change-school/${id}/`,
+    },
+    changeAddress: {
+      user: (id) => `/users/change-address/${id}/`,
+    },
+    changeSocial: {
+      user: (id) => `/users/change-social/${id}/`,
+    },  
+    uploadAvatar: (id) => `/users/upload-avatar/${id}/`,
   },
   item: {
     list: '/product/list',

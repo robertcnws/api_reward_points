@@ -18,10 +18,15 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { setSession, signOut } from 'src/auth/context/jwt';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 
 export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSameUser = false }) {
+
+  const router = useRouter();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -94,16 +99,15 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
       reset();
       onClose();
 
-      if (payload.username === userLogged?.data.username) {
-        localStorage.removeItem('userLogged');
-        sessionStorage.removeItem('userLogged');
-        localStorage.setItem('userLogged', JSON.stringify({ data: payload }));
-        sessionStorage.setItem('userLogged', JSON.stringify({ data: payload }));
+      if (isSameUser) {
+        await signOut();
+        router.refresh();
       }
 
       refetchUsers?.();
     } catch (error) {
-      const errorMsg = error.response?.data?.error || 'Update failed';
+      console.log(error);
+      const errorMsg = error.error || 'Update failed';
       setError('password', { type: 'server', message: errorMsg });
       console.error(error);
     }
@@ -118,7 +122,7 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
       PaperProps={{ sx: { maxWidth: 720 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
-        <DialogTitle>Quick User Change Password</DialogTitle>
+        <DialogTitle>Change Password</DialogTitle>
 
         <DialogContent>
           <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>

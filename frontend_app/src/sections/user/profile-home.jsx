@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import Fab from '@mui/material/Fab';
 import Box from '@mui/material/Box';
@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import InputBase from '@mui/material/InputBase';
 import Grid from '@mui/material/Unstable_Grid2';
 import CardHeader from '@mui/material/CardHeader';
+import { IconButton, Tooltip, Typography } from '@mui/material';
 
 import { fNumber } from 'src/utils/format-number';
 
@@ -20,10 +21,15 @@ import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/asse
 import { Iconify } from 'src/components/iconify';
 
 import { ProfilePostItem } from './profile-post-item';
+import { ProfileAboutEditForm } from './profile-about-edit-form';
+import { ProfileSchoolEditForm } from './profile-school-edit-form';
+import { ProfileAddressEditForm } from './profile-address-edit-form';
+import { ProfileSocialEditForm } from './profile-social-edit-form';
+
 
 // ----------------------------------------------------------------------
 
-export function ProfileHome({ info, posts }) {
+export function ProfileHome({ info, posts, user, refetchUserByUsername }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -32,6 +38,13 @@ export function ProfileHome({ info, posts }) {
     }
   };
 
+  const [openModal, setOpenModal] = useState({
+    editAbout: false,
+    editAddress: false,
+    editSchool: false,
+    editSocials: false
+  });
+
   const renderFollows = (
     <Card sx={{ py: 3, textAlign: 'center', typography: 'h4' }}>
       <Stack
@@ -39,14 +52,14 @@ export function ProfileHome({ info, posts }) {
         divider={<Divider orientation="vertical" flexItem sx={{ borderStyle: 'dashed' }} />}
       >
         <Stack width={1}>
-          {fNumber(info.totalFollowers)}
+          {fNumber(0)}
           <Box component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
-            Follower
+            Follower(s)
           </Box>
         </Stack>
 
         <Stack width={1}>
-          {fNumber(info.totalFollowing)}
+          {fNumber(0)}
           <Box component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
             Following
           </Box>
@@ -60,35 +73,80 @@ export function ProfileHome({ info, posts }) {
       <CardHeader title="About" />
 
       <Stack spacing={2} sx={{ p: 3, typography: 'body2' }}>
-        <Box>{info.quote}</Box>
+        <Box display="flex" flexDirection="row" justifyContent="space-between">
+          <Typography variant="body2" color={user?.about ? 'text.secondary' : 'error'}>
+            {user?.about || 'No about information'}
+          </Typography>
+          <IconButton
+            sx={{
+              mt: -1,
+              color: user?.about ? 'inherit' : 'error.main'
+            }}
+            onClick={() => setOpenModal({ ...openModal, editAbout: true })}
+          >
+            <Iconify icon="ic:round-edit" />
+          </IconButton>
+        </Box>
 
-        <Box display="flex">
-          <Iconify width={24} icon="mingcute:location-fill" sx={{ mr: 2 }} />
-          Live at
-          <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.country}
-          </Link>
+        <Box display="flex" justifyContent="space-between">
+          <Box display='flex' flexDirection='row'>
+            <Iconify
+              width={24}
+              icon="mingcute:location-fill"
+              sx={{
+                mr: 2,
+              }}
+            />
+            Live at
+            <Link variant="subtitle2" color={user?.country ? 'inherit' : 'error'}>
+              &nbsp;{user?.country ? `${user?.city}, ${user?.state}, ${user?.country}` : 'Unknown'}
+            </Link>
+          </Box>
+          <Tooltip title="Edit Address" arrow placement="top">
+            <IconButton
+              sx={{
+                mt: -1,
+                color: user?.country ? 'inherit' : 'error.main'
+              }}
+              onClick={() => setOpenModal({ ...openModal, editAddress: true })}
+            >
+              <Iconify icon="ic:round-edit" />
+            </IconButton>
+          </Tooltip>
         </Box>
 
         <Box display="flex">
           <Iconify width={24} icon="fluent:mail-24-filled" sx={{ mr: 2 }} />
-          {info.email}
+          {user?.email || 'Unknown'}
         </Box>
 
         <Box display="flex">
           <Iconify width={24} icon="ic:round-business-center" sx={{ mr: 2 }} />
-          {info.role} {`at `}
+          {user?.userRole?.name?.toUpperCase()} {'of '}
           <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.company}
+            &nbsp;{user?.companyName || 'NWS'}
           </Link>
         </Box>
 
-        <Box display="flex">
-          <Iconify width={24} icon="ic:round-business-center" sx={{ mr: 2 }} />
-          {`Studied at `}
-          <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.school}
-          </Link>
+        <Box display="flex" justifyContent="space-between">
+          <Box display='flex' flexDirection='row'>
+            <Iconify width={24} icon="ic:round-business-center" sx={{ mr: 2 }} />
+            {`Studied at `}
+            <Link variant="subtitle2" color={user?.school ? 'inherit' : 'error'}>
+              &nbsp;{user?.school || 'Unknown'}
+            </Link>
+          </Box>
+          <Tooltip title="Edit School" arrow placement="top">
+            <IconButton
+              sx={{
+                mt: -1,
+                color: user?.school ? 'inherit' : 'error.main'
+              }}
+              onClick={() => setOpenModal({ ...openModal, editSchool: true })}
+            >
+              <Iconify icon="ic:round-edit" />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Stack>
     </Card>
@@ -131,7 +189,20 @@ export function ProfileHome({ info, posts }) {
 
   const renderSocials = (
     <Card>
-      <CardHeader title="Social" />
+      <CardHeader
+        title="Social"
+        action={
+          <IconButton
+            sx={{
+              color: !user?.facebookLink || !user?.instagramLink || !user?.linkedinLink || !user?.twitterLink ?
+                'error.main' : 'inherit'
+            }}
+            onClick={() => setOpenModal({ ...openModal, editSocials: true })}
+          >
+            <Iconify icon="ic:round-edit" />
+          </IconButton>
+        }
+      />
 
       <Stack spacing={2} sx={{ p: 3 }}>
         {_socials.map((social) => (
@@ -146,11 +217,15 @@ export function ProfileHome({ info, posts }) {
             {social.value === 'linkedin' && <LinkedinIcon />}
             {social.value === 'twitter' && <TwitterIcon />}
 
-            <Link color="inherit">
-              {social.value === 'facebook' && info.socialLinks.facebook}
-              {social.value === 'instagram' && info.socialLinks.instagram}
-              {social.value === 'linkedin' && info.socialLinks.linkedin}
-              {social.value === 'twitter' && info.socialLinks.twitter}
+            <Link
+              color={user?.[`${social.value}Link`] ? 'inherit' : 'error.main'}
+              sx={{ cursor: 'pointer' }}
+              href={user?.[`${social.value}Link`] ? user?.[`${social.value}Link`] : '#'}
+            >
+              {social.value === 'facebook' && (user?.facebookLink || 'Unknown')}
+              {social.value === 'instagram' && (user?.instagramLink || 'Unknown')}
+              {social.value === 'linkedin' && (user?.linkedinLink || 'Unknown')}
+              {social.value === 'twitter' && (user?.twitterLink || 'Unknown')}
             </Link>
           </Stack>
         ))}
@@ -158,25 +233,69 @@ export function ProfileHome({ info, posts }) {
     </Card>
   );
 
+  // return (
+  //   <Grid container spacing={3}>
+  //     <Grid xs={12} md={4}>
+  //       <Stack spacing={3}>
+  //         {/* {renderFollows} */}
+  //         {renderAbout}
+  //         {renderSocials}
+  //       </Stack>
+  //     </Grid>
+
+  //     <Grid xs={12} md={8}>
+  //       <Stack spacing={3}>
+  //         {renderPostInput}
+
+  //         {posts.map((post) => (
+  //           <ProfilePostItem key={post.id} post={post} />
+  //         ))}
+  //       </Stack>
+  //     </Grid>
+  //   </Grid>
+  // );
+
   return (
-    <Grid container spacing={3}>
-      <Grid xs={12} md={4}>
-        <Stack spacing={3}>
-          {renderFollows}
-          {renderAbout}
-          {renderSocials}
-        </Stack>
-      </Grid>
+    <>
+      <Grid container spacing={3}>
+        <Grid xs={12} md={6}>
+          <Stack spacing={3} sx={{ height: 1 }}>
+            {/* {renderFollows} */}
+            {renderAbout}
 
-      <Grid xs={12} md={8}>
-        <Stack spacing={3}>
-          {renderPostInput}
+          </Stack>
+        </Grid>
 
-          {posts.map((post) => (
-            <ProfilePostItem key={post.id} post={post} />
-          ))}
-        </Stack>
+        <Grid xs={12} md={6}>
+          <Stack spacing={3} sx={{ height: 1 }}>
+            {renderSocials}
+          </Stack>
+        </Grid>
       </Grid>
-    </Grid>
+      <ProfileAboutEditForm
+        currentUser={user}
+        open={openModal.editAbout}
+        onClose={() => setOpenModal({ ...openModal, editAbout: false })}
+        refetchUserByUsername={refetchUserByUsername}
+      />
+      <ProfileSchoolEditForm
+        currentUser={user}
+        open={openModal.editSchool}
+        onClose={() => setOpenModal({ ...openModal, editSchool: false })}
+        refetchUserByUsername={refetchUserByUsername}
+      />
+      <ProfileAddressEditForm
+        currentUser={user}
+        open={openModal.editAddress}
+        onClose={() => setOpenModal({ ...openModal, editAddress: false })}
+        refetchUserByUsername={refetchUserByUsername}
+      />
+      <ProfileSocialEditForm
+        currentUser={user}
+        open={openModal.editSocials}
+        onClose={() => setOpenModal({ ...openModal, editSocials: false })}
+        refetchUserByUsername={refetchUserByUsername}
+      />
+    </>
   );
 }

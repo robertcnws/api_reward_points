@@ -133,8 +133,56 @@ def change_verify_user(request, id):
 @permission_classes([AllowAny])
 def change_show_tour_guide_user(request, id):
     return repository_users.change_show_tour_guide_user(request, id)
-        
-        
+
+
+#############################################
+# UPLOAD USER AVATAR
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def upload_avatar_user(request, id):
+    return repository_users.upload_avatar_user(request, id)
+
+#############################################
+# CHANGE ABOUT USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_about_user(request, id):
+    return repository_users.change_about_user(request, id)
+
+#############################################
+# CHANGE SCHOOL USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_school_user(request, id):
+    return repository_users.change_school_user(request, id)
+
+
+#############################################
+# CHANGE ADDRESS USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_address_user(request, id):
+    return repository_users.change_address_user(request, id)
+
+
+#############################################
+# CHANGE SOCIAL USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_social_user(request, id):
+    return repository_users.change_social_user(request, id)
+
+
 #############################################
 # NOTIFICATIONS
 #############################################

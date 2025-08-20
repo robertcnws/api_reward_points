@@ -228,7 +228,7 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
           </LoadingButton>
           {onProfileRow && (
             <Button variant="contained" color="primary" onClick={onProfileRow}>
-              View Profile
+              View Rewards Profile
             </Button>
           )}
           <Button variant="outlined" onClick={onClose}>

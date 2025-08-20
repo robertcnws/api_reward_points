@@ -1,4 +1,5 @@
 from rest_framework.response import Response
+from django.conf import settings
 from django.utils import timezone
 from utils.data_util import (
     transform_data_to_mongo,
@@ -6,6 +7,14 @@ from utils.data_util import (
     create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole
+
+from api_reward_points.models import RewardAttachment
+
+from utils.s3_utils import (
+    upload_attachment_to_s3, 
+    generate_default_file_url,
+    delete_attachment_from_s3,
+)
 
 
 from api_users.repo_util.users_util import inherit_from_unapproved_user
@@ -528,6 +537,303 @@ def change_show_tour_guide_user(request, id):
             create_notification(module, info_id, info, type, user_reporter['username'])
 
             return Response({'message': 'User show tour guide change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# UPLOAD AVATAR USER
+#############################################
+
+def upload_avatar_user(request, id):
+    data = request.data
+    
+    user_reporter = json.loads(data.get('userReporter', None))
+    
+    file = request.FILES.get('avatar')
+    
+    user = LoginUser.objects(id=id).first()
+    if not user:
+        logger.error("User not found")
+        return Response({'error': 'User not found'}, status=404)
+
+    last_user = transform_data_to_mongo(
+        user, 
+        include_fields=[
+            'key_avatar',
+        ]
+    )
+    
+    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    
+    if user_reporter:
+        try:
+            last_avatar = last_user['key_avatar'] if last_user else None
+            if last_avatar:
+                delete_attachment_from_s3(last_avatar)
+                attachment = RewardAttachment.objects.filter(file=last_avatar).first()
+                if attachment:
+                    attachment.delete()
+            if file:
+                key = upload_attachment_to_s3(file, folder=settings.AWS_S3_FOLDER_STORE_AVATARS)
+                if key:
+                    attachment = RewardAttachment(
+                        name=file.name,
+                        file=key,
+                        user_upload=user_reporter,
+                        created_time=timezone.now(),
+                        last_modified_time=timezone.now(),
+                    )
+                    attachment.save()
+
+            if attachment:
+                user.key_avatar = attachment.file
+                user.avatar_url = generate_default_file_url(attachment.file)
+                user.save()
+
+            tracking_info = transform_data_to_mongo(
+                user, 
+                include_fields=[
+                    'key_avatar',
+                    'avatar_url',
+                ]
+            )
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'update user avatar',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data={
+                    'data': tracking_info
+                }
+            )
+
+            module='users'
+            info=f'has updated user avatar ({user.username})'
+            info_id=user.id
+            type='update_user_avatar'
+            create_notification(module, info_id, info, type, user_reporter.username)
+                        
+            return Response({
+                'message': 'User avatar updated successfully',
+                'data': json.loads(user.to_json())
+            }, status=201)
+        
+        except Exception as e:
+            logger.error(f"Error updating user avatar: {str(e)}")
+            return Response({'error': str(e)}, status=500)
+    
+    return Response({'error': 'User reporter not found'}, status=404)
+
+
+#############################################
+# CHANGE ABOUT USER
+#############################################
+
+def change_about_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.about = data.get('about', user.about)
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['about', 'username', 'id']
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change about to {user.about}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change about user ({user.username}) to {user.about}'
+            info_id=user.id
+            type='change_about_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User about change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE SCHOOL USER
+#############################################
+
+def change_school_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.school = data.get('school', user.school)
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['school', 'username', 'id']
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change school to {user.school}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change school user ({user.username}) to {user.school}'
+            info_id=user.id
+            type='change_school_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User school change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE ADDRESS USER
+#############################################
+
+def change_address_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.country = data.get('country', user.country)
+        user.state = data.get('state', user.state)
+        user.city = data.get('city', user.city)
+        user.address = data.get('address', user.address)
+        user.zip_code = data.get('zipCode', user.zip_code)
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=[
+                'country',
+                'state',
+                'city',
+                'address',
+                'zip_code',
+                'username',
+                'id'
+            ]
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change address to {user.address}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change address user ({user.username}) to {user.address}'
+            info_id=user.id
+            type='change_address_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User address change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE SOCIAL USER
+#############################################
+
+def change_social_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.facebook_link = data.get('facebookLink', user.facebook_link)
+        user.instagram_link = data.get('instagramLink', user.instagram_link)
+        user.linkedin_link = data.get('linkedinLink', user.linkedin_link)
+        user.twitter_link = data.get('twitterLink', user.twitter_link)
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=[
+                'facebook_link',
+                'instagram_link',
+                'linkedin_link',
+                'twitter_link',
+                'username',
+                'id'
+            ]
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change social links to {user.facebook_link}, {user.instagram_link}, {user.linkedin_link}, {user.twitter_link}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change social links user ({user.username}) to {user.facebook_link}, {user.instagram_link}, {user.linkedin_link}, {user.twitter_link}'
+            info_id=user.id
+            type='change_social_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User social links change successfully'}, status=200)
         
         return Response({'error': 'User reporter not found'}, status=404)
     

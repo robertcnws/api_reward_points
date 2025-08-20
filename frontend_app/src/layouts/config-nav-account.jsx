@@ -9,6 +9,11 @@ import { Iconify } from 'src/components/iconify';
 
 export const _account = ({ role }) => [
   {
+    label: 'Profile',
+    href: '/dashboard/user/profile',
+    icon: <Iconify icon="iconamoon:profile-fill" />,
+  },
+  {
     label: 'Home',
     href: '/',
     icon: <Iconify icon="solar:home-angle-bold-duotone" />,
