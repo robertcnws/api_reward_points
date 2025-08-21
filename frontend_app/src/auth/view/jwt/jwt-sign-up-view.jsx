@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Card, TextField, Typography, LinearProgress } from '@mui/material';
+import { Label } from 'src/components/label';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -28,6 +29,7 @@ import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
+
 
 
 
@@ -98,7 +100,7 @@ export function JwtSignUpView() {
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
@@ -190,146 +192,229 @@ export function JwtSignUpView() {
     '& .MuiInputBase-input::placeholder': {
       textAlign: 'start',
       opacity: 1,
+      fontSize: 17,
     },
 
     // Tipografías un poco más grandes
     '& .MuiInputBase-root': { fontSize: 16 },
-    '& .MuiInputLabel-root': { fontSize: 22, width: 'auto', mt: -0.5 },
-    '& .MuiOutlinedInput-notchedOutline legend > span': { padding: '0 16px' },
-    '& .MuiFormHelperText-root': { fontSize: 16, width: '100%' },
-    '& .MuiFormControlLabel-label': { width: 'auto' },
+    '& .MuiInputLabel-root': { fontSize: 16 },
+    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
   };
 
   const renderForm = (
-    <Box gap={3} display="flex" flexDirection="column">
+    <Box gap={1} display="flex" flexDirection="column">
 
-      <Controller
-        name="username"
-        control={methods.control}
-        render={({ field, fieldState: { error } }) => (
-          <TextField
-            {...field}
-            label="Username"
-            error={!!error}
-            helperText={error?.message || ''}
-            // InputLabelProps={{ shrink: true }}
-            InputProps={{
-              sx: { height: 61 },
-              inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:user-bold" width={20} height={20} />
-                </InputAdornment>
-              ),
-            }}
-            onChange={(e) => {
-              field.onChange(e);
-              if (errorMsg.message.length > 0) {
-                setErrorMsg({
-                  name: '',
-                  message: '',
-                  email: '',
-                });
-              }
-            }}
-          />
-        )}
-      />
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.username ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Username
+        </Label>
 
-      <Field.Text
-        name="companyName"
-        label="Company name"
-        // InputLabelProps={{ shrink: true }} 
-        InputProps={{
-          sx: { height: 61 },
-          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-          startAdornment: (
-            <InputAdornment position="start">
-              <Iconify icon="mdi:company" width={20} height={20} />
-            </InputAdornment>
-          ),
-        }}
-      />
-
-      <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
-        <Field.Text
-          name="firstName"
-          label="First name"
-          // InputLabelProps={{ shrink: true }}
-          InputProps={{
-            sx: { height: 61 },
-            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="mdi:rename" width={20} height={20} />
-              </InputAdornment>
-            ),
-          }}
+        <Controller
+          name="username"
+          control={methods.control}
+          render={({ field, fieldState: { error } }) => (
+            <TextField
+              {...field}
+              // label="Username"
+              placeholder='Username'
+              error={!!error}
+              helperText={error?.message || ''}
+              // InputLabelProps={{ shrink: true }}
+              InputProps={{
+                sx: { height: 61 },
+                inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="solar:user-bold" width={20} height={20} sx={{ color: errors.username ? 'error.main' : 'text.secondary' }} />
+                  </InputAdornment>
+                ),
+              }}
+              onChange={(e) => {
+                field.onChange(e);
+                if (errorMsg.message.length > 0) {
+                  setErrorMsg({
+                    name: '',
+                    message: '',
+                    email: '',
+                  });
+                }
+              }}
+            />
+          )}
         />
+      </Box>
+
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.companyName ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Company name
+        </Label>
+
         <Field.Text
-          name="lastName"
-          label="Last name"
-          // InputLabelProps={{ shrink: true }}
+          name="companyName"
+          placeholder="Company name"
+          // InputLabelProps={{ shrink: true }} 
           InputProps={{
             sx: { height: 61 },
             inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon="qlementine-icons:rename-16" width={20} height={20} />
+                <Iconify icon="mdi:company" width={20} height={20} sx={{ color: errors.companyName ? 'error.main' : 'text.secondary' }} />
               </InputAdornment>
             ),
           }}
         />
       </Box>
 
-      <Field.Text
-        name="email"
-        label="Email address"
-        // InputLabelProps={{ shrink: true }}
-        InputProps={{
-          sx: { height: 61 },
-          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-          startAdornment: (
-            <InputAdornment position="start">
-              <Iconify icon="entypo:email" width={20} height={20} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box display="flex" gap={{ xs: 3, sm: 2 }} flexDirection={{ xs: 'column', sm: 'row' }}>
+        <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start' width='100%'>
+          <Label
+            variant='body2'
+            sx={{
+              justifyContent: 'flex-start',
+              color: errors.firstName ? 'error.main' : 'text.secondary',
+              fontSize: 18
+            }}>
+            First name
+          </Label>
+          <Field.Text
+            name="firstName"
+            placeholder="First name"
+            // InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: { height: 61 },
+              inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="mdi:rename" width={20} height={20} sx={{ color: errors.firstName ? 'error.main' : 'text.secondary' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+        <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start' width='100%'>
+          <Label
+            variant='body2'
+            sx={{
+              justifyContent: 'flex-start',
+              color: errors.lastName ? 'error.main' : 'text.secondary',
+              fontSize: 18
+            }}>
+            Last name
+          </Label>
+          <Field.Text
+            name="lastName"
+            placeholder="Last name"
+            // InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: { height: 61 },
+              inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="qlementine-icons:rename-16" width={20} height={20} sx={{ color: errors.lastName ? 'error.main' : 'text.secondary' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      </Box>
 
-      <Field.Phone
-        name="phoneNumber"
-        label="Phone or Mobile"
-        // InputLabelProps={{ shrink: true }}
-        InputProps={{
-          sx: { height: 61 },
-          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-        }}
-      />
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.email ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Email address
+        </Label>
 
-      <Field.Text
-        name="password"
-        label="Password"
-        placeholder="6+ characters"
-        type={password.value ? 'text' : 'password'}
-        // InputLabelProps={{ shrink: true }}
-        InputProps={{
-          sx: { height: 61 },
-          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-          startAdornment: (
-            <InputAdornment position="start">
-              <Iconify icon="solar:lock-bold" width={20} height={20} />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={password.onToggle} edge="end">
-                <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+        <Field.Text
+          name="email"
+          placeholder="Email address"
+          // InputLabelProps={{ shrink: true }}
+          InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="entypo:email" width={20} height={20} sx={{ color: errors.email ? 'error.main' : 'text.secondary' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.phoneNumber ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Phone or Mobile
+        </Label>
+
+        <Field.Phone
+          name="phoneNumber"
+          placeholder="Phone or Mobile"
+          // InputLabelProps={{ shrink: true }}
+          InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+          }}
+        />
+      </Box>
+
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.password ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Password
+        </Label>
+
+        <Field.Text
+          name="password"
+          // label="Password"
+          placeholder="6+ characters"
+          type={password.value ? 'text' : 'password'}
+          // InputLabelProps={{ shrink: true }}
+          InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="solar:lock-bold" width={20} height={20} sx={{ color: errors.password ? 'error.main' : 'text.secondary' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={password.onToggle} edge="end">
+                  <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+
+      </Box>
 
       <LoadingButton
         fullWidth
@@ -344,7 +429,7 @@ export function JwtSignUpView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
-          fontSize: 17
+          fontSize: 19
         }}
       >
         Create account
@@ -416,7 +501,7 @@ export function JwtSignUpView() {
                     justifyContent={isMobile ? 'center' : 'flex-start'}
                     alignItems="center"
                     gap={1}
-                    mb={1}
+                    mb={-2}
                     mt={-3}
                   >
                     <Typography variant="h5" component="div">

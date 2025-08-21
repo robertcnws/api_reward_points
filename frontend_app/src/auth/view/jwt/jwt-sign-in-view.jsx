@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Card, Link, Typography } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
+import { Label } from 'src/components/label';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -27,6 +28,7 @@ import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
 import { signInWithUsernameAndPassword } from '../../context/jwt';
+
 
 
 
@@ -112,7 +114,7 @@ export function JwtSignInView() {
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
@@ -177,40 +179,49 @@ export function JwtSignInView() {
     '& .MuiInputBase-input::placeholder': {
       // textAlign: 'center',
       opacity: 1,
+      fontSize: 17,
     },
 
     // Tipografías un poco más grandes
     '& .MuiInputBase-root': { fontSize: 16 },
-    '& .MuiInputLabel-root': { fontSize: 22, width: 'auto', marginTop: -0.5 },
-    '& .MuiOutlinedInput-notchedOutline legend > span': { padding: '0 16px' },
-    '& .MuiFormHelperText-root': { fontSize: 16, width: '100%' },
-    '& .MuiFormControlLabel-label': { width: 'auto' },
+    '& .MuiInputLabel-root': { fontSize: 16 },
+    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
   };
 
   const renderForm = (
-    <Box gap={3} display="flex" flexDirection="column" sx={{ width: 1 }}>
+    <Box gap={2} display="flex" flexDirection="column" sx={{ width: 1 }}>
       {/* <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} /> */}
-      <Field.Text
-        name="username"
-        label="Username"
-        InputLabelProps={{
-          shrink: true,
-          sx: { bgcolor: 'background.paper', px: 0.5, fontSize: 22 },
-        }}
-        InputProps={{
-          notched: true,
-          sx: { height: 61 },
-          inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-          startAdornment: (
-            <InputAdornment position="start">
-              <Iconify icon="solar:user-bold" width={20} height={20} />
-            </InputAdornment>
-          ),
-        }}
-        sx={{
-          minWidth: { xs: 1, sm: 1 },
-        }}
-      />
+      <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+        <Label
+          variant='body2'
+          sx={{
+            justifyContent: 'flex-start',
+            color: errors.username ? 'error.main' : 'text.secondary',
+            fontSize: 18
+          }}>
+          Username
+        </Label>
+        <Field.Text
+          name="username"
+          placeholder="Username"
+          // label="Username"
+          // InputLabelProps={{
+          //   shrink: true,
+          // }}
+          InputProps={{
+            sx: { height: 61 },
+            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="solar:user-bold" width={20} height={20} sx={{ color: errors.username ? 'error.main' : 'text.secondary' }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            minWidth: { xs: 1, sm: 1 },
+          }}
+        />
+      </Box>
 
       <Box gap={1.5} display="flex" flexDirection="column">
         {/* <Link
@@ -223,30 +234,41 @@ export function JwtSignInView() {
           Forgot password?
         </Link> */}
 
-        <Field.Text
-          name="password"
-          label="Password"
-          placeholder="6+ characters"
-          type={password.value ? 'text' : 'password'}
-          // InputLabelProps={{ shrink: true }}
-          InputProps={{
-            notched: true,
-            sx: { height: 61 },
-            inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="solar:lock-bold" width={20} height={20} />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={password.onToggle} edge="end">
-                  <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
+          <Label
+            variant='body2'
+            sx={{
+              justifyContent: 'flex-start',
+              color: errors.password ? 'error.main' : 'text.secondary',
+              fontSize: 18
+            }}>
+            Password
+          </Label>
+
+          <Field.Text
+            name="password"
+            // label="Password"
+            placeholder="6+ characters"
+            type={password.value ? 'text' : 'password'}
+            // InputLabelProps={{ shrink: true }}
+            InputProps={{
+              sx: { height: 61 },
+              inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="solar:lock-bold" width={20} height={20} sx={{ color: errors.password ? 'error.main' : 'text.secondary' }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={password.onToggle} edge="end">
+                    <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
 
         {/* <Field.Checkbox
           name="rememberMe"
@@ -275,7 +297,7 @@ export function JwtSignInView() {
             },
           }}
           label={
-            <span style={{ fontSize: 17 }}>
+            <span style={{ fontSize: 17, color: 'grey' }}>
               Remember me
             </span>
           }
@@ -295,7 +317,7 @@ export function JwtSignInView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
-          fontSize: 17
+          fontSize: 19
         }}
       >
         Sign in
@@ -324,7 +346,7 @@ export function JwtSignInView() {
             justifyContent={isMobile ? 'center' : 'flex-start'}
             alignItems="center"
             gap={1}
-            mb={1}
+            mb={-2}
             mt={-3}
           >
             <Typography variant="h5" component="div">
