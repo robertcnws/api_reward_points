@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # DOWNLOAD MONGO DB
 #############################################
 
-def download_mongo_db(request):
+def download_mongo_db(is_downloaded_local=False):
     client = MongoClient(settings.MONGO_URI)
     db = client[settings.MONGO_DB]
 
@@ -67,11 +67,13 @@ def download_mongo_db(request):
                 tmp.close()
             except Exception:
                 pass
-
-    response = StreamingHttpResponse(
-        streaming_content=stream_and_upload_async(), 
-        content_type='application/zip'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
-    return response
+            
+    if is_downloaded_local:
+        response = StreamingHttpResponse(
+            streaming_content=stream_and_upload_async(), 
+            content_type='application/zip'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
+    return stream_and_upload_async()

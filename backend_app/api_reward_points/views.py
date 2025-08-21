@@ -330,4 +330,4 @@ def manage_points(request, user_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def download_mongo_db(request):
-    return repository_db.download_mongo_db(request)
+    return repository_db.download_mongo_db(is_downloaded_local=True)

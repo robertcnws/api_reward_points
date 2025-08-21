@@ -348,15 +348,24 @@ CELERY_ENABLE_UTC = False
 
 # Celery Beat Schedule
 CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/30')  # Every 5 minute
+CELERY_TASK_DOWNLOAD_BACKUP_MONGODB_MIN = env('CELERY_TASK_DOWNLOAD_BACKUP_MONGODB_MIN', default='*/59')  # Every 59 minute
 CELERY_TASK_REVIEW_USER_POINTS_HOUR = env('CELERY_TASK_REVIEW_USER_POINTS_HOUR', default='7-17')
 CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK = env('CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK', default='*')
 
 CELERY_BEAT_SCHEDULE = {
-    'run-task-sequence-every-5-min': {
-        'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_every_10_min',
+    'run-task-sequence-get-rewards-points-min': {
+        'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_get_rewards_points_min',
         'schedule': crontab(
             minute=CELERY_TASK_REVIEW_USER_POINTS_MIN, 
             hour=CELERY_TASK_REVIEW_USER_POINTS_HOUR, 
+            day_of_week=CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK
+        ),
+    },
+    'run-task-sequence-download-backup-mongo-db-min': {
+        'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_download_backup_mongo_db_min',
+        'schedule': crontab(
+            minute=CELERY_TASK_DOWNLOAD_BACKUP_MONGODB_MIN,
+            hour=CELERY_TASK_REVIEW_USER_POINTS_HOUR,
             day_of_week=CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK
         ),
     },
