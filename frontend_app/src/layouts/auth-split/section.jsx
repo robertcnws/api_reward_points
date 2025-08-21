@@ -26,16 +26,18 @@ export function Section({
     <Box
       sx={{
         // ...bgGradient({
-        //   color: `1deg, ${varAlpha(
-        //     theme.vars.palette.background.neutralChannel,
-        //     0.1
-        //   )}, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
+        //   color: 'transparent',
         //   imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
         // }),
-        backgroundImage: `url(${CONFIG.assetsDir}/assets/background/bgrewards1.png)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        // background: 'none !important',
+        backgroundImage: `
+          linear-gradient(transparent, transparent),
+          url(${CONFIG.assetsDir}/assets/background/bgrewards1.png)
+        `,
+        backgroundRepeat: 'no-repeat, no-repeat',
+        backgroundPosition: '0 0, center',
+        backgroundSize: '100% 100%, cover',
+        backgroundColor: 'transparent !important',
         px: 2,
         pb: 2,
         flex: '0 0 auto',

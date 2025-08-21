@@ -154,7 +154,7 @@ export function AuthSplitLayout({ sx, section, children, header }) {
           // imgUrl='/logo/logo.png'
           method={CONFIG.auth.method}
           subtitle={section?.subtitle}
-          sx={{ bgcolor: 'error.main' }}
+          // sx={{ bgcolor: 'error.main' }}
         // methods={[
         //   {
         //     label: 'Jwt',
