@@ -84,6 +84,32 @@ def upload_attachment_to_s3(file_obj, folder=settings.AWS_S3_FOLDER_STORE_PRODUC
         return None
     
     
+def manage_backup_to_s3(logger, s3_key, s3_prefix, fileobj, keep=5):
+    s3 = boto3.client('s3', region_name=getattr(settings, 'AWS_REGION', None))
+    bucket = settings.AWS_STORAGE_BUCKET_NAME
+
+    try:
+        s3.upload_fileobj(fileobj, bucket, s3_key)
+    except ClientError as e:
+        logger.exception("Error subiendo backup a S3: %s", e)
+    
+    try:
+        paginator = s3.get_paginator('list_objects_v2')
+        objs = []
+        for page in paginator.paginate(Bucket=bucket, Prefix=s3_prefix):
+            for o in page.get('Contents', []):
+                if o['Key'].endswith('.zip'):
+                    objs.append(o)
+        objs.sort(key=lambda o: o['LastModified'])
+        excess = len(objs) - keep
+        if excess > 0:
+            to_delete = [{'Key': o['Key']} for o in objs[:excess]]
+            s3.delete_objects(Bucket=bucket, Delete={'Objects': to_delete, 'Quiet': True})
+    except ClientError as e:
+        logger.exception("Error deleting old backups in S3: %s", e)
+        
+
+
 def download_and_compress_s3(keys, number):
     s3 = boto3.client('s3')
     downloads_dir = Path.home() / "Downloads"
