@@ -181,8 +181,10 @@ export function JwtSignInView() {
 
     // Tipografías un poco más grandes
     '& .MuiInputBase-root': { fontSize: 16 },
-    '& .MuiInputLabel-root': { fontSize: 16 },
-    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
+    '& .MuiInputLabel-root': { fontSize: 22, width: 'auto', marginTop: -0.5 },
+    '& .MuiOutlinedInput-notchedOutline legend > span': { padding: '0 16px' },
+    '& .MuiFormHelperText-root': { fontSize: 16, width: '100%' },
+    '& .MuiFormControlLabel-label': { width: 'auto' },
   };
 
   const renderForm = (
@@ -191,10 +193,12 @@ export function JwtSignInView() {
       <Field.Text
         name="username"
         label="Username"
-        // InputLabelProps={{
-        //   shrink: true,
-        // }}
+        InputLabelProps={{
+          shrink: true,
+          sx: { bgcolor: 'background.paper', px: 0.5, fontSize: 22 },
+        }}
         InputProps={{
+          notched: true,
           sx: { height: 61 },
           inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
           startAdornment: (
@@ -226,6 +230,7 @@ export function JwtSignInView() {
           type={password.value ? 'text' : 'password'}
           // InputLabelProps={{ shrink: true }}
           InputProps={{
+            notched: true,
             sx: { height: 61 },
             inputProps: { style: { paddingTop: 0, paddingBottom: 0, lineHeight: '61px' } },
             startAdornment: (
@@ -270,7 +275,7 @@ export function JwtSignInView() {
             },
           }}
           label={
-            <span>
+            <span style={{ fontSize: 17 }}>
               Remember me
             </span>
           }
@@ -290,6 +295,7 @@ export function JwtSignInView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
+          fontSize: 17
         }}
       >
         Sign in

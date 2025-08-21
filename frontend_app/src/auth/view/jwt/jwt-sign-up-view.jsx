@@ -194,8 +194,10 @@ export function JwtSignUpView() {
 
     // Tipografías un poco más grandes
     '& .MuiInputBase-root': { fontSize: 16 },
-    '& .MuiInputLabel-root': { fontSize: 16 },
-    '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
+    '& .MuiInputLabel-root': { fontSize: 22, width: 'auto', mt: -0.5 },
+    '& .MuiOutlinedInput-notchedOutline legend > span': { padding: '0 16px' },
+    '& .MuiFormHelperText-root': { fontSize: 16, width: '100%' },
+    '& .MuiFormControlLabel-label': { width: 'auto' },
   };
 
   const renderForm = (
@@ -342,6 +344,7 @@ export function JwtSignUpView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
+          fontSize: 17
         }}
       >
         Create account
