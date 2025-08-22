@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useContext } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -25,6 +25,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { FileThumbnail } from 'src/components/file-thumbnail';
 
 import { StoreProductFolderItemCarousel } from 'src/sections/store-product/store-product-folder-item-carousel';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 
 // ----------------------------------------------------------------------
@@ -39,6 +40,8 @@ export function CartItem({
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const { isMobile } = useContext(LoadingContext);
 
   const router = useRouter();
 
@@ -156,67 +159,67 @@ export function CartItem({
       }
       secondary={
         <Stack
-            direction="row"
-            alignItems="center"
-            sx={{ typography: 'caption', color: 'text.disabled' }}
-            divider={
-              <Box
-                sx={{
-                  width: 2,
-                  height: 2,
-                  bgcolor: 'currentColor',
-                  mx: 0.5,
-                  borderRadius: '50%',
-                }}
-              />
-            }
-          >
+          direction="row"
+          alignItems="center"
+          sx={{ typography: 'caption', color: 'text.disabled' }}
+          divider={
+            <Box
+              sx={{
+                width: 2,
+                height: 2,
+                bgcolor: 'currentColor',
+                mx: 0.5,
+                borderRadius: '50%',
+              }}
+            />
+          }
+        >
+          <Box sx={{
+            color: 'text.disabled',
+            ml: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+
+            {totalPoints > totalAvailablePoints ? (
+              <Box>
+                <Label color="error" >
+                  You need at least {fNumber(totalPoints - totalAvailablePoints)} more points
+                </Label>
+              </Box>
+            ) : !isActiveProduct && (
+              <Box>
+                <Label color="error" >
+                  This product is inactive
+                </Label>
+              </Box>
+            )}
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+              Created at {fDateTime(cart?.createdTime)}
+            </Typography>
             <Box sx={{
               color: 'text.disabled',
-              ml: 1,
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}>
-
-              {totalPoints > totalAvailablePoints ? (
-                <Box>
-                  <Label color="error" >
-                    You need at least {fNumber(totalPoints - totalAvailablePoints)} more points
-                  </Label>
-                </Box>
-              ) : !isActiveProduct && (
-                <Box>
-                  <Label color="error" >
-                    This product is inactive
-                  </Label>
-                </Box>
-              )}
-              <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                Created at {fDateTime(cart?.createdTime)}
+              <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
+                Qty: <b>x{currentCart?.storeProductSelection?.quantity}</b>
               </Typography>
-              <Box sx={{
-                color: 'text.disabled',
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-                <Typography variant="caption" sx={{ color: 'text.disabled', mt: 0.5 }}>
-                  Qty: <b>x{currentCart?.storeProductSelection?.quantity}</b>
-                </Typography>
-                {totalPoints > 0 ? (
-                  <Label color="info" sx={{ alignItems: 'center' }}>
-                    <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
-                    TOTAL: {totalPoints}
-                  </Label>
-                ) : (
-                  <Label color="error">
-                    0
-                  </Label>
-                )}
-              </Box>
+              {totalPoints > 0 ? (
+                <Label color="info" sx={{ alignItems: 'center' }}>
+                  <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
+                  TOTAL: {totalPoints}
+                </Label>
+              ) : (
+                <Label color="error">
+                  0
+                </Label>
+              )}
             </Box>
-            {/* {notification.notification.module} */}
-          </Stack>
+          </Box>
+          {/* {notification.notification.module} */}
+        </Stack>
       }
     />
   );
@@ -346,7 +349,7 @@ export function CartItem({
   );
 
   const notificationAction = (
-    <Stack direction="column" spacing={0} sx={{ mt: 0.2 }}>
+    <Stack direction={!isMobile ? 'column' : 'row'} spacing={0} sx={{ mt: 0.2 }}>
       {/* <Label variant="outlined" color='info' sx={{ cursor: 'pointer' }}
       // onClick={() => handleLink(
       //   notification.notification.module, notification.notification.info_id, notification.notification.type
@@ -387,7 +390,10 @@ export function CartItem({
         </Tooltip>
       </IconButton>
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-        <IconButton onClick={handleViewDetailsCart}>
+        <IconButton onClick={() => {
+          drawer?.onFalse();
+          handleViewDetailsCart();
+        }}>
           <Tooltip title="View details" arrow placement='top' sx={{ width: 25, height: 25 }}>
             <Iconify icon="streamline-freehand-color:view-eye-1" width={25} height={25} />
           </Tooltip>
@@ -415,8 +421,9 @@ export function CartItem({
 
         {renderAvatar}
 
-        <Stack sx={{ flexGrow: 1 }} direction="column">
+        <Stack sx={{ flexGrow: 1 }} direction={isMobile ? 'column' : 'row'}>
           {renderText}
+          {notificationAction}
           {/* {notificationAction} */}
           {/* {notification.type === 'friend' && friendAction}
         {notification.type === 'project' && projectAction}
@@ -424,7 +431,7 @@ export function CartItem({
         {notification.type === 'tags' && tagsAction}
         {notification.type === 'payment' && paymentAction} */}
         </Stack>
-        {notificationAction}
+
       </ListItemButton>
       <ConfirmDialog
         open={confirmDelete.value}
