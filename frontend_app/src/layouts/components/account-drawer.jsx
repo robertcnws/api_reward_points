@@ -89,6 +89,24 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     [handleCloseDrawer, router]
   );
 
+  const onSelectFile = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('userReporter', JSON.stringify(userLogged?.data));
+      await axiosInstanceBackend.post(endpoints.user.uploadAvatar(userLogged?.data.id), formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      refetchUserByUsername?.().catch((error) => {
+        console.error('Failed to refetch user:', error);
+      });
+    } catch (error) {
+      console.error('Failed to upload avatar:', error);
+    }
+  };
+
   const renderAvatar = (
     // <AnimateAvatar
     //   width={96}
@@ -107,6 +125,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
       name={user?.firstName || user?.first_name}
       avatarUrl={user?.keyAvatar ? user?.avatarUrl : mockUser?.photoUrl}
       keyAvatar={user?.keyAvatar}
+      onSelectFile={onSelectFile}
     />
   );
 
@@ -195,7 +214,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
           <Stack alignItems="center" sx={{ pt: 8 }}>
             {renderAvatar}
 
-            <Typography variant="subtitle1" noWrap sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" noWrap sx={{ mt: 0 }}>
               {userLogged?.data.firstName || userLogged?.data.first_name} {userLogged?.data.lastName || userLogged?.data.last_name}
             </Typography>
 
