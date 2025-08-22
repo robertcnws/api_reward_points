@@ -400,7 +400,10 @@ export function UserClientTableRow({
             {/* <Label color="info" sx={{ ml: 1 }}>NEW</Label> */}
           </MenuItem>
           <MenuItem
-            onClick={onRefetchRow}
+            onClick={async () => {
+              popover.onClose();
+              await onRefetchRow();
+            }}
             sx={{
               fontWeight: 'bold',
             }}
