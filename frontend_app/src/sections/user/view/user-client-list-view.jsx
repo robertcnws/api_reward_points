@@ -325,6 +325,25 @@ export function UserClientListView() {
     [router]
   );
 
+  const handleRefetchPointsRow = useCallback(
+    async (id) => {
+      try {
+        const response = await axiosInstanceBackend.get(endpoints.user.refetchPoints.user(id));
+        if (response.data.message) {
+          refetchRewardPoints?.();
+          toast.success(response.data.message);
+        }
+        else {
+          toast.error(response.data.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response.data.error);
+      }
+    },
+    [refetchRewardPoints]
+  );
+
   return (
     <>
       <DashboardContent>
@@ -458,6 +477,7 @@ export function UserClientListView() {
                         onApprovalRow={() => handleChangeApprovalRow(row.id)}
                         onVerifyRow={() => handleChangeVerifyRow(row.id)}
                         onProfileRow={() => handleProfileRow(row.id)}
+                        onRefetchRow={() => handleRefetchPointsRow(row.id)}
                       />
                     ))}
 

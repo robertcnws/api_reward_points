@@ -681,3 +681,12 @@ def update_password(request):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
     return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+
+
+def get_refetch_rewards_points(id):
+    user = LoginUser.objects(id=id).first()
+    if not user:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    get_rewards_points(user)
+    full_name = f"{user.first_name} {user.last_name}"
+    return JsonResponse({'message': f'Reward Points for {full_name} refetched successfully'}, status=200)

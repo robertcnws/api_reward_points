@@ -103,3 +103,10 @@ def reset_password(request):
 @permission_classes([AllowAny])
 def update_password(request):
     return repository_authorization.update_password(request)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_refetch_rewards_points(request, id):
+    return repository_authorization.get_refetch_rewards_points(id)

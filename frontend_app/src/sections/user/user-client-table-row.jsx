@@ -42,6 +42,7 @@ export function UserClientTableRow({
   onApprovalRow,
   onVerifyRow,
   onProfileRow,
+  onRefetchRow,
 }) {
 
   const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -397,6 +398,15 @@ export function UserClientTableRow({
             <Iconify icon='carbon:user-profile' sx={{ fontWeight: 'bold' }} />
             View rewards profile
             {/* <Label color="info" sx={{ ml: 1 }}>NEW</Label> */}
+          </MenuItem>
+          <MenuItem
+            onClick={onRefetchRow}
+            sx={{
+              fontWeight: 'bold',
+            }}
+          >
+            <Iconify icon='codicon:repo-fetch' sx={{ fontWeight: 'bold' }} />
+            Refetch reward points
           </MenuItem>
           <MenuItem
             onClick={() => {

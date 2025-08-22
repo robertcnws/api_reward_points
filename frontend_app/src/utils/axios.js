@@ -195,7 +195,10 @@ export const endpoints = {
     },
     changeSocial: {
       user: (id) => `/users/change-social/${id}/`,
-    },  
+    },
+    refetchPoints: {
+      user: (id) => `/authorization/get_refetch_rewards_points/${id}/`,
+    },
     uploadAvatar: (id) => `/users/upload-avatar/${id}/`,
   },
   item: {
