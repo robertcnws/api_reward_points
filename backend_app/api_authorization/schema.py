@@ -7,6 +7,7 @@ from api_authorization.models import (
     UserRole,
     LoginUser,
     ExternalUsers,
+    LoginUserRecoverPasswordCode,
 )
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
 
@@ -30,7 +31,6 @@ class UserRoleType(MongoengineObjectType):
     
     def resolve_last_modified_time(self, info):
         return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
-    
     
 class LoginUserType(MongoengineObjectType):
     user_role = graphene.Field(UserRoleType)
@@ -62,6 +62,27 @@ class LoginUserType(MongoengineObjectType):
     def resolve_approved_time(self, info):
         return datetime_to_timezone(self.approved_time) if self.approved_time else None
 
+
+class LoginUserRecoverPasswordCodeRoleType(MongoengineObjectType):
+    created_at = graphene.String()
+    expired_at = graphene.String()
+    user = graphene.Field(LoginUserType)
+    is_expired = graphene.Boolean()
+
+    class Meta:
+        model = LoginUserRecoverPasswordCode
+
+    def resolve_created_at(self, info):
+        return datetime_to_timezone(self.created_at) if self.created_at else None
+
+    def resolve_expired_at(self, info):
+        return datetime_to_timezone(self.expired_at) if self.expired_at else None
+
+    def resolve_user(self, info):
+        return self.user
+
+    def resolve_is_expired(self, info):
+        return self.is_expired()
 
 class ExternalUserType(MongoengineObjectType):
     user = graphene.Field(LoginUserType)
@@ -95,7 +116,8 @@ class Query(graphene.ObjectType):
     login_users_by_user_role = graphene.List(LoginUserType, user_role_id=graphene.String(required=True))
     external_user_by_username = graphene.Field(ExternalUserType, username=graphene.String(required=True))
     last_logged_external_users = graphene.List(ExternalUserType)
-    
+    recovery_code_by_email = graphene.Field(LoginUserRecoverPasswordCodeRoleType, email=graphene.String(required=True))
+
     def resolve_all_user_roles(self, info):
         return UserRole.objects.all()
     
@@ -140,3 +162,13 @@ class Query(graphene.ObjectType):
         
     def resolve_last_logged_external_users(self, info):
         return ExternalUsers.objects(is_logged_in=True).order_by('-last_login')[:10]
+    
+
+    def resolve_recovery_code_by_email(self, info, email):
+        try:
+            user = LoginUser.objects(email=email).first()
+            if user:
+                return LoginUserRecoverPasswordCode.objects(user=user).first()
+            return None
+        except LoginUserRecoverPasswordCode.DoesNotExist:
+            return None

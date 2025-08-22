@@ -16,6 +16,8 @@ const Jwt = {
   SignInPage: lazy(() => import('src/pages/auth/jwt/sign-in')),
   SignUpPage: lazy(() => import('src/pages/auth/jwt/sign-up')),
   VerificationCodePage: lazy(() => import('src/pages/auth/jwt/verification-code')),
+  UpdatePasswordPage: lazy(() => import('src/pages/auth/jwt/update-password')),
+  ResetPasswordPage: lazy(() => import('src/pages/auth/jwt/reset-password')),
 };
 
 const authJwt = {
@@ -50,7 +52,27 @@ const authJwt = {
           </AuthSplitLayout>
         </GuestGuard>
       ),
-    }
+    },
+    {
+      path: 'update-password',
+      element: (
+        <GuestGuard>
+          <AuthSplitLayout>
+            <Jwt.UpdatePasswordPage />
+          </AuthSplitLayout>
+        </GuestGuard>
+      ),
+    },
+    {
+      path: 'reset-password',
+      element: (
+        <GuestGuard>
+          <AuthSplitLayout>
+            <Jwt.ResetPasswordPage />
+          </AuthSplitLayout>
+        </GuestGuard>
+      ),
+    },
   ],
 };
 

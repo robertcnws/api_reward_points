@@ -102,6 +102,20 @@ class LoginUserVerificationCode(Document):
             expires = expires.replace(tzinfo=timezone.utc)
         return now > expires
     
+
+class LoginUserRecoverPasswordCode(Document):
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    code = StringField(required=True, max_length=6)
+    created_at = DateTimeField(default=lambda: datetime.now(timezone.utc))
+    expires_at = DateTimeField()
+
+    def is_expired(self):
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        return now > expires
+    
     
 class RevokedToken(Document):
     jti          = StringField(required=True, unique=True)

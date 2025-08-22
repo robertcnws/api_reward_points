@@ -39,6 +39,8 @@ export const paths = {
       signIn: `${ROOTS.AUTH}/sign-in`,
       signUp: `${ROOTS.AUTH}/sign-up`,
       verificationCode: `${ROOTS.AUTH}/verification-code`,
+      updatePassword: `${ROOTS.AUTH}/update-password`,
+      resetPassword: `${ROOTS.AUTH}/reset-password`,
     },
     firebase: {
       signIn: `${ROOTS.AUTH}/firebase/sign-in`,

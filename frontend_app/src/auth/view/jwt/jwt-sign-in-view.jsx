@@ -1,6 +1,6 @@
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Box from '@mui/material/Box';
@@ -41,7 +41,11 @@ export const SignInSchema = zod.object({
   //   .email({ message: 'Email must be a valid email address!' }),
   username: zod
     .string()
-    .min(1, { message: 'Username is required!' }),
+    .min(1, { message: 'Username is required!' })
+    .refine(
+      (val) => !val.includes('@') || zod.string().email().safeParse(val).success,
+      { message: 'Email must be a valid email address!' }
+    ),
   password: zod
     .string()
     .min(1, { message: 'Password is required!' })
@@ -100,12 +104,12 @@ export function JwtSignInView() {
 
   const [titleIsSending, setTitleIsSending] = useState('');
 
-  const defaultValues = {
+  const defaultValues = useMemo(() => ({
     // email: 'demo@minimals.cc',
     username: '',
     password: '',
     rememberMe: false,
-  };
+  }), []);
 
   const methods = useForm({
     resolver: zodResolver(SignInSchema),
@@ -114,13 +118,26 @@ export function JwtSignInView() {
 
   const {
     handleSubmit,
+    watch,
+    getValues,
     formState: { errors, isSubmitting },
   } = methods;
+
+  const watchUsername = watch('username');
+  const watchPassword = watch('password');
+
+  useEffect(() => {
+    setErrorMsg({ name: '', message: '', email: '' });
+  }, [watchUsername, watchPassword]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       // await signInWithPassword({ email: data.email, password: data.password });
-      await signInWithUsernameAndPassword({ username: data.username, password: data.password, rememberMe: data.rememberMe });
+      await signInWithUsernameAndPassword({ 
+        username: data.username, 
+        password: data.password, 
+        rememberMe: data.rememberMe 
+      });
       await checkUserSession?.();
       router.refresh();
     } catch (error) {
@@ -170,19 +187,14 @@ export function JwtSignInView() {
   }
 
   const formSlightGrow = {
-    // Aumenta suavemente la altura del input (~+5px)
     '& .MuiOutlinedInput-input': {
       paddingTop: 1,
       paddingBottom: 4,
     },
-    // Placeholder centrado también
     '& .MuiInputBase-input::placeholder': {
-      // textAlign: 'center',
       opacity: 1,
       fontSize: 17,
     },
-
-    // Tipografías un poco más grandes
     '& .MuiInputBase-root': { fontSize: 16 },
     '& .MuiInputLabel-root': { fontSize: 16 },
     '& .MuiFormHelperText-root, & .MuiFormControlLabel-label': { fontSize: 14 },
@@ -199,11 +211,12 @@ export function JwtSignInView() {
             color: errors.username ? 'error.main' : 'text.secondary',
             fontSize: 18
           }}>
-          Username
+          Username or Email
         </Label>
         <Field.Text
           name="username"
-          placeholder="Username"
+          placeholder="Username or Email"
+          type={watch('username').includes('@') ? 'email' : 'text'}
           // label="Username"
           // InputLabelProps={{
           //   shrink: true,
@@ -235,15 +248,26 @@ export function JwtSignInView() {
         </Link> */}
 
         <Box display='flex' flexDirection='column' gap={0} justifyContent='flex-start'>
-          <Label
-            variant='body2'
-            sx={{
-              justifyContent: 'flex-start',
-              color: errors.password ? 'error.main' : 'text.secondary',
-              fontSize: 18
-            }}>
-            Password
-          </Label>
+          <Box display='flex' flexDirection='row' justifyContent='space-between' alignItems='center'>
+            <Label
+              variant='body2'
+              sx={{
+                justifyContent: 'flex-start',
+                color: errors.password ? 'error.main' : 'text.secondary',
+                fontSize: 18
+              }}>
+              Password
+            </Label>
+            <Link
+              component={RouterLink}
+              href={paths.auth.jwt.resetPassword}
+              variant="body2"
+              color="inherit"
+              sx={{ alignSelf: 'flex-end' }}
+            >
+              Forgot password?
+            </Link>
+          </Box>
 
           <Field.Text
             name="password"

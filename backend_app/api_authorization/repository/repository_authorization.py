@@ -7,9 +7,11 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from bson.objectid import ObjectId
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from mongoengine.queryset.visitor import Q
 from api_authorization.models import (
     LoginUser, 
     LoginUserVerificationCode, 
+    LoginUserRecoverPasswordCode,
     UserRole,
     ExternalUsers,
     RevokedToken,
@@ -40,7 +42,7 @@ def is_user_verified(request):
                     'error': 'Username required', 
                     'description': 'Username required'
                 }, status=400)
-            user = LoginUser.objects(username=username).first()
+            user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
             
             if not user:
                 return JsonResponse({
@@ -186,7 +188,7 @@ def login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)  
-            username = data.get('username')  
+            username = data.get('username')
             password = data.get('password') 
             if not username or not password:
                 return JsonResponse({'error': 'Username and password required', 'description': 'Username and password required'}, status=400)
@@ -201,7 +203,7 @@ def login(request):
                 request.session.set_expiry(0)
                 request.session.modified = True
                 
-                current_user = LoginUser.objects(username=username).first()
+                current_user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
                 current_user.last_login = timezone.now()
                 current_user.show_tour_guide_modal = True
                 current_user.save()
@@ -222,7 +224,7 @@ def login(request):
                 
                 return JsonResponse({'data': user}, status=200)
             
-            login_user = LoginUser.objects(username=username).first()
+            login_user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
             
             if login_user and not login_user.is_approved:
                 return JsonResponse({
@@ -409,8 +411,11 @@ def register(request):
             logger.info(f'SMS sent to {phone} with code {code}')
             print(f'SMS sent to {phone} with code {code}')
             # list_emails = [user.email]
-            list_emails = ['admin@newwindowsystem.com', 'robertoc@newwindowsystem.com']
-            send_email_verification_code(list_emails, code)
+            list_emails = ['robertoc@newwindowsystem.com']
+            template = 'email_send_verification_code.html'
+            response_message = 'Verification code sent successfully.'
+            subject = 'Verification Code for Customer Portal'
+            send_email_verification_code(list_emails, code, template, response_message, subject)
             logger.info(f'Email sent to {user.email} with code {code}')
             # print(f'Email sent to {email} with code {code}')
             
@@ -523,8 +528,11 @@ def send_verification_code(request):
                 expires_at=expiration
             )
             # list_emails = [email]
-            list_emails = ['admin@newwindowsystem.com', 'robertoc@newwindowsystem.com']
-            send_email_verification_code(list_emails, code)
+            list_emails = ['robertoc@newwindowsystem.com']
+            template = 'email_send_verification_code.html'
+            response_message = 'Verification code sent successfully.'
+            subject = 'Verification Code for Customer Portal'
+            send_email_verification_code(list_emails, code, template, response_message, subject)
             logger.info(f'Email sent to {email} with code {code}')
             print(f'Email sent to {email} with code {code}')
             return JsonResponse({'data': 'Email sent successfully'}, status=200)
@@ -533,3 +541,143 @@ def send_verification_code(request):
     return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
 
 
+def reset_password(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            if not email:
+                return JsonResponse({'error': 'Email required', 'description': 'Email is required'}, status=400)
+            if not LoginUser.objects(email=email, is_verified=True, is_approved=True).first():
+                return JsonResponse({
+                    'error': 'Email not found or inactive',
+                    'description': 'Email not found or inactive',
+                    'error_name': 'email_not_found',
+                    'error_mail': None
+                }, status=400)
+
+            user = LoginUser.objects(email=email).first()
+            
+            expiration = datetime.now(dt_timezone.utc) + timedelta(minutes=10)
+            
+            code = generate_verification_code()
+            
+            recovery_password_code = LoginUserRecoverPasswordCode.objects(user=user).first()
+
+            if recovery_password_code:
+                recovery_password_code.delete()
+
+            LoginUserRecoverPasswordCode.objects.create(
+                user=user,
+                code=code,
+                expires_at=expiration
+            )
+            
+            phone = user.phone_number
+            message = f"Your verification code to RECOVER PASSWORD is: {code}. It will expire in 10 minutes."
+            # send_sms_verification_code(phone, message)
+            logger.info(f'SMS sent to {phone} with code {code}')
+            print(f'SMS sent to {phone} with code {code}')
+            # list_emails = [user.email]
+            list_emails = ['robertoc@newwindowsystem.com']
+            template = 'email_send_recover_code.html'
+            response_message = 'Recovery code sent successfully.'
+            subject = 'Recovery Code for Customer Portal'
+            send_email_verification_code(list_emails, code, template, response_message, subject)
+            logger.info(f'Email sent to {user.email} with code {code}')
+            # print(f'Email sent to {email} with code {code}')
+            
+            # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
+            
+            create_tracking(
+                user, 
+                'recover_password', 
+                object_id=str(user.id), 
+                object_type='LoginUser', 
+                object_name=user.username, 
+                managed_data='User requested password recovery'
+            )
+
+            return JsonResponse({
+                'data': {
+                    'username': user.username, 
+                    'email': user.email,
+                    'id': str(user.id)
+                }
+            }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
+    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+
+
+def update_password(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            email = data.get('email')
+            if not email:
+                return JsonResponse({
+                    'error': 'Email required', 
+                    'description': 'Email is required'
+                }, status=400)
+                
+            confirmation_code = data.get('confirmationCode')
+            if not confirmation_code:
+                return JsonResponse({
+                    'error': 'Confirmation code required', 
+                    'description': 'Confirmation code is required'
+                }, status=400)
+                
+            new_password = data.get('newPassword')
+            if not new_password:
+                return JsonResponse({
+                    'error': 'New password required',
+                    'description': 'New password is required'
+                }, status=400)
+
+            user = LoginUser.objects(email=email, is_verified=True, is_approved=True).first()
+            if not user:
+                return JsonResponse({
+                    'error': 'User not found or inactive',
+                    'description': 'User not found or inactive',
+                    'error_name': 'user_not_found',
+                    'error_mail': None
+                }, status=400)
+                
+            existing_recovery_code = LoginUserRecoverPasswordCode.objects(user=user, code=confirmation_code).first()
+
+            if not existing_recovery_code:
+                return JsonResponse({
+                    'error': 'Invalid or expired confirmation code',
+                    'description': 'Invalid or expired confirmation code',
+                    'error_name': 'invalid_confirmation_code',
+                    'error_mail': None
+                }, status=400)
+
+            existing_recovery_code.delete()
+
+            user.set_password(new_password)
+            user.save()
+
+            create_tracking(
+                user, 
+                'update_password', 
+                object_id=str(user.id), 
+                object_type='LoginUser', 
+                object_name=user.username, 
+                managed_data='User updated password'
+            )
+
+            return JsonResponse({
+                'data': {
+                    'username': user.username, 
+                    'email': user.email,
+                    'id': str(user.id)
+                }
+            }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
+    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)

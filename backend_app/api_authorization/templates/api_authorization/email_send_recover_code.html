@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Pending approval for new user</title>
+    <title>Recover Password</title>
     <style>
       body,
       table,
@@ -82,13 +82,14 @@
         <h1 style="color: #ffffff; line-height: 1.2">New Window System Customer Portal</h1>
       </div>
       <div style="background-color: #ffffff; color: #333333; padding: 20px">
-        <p style="font-size: 14px; line-height: 1.5">Hello Administrator</p>
+        <p style="font-size: 14px; line-height: 1.5">Hello</p>
         <p style="font-size: 14px; line-height: 1.5">
-          You have a pending approval for new verified user <br/><br/>
-          <strong>{{ username }}</strong> ({{ first_name }} {{ last_name }})<br/>
-          With <strong>{{ points }}</strong> reward points.<br/>
-          <br/>
-          Please sign in to the NWS Reward Points Portal and proceed to APPROVE.
+          Your current recovery code is <br/><br/>
+          <strong>{{ code }}</strong><br/><br/>
+          Please use this code to recover your password. This code expires in 10 minutes, so please use it promptly.
+        </p>
+        <p style="font-size: 14px; line-height: 1.5">
+          Should you have any questions or need further assistance, please do not hesitate to contact us.
         </p>
         <p style="font-size: 14px; line-height: 1.5">Best regards,</p>
         <p style="font-size: 14px; line-height: 1.5">Your NWS Team</p>

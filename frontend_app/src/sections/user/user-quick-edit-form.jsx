@@ -129,7 +129,10 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
       fullWidth
       maxWidth="lg"
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        onClose();
+        reset();
+      }}
       PaperProps={{ sx: { maxWidth: 920 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
@@ -231,7 +234,10 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
               View Rewards Profile
             </Button>
           )}
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={() => {
+            onClose();
+            reset();
+          }}>
             Cancel
           </Button>
         </DialogActions>

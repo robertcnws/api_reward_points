@@ -1,5 +1,6 @@
 # backends.py
 from django.contrib.auth.backends import BaseBackend
+from mongoengine.queryset.visitor import Q
 from .models import LoginUser
 
 class MongoDBBackend(BaseBackend):
@@ -9,7 +10,7 @@ class MongoDBBackend(BaseBackend):
             return None
         try:
             user = LoginUser.objects(
-                username=username, 
+                Q(username__iexact=username) | Q(email__iexact=username),
                 is_verified=True, 
                 is_approved=True,
                 is_active=True

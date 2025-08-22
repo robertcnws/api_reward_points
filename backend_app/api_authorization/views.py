@@ -89,3 +89,17 @@ def verify_user(request):
 @permission_classes([AllowAny])
 def send_verification_code(request):
     return repository_authorization.send_verification_code(request)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    return repository_authorization.reset_password(request)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def update_password(request):
+    return repository_authorization.update_password(request)

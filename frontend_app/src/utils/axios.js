@@ -68,7 +68,9 @@ export const endpoints = {
     register: '/authorization/register/',
     verify: '/authorization/verify/',
     sendVerificationCode: '/authorization/send_verification_code/',
-    verifyUser: '/authorization/verify_user/'
+    verifyUser: '/authorization/verify_user/',
+    resetPassword: '/authorization/reset_password/',
+    updatePassword: '/authorization/update_password/'
   },
   rewardPoints: {
     getFileUrl: (key) => `/reward-points/get-file-url/?key=${encodeURIComponent(key)}`,

@@ -50,17 +50,16 @@ def send_sms_verification_code(phone_number, message):
         raise e
     
     
-def send_email_verification_code(list_emails, code):
+def send_email_verification_code(list_emails, code, template, response_message, subject):
         email_html_message = render_to_string(
-            "api_authorization/email_send_verification_code.html",  
+            f"api_authorization/{template}",  
             {"code": code}, 
         )
-        message = "Verification code sent successfully."
         return send_generic_email(
             list_emails, 
             email_html_message, 
-            "Verification Code for Reward Points System", 
-            message_response=message
+            subject, 
+            message_response=response_message
         )
         
 

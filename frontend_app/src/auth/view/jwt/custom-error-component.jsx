@@ -13,7 +13,7 @@ export function CustomErrorComponent({ errorMsg, handleResendCode, actionName })
                     {errorMsg.message}
                 </Typography>
             </Alert>
-            {(errorMsg.name === 'username_not_verified' || errorMsg.name === 'user_not_verified') && (
+            {(errorMsg?.name === 'username_not_verified' || errorMsg?.name === 'user_not_verified') && (
                 <Button
                     color="inherit"
                     variant="outlined"

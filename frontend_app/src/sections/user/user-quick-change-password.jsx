@@ -72,7 +72,7 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
 
   const onSubmit = handleSubmit(async (data) => {
     const { id } = currentUser;
-    
+
     const payload = {
       ...data,
       isSameUser: isSameUser ? 'same' : 'different',
@@ -118,7 +118,10 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
       fullWidth
       maxWidth="lg"
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        onClose();
+        reset();
+      }}
       PaperProps={{ sx: { maxWidth: 720 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
@@ -147,7 +150,10 @@ export function UserQuickChangePasswordForm({ currentUser, open, onClose, isSame
           <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
             Change Password
           </LoadingButton>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={() => {
+            onClose();
+            reset();
+          }}>
             Cancel
           </Button>
         </DialogActions>
