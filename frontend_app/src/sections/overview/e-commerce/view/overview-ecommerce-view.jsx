@@ -564,11 +564,28 @@ export function OverviewEcommerceView({
           await handleShowIntroGuide();
         }}
         title={
-          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 1 }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: !isMobile ? 'row' : 'column',
+            justifyContent: !isMobile ? 'space-between' : 'flex-start',
+            gap: 1,
+            width: 1
+          }}>
             <Typography variant="h6">{introTitle}</Typography>
-            <IconButton onClick={async () => {
-              isTranslated.setValue(!isTranslated.value);
-            }} sx={{ fontSize: 14 }}>
+            <IconButton
+              onClick={async () => {
+                isTranslated.setValue(!isTranslated.value);
+              }}
+              sx={{
+                fontSize: 14,
+                '&:hover': {
+                  boxShadow: 'none',
+                  backgroundColor: 'transparent',
+                },
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+              }}>
               <Iconify icon="ri:translate" /> Translate {!isTranslated.value ? 'to Spanish' : 'to English'}
             </IconButton>
           </Box>
@@ -578,7 +595,7 @@ export function OverviewEcommerceView({
             {introContent}
           </Typography>
         }
-        closeName='Skip'
+        closeName={!isTranslated.value ? 'Skip' : 'Omitir'}
         action={
           <>
             {currentIntroIndex > 0 && (
@@ -589,7 +606,7 @@ export function OverviewEcommerceView({
                   setCurrentIntroIndex(currentIntroIndex - 1);
                 }}
               >
-                Previous
+                {!isTranslated.value ? 'Previous' : 'Anterior'}
               </Button>
             )}
             <Button
@@ -605,7 +622,10 @@ export function OverviewEcommerceView({
                 }
               }}
             >
-              {currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1 ? 'Next' : 'Start Tour'}
+              {currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1 ?
+                !isTranslated.value ? 'Next' : 'Siguiente' :
+                !isTranslated.value ? 'Start Tour' : 'Iniciar Tour'
+              }
             </Button>
           </>
         }
