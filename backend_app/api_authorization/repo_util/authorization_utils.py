@@ -48,12 +48,12 @@ def send_sms_verification_code(phone_number, message):
         logger.error(f'Error sending SMS: {e}')
         print(f'Error sending SMS: {e}')
         raise e
-    
-    
-def send_email_verification_code(list_emails, code, template, response_message, subject):
+
+
+def send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name):
         email_html_message = render_to_string(
             f"api_authorization/{template}",  
-            {"code": code}, 
+            {"code": code, "first_name": first_name, "last_name": last_name}, 
         )
         return send_generic_email(
             list_emails, 

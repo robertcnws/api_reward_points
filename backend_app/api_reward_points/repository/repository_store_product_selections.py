@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from django.utils import timezone
+from django.conf import settings
 from django.template.loader import render_to_string
 from api_authorization.models import LoginUser
 from api_authorization.repo_util.authorization_utils import send_generic_email
@@ -447,7 +448,10 @@ def create_store_product_selection_cart_buy(request, id):
             file = buy.store_product_selection.store_product.attachments[0].file if \
                 len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
             buy.default_url = generate_default_file_url(file)
-            
+
+            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
+
             send_email_confirmation(
                 type='purchase',
                 points=purchased_points,
@@ -455,7 +459,7 @@ def create_store_product_selection_cart_buy(request, id):
                 purchases=[buy],
                 # list_receivers=[user_reporter.email]
                 # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
-                list_receivers=['nnws15815@gmail.com']
+                list_receivers=list_receivers
             )
                         
             return Response({
@@ -586,6 +590,9 @@ def create_all_store_product_selection_cart_buy(request):
                 file = buy.store_product_selection.store_product.attachments[0].file if \
                     len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
                 buy.default_url = generate_default_file_url(file)
+                
+            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
 
             send_email_confirmation(
                 type='purchase',
@@ -594,7 +601,7 @@ def create_all_store_product_selection_cart_buy(request):
                 purchases=list_buys,
                 # list_receivers=[user_reporter.email]
                 # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
-                list_receivers=['nnws15815@gmail.com']
+                list_receivers=list_receivers
             )
                         
             return Response({
@@ -769,6 +776,9 @@ def create_store_product_selection_buy(request, id):
                 file = buy.store_product_selection.store_product.attachments[0].file if \
                     len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
                 buy.default_url = generate_default_file_url(file)
+                
+            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
             
             send_email_confirmation(
                 type='purchase',
@@ -777,7 +787,7 @@ def create_store_product_selection_buy(request, id):
                 purchases=list_buys,
                 # list_receivers=[user_reporter.email]
                 # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
-                list_receivers=['nnws15815@gmail.com']
+                list_receivers=list_receivers
             )
                         
             return Response({
@@ -932,14 +942,17 @@ def delete_store_product_selection_buy(request, id):
                 len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
             buy.default_url = generate_default_file_url(file)
             
+            list_receivers = [buy.store_product_selection.user.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
+            
             send_email_confirmation(
                 type='refund',
                 points=purchased_points,
-                user=user_reporter,
+                user=buy.store_product_selection.user,
                 purchases=[buy],
                 # list_receivers=[user_reporter.email]
                 # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
-                list_receivers=['nnws15815@gmail.com']
+                list_receivers=list_receivers
             )
             
             # DELETING THE BUY
@@ -1109,8 +1122,8 @@ def delete_list_store_product_selection_buys(request):
             
             info = f'has deleted a list of {len(buys)} \
                 redeemed orders ({", ".join([buy.store_product_selection.store_product.name.upper() \
-                    for buy in buys if buy is not None])})\
-                for user {user.username} and refunded {total_purchased_points} points'
+                    for buy in buys if buy is not None])}) \
+                and refunded {total_purchased_points} points'
                 
             create_notification(
                 module='store_product_selection_buys',
@@ -1122,22 +1135,43 @@ def delete_list_store_product_selection_buys(request):
             
             # SENDING EMAIL
             
+            list_users_no_duplicate = set()
+            list_buys_by_users = [] 
+            
             for buy in list_buys:
+                if buy.store_product_selection.user:
+                    list_users_no_duplicate.add(buy.store_product_selection.user)
                 if not hasattr(buy, 'default_url'):
                     buy.default_url = None
                 file = buy.store_product_selection.store_product.attachments[0].file if \
                     len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
                 buy.default_url = generate_default_file_url(file)
-            
-            send_email_confirmation(
-                type='refund',
-                points=total_purchased_points,
-                user=user_reporter,
-                purchases=list_buys,
-                # list_receivers=[user_reporter.email]
-                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
-                list_receivers=['nnws15815@gmail.com']
-            )
+
+            for user in list_users_no_duplicate:
+                user_buys = [buy for buy in list_buys if buy.store_product_selection.user == user]
+                refunded_points = sum(
+                    (buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity) \
+                        for buy in user_buys
+                )
+                list_buys_by_users.append((user, user_buys, refunded_points))
+
+            list_receivers = [
+                'robertoc@newwindowsystem.com', 
+                'nnws15815@gmail.com'
+            ] 
+
+            for user, user_buys, refunded_points in list_buys_by_users:
+                if settings.ENVIRONMENT == 'prod':
+                    list_receivers.append(user.email)
+                send_email_confirmation(
+                    type='refund',
+                    points=refunded_points,
+                    user=user,
+                    purchases=user_buys,
+                    # list_receivers=[user_reporter.email]
+                    # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                    list_receivers=list_receivers 
+                )
 
             return Response({
                 'message': 'Store product selection buy created successfully',
@@ -1396,9 +1430,11 @@ def send_email_confirmation(type, points, user, purchases, list_receivers):
     You can view your {type} details in your account."
     today = to_aware(timezone.now())
     today_str = today.strftime("%Y-%m-%d %H:%M:%S")
+
+    custom_type = 'redeemed reward' if type == 'purchase' else type
     return send_generic_email(
         list_receivers, 
         email_html_message, 
-        f"{type.capitalize()} Confirmation - {today_str}",
+        f"{custom_type.capitalize()} Confirmation - {today_str} ({user.first_name} {user.last_name})",
         message_response=message
     )

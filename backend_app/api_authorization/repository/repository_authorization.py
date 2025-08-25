@@ -413,12 +413,15 @@ def register(request):
             # send_sms_verification_code(phone, message)
             logger.info(f'SMS sent to {phone} with code {code}')
             print(f'SMS sent to {phone} with code {code}')
-            # list_emails = [user.email]
-            list_emails = ['robertoc@newwindowsystem.com']
+            list_emails = [user.email, 'robertoc@newwindowsystem.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
+            # list_emails = ['robertoc@newwindowsystem.com']
             template = 'email_send_verification_code.html'
             response_message = 'Verification code sent successfully.'
-            subject = 'Verification Code for Customer Portal'
-            send_email_verification_code(list_emails, code, template, response_message, subject)
+            first_name = user.first_name
+            last_name = user.last_name
+            subject = f'Verification Code for Customer Portal ({first_name} {last_name})'
+            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
             logger.info(f'Email sent to {user.email} with code {code}')
             # print(f'Email sent to {email} with code {code}')
             
@@ -530,12 +533,15 @@ def send_verification_code(request):
                 code=code,
                 expires_at=expiration
             )
-            # list_emails = [email]
-            list_emails = ['robertoc@newwindowsystem.com']
+            list_emails = [email, 'robertoc@newwindowsystem.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
+            # list_emails = ['robertoc@newwindowsystem.com']
             template = 'email_send_verification_code.html'
             response_message = 'Verification code sent successfully.'
-            subject = 'Verification Code for Customer Portal'
-            send_email_verification_code(list_emails, code, template, response_message, subject)
+            first_name = user.first_name
+            last_name = user.last_name
+            subject = f'Verification Code for Customer Portal ({first_name} {last_name})'
+            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
             logger.info(f'Email sent to {email} with code {code}')
             print(f'Email sent to {email} with code {code}')
             return JsonResponse({'data': 'Email sent successfully'}, status=200)
@@ -581,12 +587,15 @@ def reset_password(request):
             # send_sms_verification_code(phone, message)
             logger.info(f'SMS sent to {phone} with code {code}')
             print(f'SMS sent to {phone} with code {code}')
-            # list_emails = [user.email]
-            list_emails = ['robertoc@newwindowsystem.com']
+            list_emails = [user.email, 'robertoc@newwindowsystem.com'] if \
+                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
+            # list_emails = ['robertoc@newwindowsystem.com']
             template = 'email_send_recover_code.html'
             response_message = 'Recovery code sent successfully.'
-            subject = 'Recovery Code for Customer Portal'
-            send_email_verification_code(list_emails, code, template, response_message, subject)
+            first_name = user.first_name
+            last_name = user.last_name
+            subject = f'Recovery Code for Customer Portal ({first_name} {last_name})'
+            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
             logger.info(f'Email sent to {user.email} with code {code}')
             # print(f'Email sent to {email} with code {code}')
             
