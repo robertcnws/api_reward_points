@@ -140,6 +140,7 @@ def transfer_login(request):
                 approved_time=timezone.now(),
                 disapproval_count=0,
                 show_tour_guide_modal=True,
+                show_intro_guide_modal=True,
             )
             
             user.set_password(f"Guest-{username}") 
@@ -293,6 +294,7 @@ def logout(request):
         if current_user:
             current_user.last_login = timezone.now()
             current_user.show_tour_guide_modal = True
+            current_user.show_intro_guide_modal = True
             current_user.save()
             external_user = ExternalUsers.objects(user=current_user).first()
             if external_user:
@@ -374,6 +376,7 @@ def register(request):
                 avatar_url=data.get('avatarUrl', ''),
                 disapproval_count=0,
                 show_tour_guide_modal=True,
+                show_intro_guide_modal=True,
             )
             user.set_password(password)
             user.save()

@@ -42,32 +42,39 @@ import {
   RewardJoyRidesProvider
 } from './contexts/reward-joy-rides-context';
 
+import {
+  useRewardIntroSteps,
+  RewardIntroStepsProvider
+} from './contexts/reward-intro-steps-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
   return (
     // <RewardItemsProvider>
-    <RewardJoyRidesProvider>
-      <RewardNotificationUsersProvider>
-        <RewardStoreProductSelectionCartProvider>
-          <RewardStoreProductSelectionBuyProvider>
-            <RewardPointsSettingsProvider>
-              <RewardUserRolesProvider>
-                <RewardExternalUsersProvider>
-                  <RewardLoginUsersProvider>
-                    <RewardStoreProductsProvider>
-                      <RewardPointsProvider>
-                        <CombineProviders>{children}</CombineProviders>
-                      </RewardPointsProvider>
-                    </RewardStoreProductsProvider>
-                  </RewardLoginUsersProvider>
-                </RewardExternalUsersProvider>
-              </RewardUserRolesProvider>
-            </RewardPointsSettingsProvider>
-          </RewardStoreProductSelectionBuyProvider>
-        </RewardStoreProductSelectionCartProvider>
-      </RewardNotificationUsersProvider>
-    </RewardJoyRidesProvider>
+    <RewardIntroStepsProvider>
+      <RewardJoyRidesProvider>
+        <RewardNotificationUsersProvider>
+          <RewardStoreProductSelectionCartProvider>
+            <RewardStoreProductSelectionBuyProvider>
+              <RewardPointsSettingsProvider>
+                <RewardUserRolesProvider>
+                  <RewardExternalUsersProvider>
+                    <RewardLoginUsersProvider>
+                      <RewardStoreProductsProvider>
+                        <RewardPointsProvider>
+                          <CombineProviders>{children}</CombineProviders>
+                        </RewardPointsProvider>
+                      </RewardStoreProductsProvider>
+                    </RewardLoginUsersProvider>
+                  </RewardExternalUsersProvider>
+                </RewardUserRolesProvider>
+              </RewardPointsSettingsProvider>
+            </RewardStoreProductSelectionBuyProvider>
+          </RewardStoreProductSelectionCartProvider>
+        </RewardNotificationUsersProvider>
+      </RewardJoyRidesProvider>
+    </RewardIntroStepsProvider>
     // </RewardItemsProvider>
   );
 }
@@ -161,6 +168,13 @@ function CombineProviders({ children }) {
     errorAllRewardJoyRides,
   } = useRewardJoyRides();
 
+  const {
+    loadedAllRewardIntroSteps,
+    refetchAllRewardIntroSteps,
+    loadingAllRewardIntroSteps,
+    errorAllRewardIntroSteps,
+  } = useRewardIntroSteps();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -246,6 +260,10 @@ function CombineProviders({ children }) {
     refetchAllRewardJoyRides,
     loadingAllRewardJoyRides,
     errorAllRewardJoyRides,
+    loadedAllRewardIntroSteps,
+    refetchAllRewardIntroSteps,
+    loadingAllRewardIntroSteps,
+    errorAllRewardIntroSteps,
     userByUsername,
     refetchUserByUsername,
     loadingUserByUsername,
@@ -319,6 +337,10 @@ function CombineProviders({ children }) {
     refetchAllRewardJoyRides,
     loadingAllRewardJoyRides,
     errorAllRewardJoyRides,
+    loadedAllRewardIntroSteps,
+    refetchAllRewardIntroSteps,
+    loadingAllRewardIntroSteps,
+    errorAllRewardIntroSteps,
     userByUsername,
     refetchUserByUsername,
     loadingUserByUsername,

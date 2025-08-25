@@ -46,6 +46,8 @@ def event_user(type, document, full_selection):
                 "disapprovalCount": document.disapproval_count,
                 "showTourGuideModal": document.show_tour_guide_modal,
                 "tookTourGuide": document.took_tour_guide,
+                "showIntroGuideModal": document.show_intro_guide_modal,
+                "tookIntroGuide": document.took_intro_guide,
                 "country": document.country,
                 "address": document.address,
                 "zipCode": document.zip_code,

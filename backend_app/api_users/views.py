@@ -136,6 +136,16 @@ def change_show_tour_guide_user(request, id):
 
 
 #############################################
+# CHANGE SHOW INTRO GUIDE USER
+#############################################
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def change_show_intro_guide_user(request, id):
+    return repository_users.change_show_intro_guide_user(request, id)
+
+
+#############################################
 # UPLOAD USER AVATAR
 #############################################
 

@@ -54,6 +54,8 @@ class LoginUser(Document):
     disapproval_count = IntField(default=0, required=False)
     show_tour_guide_modal = BooleanField(default=True, required=False)
     took_tour_guide = BooleanField(default=False, required=False)
+    show_intro_guide_modal = BooleanField(default=True, required=False)
+    took_intro_guide = BooleanField(default=False, required=False)
     country = StringField(max_length=100, required=False)
     address = StringField(required=False)
     zip_code = StringField(max_length=20, required=False)

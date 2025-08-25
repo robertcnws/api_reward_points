@@ -8,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 // ----------------------------------------------------------------------
 
-export function ConfirmDialog({ open, title, action, content, onClose, maxWidth, ...other }) {
+export function ConfirmDialog({ open, title, action, content, onClose, maxWidth, closeName='Cancel', ...other }) {
 
   const dialogRef = useRef(null);
 
@@ -31,7 +31,7 @@ export function ConfirmDialog({ open, title, action, content, onClose, maxWidth,
         {action}
 
         <Button variant="outlined" color="inherit" onClick={onClose}>
-          Cancel
+          {closeName}
         </Button>
       </DialogActions>
     </Dialog>

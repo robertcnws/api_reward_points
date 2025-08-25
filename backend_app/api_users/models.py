@@ -5,6 +5,7 @@ from mongoengine import (
     DynamicField, 
     BooleanField,
     ReferenceField,
+    IntField
 )
 from api_authorization.models import LoginUser 
 from django.utils import timezone
@@ -45,3 +46,20 @@ class NotificationUser(Document):
     }
     def __str__(self):
         return f'{self.username} - {self.notification.info}'
+    
+    
+class IntroStep(Document):
+    title = StringField(max_length=255, null=True)
+    content = StringField(null=True)
+    translation = DynamicField(null=True)
+    order = IntField(null=True)
+    meta = {
+        'collection': 'intro_step',
+        'indexes': [
+            'title', 'order'
+        ],
+        'verbose_name': 'Intro Step',
+        'verbose_name_plural': 'Intro Steps'
+    }
+    def __str__(self):
+        return self.title

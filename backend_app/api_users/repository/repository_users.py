@@ -545,6 +545,54 @@ def change_show_tour_guide_user(request, id):
         
         
 #############################################
+# CHANGE SHOW INTRO GUIDE USER
+#############################################
+
+def change_show_intro_guide_user(request, id):
+    data = request.data
+    user_reporter = json.loads(data.get('userReporter'))
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.show_intro_guide_modal = not user.show_intro_guide_modal
+        user.took_intro_guide = not user.took_intro_guide
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['show_intro_guide_modal', 'username', 'id']
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change to {"show" if user.show_intro_guide_modal else "NOT show"}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change show intro guide user ({user.username}) to {"show" if user.show_intro_guide_modal else "not show"}'
+            info_id=user.id
+            type='change_show_intro_guide_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User show intro guide change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
 # UPLOAD AVATAR USER
 #############################################
 

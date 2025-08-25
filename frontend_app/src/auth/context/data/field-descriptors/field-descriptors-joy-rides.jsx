@@ -6,4 +6,5 @@ export const fieldsJoyRides = [
     'description',
     'componentId',
     'module',
+    'translation',
   ];

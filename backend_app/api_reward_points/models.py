@@ -433,6 +433,7 @@ class RewardStoreProductSelectionBuy(Document):
 class RewardJoyRide(Document):
     title = StringField(null=True, blank=True)
     description = StringField(null=True, blank=True)
+    translation = DynamicField(null=True, blank=True)
     component_id = StringField(null=True, blank=True)
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)

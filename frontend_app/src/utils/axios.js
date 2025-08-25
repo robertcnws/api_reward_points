@@ -184,6 +184,9 @@ export const endpoints = {
     changeShowTourGuide: {
       user: (id) => `/users/change-show-tour-guide/${id}/`,
     },
+    changeShowIntroGuide: {
+      user: (id) => `/users/change-show-intro-guide/${id}/`,
+    },
     changeAbout: {
       user: (id) => `/users/change-about/${id}/`,
     },

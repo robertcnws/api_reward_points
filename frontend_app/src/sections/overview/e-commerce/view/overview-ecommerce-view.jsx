@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
-import { useMemo, useContext, useCallback, useEffect } from 'react';
+import { useMemo, useContext, useCallback, useEffect, useState } from 'react';
 
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Box, Typography, LinearProgress } from '@mui/material';
+import { Box, Typography, LinearProgress, IconButton } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -49,7 +49,8 @@ export function OverviewEcommerceView({
     userByUsername,
     refetchUserByUsername,
     loadingUserByUsername,
-    errorUserByUsername
+    errorUserByUsername,
+    loadedAllRewardIntroSteps,
   } = useDataContext();
 
   const router = useRouter();
@@ -240,16 +241,36 @@ export function OverviewEcommerceView({
     [currentAssignedPointsArray]
   );
 
-  // console.log('User by username:', userByUsername);
-
   const showModalTour = useBoolean();
   const tookTourGuide = useMemo(() => userByUsername?.tookTourGuide, [userByUsername]);
+  const showModalIntro = useBoolean();
+  const tookIntroGuide = useMemo(() => userByUsername?.tookIntroGuide, [userByUsername]);
+
+  const [currentIntroIndex, setCurrentIntroIndex] = useState(0);
+  const isTranslated = useBoolean(false);
+
+  const introTitle = useMemo(
+    () => (!isTranslated.value ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.title :
+      loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation.es.title
+    ),
+    [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
+  );
+  const introContent = useMemo(
+    () => (!isTranslated.value ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.content :
+      loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation.es.content
+    ),
+    [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
+  );
 
   useEffect(() => {
     showModalTour.setValue(userByUsername?.showTourGuideModal);
   }, [userByUsername, showModalTour]);
 
-  const handleShowTourGuide = useCallback(async() => {
+  useEffect(() => {
+    showModalIntro.setValue(userByUsername?.showIntroGuideModal);
+  }, [userByUsername, showModalIntro]);
+
+  const handleShowTourGuide = useCallback(async () => {
     try {
       await axiosInstanceBackend.post(endpoints.user.changeShowTourGuide.user(userByUsername?.id), {
         userReporter: JSON.stringify(userLogged?.data),
@@ -260,9 +281,23 @@ export function OverviewEcommerceView({
     }
   }, [userByUsername, userLogged, refetchUserByUsername]);
 
+  const handleShowIntroGuide = useCallback(async () => {
+    try {
+      await axiosInstanceBackend.post(endpoints.user.changeShowIntroGuide.user(userByUsername?.id), {
+        userReporter: JSON.stringify(userLogged?.data),
+      });
+      refetchUserByUsername?.().catch(console.error);
+    } catch (error) {
+      console.error('Error showing intro guide:', error);
+    }
+  }, [userByUsername, userLogged, refetchUserByUsername]);
+
   return (
     <>
-      <DashboardContent maxWidth="xl">
+      <DashboardContent maxWidth="xl"
+        sx={{
+          display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
+        }}>
         {(loadingRewardPointsHistory || loadingRewardPoints) ? (
           <Box
             sx={{
@@ -288,7 +323,9 @@ export function OverviewEcommerceView({
             />
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{
+            display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
+          }}>
             <Grid xs={12} md={images.length > 0 ? 8 : 12}>
               <Box id='dashboard-overview'>
                 <EcommerceWelcome
@@ -520,18 +557,76 @@ export function OverviewEcommerceView({
         />
       )}
       <ConfirmDialog
-        open={showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookTourGuide}
-        onClose={async() => {
+        maxWidth='md'
+        open={showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide}
+        onClose={async () => {
+          // showModalTour.onFalse();
+          await handleShowIntroGuide();
+        }}
+        title={
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 1 }}>
+            <Typography variant="h6">{introTitle}</Typography>
+            <IconButton onClick={async () => {
+              isTranslated.setValue(!isTranslated.value);
+            }} sx={{ fontSize: 14 }}>
+              <Iconify icon="ri:translate" /> Translate {!isTranslated.value ? 'to Spanish' : 'to English'}
+            </IconButton>
+          </Box>
+        }
+        content={
+          <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
+            {introContent}
+          </Typography>
+        }
+        closeName='Skip'
+        action={
+          <>
+            {currentIntroIndex > 0 && (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={async () => {
+                  setCurrentIntroIndex(currentIntroIndex - 1);
+                }}
+              >
+                Previous
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={async () => {
+                if (currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1) {
+                  setCurrentIntroIndex(currentIntroIndex + 1);
+                }
+                else {
+                  await handleShowIntroGuide();
+                  showModalTour.onTrue();
+                }
+              }}
+            >
+              {currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1 ? 'Next' : 'Start Tour'}
+            </Button>
+          </>
+        }
+        BackdropProps={{
+          style: { backgroundColor: "whitesmoke" } // Fondo blanco sólido
+        }}
+      />
+      <ConfirmDialog
+        open={!showModalIntro.value && showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookTourGuide}
+        onClose={async () => {
           // showModalTour.onFalse();
           await handleShowTourGuide();
         }}
         title="Tour Guide"
         content="Would you like to take a tour of this site?"
+        closeName='Skip'
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={async() => {
+            onClick={async () => {
               await handleShowTourGuide();
               setRunDashboard(true);
               // showModalTour.onFalse();

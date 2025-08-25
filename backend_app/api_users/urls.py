@@ -23,6 +23,7 @@ urlpatterns = [
     path('change-verify/<str:id>/', views.change_verify_user, name='change_verify_user'),
     path('change-approval/<str:id>/', views.change_approval_user, name='change_approval_user'),
     path('change-show-tour-guide/<str:id>/', views.change_show_tour_guide_user, name='change_show_tour_guide_user'),
+    path('change-show-intro-guide/<str:id>/', views.change_show_intro_guide_user, name='change_show_intro_guide_user'),
     path('change-about/<str:id>/', views.change_about_user, name='change_about_user'),
     path('change-school/<str:id>/', views.change_school_user, name='change_school_user'),
     path('change-address/<str:id>/', views.change_address_user, name='change_address_user'),

@@ -19,6 +19,8 @@ export const fieldsLoginUsers = [
   'showTourGuideModal',
   'disapprovalCount',
   'tookTourGuide',
+  'showIntroGuideModal',
+  'tookIntroGuide',
   'keyAvatar',
   'country',
   'address',

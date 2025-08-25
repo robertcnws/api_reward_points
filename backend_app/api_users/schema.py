@@ -2,13 +2,16 @@ import graphene
 from graphene_mongo import MongoengineObjectType
 from mongoengine.fields import DynamicField
 from graphene_mongo.converter import convert_mongoengine_field
+from graphene.types.generic import GenericScalar
 from api_users.models import (
     Notification,
     NotificationUser,
+    IntroStep,
 )
 from api_authorization.models import LoginUser
 from api_authorization.schema import LoginUserType
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
+from utils.data_util import dynamic_field_to_json
 
 @convert_mongoengine_field.register(DynamicField)
 def convert_dynamic_field(field, registry=None, executor=None):
@@ -61,8 +64,19 @@ class NotificationUsersPaginated(graphene.ObjectType):
     page = graphene.Int()
     page_size = graphene.Int()
     results = graphene.List(NotificationUserType)
-    
-    
+
+
+class IntroStepType(MongoengineObjectType):
+    class Meta:
+        model = IntroStep
+
+    translation = GenericScalar()
+
+    def resolve_translation(self, info):
+        translation = self.translation or {}
+        return dynamic_field_to_json(translation)
+
+
 class Query(graphene.ObjectType):
     all_notification_users = graphene.Field(
         NotificationUsersPaginated,
@@ -71,6 +85,8 @@ class Query(graphene.ObjectType):
         page=graphene.Int(required=False, default_value=1), 
         pageSize=graphene.Int(required=False, default_value=100)
     )
+    
+    all_intro_steps = graphene.List(IntroStepType)
     
     def resolve_all_notification_users(self, info, creator=None, user=None, page=1, pageSize=100):
         qs = NotificationUser.objects.all()
@@ -96,5 +112,6 @@ class Query(graphene.ObjectType):
             page_size=pageSize,
             results=list(paginated_qs)
         )
-     
-     
+
+    def resolve_all_intro_steps(self, info):
+        return IntroStep.objects.all()
