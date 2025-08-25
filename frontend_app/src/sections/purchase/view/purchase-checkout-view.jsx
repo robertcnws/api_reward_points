@@ -115,6 +115,17 @@ export function PurchaseCheckoutView() {
             flexDirection: 'column',
             bgcolor: 'background.neutral',
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (
+                validConfirmationNumber(filters.confirmationNumber) &&
+                validPinNumber(filters.pinNumber)
+              ) {
+                handleFindOrder();
+              }
+            }
+          }}
         >
           <Box
             sx={{
