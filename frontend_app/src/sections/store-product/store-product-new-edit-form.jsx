@@ -264,7 +264,17 @@ export function StoreProductNewEditForm({ currentStoreProduct, refetchStoreProdu
                 />
               </Box>
               <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mt: 3 }}>
-                <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  loading={isSubmitting}
+                  sx={{
+                    bgcolor: 'primary.dark',
+                    '&:hover': {
+                      bgcolor: 'primary.main',
+                    },
+                  }}
+                >
                   {currentStoreProduct ? 'Save changes' : 'Create store product'}
                 </LoadingButton>
                 <Button variant="outlined" onClick={() => router.push(paths.dashboard.storeProduct.list)}>

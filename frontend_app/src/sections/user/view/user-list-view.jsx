@@ -81,9 +81,9 @@ export function UserListView() {
 
   const confirm = useBoolean();
 
-  const { 
-    loadedUsers, 
-    refetchUsers, 
+  const {
+    loadedUsers,
+    refetchUsers,
     loadedUserRoles,
   } = useDataContext();
 
@@ -92,7 +92,7 @@ export function UserListView() {
   const filters = useSetState({ name: '', role: [], status: 'all' });
 
   const loadedOnlyUsers = useMemo(
-    () => loadedUsers?.filter(user => !isClient(user?.userRole?.name)) || [], 
+    () => loadedUsers?.filter(user => !isClient(user?.userRole?.name)) || [],
     [loadedUsers]
   );
 
@@ -271,6 +271,12 @@ export function UserListView() {
               href={paths.dashboard.user.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
+              sx={{
+                bgcolor: 'primary.dark',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                },
+              }}
             >
               New user
             </Button>

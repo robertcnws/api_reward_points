@@ -184,7 +184,18 @@ export function PointsSettingsNewEditForm({ currentPointsSettingsId, onReturnLis
       </Box>
       <Field.Editor name="description" placeholder="Description..." />
       <Stack alignItems="flex-end" sx={{ mt: 3, flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <LoadingButton type="submit" variant="contained" loading={isSubmitting} sx={{ mr: 2 }}>
+        <LoadingButton
+          type="submit"
+          variant="contained"
+          loading={isSubmitting}
+          sx={{
+            mr: 2,
+            bgcolor: 'primary.dark',
+            '&:hover': {
+              bgcolor: 'primary.main',
+            },
+          }}
+        >
           {!currentPointsSettings ? 'Create user points settings' : 'Update points settings'}
         </LoadingButton>
         <LoadingButton type="button" variant="outlined" onClick={onReturnList} disabled={isSubmitting}>

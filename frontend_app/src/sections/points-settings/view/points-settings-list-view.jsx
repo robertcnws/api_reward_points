@@ -350,6 +350,12 @@ export function PointsSettingsListView() {
               // variant="outlined"
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
+              sx={{
+                bgcolor: 'primary.dark',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                },
+              }}
             >
               New Points Settings
             </Button>

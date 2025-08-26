@@ -40,8 +40,8 @@ export const SignUpSchema = zod.object({
   username: zod
     .string()
     .min(1, { message: 'Username is required!' })
-    .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, {
-      message: 'Username must start with a letter and contain only letters, numbers, or underscores',
+    .regex(/^[a-zA-Z][a-zA-Z0-9_.]*$/, {
+      message: 'Username must start with a letter and contain only letters, numbers, underscores or points',
     })
     .min(6, { message: 'Username must be at least 6 characters' }),
 

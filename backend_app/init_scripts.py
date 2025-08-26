@@ -247,6 +247,20 @@ def create_reward_joyrides():
                 "last_modified_time": datetime.now(),
                 "module": "nav_top"
             },
+            {
+                "title": "Chat with operator(s)",
+                "description": "This card allows you to chat with our support operators.",
+                "translation": {
+                    "es": {
+                        "title": "Chat con operador(es)",
+                        "content": "Esta tarjeta te permite chatear con nuestros operadores de soporte."
+                    }
+                },
+                "component_id": "chat-with-operators",
+                "created_time": datetime.now(),
+                "last_modified_time": datetime.now(),
+                "module": "dashboard"
+            },
     ]
     for step in array_of_steps:
         joyride_step = RewardJoyRide.objects(component_id=step['component_id']).first()

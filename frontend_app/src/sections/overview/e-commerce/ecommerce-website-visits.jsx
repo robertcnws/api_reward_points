@@ -24,7 +24,7 @@ export function EcommerceWebsiteVisits({ title, metricUnit, subheader, chart, ..
       .filter(Number.isFinite);
 
     const max = values.length ? Math.max(...values) : 0;
-    return max > 0 ? Math.floor(max) : undefined; // Añadir un margen del 0.5% si hay datos
+    return max > 0 ? Math.ceil(max) : undefined;
   }, [chart.series]);
 
   const chartOptions = useChart({
@@ -38,15 +38,19 @@ export function EcommerceWebsiteVisits({ title, metricUnit, subheader, chart, ..
     },
     yaxis: {
       min: 0,
-      max: seriesMax || undefined,  // undefined si está vacío
-      // forceNiceScale: true,
+      max: seriesMax || undefined,
+      forceNiceScale: true,
+      tickAmount: Math.min(seriesMax ?? 6, 6),
+      labels: {
+        formatter: (val) => Math.round(val).toString(),
+      },
     },
     legend: {
       show: true,
     },
     tooltip: {
       y: {
-        formatter: (value) => `${value} ${metricUnit}`,
+        formatter: (value) => `${Math.round(value)} ${metricUnit}`,
       },
     },
     ...chart.options,

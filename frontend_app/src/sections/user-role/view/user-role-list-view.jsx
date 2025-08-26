@@ -72,11 +72,11 @@ export function UserRoleListView() {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
-  const { 
-    loadedUserRoles, 
-    loadingUserRoles, 
-    errorUserRoles, 
-    refetchUserRoles 
+  const {
+    loadedUserRoles,
+    loadingUserRoles,
+    errorUserRoles,
+    refetchUserRoles
   } = useDataContext();
 
   const [updating, setUpdating] = useState(false);
@@ -347,6 +347,12 @@ export function UserRoleListView() {
               // variant="outlined"
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
+              sx={{
+                bgcolor: 'primary.dark',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                },
+              }}
             >
               New User Role
             </Button>

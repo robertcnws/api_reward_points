@@ -1,8 +1,10 @@
 import React, { useMemo, useContext, createContext } from 'react';
+import { isOfficeStaff } from 'src/utils/check-permissions';
 
 import { useAllRewardLoginUsers, useRewardLoginUserByUsername } from 'src/_mock/__reward-login-users';
 
 import { fieldsLoginUsers } from '../field-descriptors/field-descriptors-login-users';
+
 // import { useFilteredLoginUsers } from '../hooks/use-filtered-user-roles';
 
 const RewardLoginUsersContext = createContext();
@@ -64,11 +66,19 @@ export function RewardLoginUsersProvider({ children }) {
 
   const errorUserByUsername = userByUsernameQuery.error;
 
+  const allUsers = useMemo(() => allLoginUsersQuery.data, [allLoginUsersQuery.data]);
+
+  const loadedAllRewardOfficeStaffUsers = useMemo(
+    () => allUsers.filter(user => isOfficeStaff(user?.userRole?.name)),
+    [allUsers]
+  );
+
   const value = useMemo(
     () => ({
       listAllRewardLoginUsers,
       loadedAllRewardLoginUsers,
       loadedPendingRewardLoginUsers,
+      loadedAllRewardOfficeStaffUsers,
       refetchAllRewardLoginUsers,
       loadingAllRewardLoginUsers,
       errorRewardLoginUsers,
@@ -81,6 +91,7 @@ export function RewardLoginUsersProvider({ children }) {
       listAllRewardLoginUsers,
       loadedAllRewardLoginUsers,
       loadedPendingRewardLoginUsers,
+      loadedAllRewardOfficeStaffUsers,
       refetchAllRewardLoginUsers,
       loadingAllRewardLoginUsers,
       errorRewardLoginUsers,

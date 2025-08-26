@@ -196,7 +196,17 @@ export function UserNewEditForm({ currentUser }) {
             </Box>
 
             <Stack alignItems="flex-end" sx={{ mt: 3, flexDirection: 'row', display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-              <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+              <LoadingButton
+                type="submit"
+                variant="contained"
+                loading={isSubmitting}
+                sx={{
+                  bgcolor: 'primary.dark',
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                  },
+                }}
+              >
                 {!currentUser ? 'Create user' : 'Save changes'}
               </LoadingButton>
               <Button type="button" variant="outlined" onClick={() => router.push(paths.dashboard.user.list)}>

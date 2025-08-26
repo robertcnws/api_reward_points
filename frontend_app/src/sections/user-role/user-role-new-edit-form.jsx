@@ -76,7 +76,7 @@ export function UserRoleNewEditForm({ currentUserRoleId, onReturnList }) {
     const roleId = currentUserRole ? currentUserRole.id : null;
     const url = roleId ? 
     endpoints.user.edit.userRole(roleId) : 
-    endpoints.user.role.create;
+    endpoints.user.create.userRole;
 
     try {
       await axiosInstanceBackend.post(url, {
@@ -102,7 +102,18 @@ export function UserRoleNewEditForm({ currentUserRoleId, onReturnList }) {
       </Box>
       <Field.Editor name="description" placeholder="Description..." />
       <Stack alignItems="flex-end" sx={{ mt: 3, flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <LoadingButton type="submit" variant="contained" loading={isSubmitting} sx={{ mr: 2 }}>
+        <LoadingButton 
+        type="submit" 
+        variant="contained" 
+        loading={isSubmitting} 
+        sx={{ 
+          mr: 2,
+          bgcolor: 'primary.dark',
+          '&:hover': {
+            bgcolor: 'primary.main',
+          },
+        }}
+        >
           {!currentUserRole ? 'Create user role' : 'Update user role'}
         </LoadingButton>
         <LoadingButton type="button" variant="outlined" onClick={onReturnList} disabled={isSubmitting}>

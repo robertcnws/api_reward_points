@@ -337,6 +337,12 @@ export function StoreProductView() {
                             href={paths.dashboard.storeProduct.new}
                             variant="contained"
                             startIcon={<Iconify icon="mingcute:add-line" />}
+                            sx={{
+                                bgcolor: 'primary.dark',
+                                '&:hover': {
+                                    bgcolor: 'primary.main',
+                                },
+                            }}
                         >
                             New store product
                         </Button>

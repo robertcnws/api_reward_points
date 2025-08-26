@@ -4,7 +4,9 @@ import { useMemo, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
-import { iconButtonClasses } from '@mui/material/IconButton';
+import IconButton, { iconButtonClasses } from '@mui/material/IconButton';
+import { Iconify } from 'src/components/iconify';
+import { Portal, Tooltip } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useRouter } from 'src/routes/hooks';
@@ -38,6 +40,9 @@ import { SettingsButton } from '../components/settings-button';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import OnboardingGuide from './onboarding-guide';
 import { GuideTourButton } from '../components/guide-tour-button';
+import ChatLauncher from './chat-laucher';
+
+
 
 
 // ----------------------------------------------------------------------
@@ -68,9 +73,11 @@ export function DashboardLayout({ sx, children, header, data }) {
   const isNavHorizontal = settings.navLayout === 'horizontal';
   const isNavVertical = isNavMini || settings.navLayout === 'vertical';
 
+  const [operators, setOperators] = useState([]);
 
   const {
     loadedPendingUsers,
+    loadedOfficeStaffUsers,
     refetchUsers,
     refetchRewardPoints,
   } = useDataContext();
@@ -114,8 +121,15 @@ export function DashboardLayout({ sx, children, header, data }) {
   useEffect(() => {
     refetchUsers?.();
     setPendingUsers(loadedPendingUsers);
+    setOperators(
+      loadedOfficeStaffUsers?.map((user) => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName} (${user.userRole.name})`,
+        chatUrl: `/chat/${user.id}`,
+      }))
+    );
     refetchRewardPoints?.();
-  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints]);
+  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints, loadedOfficeStaffUsers]);
 
   useEffect(() => {
     if (loadedPurchases && Array.isArray(loadedPurchases) && loadedPurchases.length > 0) {
@@ -320,7 +334,50 @@ export function DashboardLayout({ sx, children, header, data }) {
          *************************************** */
         // footerSection={null}
         // footerSection={<Footer layoutQuery={layoutQuery} />}
-        footerSection={<CustomFooter roleName={roleName} />}
+        footerSection={
+          <>
+            {/* <Portal>
+              <Box
+                sx={{
+                  position: 'fixed',
+                  right: 10,
+                  bottom: { xs: 40, md: 32 },
+                  zIndex: (t) => t.zIndex.tooltip,
+                }}
+              >
+                <Tooltip title="Chat with us" placement="left" arrow>
+                  <IconButton
+                    sx={{
+                      width: 56, height: 56,
+                      bgcolor: 'background.paper',
+                      boxShadow: 3,
+                      // borderRadius: '50%',
+                      color: 'primary.dark',
+                      '&:hover': {
+                        color: 'primary.main',
+                        transform: 'scale(1.15) rotate(10deg)', 
+                        boxShadow: 6,
+                      },
+                      '@keyframes bounce': {
+                        '0%, 100%': { transform: 'translateY(0)' },
+                        '50%': { transform: 'translateY(-6px)' },
+                      },
+                      animation: 'bounce 1s infinite',
+                    }}
+                    onClick={null}
+                  >
+                    <Iconify icon="cryptocurrency:chat" sx={{ width: 50, height: 50, }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Portal> */}
+            <ChatLauncher
+              componentId='chat-with-operators'
+              operators={operators}
+            />
+            <CustomFooter roleName={roleName} />
+          </>
+        }
         /** **************************************
          * Style
          *************************************** */
