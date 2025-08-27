@@ -98,7 +98,7 @@ export default function ChatLauncher({
                 /* Botón flotante */
                 body #zsiq_chat_wrap { bottom: 92px; right: 14px !important; }
                 body .zsiq-float { bottom: 32px; right: 14px !important; }
-                `;
+            `;
             document.head.appendChild(style);
             appended = true;
         }

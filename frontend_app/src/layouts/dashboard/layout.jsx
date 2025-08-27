@@ -371,10 +371,12 @@ export function DashboardLayout({ sx, children, header, data }) {
                 </Tooltip>
               </Box>
             </Portal> */}
-            <ChatLauncher
-              componentId='chat-with-operators'
-              operators={operators}
-            />
+            {isClient(roleName) && operators && operators.length > 0 && (
+              <ChatLauncher
+                componentId='chat-with-operators'
+                operators={operators}
+              />
+            )}
             <CustomFooter roleName={roleName} />
           </>
         }
