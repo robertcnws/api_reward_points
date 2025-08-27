@@ -24,15 +24,6 @@ export const CONFIG = {
     client: import.meta.env.VITE_ROLE_CLIENT ?? '',
     officeStaff: import.meta.env.VITE_ROLE_OFFICE_STAFF ?? '',
   },
-  // aws: {
-  //   accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID ?? '',
-  //   secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY ?? '',
-  //   region: import.meta.env.VITE_AWS_REGION ?? '',
-  //   bucketName: import.meta.env.VITE_AWS_STORAGE_BUCKET_NAME ?? '',
-  //   folderProjects: import.meta.env.VITE_AWS_S3_FOLDER_PROJECTS ?? '',
-  //   folderTasks: import.meta.env.VITE_AWS_S3_FOLDER_TASKS ?? '',
-  //   folderComments: import.meta.env.VITE_AWS_S3_FOLDER_COMMENTS ?? '',
-  // },
   /**
    * Auth
    * @method jwt | amplify | firebase | supabase | auth0

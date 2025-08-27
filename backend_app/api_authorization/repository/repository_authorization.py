@@ -23,6 +23,7 @@ from api_authorization.repo_util.authorization_utils import (
     send_email_verification_code,
     send_email_pending_approval,
     get_rewards_points,
+    set_initial_tour_and_intro,
 )
 import json
 import logging
@@ -206,7 +207,8 @@ def login(request):
                 
                 current_user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
                 current_user.last_login = timezone.now()
-                current_user.show_tour_guide_modal = True
+                # current_user.show_tour_guide_modal = True
+                set_initial_tour_and_intro(current_user)
                 current_user.save()
                 
                 create_tracking(
@@ -293,8 +295,9 @@ def logout(request):
         current_user = LoginUser.objects(username=user_reporter['username']).first()
         if current_user:
             current_user.last_login = timezone.now()
-            current_user.show_tour_guide_modal = True
-            current_user.show_intro_guide_modal = True
+            # current_user.show_tour_guide_modal = True
+            # current_user.show_intro_guide_modal = True
+            set_initial_tour_and_intro(current_user)
             current_user.save()
             external_user = ExternalUsers.objects(user=current_user).first()
             if external_user:

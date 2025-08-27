@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chat Bridge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>html,body{height:100%;margin:0}</style>
+  <script>
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var name = p.get('name') || '';
+      var email = p.get('email') || '';
+      var dept = p.get('dept') || '';
+      var q = p.get('q') || '';
+      window.$zoho = window.$zoho || {};
+      window.$zoho.salesiq = window.$zoho.salesiq || {
+        ready: function () {
+          var siq = window.$zoho.salesiq;
+          try {
+            if (name)  siq.visitor.name(name);
+            if (email) siq.visitor.email(email);
+            if (dept)  siq.chat.defaultdepartment(dept);
+            if (q)     siq.visitor.question(q);
+            siq.floatbutton.visible('hide');
+            siq.floatwindow.visible('show'); 
+          } catch (e) { console.warn('SalesIQ init error:', e); }
+        }
+      };
+    })();
+  </script>
+  <script id="zsiqscript"
+    src="https://salesiq.zohopublic.com/widget?wc=siqa82f685ce7d0b934d9223bd2fdfda6469e6563643b687eb5595ffb473d248017"
+    defer></script>
+</head>
+<body></body>
+</html>

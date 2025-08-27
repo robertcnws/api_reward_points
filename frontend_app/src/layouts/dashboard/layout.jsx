@@ -10,6 +10,7 @@ import { Portal, Tooltip } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useRouter } from 'src/routes/hooks';
+import { useZohoSalesIQ } from 'src/hooks/use-zoho-salesiq';
 
 import { wsEndpoints } from 'src/utils/axios';
 import { isClient } from 'src/utils/check-permissions';
@@ -42,12 +43,11 @@ import OnboardingGuide from './onboarding-guide';
 import { GuideTourButton } from '../components/guide-tour-button';
 import ChatLauncher from './chat-laucher';
 
-
-
-
 // ----------------------------------------------------------------------
 
 export function DashboardLayout({ sx, children, header, data }) {
+
+  // useZohoSalesIQ();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 

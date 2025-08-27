@@ -293,3 +293,11 @@ def get_rewards_points(user, description=None):
         history.save()
 
     return rp
+
+
+def set_initial_tour_and_intro(user):
+    user.show_tour_guide_modal = True
+    user.took_tour_guide = False
+    user.show_intro_guide_modal = True
+    user.took_intro_guide = False
+    # user.save()
