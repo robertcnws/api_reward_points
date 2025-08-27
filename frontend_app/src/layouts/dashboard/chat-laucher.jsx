@@ -1,25 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useContext } from 'react';
+import { LoadingContext } from 'src/auth/context/loading-context';
 import {
     Box,
-    Paper,
     Portal,
-    Tooltip,
-    IconButton,
-    ClickAwayListener,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Button,
-    Divider,
-    Typography,
 } from '@mui/material';
-import ChatIcon from '@mui/icons-material/ChatBubbleRounded';
-import CloseIcon from '@mui/icons-material/CloseRounded';
-import { Iconify } from 'src/components/iconify';
-import { useDataContext } from 'src/auth/context/data/data-context';
-import SalesIQLoader from './salesiq-loader';
 import ChatContainer from './chat-container';
+
 
 const SALESIQ_WIDGETCODE =
     'siqa82f685ce7d0b934d9223bd2fdfda6469e6563643b687eb5595ffb473d248017';
@@ -101,7 +87,36 @@ export default function ChatLauncher({
     label = 'Chat with us',
 }) {
 
+    useEffect(() => {
+        const id = 'siq-offset-fix';
+        let appended = false;
+
+        if (!document.getElementById(id)) {
+            const style = document.createElement('style');
+            style.id = id;
+            style.textContent = `
+                /* Botón flotante */
+                body #zsiq_chat_wrap { bottom: 92px; right: 14px !important; }
+                body .zsiq-float { bottom: 32px; right: 14px !important; }
+                `;
+            document.head.appendChild(style);
+            appended = true;
+        }
+
+        // Siempre devuelve una función (cleanup)
+        return () => {
+            if (appended) {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            }
+        };
+    }, []);
+
+    const { isMobile } = useContext(LoadingContext)
+
     const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+    const [visibleLoader, setVisibleLoader] = useState(true);
 
     const [open, setOpen] = useState(false);
     const [operatorId, setOperatorId] = useState('');
@@ -131,6 +146,22 @@ export default function ChatLauncher({
         setOpen(true);
     }, []);
 
+    function bindSalesIQOnClose(salesiq) {
+        if (window.__siqOnCloseBound) return;
+        window.__siqOnCloseBound = true;
+
+        salesiq.floatbutton.visible('hide');
+
+        try {
+            salesiq?.floatwindow?.close?.(() => {
+                setVisibleLoader(true);
+                setOpen(false);
+                setChattingWith(null);
+                setOperatorId('');
+            });
+        } catch (e) { /* noop */ }
+    }
+
     const handleStartChat = useCallback(() => {
         // const isIP = /^\d{1,3}(\.\d{1,3}){3}$/.test(window.location.hostname);
         // if (isIP) {
@@ -140,7 +171,7 @@ export default function ChatLauncher({
 
         const startNow = (salesiq) => {
             if (!salesiq?.chat?.start) {
-                alert('SalesIQ aún no está listo. Intenta de nuevo en unos segundos.');
+                alert('SalesIQ is not ready. Please try again later.');
                 return;
             }
 
@@ -162,17 +193,20 @@ export default function ChatLauncher({
                 }
             } catch (e) { /* noop */ }
 
-            const saludo = `Hola, quiero chatear con ${op?.name || 'un operador'}`;
+            const saludo = `Hola, I want to chat with ${op?.name || 'an operator'}`;
             try { salesiq.visitor?.question?.(saludo); } catch (e) { /* noop */ }
 
-            // Sin setTimeout: ejecuta dentro del gesto de usuario
-            try { salesiq.chatwindow?.visible?.('show'); } catch (e) { /* noop */ }
-            try { salesiq.chat?.start?.(); } catch (e) {
-                alert('No fue posible iniciar el chat (verifica que el dominio esté permitido en SalesIQ).');
-            }
+            bindSalesIQOnClose(salesiq);
+
+            try {
+                salesiq.chatwindow?.visible?.('show');
+                setVisibleLoader(false);
+            } catch (e) { /* noop */ }
+            // try { salesiq.chat?.start?.(); } catch (e) {
+            //     alert('No fue posible iniciar el chat (verifica que el dominio esté permitido en SalesIQ).');
+            // }
         };
 
-        // 2) Si ya está listo, inicia ya; si no, lo cargamos y luego iniciamos
         if (window.salesiqReadyFlag && window.$zoho?.salesiq) {
             startNow(window.$zoho.salesiq);
         } else {
@@ -187,31 +221,33 @@ export default function ChatLauncher({
 
     return (
         <Portal>
-            <Box id={componentId}
-                sx={{
-                    position: 'fixed',
-                    right: position.right,
-                    bottom: { xs: position.bottomMobile, md: position.bottomDesktop },
-                    zIndex: (t) => t.zIndex.tooltip,
-                }}
-            >
-                <ChatContainer
-                    componentId={componentId}
-                    label={label}
-                    position={position}
-                    open={open}
-                    handleOpen={handleOpen}
-                    operators={operators}
-                    hasOperators={hasOperators}
-                    operatorId={operatorId}
-                    setOperatorId={setOperatorId}
-                    chattingWith={chattingWith}
-                    handleCloseChatWith={handleCloseChatWith}
-                    canStart={canStart}
-                    handleClose={handleClose}
-                    handleStartChat={handleStartChat}
-                />
-            </Box>
+            {(visibleLoader ) && (
+                <Box id={componentId}
+                    sx={{
+                        position: 'fixed',
+                        right: position.right,
+                        bottom: { xs: position.bottomMobile, md: position.bottomDesktop },
+                        zIndex: (t) => t.zIndex.tooltip,
+                    }}
+                >
+                    <ChatContainer
+                        componentId={componentId}
+                        label={label}
+                        position={position}
+                        open={open}
+                        handleOpen={handleOpen}
+                        operators={operators}
+                        hasOperators={hasOperators}
+                        operatorId={operatorId}
+                        setOperatorId={setOperatorId}
+                        chattingWith={chattingWith}
+                        handleCloseChatWith={handleCloseChatWith}
+                        canStart={canStart}
+                        handleClose={handleClose}
+                        handleStartChat={handleStartChat}
+                    />
+                </Box>
+            )}
         </Portal>
     );
 }
