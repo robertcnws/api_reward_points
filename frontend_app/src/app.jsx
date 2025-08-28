@@ -53,24 +53,18 @@ export default function App() {
 
   const { loading, error, setError, component, isMobile } = useContext(LoadingContext);
 
-  const [session, setSessionState] = useState(null);
+  const [session, setSessionState] = useState(undefined);
 
   useEffect(() => {
     let isMounted = true;
     getSession().then((sess) => {
-      if (isMounted) setSessionState(sess);
+      if (isMounted) setSessionState(sess ?? null);
     });
     return () => { isMounted = false; };
   }, []);
 
   function AppInner() {
     const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-
-    const roleName =
-      userLogged?.data?.user_role?.name ??
-      userLogged?.data?.userRole?.name ??
-      '';
-    const isClient = typeof roleName === 'string' && roleName.toLowerCase() === 'client';
 
     const {
       userByUsername,
@@ -79,38 +73,40 @@ export default function App() {
       loadedAllRewardIntroSteps,
     } = useDataContext();
 
-    // Estado del intro
+    const roleName =
+      userLogged?.data?.user_role?.name ??
+      userLogged?.data?.userRole?.name ?? '';
+    const isClient = String(roleName || '').toLowerCase() === 'client';
+
+    // ESTO VIENE DEL PADRE (tu estado local de App)
+    // session === null -> aún no sabemos; falsy/objeto cuando ya resolvió
+    // Si prefieres, pasa session a AppInner como prop.
+    // Aquí se usa la variable de cierre "session" que declaraste arriba.
+    const isLoggedIn = Boolean(session);
+    const authResolved = session !== undefined;
+
     const showModalIntro = useBoolean(false);
     const showModalTour = useBoolean(false);
     const isTranslated = useBoolean(false);
     const [currentIntroIndex, setCurrentIntroIndex] = useState(0);
 
-    // Derivados del contenido del intro
     const introTitle = useMemo(
-      () =>
-        !isTranslated.value
-          ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.title
-          : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.title,
+      () => (!isTranslated.value
+        ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.title
+        : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.title),
       [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
     );
 
     const introContent = useMemo(
-      () =>
-        !isTranslated.value
-          ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.content
-          : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.content,
+      () => (!isTranslated.value
+        ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.content
+        : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.content),
       [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
     );
 
-    const isLoggedIn =
-      Boolean(userByUsername?.id) ||
-      Boolean(userLogged?.data?.id);
-
     useEffect(() => {
       const shouldShow = Boolean(
-        isLoggedIn &&
-        isClient &&
-        userByUsername?.showIntroGuideModal
+        isLoggedIn && isClient && userByUsername?.showIntroGuideModal
       );
       showModalIntro.setValue(shouldShow);
     }, [isLoggedIn, isClient, userByUsername, showModalIntro]);
@@ -124,15 +120,31 @@ export default function App() {
           );
           await (refetchUserByUsername?.() || Promise.resolve());
         }
-        showModalIntro.onFalse();
-      } catch {
+      } finally {
         showModalIntro.onFalse();
       }
     }, [isClient, userByUsername, userLogged, refetchUserByUsername, showModalIntro]);
 
-    if (isLoggedIn && isClient && showModalIntro.value && session) {
+    // --------------- GATES PARA EVITAR EL FLASH ----------------
+
+    // 1) No renderizar nada hasta que tengamos sesión y el userByUsername deje de cargar
+    const bootReady = authResolved && (!isLoggedIn || !loadingUserByUsername);
+    if (!bootReady) {
+      return null; // o <BackdropBackground loading />
+    }
+
+    // 2) Decidir si mostrar intro (ya con todo listo)
+    const shouldShowIntro = Boolean(
+      isLoggedIn && isClient && userByUsername?.showIntroGuideModal
+    );
+
+    // 3) Si hay que mostrar intro, NO renderices el dashboard
+    if (shouldShowIntro) {
       const total = loadedAllRewardIntroSteps?.length || 0;
       const isLast = currentIntroIndex >= total - 1;
+
+      // (Opcional) si aún no tienes los steps, evita pintar vacío:
+      if (!total) return null; // o un loader
 
       return (
         <ConfirmDialog
@@ -140,24 +152,18 @@ export default function App() {
           open
           onClose={handleShowIntroGuide}
           title={
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: !isMobile ? 'row' : 'column',
-                justifyContent: !isMobile ? 'space-between' : 'flex-start',
-                gap: 1,
-                width: 1,
-              }}
-            >
+            <Box sx={{
+              display: 'flex',
+              flexDirection: !isMobile ? 'row' : 'column',
+              justifyContent: !isMobile ? 'space-between' : 'flex-start',
+              gap: 1, width: 1,
+            }}>
               <Typography variant="h6">{introTitle}</Typography>
               <IconButton
                 onClick={() => isTranslated.setValue(!isTranslated.value)}
                 sx={{
-                  fontSize: 14,
-                  '&:hover': { boxShadow: 'none', backgroundColor: 'transparent' },
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
+                  fontSize: 14, '&:hover': { boxShadow: 'none', backgroundColor: 'transparent' },
+                  display: 'flex', flexDirection: 'row', justifyContent: 'flex-start'
                 }}
               >
                 <Iconify icon="ri:translate" />
@@ -165,20 +171,13 @@ export default function App() {
               </IconButton>
             </Box>
           }
-          content={
-            <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
-              {introContent}
-            </Typography>
-          }
+          content={<Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>{introContent}</Typography>}
           closeName={!isTranslated.value ? 'Skip' : 'Omitir'}
           action={
             <>
               {currentIntroIndex > 0 && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => setCurrentIntroIndex((i) => Math.max(0, i - 1))}
-                >
+                <Button variant="contained" color="success"
+                  onClick={() => setCurrentIntroIndex(i => Math.max(0, i - 1))}>
                   {!isTranslated.value ? 'Previous' : 'Anterior'}
                 </Button>
               )}
@@ -186,23 +185,17 @@ export default function App() {
                 variant="contained"
                 color="primary"
                 onClick={async () => {
-                  const totalSteps = loadedAllRewardIntroSteps?.length || 0;
-                  if (currentIntroIndex < totalSteps - 1) {
-                    setCurrentIntroIndex((i) => i + 1);
+                  if (currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1) {
+                    setCurrentIntroIndex(i => i + 1);
                   } else {
-                    // último paso: marca como visto y cierra
                     await handleShowIntroGuide();
-                    showModalTour.onTrue(); // si luego quieres abrir el tour
+                    showModalTour.onTrue();
                   }
                 }}
               >
-                {!isLast
-                  ? !isTranslated.value
-                    ? 'Next'
-                    : 'Siguiente'
-                  : !isTranslated.value
-                    ? 'Start Tour'
-                    : 'Iniciar Tour'}
+                {isLast
+                  ? (!isTranslated.value ? 'Start Tour' : 'Iniciar Tour')
+                  : (!isTranslated.value ? 'Next' : 'Siguiente')}
               </Button>
             </>
           }
@@ -211,43 +204,38 @@ export default function App() {
       );
     }
 
+    // 4) Si NO hay intro, ahora sí renderiza el dashboard
     return (
-      <>
+      <MotionLazy>
         <Snackbar />
         <ProgressBar />
         <SettingsDrawer />
         <Router />
         <BackdropBackground loading={loading} error={error} setError={setError} component={component} />
-      </>
+      </MotionLazy>
     );
   }
+
 
   return (
     <I18nProvider>
       <LocalizationProvider>
         <AuthProvider>
-          <SettingsProvider settings={defaultSettings}>
-            <ThemeProvider>
-              <ApolloProvider client={client}>
-                <RouteProvider>
-                  <MotionLazy>
-                    <QueryClientProvider client={queryClient}>
-                      <DataProvider>
-                        {/* <Snackbar />
-                        <ProgressBar />
-                        <SettingsDrawer />
-                        <Router />
-                        <BackdropBackground loading={loading} error={error} setError={setError} component={component} /> */}
-                        <AppInner />
-                      </DataProvider>
-                    </QueryClientProvider>
-                  </MotionLazy>
-                </RouteProvider>
-              </ApolloProvider>
-            </ThemeProvider>
-          </SettingsProvider>
+          <ApolloProvider client={client}>
+            <RouteProvider>
+              <QueryClientProvider client={queryClient}>
+                <SettingsProvider settings={defaultSettings}>
+                  <ThemeProvider>
+                    <DataProvider>
+                      <AppInner />
+                    </DataProvider>
+                  </ThemeProvider>
+                </SettingsProvider>
+              </QueryClientProvider>
+            </RouteProvider>
+          </ApolloProvider>
         </AuthProvider>
       </LocalizationProvider>
-    </I18nProvider>
+    </I18nProvider >
   );
 }
