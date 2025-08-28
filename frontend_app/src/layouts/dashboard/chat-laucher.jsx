@@ -222,7 +222,7 @@ export default function ChatLauncher({
     return (
         <Portal>
             {(visibleLoader ) && (
-                <Box id={componentId}
+                <Box
                     sx={{
                         position: 'fixed',
                         right: position.right,

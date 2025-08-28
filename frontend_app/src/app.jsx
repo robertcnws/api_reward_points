@@ -77,11 +77,7 @@ export default function App() {
       userLogged?.data?.user_role?.name ??
       userLogged?.data?.userRole?.name ?? '';
     const isClient = String(roleName || '').toLowerCase() === 'client';
-
-    // ESTO VIENE DEL PADRE (tu estado local de App)
-    // session === null -> aún no sabemos; falsy/objeto cuando ya resolvió
-    // Si prefieres, pasa session a AppInner como prop.
-    // Aquí se usa la variable de cierre "session" que declaraste arriba.
+    
     const isLoggedIn = Boolean(session);
     const authResolved = session !== undefined;
 
@@ -124,26 +120,20 @@ export default function App() {
         showModalIntro.onFalse();
       }
     }, [isClient, userByUsername, userLogged, refetchUserByUsername, showModalIntro]);
-
-    // --------------- GATES PARA EVITAR EL FLASH ----------------
-
-    // 1) No renderizar nada hasta que tengamos sesión y el userByUsername deje de cargar
+    
     const bootReady = authResolved && (!isLoggedIn || !loadingUserByUsername);
     if (!bootReady) {
       return null; // o <BackdropBackground loading />
     }
-
-    // 2) Decidir si mostrar intro (ya con todo listo)
+    
     const shouldShowIntro = Boolean(
       isLoggedIn && isClient && userByUsername?.showIntroGuideModal
     );
-
-    // 3) Si hay que mostrar intro, NO renderices el dashboard
+    
     if (shouldShowIntro) {
       const total = loadedAllRewardIntroSteps?.length || 0;
       const isLast = currentIntroIndex >= total - 1;
-
-      // (Opcional) si aún no tienes los steps, evita pintar vacío:
+      
       if (!total) return null; // o un loader
 
       return (
@@ -203,8 +193,7 @@ export default function App() {
         />
       );
     }
-
-    // 4) Si NO hay intro, ahora sí renderiza el dashboard
+    
     return (
       <MotionLazy>
         <Snackbar />
