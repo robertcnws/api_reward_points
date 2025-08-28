@@ -210,7 +210,7 @@ export function JwtSignUpView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.username ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Username
         </Label>
@@ -256,7 +256,7 @@ export function JwtSignUpView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.companyName ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Company name
         </Label>
@@ -284,7 +284,7 @@ export function JwtSignUpView() {
             sx={{
               justifyContent: 'flex-start',
               color: errors.firstName ? 'error.main' : 'text.secondary',
-              fontSize: 18
+              fontSize: 15
             }}>
             First name
           </Label>
@@ -309,7 +309,7 @@ export function JwtSignUpView() {
             sx={{
               justifyContent: 'flex-start',
               color: errors.lastName ? 'error.main' : 'text.secondary',
-              fontSize: 18
+              fontSize: 15
             }}>
             Last name
           </Label>
@@ -336,7 +336,7 @@ export function JwtSignUpView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.email ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Email address
         </Label>
@@ -363,7 +363,7 @@ export function JwtSignUpView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.phoneNumber ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Phone or Mobile
         </Label>
@@ -385,7 +385,7 @@ export function JwtSignUpView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.password ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Password
         </Label>
@@ -429,7 +429,7 @@ export function JwtSignUpView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
-          fontSize: 19
+          fontSize: 17
         }}
       >
         Create account

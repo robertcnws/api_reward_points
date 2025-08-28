@@ -37,6 +37,11 @@ export function OverviewEcommerceView({
   refetchRewardPoints,
   loadingRewardPoints,
   errorRewardPoints,
+  handleShowTourGuide,
+  tookTourGuide,
+  showModalTour,
+  tookIntroGuide,
+  showModalIntro
 }) {
 
   const {
@@ -241,311 +246,262 @@ export function OverviewEcommerceView({
     [currentAssignedPointsArray]
   );
 
-  const showModalTour = useBoolean();
-  const tookTourGuide = useMemo(() => userByUsername?.tookTourGuide, [userByUsername]);
-  const showModalIntro = useBoolean();
-  const tookIntroGuide = useMemo(() => userByUsername?.tookIntroGuide, [userByUsername]);
-
-  const [currentIntroIndex, setCurrentIntroIndex] = useState(0);
-  const isTranslated = useBoolean(false);
-
-  const introTitle = useMemo(
-    () => (!isTranslated.value ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.title :
-      loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation.es.title
-    ),
-    [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
-  );
-  const introContent = useMemo(
-    () => (!isTranslated.value ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.content :
-      loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation.es.content
-    ),
-    [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
-  );
-
-  useEffect(() => {
-    showModalTour.setValue(userByUsername?.showTourGuideModal);
-  }, [userByUsername, showModalTour]);
-
-  useEffect(() => {
-    showModalIntro.setValue(userByUsername?.showIntroGuideModal);
-  }, [userByUsername, showModalIntro]);
-
-  const handleShowTourGuide = useCallback(async () => {
-    try {
-      await axiosInstanceBackend.post(endpoints.user.changeShowTourGuide.user(userByUsername?.id), {
-        userReporter: JSON.stringify(userLogged?.data),
-      });
-      refetchUserByUsername?.().catch(console.error);
-    } catch (error) {
-      console.error('Error showing tour guide:', error);
-    }
-  }, [userByUsername, userLogged, refetchUserByUsername]);
-
-  const handleShowIntroGuide = useCallback(async () => {
-    try {
-      await axiosInstanceBackend.post(endpoints.user.changeShowIntroGuide.user(userByUsername?.id), {
-        userReporter: JSON.stringify(userLogged?.data),
-      });
-      refetchUserByUsername?.().catch(console.error);
-    } catch (error) {
-      console.error('Error showing intro guide:', error);
-    }
-  }, [userByUsername, userLogged, refetchUserByUsername]);
-
   return (
     <>
-      <DashboardContent maxWidth="xl"
-        sx={{
-          display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
-        }}>
-        {(loadingRewardPointsHistory || loadingRewardPoints) ? (
-          <Box
-            sx={{
-              width: 350,
-              height: '80vh',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: 'auto',
-            }}
-          >
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              {`Loading reward points for ${displayFirstName} ${displayLastName}...`}
-            </Typography>
-            <LinearProgress
-              sx={{
-                mb: 2,
-                width: '100%',
-                '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
-                backgroundColor: '#e0e0e0',
-              }}
-            />
-          </Box>
-        ) : (
-          <Grid container spacing={3} sx={{
-            display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
+      {!showModalIntro.value && (
+        <DashboardContent maxWidth="xl"
+          sx={{
+            display: showModalIntro.value ? 'none' : ''
           }}>
-            <Grid xs={12} md={images.length > 0 ? 8 : 12}>
-              <Box id='dashboard-overview'>
-                <EcommerceWelcome
-                  title={
-                    <Box sx={{
-                      mb: 1,
-                      textAlign: { xs: 'center', md: 'left' },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0,
-                    }}>
+          {(loadingRewardPointsHistory || loadingRewardPoints) ? (
+            <Box
+              sx={{
+                width: 350,
+                height: '80vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: 'auto',
+              }}
+            >
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                {`Loading reward points for ${displayFirstName} ${displayLastName}...`}
+              </Typography>
+              <LinearProgress
+                sx={{
+                  mb: 2,
+                  width: '100%',
+                  '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
+                  backgroundColor: '#e0e0e0',
+                }}
+              />
+            </Box>
+          ) : (
+            <Grid container spacing={3} sx={{
+              display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
+            }}>
+              <Grid xs={12} md={images.length > 0 ? 8 : 12}>
+                <Box id='dashboard-overview'>
+                  <EcommerceWelcome
+                    title={
                       <Box sx={{
+                        mb: 1,
+                        textAlign: { xs: 'center', md: 'left' },
                         display: 'flex',
                         flexDirection: 'column',
+                        gap: 0,
                       }}>
-                        <Typography variant="h4">
-                          Welcome 🎉 {`${displayFirstName} ${displayLastName}`}
-                        </Typography>
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}>
+                          <Typography variant="h4">
+                            Welcome 🎉 {`${displayFirstName} ${displayLastName}`}
+                          </Typography>
+                          {!isMobile && (
+                            <>
+                              <Typography variant="h6">
+                                Company: <b>{displayCompanyName}</b>
+                              </Typography>
+                            </>
+                          )}
+                        </Box>
                         {!isMobile && (
-                          <>
-                            <Typography variant="h6">
-                              Company: <b>{displayCompanyName}</b>
-                            </Typography>
-                          </>
+                          <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
+                            Last login: <b>{fDateTime(userLogged?.data?.last_login)}</b>
+                          </Typography>
                         )}
                       </Box>
-                      {!isMobile && (
-                        <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
-                          Last login: <b>{fDateTime(userLogged?.data?.last_login)}</b>
+                    }
+                    isCompound
+                    description={
+                      <Box sx={{
+                        mb: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: { xs: 'center', md: 'flex-start' },
+                        gap: -1,
+                      }}>
+                        <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
+                          You currently have a TOTAL of {' '}
                         </Typography>
-                      )}
-                    </Box>
-                  }
-                  isCompound
-                  description={
-                    <Box sx={{
-                      mb: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: { xs: 'center', md: 'flex-start' },
-                      gap: -1,
-                    }}>
-                      <Typography variant="body2" sx={{ opacity: 0.64, mb: 2 }}>
-                        You currently have a TOTAL of {' '}
-                      </Typography>
-                      {/* <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
+                        {/* <Alert severity="success" sx={{ mb: 2, fontSize: '1rem', width: '100%' }}>
                     <strong>
                       {totalAvailablePoints || 0}
                     </strong>{' '}reward points
                   </Alert> */}
-                      <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 1,
-                        // bgcolor: 'primary.main',
-                        p: 1,
-                        borderRadius: 1,
-                        mb: 2,
-                        backgroundColor: 'primary.dark',
-                        '&:hover': {
-                          backgroundColor: 'primary.main',
-                        },
-                      }}>
-                        <Iconify
-                          icon="streamline-cyber-color:bookmark-favorite-star"
-                          sx={{
-                            mt: -0.5,
-                            width: 24,
-                            height: 24,
-                          }}
-                        />
-                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                          {totalAvailablePoints || 0}
-                        </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.85 }}>
-                          reward points
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 1,
+                          // bgcolor: 'primary.main',
+                          p: 1,
+                          borderRadius: 1,
+                          mb: 2,
+                          backgroundColor: 'primary.dark',
+                          '&:hover': {
+                            backgroundColor: 'primary.main',
+                          },
+                        }}>
+                          <Iconify
+                            icon="streamline-cyber-color:bookmark-favorite-star"
+                            sx={{
+                              mt: -0.5,
+                              width: 24,
+                              height: 24,
+                            }}
+                          />
+                          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+                            {totalAvailablePoints || 0}
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.85 }}>
+                            reward points
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ opacity: 0.64 }}>
+                          You can use them to get discounts on your next purchases.
                         </Typography>
                       </Box>
-                      <Typography variant="body2" sx={{ opacity: 0.64 }}>
-                        You can use them to get discounts on your next purchases.
-                      </Typography>
-                    </Box>
-                  }
-                  img={!isMobile ? <MotivationIllustration hideBackground /> : null}
-                  action={
-                    <Button
-                      variant="contained"
-                      sx={{
-                        alignSelf: 'flex-start',
-                        backgroundColor: 'primary.dark',
-                        '&:hover': {
-                          backgroundColor: 'primary.main',
-                        },
-                        color: 'whitesmoke',
-                      }}
-                      onClick={() => {
-                        router.push(paths.dashboard.storeProduct.root);
-                      }}
-                    >
-                      <Iconify icon="icons8:buy" sx={{ mr: 1 }} />
-                      Redeem rewards!
-                    </Button>
-                  }
-                />
-              </Box>
-            </Grid>
-
-            {images?.length > 0 && (
-              <Grid xs={12} md={4}>
-                <Box id='rewards-carrousel'>
-                  <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
+                    }
+                    img={!isMobile ? <MotivationIllustration hideBackground /> : null}
+                    action={
+                      <Button
+                        variant="contained"
+                        sx={{
+                          alignSelf: 'flex-start',
+                          backgroundColor: 'primary.dark',
+                          '&:hover': {
+                            backgroundColor: 'primary.main',
+                          },
+                          color: 'whitesmoke',
+                        }}
+                        onClick={() => {
+                          router.push(paths.dashboard.storeProduct.root);
+                        }}
+                      >
+                        <Iconify icon="icons8:buy" sx={{ mr: 1 }} />
+                        Redeem rewards!
+                      </Button>
+                    }
+                  />
                 </Box>
               </Grid>
-            )}
+
+              {images?.length > 0 && (
+                <Grid xs={12} md={4}>
+                  <Box id='rewards-carrousel'>
+                    <EcommerceNewrewardStoreProducts list={loadedStoreProducts} />
+                  </Box>
+                </Grid>
+              )}
 
 
-            <Grid container id='orders-metrics' sx={{ width: '100%' }}>
+              <Grid container id='orders-metrics' sx={{ width: '100%' }}>
 
-              <Grid xs={6} md={3}>
-                <EcommerceRewardPointsAttribute
-                  title="Orders Amount (USD)"
-                  subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
-                  icon='noto:money-with-wings'
-                  percent={invoicesTrendPercent || 0}
-                  total={totalAmountInvoices}
-                  bgcolor='info.lighter'
-                  isMoney
-                  indicatorName={!isMobile ? '(10 days)' : ''}
-                  chart={!isMobile ? {
-                    categories: invoicesDateArray,
-                    series: invoicesPaymentMadeArray,
-                  } : {}}
-                />
+                <Grid xs={6} md={3}>
+                  <EcommerceRewardPointsAttribute
+                    title="Orders Amount (USD)"
+                    subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
+                    icon='noto:money-with-wings'
+                    percent={invoicesTrendPercent || 0}
+                    total={totalAmountInvoices}
+                    bgcolor='info.lighter'
+                    isMoney
+                    indicatorName={!isMobile ? '(10 days)' : ''}
+                    chart={!isMobile ? {
+                      categories: invoicesDateArray,
+                      series: invoicesPaymentMadeArray,
+                    } : {}}
+                  />
+                </Grid>
+
+                <Grid xs={6} md={3}>
+                  <EcommerceRewardPointsAttribute
+                    title="Opened Balance Amount (USD)"
+                    subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
+                    icon='streamline-ultimate-color:accounting-coins'
+                    percent={openedBalanceInvoicesTrendPercent || 0}
+                    total={totalOpenedBalanceInvoices}
+                    bgcolor='error.lighter'
+                    isMoney
+                    indicatorName={!isMobile ? '(10 days)' : ''}
+                    chart={!isMobile ? {
+                      colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
+                      categories: openedBalanceInvoicesDateArray,
+                      series: openedBalanceInvoicesPaymentMadeArray,
+                    } : {}}
+                  />
+                </Grid>
+
+                <Grid xs={6} md={3}>
+                  <EcommerceRewardPointsAttribute
+                    title="Orders Count"
+                    subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
+                    icon='streamline-ultimate-color:performance-increase'
+                    percent={currentAssignedTrendPercent || 0}
+                    total={qtyAllOrders}
+                    bgcolor='success.lighter'
+                    indicatorName={!isMobile ? '(10 days)' : ''}
+                    chart={!isMobile ? {
+                      colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
+                      categories: currentAssignedDateArray,
+                      series: currentAssignedPointsArray,
+                    } : {}}
+                  />
+                </Grid>
+
+                <Grid xs={6} md={3}>
+                  <EcommerceRewardPointsAttribute
+                    title="Pending Orders"
+                    subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
+                    // icon='fluent-color:reward-24'
+                    icon='streamline-ultimate-color:time-clock-hand-1'
+                    percent={currentAssignedTrendPercent || 0}
+                    total={qtyPendingOrders}
+                    bgcolor='secondary.lighter'
+                    indicatorName={!isMobile ? '(10 days)' : ''}
+                    chart={!isMobile ? {
+                      colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
+                      categories: !isMobile ? currentAssignedDateArray : [],
+                      series: !isMobile ? currentAssignedPointsArray : [],
+                    } : {}}
+                  />
+                </Grid>
+
               </Grid>
 
-              <Grid xs={6} md={3}>
-                <EcommerceRewardPointsAttribute
-                  title="Opened Balance Amount (USD)"
-                  subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
-                  icon='streamline-ultimate-color:accounting-coins'
-                  percent={openedBalanceInvoicesTrendPercent || 0}
-                  total={totalOpenedBalanceInvoices}
-                  bgcolor='error.lighter'
-                  isMoney
-                  indicatorName={!isMobile ? '(10 days)' : ''}
-                  chart={!isMobile ? {
-                    colors: [theme.vars.palette.error.light, theme.vars.palette.error.main],
-                    categories: openedBalanceInvoicesDateArray,
-                    series: openedBalanceInvoicesPaymentMadeArray,
-                  } : {}}
-                />
+
+              <Grid xs={12} md={6} lg={8}>
+                <Box id='invoice-history-chart' sx={{ width: '100%', height: '100%' }}>
+                  <EcommerceWebsiteVisits
+                    title='Invoice History'
+                    metricUnit="USD"
+                    subheader={`Year: ${new Date().getFullYear()}`}
+                    chart={{
+                      categories: barChartInvoicesSeries.categories,
+                      series: !isMobile ? barChartInvoicesSeries.series : barChartInvoicesSeries.series.slice(0, 2),
+                    }}
+                  />
+                </Box>
               </Grid>
 
-              <Grid xs={6} md={3}>
-                <EcommerceRewardPointsAttribute
-                  title="Orders Count"
-                  subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
-                  icon='streamline-ultimate-color:performance-increase'
-                  percent={currentAssignedTrendPercent || 0}
-                  total={qtyAllOrders}
-                  bgcolor='success.lighter'
-                  indicatorName={!isMobile ? '(10 days)' : ''}
-                  chart={!isMobile ? {
-                    colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
-                    categories: currentAssignedDateArray,
-                    series: currentAssignedPointsArray,
-                  } : {}}
-                />
+              <Grid xs={12} md={6} lg={4}>
+                {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
+                <Box id='reward-points-history-list' sx={{ width: '100%', height: '100%' }}>
+                  <EcommerceRewardPointsHistoryList
+                    title='Reward Points History'
+                    subheader='Latest reward points history'
+                    loadedRewardPoints={loadedRewardPoints}
+                    refetchRewardPoints={refetchRewardPoints}
+                  />
+                </Box>
               </Grid>
-
-              <Grid xs={6} md={3}>
-                <EcommerceRewardPointsAttribute
-                  title="Pending Orders"
-                  subheader={!isMobile ? `(Current Year ${new Date().getFullYear()})` : `(${new Date().getFullYear()})`}
-                  // icon='fluent-color:reward-24'
-                  icon='streamline-ultimate-color:time-clock-hand-1'
-                  percent={currentAssignedTrendPercent || 0}
-                  total={qtyPendingOrders}
-                  bgcolor='secondary.lighter'
-                  indicatorName={!isMobile ? '(10 days)' : ''}
-                  chart={!isMobile ? {
-                    colors: [theme.vars.palette.warning.light, theme.vars.palette.warning.main],
-                    categories: !isMobile ? currentAssignedDateArray : [],
-                    series: !isMobile ? currentAssignedPointsArray : [],
-                  } : {}}
-                />
-              </Grid>
-
             </Grid>
-
-
-            <Grid xs={12} md={6} lg={8}>
-              <Box id='invoice-history-chart' sx={{ width: '100%', height: '100%' }}>
-                <EcommerceWebsiteVisits
-                  title='Invoice History'
-                  metricUnit="USD"
-                  subheader={`Year: ${new Date().getFullYear()}`}
-                  chart={{
-                    categories: barChartInvoicesSeries.categories,
-                    series: !isMobile ? barChartInvoicesSeries.series : barChartInvoicesSeries.series.slice(0, 2),
-                  }}
-                />
-              </Box>
-            </Grid>
-
-            <Grid xs={12} md={6} lg={4}>
-              {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
-              <Box id='reward-points-history-list' sx={{ width: '100%', height: '100%' }}>
-                <EcommerceRewardPointsHistoryList
-                  title='Reward Points History'
-                  subheader='Latest reward points history'
-                  loadedRewardPoints={loadedRewardPoints}
-                  refetchRewardPoints={refetchRewardPoints}
-                />
-              </Box>
-            </Grid>
-          </Grid>
-        )}
-      </DashboardContent>
+          )}
+        </DashboardContent>
+      )}
       {runDashboard && (
         <OnboardingGuide
           run={runDashboard}
@@ -556,83 +512,7 @@ export function OverviewEcommerceView({
           disableBeacon
         />
       )}
-      <ConfirmDialog
-        maxWidth='md'
-        open={showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide}
-        onClose={async () => {
-          // showModalTour.onFalse();
-          await handleShowIntroGuide();
-        }}
-        title={
-          <Box sx={{
-            display: 'flex',
-            flexDirection: !isMobile ? 'row' : 'column',
-            justifyContent: !isMobile ? 'space-between' : 'flex-start',
-            gap: 1,
-            width: 1
-          }}>
-            <Typography variant="h6">{introTitle}</Typography>
-            <IconButton
-              onClick={async () => {
-                isTranslated.setValue(!isTranslated.value);
-              }}
-              sx={{
-                fontSize: 14,
-                '&:hover': {
-                  boxShadow: 'none',
-                  backgroundColor: 'transparent',
-                },
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-              }}>
-              <Iconify icon="ri:translate" /> Translate {!isTranslated.value ? 'to Spanish' : 'to English'}
-            </IconButton>
-          </Box>
-        }
-        content={
-          <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
-            {introContent}
-          </Typography>
-        }
-        closeName={!isTranslated.value ? 'Skip' : 'Omitir'}
-        action={
-          <>
-            {currentIntroIndex > 0 && (
-              <Button
-                variant="contained"
-                color="success"
-                onClick={async () => {
-                  setCurrentIntroIndex(currentIntroIndex - 1);
-                }}
-              >
-                {!isTranslated.value ? 'Previous' : 'Anterior'}
-              </Button>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={async () => {
-                if (currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1) {
-                  setCurrentIntroIndex(currentIntroIndex + 1);
-                }
-                else {
-                  await handleShowIntroGuide();
-                  showModalTour.onTrue();
-                }
-              }}
-            >
-              {currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1 ?
-                !isTranslated.value ? 'Next' : 'Siguiente' :
-                !isTranslated.value ? 'Start Tour' : 'Iniciar Tour'
-              }
-            </Button>
-          </>
-        }
-        BackdropProps={{
-          style: { backgroundColor: "whitesmoke" } // Fondo blanco sólido
-        }}
-      />
+      
       <ConfirmDialog
         open={!showModalIntro.value && showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookTourGuide}
         onClose={async () => {

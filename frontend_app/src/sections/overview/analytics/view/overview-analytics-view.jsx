@@ -1,6 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'src/routes/hooks';
+import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Iconify } from 'src/components/iconify';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -12,7 +18,14 @@ import { OverviewEcommerceView } from '../../e-commerce/view';
 
 
 
-export function OverviewAnalyticsView() {
+
+export function OverviewAnalyticsView({
+  handleShowTourGuide,
+  tookTourGuide,
+  showModalTour,
+  tookIntroGuide,
+  showModalIntro
+}) {
 
   const router = useRouter();
 
@@ -46,7 +59,12 @@ export function OverviewAnalyticsView() {
     refetchStoreProducts,
     loadingStoreProducts,
     errorStoreProducts,
+    loadedAllRewardIntroSteps,
+    userByUsername,
+    refetchUserByUsername
   } = useDataContext();
+
+
 
   return (
     <>
@@ -84,6 +102,11 @@ export function OverviewAnalyticsView() {
           refetchRewardPoints={refetchRewardPoints}
           loadingRewardPoints={loadingRewardPoints}
           errorRewardPoints={errorRewardPoints}
+          handleShowTourGuide={handleShowTourGuide}
+          tookTourGuide={tookTourGuide}
+          showModalTour={showModalTour}
+          tookIntroGuide={tookIntroGuide}
+          showModalIntro={showModalIntro}
         />
       )}
     </>

@@ -209,7 +209,7 @@ export function JwtSignInView() {
           sx={{
             justifyContent: 'flex-start',
             color: errors.username ? 'error.main' : 'text.secondary',
-            fontSize: 18
+            fontSize: 15
           }}>
           Username or Email
         </Label>
@@ -254,7 +254,7 @@ export function JwtSignInView() {
               sx={{
                 justifyContent: 'flex-start',
                 color: errors.password ? 'error.main' : 'text.secondary',
-                fontSize: 18
+                fontSize: 15
               }}>
               Password
             </Label>
@@ -321,7 +321,7 @@ export function JwtSignInView() {
             },
           }}
           label={
-            <span style={{ fontSize: 17, color: 'grey' }}>
+            <span style={{ fontSize: 15, color: 'grey' }}>
               Remember me
             </span>
           }
@@ -341,7 +341,7 @@ export function JwtSignInView() {
           '&:hover': {
             backgroundColor: 'primary.main',
           },
-          fontSize: 19
+          fontSize: 17
         }}
       >
         Sign in

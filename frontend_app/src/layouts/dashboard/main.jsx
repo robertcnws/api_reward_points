@@ -5,10 +5,15 @@ import Container from '@mui/material/Container';
 import { layoutClasses } from 'src/layouts/classes';
 
 import { useSettingsContext } from 'src/components/settings';
+import { useMemo } from 'react';
 
 // ----------------------------------------------------------------------
 
 export function Main({ children, isNavHorizontal, sx, ...other }) {
+
+  // const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+  // console.log('userLogged:', userLogged?.data);
+
   return (
     <Box
       component="main"

@@ -126,3 +126,19 @@ export async function renewToken(refreshToken) {
     window.location.href = paths.auth.jwt.signIn;
   }
 }
+
+export async function getSession() {
+  try {
+    const accessToken = sessionStorage.getItem(STORAGE_KEY);
+    const refreshToken = sessionStorage.getItem(STORAGE_KEY_REFRESH);
+
+    if (!accessToken || !refreshToken) {
+      return null;
+    }
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    console.error('Error getting session:', error);
+    throw error;
+  }
+}
