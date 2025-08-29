@@ -148,8 +148,14 @@ export function OverviewEcommerceView({
   }, [loadedRewardPoints?.invoices]);
 
   const barChartInvoicesSeries = useMemo(
-    () => buildInvoicesChart(loadedRewardPoints?.invoices, { year: 2025, by: 'amount' }), // o by: 'amount'
-    [loadedRewardPoints?.invoices]
+    () => buildInvoicesChart(
+      loadedRewardPoints?.invoices, { 
+        year: 2025, 
+        by: 'amount',
+        top: isMobile ? 6 : 0
+      }
+    ), // o by: 'amount'
+    [loadedRewardPoints?.invoices, isMobile]
   );
 
   const seriesFromInvoices = useCallback((attributeName, attributeData, sliceNumber = null, conditions = null) => {
@@ -478,7 +484,7 @@ export function OverviewEcommerceView({
                   <EcommerceWebsiteVisits
                     title='Invoice History'
                     metricUnit="USD"
-                    subheader={`Year: ${new Date().getFullYear()}`}
+                    subheader={`${isMobile ? 'Last 6 months: ' : 'Year: '}${new Date().getFullYear()}`}
                     chart={{
                       categories: barChartInvoicesSeries.categories,
                       series: !isMobile ? barChartInvoicesSeries.series : barChartInvoicesSeries.series.slice(0, 2),

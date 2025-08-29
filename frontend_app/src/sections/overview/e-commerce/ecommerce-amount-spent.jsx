@@ -3,18 +3,20 @@ import Card from '@mui/material/Card';
 import { Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { fNumber, fPercent, fCurrency } from 'src/utils/format-number';
+import { fNumber, fPercent, fCurrency, toValidNumber } from 'src/utils/format-number';
 
 import { varAlpha, stylesMode } from 'src/theme/styles';
 
 import { Iconify } from 'src/components/iconify';
 import { Chart, useChart } from 'src/components/chart';
+import { LoadingContext } from 'src/auth/context/loading-context';
+import { useContext } from 'react';
 
 // ----------------------------------------------------------------------
 
 export function EcommerceRewardPointsAttribute({
   title,
-  subheader= '',
+  subheader = '',
   icon = null,
   percent,
   total,
@@ -27,12 +29,14 @@ export function EcommerceRewardPointsAttribute({
 }) {
   const theme = useTheme();
 
-  const chartColors = chart.colors ?? [theme.palette.primary.light, theme.palette.primary.main];
+  const { isMobile } = useContext(LoadingContext)
+
+  const chartColors = chart?.colors ?? [theme.palette.primary.light, theme.palette.primary.main];
 
   const chartOptions = useChart({
     chart: { sparkline: { enabled: true } },
     colors: [chartColors[1]],
-    xaxis: { categories: chart.categories },
+    xaxis: { categories: chart?.categories },
     grid: {
       padding: {
         top: 6,
@@ -51,9 +55,9 @@ export function EcommerceRewardPointsAttribute({
       },
     },
     tooltip: {
-      y: { formatter: (value) => fNumber(value), title: { formatter: () => '' } },
+      y: { formatter: (value) => fNumber(toValidNumber(value)), title: { formatter: () => '' } },
     },
-    ...chart.options,
+    ...chart?.options,
   });
 
   const renderTrending = (
@@ -88,7 +92,7 @@ export function EcommerceRewardPointsAttribute({
 
         <Typography sx={{ fontWeight: 'bold', display: 'inline-flex', fontSize: 13 }}>
           {percent > 0 && '+'}
-          {fPercent(percent)}
+          {fPercent(toValidNumber(percent))}
         </Typography>
       </Box>
       <Box component="span" sx={{ color: 'text.secondary', typography: 'caption' }}>
@@ -128,19 +132,23 @@ export function EcommerceRewardPointsAttribute({
             </Box>
           )}
           <Typography sx={{ fontWeight: 'bold', display: 'inline-flex' }}>
-            {isMoney ? fCurrency(total) : fNumber(total)}
+            {isMoney ? fCurrency(toValidNumber(total)) : fNumber(toValidNumber(total))}
           </Typography>
         </Box>
         {renderTrending}
       </Box>
 
-      <Chart
-        type="line"
-        series={[{ data: chart.series }]}
-        options={chartOptions}
-        width={100}
-        height={66}
-      />
+      {!isMobile && chart && chart.series && chart.series.length > 0 && (
+
+        <Chart
+          type="line"
+          series={[{ data: chart?.series }]}
+          options={chartOptions}
+          width={100}
+          height={66}
+        />
+
+      )}
     </Card>
   );
 }

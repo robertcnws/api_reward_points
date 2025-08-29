@@ -95,3 +95,9 @@ export function fData(inputValue) {
 
   return fm;
 }
+
+
+export const toValidNumber = (v, fallback = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
