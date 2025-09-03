@@ -21,7 +21,11 @@ s3_client = boto3.client(
 
 def key_exists_in_s3(key):
     try:
-        s3_client.head_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key)
+        s3_client.head_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME, 
+            Key=key,
+            ExpectedBucketOwner=settings.AWS_ACCOUNT_ID
+        )
         return True
     except ClientError as e:
         if e.response['Error']['Code'] == "404":
@@ -87,31 +91,52 @@ def upload_attachment_to_s3(file_obj, folder=settings.AWS_S3_FOLDER_STORE_PRODUC
 def manage_backup_to_s3(logger, s3_key, s3_prefix, fileobj, keep=5):
     s3 = boto3.client('s3', region_name=getattr(settings, 'AWS_REGION', None))
     bucket = settings.AWS_STORAGE_BUCKET_NAME
+    account = settings.AWS_ACCOUNT_ID
+    extra_args = {}
+    if account:
+        extra_args['ExpectedBucketOwner'] = account
 
     try:
-        s3.upload_fileobj(fileobj, bucket, s3_key)
+        s3.upload_fileobj(fileobj, bucket, s3_key, ExtraArgs=extra_args)
     except ClientError as e:
         logger.exception("Error subiendo backup a S3: %s", e)
     
     try:
+        paginate_kwargs = {"Bucket": bucket, "Prefix": s3_prefix}
+        if account:
+            paginate_kwargs["ExpectedBucketOwner"] = account
+
         paginator = s3.get_paginator('list_objects_v2')
         objs = []
-        for page in paginator.paginate(Bucket=bucket, Prefix=s3_prefix):
-            for o in page.get('Contents', []):
-                if o['Key'].endswith('.zip'):
+        for page in paginator.paginate(**paginate_kwargs):
+            for o in page.get('Contents', []) or []:
+                if o.get('Key', '').endswith('.zip'):
                     objs.append(o)
+        
         objs.sort(key=lambda o: o['LastModified'])
-        excess = len(objs) - keep
+
+        excess = len(objs) - int(keep or 0)
         if excess > 0:
             to_delete = [{'Key': o['Key']} for o in objs[:excess]]
-            s3.delete_objects(Bucket=bucket, Delete={'Objects': to_delete, 'Quiet': True})
+            delete_kwargs = {
+                "Bucket": bucket,
+                "Delete": {"Objects": to_delete, "Quiet": True},
+            }
+            if account:
+                delete_kwargs["ExpectedBucketOwner"] = account
+
+            s3.delete_objects(**delete_kwargs)
     except ClientError as e:
         logger.exception("Error deleting old backups in S3: %s", e)
         
 
-
 def download_and_compress_s3(keys, number):
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', region_name=getattr(settings, 'AWS_REGION', None))
+    bucket = settings.AWS_STORAGE_BUCKET_NAME
+    account = getattr(settings, 'AWS_ACCOUNT_ID', None)
+
+    extra_args = {"ExpectedBucketOwner": account} if account else None
+
     downloads_dir = Path.home() / "Downloads"
     downloads_dir.mkdir(exist_ok=True)
     
@@ -123,7 +148,12 @@ def download_and_compress_s3(keys, number):
             for key in keys:
                 buf = io.BytesIO()
                 try:
-                    s3.download_fileobj(settings.AWS_STORAGE_BUCKET_NAME, key, buf)
+                    s3.download_fileobj(
+                        Bucket=bucket,
+                        Key=key,
+                        Fileobj=buf,
+                        ExtraArgs=extra_args,
+                    )
                     buf.seek(0)
                     zf.writestr(os.path.basename(key), buf.read())
                 except ClientError as e:
@@ -136,7 +166,12 @@ def download_and_compress_s3(keys, number):
             for key in keys:
                 buf = io.BytesIO()
                 try:
-                    s3.download_fileobj(settings.AWS_STORAGE_BUCKET_NAME, key, buf)
+                    s3.download_fileobj(
+                        Bucket=bucket,
+                        Key=key,
+                        Fileobj=buf,
+                        ExtraArgs=extra_args, 
+                    )
                     buf.seek(0)
                     info = tarfile.TarInfo(name=os.path.basename(key))
                     data = buf.getvalue()
@@ -149,7 +184,11 @@ def download_and_compress_s3(keys, number):
 
 
 def make_s3_archive_stream(keys, number, stage, task):
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', region_name=getattr(settings, 'AWS_REGION', None))
+    bucket = settings.AWS_STORAGE_BUCKET_NAME
+    account = getattr(settings, 'AWS_ACCOUNT_ID', None)
+    extra_args = {"ExpectedBucketOwner": account} if account else None
+    
     buf = io.BytesIO()
     ts = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"files_{number}_{ts}"
@@ -161,7 +200,12 @@ def make_s3_archive_stream(keys, number, stage, task):
     with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
         for key in keys:
             file_buf = io.BytesIO()
-            s3.download_fileobj(settings.AWS_STORAGE_BUCKET_NAME, key, file_buf)
+            s3.download_fileobj(
+                Bucket=bucket,
+                Key=key,
+                Fileobj=file_buf,
+                ExtraArgs=extra_args,
+            )
             file_buf.seek(0)
             zf.writestr(os.path.basename(key), file_buf.read())
     buf.seek(0)
@@ -180,9 +224,13 @@ def generate_default_file_url(object_key):
     )
     return url
 
+
 def delete_attachment_from_s3(key):
+    bucket = settings.AWS_STORAGE_BUCKET_NAME
+    account = getattr(settings, 'AWS_ACCOUNT_ID', None)
+    extra_args = {"ExpectedBucketOwner": account} if account else None
     try:
-        s3_client.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=key)
+        s3_client.delete_object(Bucket=bucket, Key=key, ExtraArgs=extra_args)
         return True
     except ClientError as e:
         print("Error deleting file from S3:", e)
@@ -190,6 +238,8 @@ def delete_attachment_from_s3(key):
     
     
 def backup_mongo_to_s3(logger, mongo_uri, db_name, s3_bucket, s3_prefix):
+    account = getattr(settings, 'AWS_ACCOUNT_ID', None)
+    extra_args = {"ExpectedBucketOwner": account} if account else None
     backup_folder = '/tmp/mongo_backup'
     if os.path.exists(backup_folder):
         subprocess.run(["rm", "-rf", backup_folder], check=True)
@@ -215,25 +265,35 @@ def backup_mongo_to_s3(logger, mongo_uri, db_name, s3_bucket, s3_prefix):
     except subprocess.CalledProcessError as e:
         logger.error("Error executing mongodump: %s", e.stderr.decode())
         raise
-
     try:
-        resp = s3_client.list_objects_v2(Bucket=s3_bucket, Prefix=s3_prefix)
+        resp = s3_client.list_objects_v2(
+            Bucket=s3_bucket, 
+            Prefix=s3_prefix, 
+            ExtraArgs=extra_args
+        )
         if 'Contents' in resp:
             for obj in resp['Contents']:
                 logger.info("Deleting object in S3: %s", obj['Key'])
-                s3_client.delete_object(Bucket=s3_bucket, Key=obj['Key'])
+                s3_client.delete_object(
+                    Bucket=s3_bucket, 
+                    Key=obj['Key'], 
+                    ExtraArgs=extra_args
+                )
     except Exception as e:
         logger.error("Error deleting objects in S3: %s", e)
         raise
-
     try:
         s3_key = os.path.join(s3_prefix, backup_filename)
-        s3_client.upload_file(backup_filepath, s3_bucket, s3_key)
+        s3_client.upload_file(
+            backup_filepath, 
+            s3_bucket, 
+            s3_key,
+            ExtraArgs=extra_args
+        )
         logger.info("Backup uploaded to S3 in: %s", s3_key)
     except Exception as e:
         logger.error("Error uploading backup to S3: %s", e)
         raise
-
     try:
         os.remove(backup_filepath)
         logger.info("Local backup file deleted.")

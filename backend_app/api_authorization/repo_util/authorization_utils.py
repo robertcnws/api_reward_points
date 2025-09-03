@@ -9,7 +9,7 @@ from api_reward_points.models import (
     RewardInvoice,
     RewardSalesOrder
 )
-from api_integration.views import (
+from api_integration.repository.repository_integration import (
     fetch_client_invoices,
     fetch_sales_orders
 )

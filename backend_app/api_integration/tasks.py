@@ -1,5 +1,5 @@
 from celery import shared_task
-from .views import (
+from api_integration.repository.repository_integration import (
     update_items_to_rewards,
 )
 import logging

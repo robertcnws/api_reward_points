@@ -1,4 +1,5 @@
 
+import contextlib
 from pymongo import MongoClient
 from bson import json_util
 from django.utils import timezone
@@ -51,22 +52,24 @@ def download_mongo_db(is_downloaded_local=False):
     s3_key = f'{s3_prefix}{filename}'
     
     async def stream_and_upload_async():
-        tmp = tempfile.SpooledTemporaryFile(max_size=200 * 1024 * 1024, mode='w+b')
+        tmp = await asyncio.to_thread(
+            tempfile.SpooledTemporaryFile,
+            max_size=200 * 1024 * 1024,
+            mode='w+b'
+        )
         try:
             it = iter(z) 
             while True:
                 chunk = await asyncio.to_thread(next, it, None)
                 if chunk is None:
                     break
-                tmp.write(chunk)
+                await asyncio.to_thread(tmp.write, chunk)
                 yield chunk
-            tmp.seek(0)
+            await asyncio.to_thread(tmp.seek, 0)
             await asyncio.to_thread(manage_backup_to_s3, logger, s3_key, s3_prefix, tmp)
         finally:
-            try:
-                tmp.close()
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                await asyncio.to_thread(tmp.close)
             
     if is_downloaded_local:
         response = StreamingHttpResponse(

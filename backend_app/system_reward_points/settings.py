@@ -97,7 +97,7 @@ FRONTEND_URL = env('FRONTEND_URL', default='https://customerportal.newwindowsyst
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--i$a=heuuy55t_!15ketws1@ks01x4zc3b@0paekw7&g$7r8k7'
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -297,9 +297,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",           
+        "public": "60/min",
+        "login": "10/min",
+        "reset_password": "5/min",
+        "register": "10/min",
+        "verify": "20/min",
+        "integration_public": "30/min",
+        "public_read": "120/min",
+        "auth_write": "60/min",
+    },
 }
 
 SIMPLE_JWT = {
@@ -324,6 +338,7 @@ EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
 # AWS
+AWS_ACCOUNT_ID = env('AWS_ACCOUNT_ID', default='')
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='')
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='')
 AWS_REGION = env('AWS_REGION', default='')
