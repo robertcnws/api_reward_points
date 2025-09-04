@@ -1,10 +1,9 @@
 from django.shortcuts import redirect
-from django.contrib.auth import authenticate, BACKEND_SESSION_KEY
+from django.contrib.auth import BACKEND_SESSION_KEY
 from django.http import JsonResponse
 from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, timedelta, timezone as dt_timezone
-from bson.objectid import ObjectId
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from mongoengine.queryset.visitor import Q
@@ -16,12 +15,10 @@ from api_authorization.models import (
     ExternalUsers,
     RevokedToken,
 )
-from api_reward_points.models import RewardPoints
-from utils.data_util import transform_data_to_mongo, create_tracking
+from utils.data_util import create_tracking
 from api_authorization.repo_util.authorization_utils import (
     generate_verification_code,
     send_email_verification_code,
-    send_email_pending_approval,
     get_rewards_points,
     set_initial_tour_and_intro,
 )
