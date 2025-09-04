@@ -40,9 +40,9 @@ export function ProgressBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, mounted]);
 
-  if (!mounted) {
-    return null;
-  }
+  // if (!mounted) {
+  //   return null;
+  // }
 
   return null;
 }

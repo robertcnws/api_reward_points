@@ -76,10 +76,10 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     { value: 'not_used', label: 'Not Used Rewards' },
     // { value: 'partially_used', label: 'PARTIALLY USED PURCHASES!' },
     { value: 'used', label: 'USED REWARDS!' },
-    // ...!isClient(roleName) ? [
-    //   { value: 'hasRequestedRefund', label: 'Refund Requested?' },
-    // ] : []
-    { value: 'hasRequestedRefund', label: 'Refund Requested?' },
+    ...!isClient(roleName) ? [
+      { value: 'hasRequestedRefund', label: 'Refund Requested?' },
+    ] : []
+    // { value: 'hasRequestedRefund', label: 'Refund Requested?' },
   ]);
 
   const rewardHook = useRewardStoreProductSelectionBuyByUsername(

@@ -405,7 +405,7 @@ export function PurchaseTableRow({
             />
             View Order Details
           </MenuItem>
-          {!row?.hasBeenUsed && (
+          {(!row?.hasBeenUsed && !isClient(roleName)) && (
             <MenuItem
               onClick={() => {
                 confirmRefund.onTrue();

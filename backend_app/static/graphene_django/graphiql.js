@@ -63,6 +63,7 @@
 
   var headers = {};
   var cookies = ("; " + document.cookie).split("; csrftoken=");
+  var csrftoken = "";
   if (cookies.length == 2) {
     csrftoken = cookies.pop().split(";").shift();
   } else {

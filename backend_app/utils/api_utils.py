@@ -10,3 +10,12 @@ def config_headers():
         "Authorization": f"Token {token}"
     }
     return headers
+
+
+class ApiError(Exception):
+    def __init__(self, status: int, payload: dict):
+        super().__init__()
+        self.status = status
+        self.payload = payload
+        
+    

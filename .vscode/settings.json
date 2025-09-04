@@ -1,3 +1,7 @@
 {
-    "editor.fontSize": 18
+    "editor.fontSize": 18,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "robertcnws",
+        "projectKey": "robertcnws_api_reward_points"
+    }
 }

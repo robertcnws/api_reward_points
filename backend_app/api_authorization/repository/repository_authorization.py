@@ -28,10 +28,13 @@ from api_authorization.repo_util.authorization_utils import (
 import json
 import logging
 import jwt
+import api_authorization.repo_util.constant_utils as constants
+import api_authorization.repo_util.register_utils as register_utils
+import api_authorization.repo_util.verify_user_utils as verify_user_utils
+import api_authorization.repo_util.login_utils as login_utils
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
-
 
 def is_user_verified(request):
     if request.method == 'POST':
@@ -40,23 +43,23 @@ def is_user_verified(request):
             username = data.get('username') 
             if not username :
                 return JsonResponse({
-                    'error': 'Username required', 
-                    'description': 'Username required'
+                    'error': constants.USERNAME_REQUIRED['error'], 
+                    'description': constants.USERNAME_REQUIRED['description']
                 }, status=400)
             user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
             
             if not user:
                 return JsonResponse({
-                    'error': 'User not found', 
-                    'description': 'User does not exist',
-                    'error_name': 'user_not_found'
+                    'error': constants.USER_NOT_FOUND['error'],
+                    'description': constants.USER_NOT_FOUND['description'],
+                    'error_name': constants.USER_NOT_FOUND['error_name']
                 }, status=404)
                 
             if not user.is_verified:
                 return JsonResponse({
-                    'error': 'User not verified', 
-                    'description': 'User is not verified',
-                    'error_name': 'user_not_verified',
+                    'error': constants.USER_NOT_VERIFIED['error'],
+                    'description': constants.USER_NOT_VERIFIED['description'],
+                    'error_name': constants.USER_NOT_VERIFIED['error_name'],
                     'error_username': user.username,
                     'error_email': user.email,
                     'error_phone_number': user.phone_number
@@ -64,9 +67,9 @@ def is_user_verified(request):
                 
             if not user.is_approved:
                 return JsonResponse({
-                    'error': 'User not approved', 
-                    'description': 'User is not approved by admin',
-                    'error_name': 'user_not_approved',
+                    'error': constants.USER_NOT_APPROVED['error'],
+                    'description': constants.USER_NOT_APPROVED['description'],
+                    'error_name': constants.USER_NOT_APPROVED['error_name'],
                     'error_username': user.username,
                     'error_email': user.email,
                     'error_phone_number': user.phone_number
@@ -78,25 +81,30 @@ def is_user_verified(request):
                 }, status=200)
             
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+            return JsonResponse(constants.ERROR_INVALID_JSON, status=400)
+    return JsonResponse(constants.ERROR_METHOD_NOT_ALLOWED, status=405)
+
+
+def _validate_request(request):
+    token = None
+    if request.content_type == "application/json":
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        token = data.get("token")
+    else:
+        token = request.POST.get("token")
+    return token
 
 
 def transfer_login(request):
     if request.method == 'POST':
         
-        if request.content_type == "application/json":
-            try:
-                data = json.loads(request.body)
-            except json.JSONDecodeError:
-                return JsonResponse({"error": "Invalid JSON"}, status=400)
-            token = data.get("token")
-        else:
-            token = request.POST.get("token")
+        token = _validate_request(request)
         if not token:
             return JsonResponse({"error": "Token required"}, status=400)
-
-        # 1) Decode JWT
+        
         try:
             payload = jwt.decode(
                 token,
@@ -183,98 +191,11 @@ def transfer_login(request):
         )
         
         return redirect(f"{settings.FRONTEND_URL}/dashboard")
-    return JsonResponse({"error": "Method not allowed"}, status=405)
+    return JsonResponse(constants.ERROR_METHOD_NOT_ALLOWED, status=405)
 
 
 def login(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)  
-            username = data.get('username')
-            password = data.get('password') 
-            if not username or not password:
-                return JsonResponse({'error': 'Username and password required', 'description': 'Username and password required'}, status=400)
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                user = user.to_mongo().to_dict()
-                del user['password']
-                if '_id' in user and isinstance(user['_id'], ObjectId):
-                    user['_id'] = str(user['_id'])
-                request.session['user_id'] = user['_id']
-                request.session[BACKEND_SESSION_KEY] = 'api_authorization.backends.MongoDBBackend'
-                request.session.set_expiry(0)
-                request.session.modified = True
-                
-                current_user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
-                current_user.last_login = timezone.now()
-                # current_user.show_tour_guide_modal = True
-                set_initial_tour_and_intro(current_user)
-                current_user.save()
-                
-                create_tracking(
-                    current_user, 
-                    'login', 
-                    object_id=str(current_user.id), 
-                    object_type='LoginUser', 
-                    object_name=current_user.username, 
-                    managed_data='User logged in successfully'
-                )
-                
-                user = transform_data_to_mongo(
-                    current_user, 
-                    exclude_fields=['password', 'is_staff']
-                )
-                
-                return JsonResponse({'data': user}, status=200)
-            
-            login_user = LoginUser.objects(Q(username__iexact=username) | Q(email__iexact=username)).first()
-            
-            if login_user and not login_user.is_approved:
-                return JsonResponse({
-                    'error': 'User not approved', 
-                    'description': 'User is not approved by admin',
-                    'error_name': 'user_not_approved',
-                    'error_username': login_user.username,
-                    'error_email': login_user.email,
-                    'error_phone_number': login_user.phone_number
-                }, status=403)
-            elif login_user and not login_user.is_active:
-                return JsonResponse({
-                    'error': 'User not active',
-                    'description': 'User is not active',
-                    'error_name': 'user_not_active',
-                    'error_username': login_user.username,
-                    'error_email': login_user.email,
-                    'error_phone_number': login_user.phone_number
-                }, status=403)
-            elif login_user and not login_user.is_verified:
-                return JsonResponse({
-                    'error': 'User not verified', 
-                    'description': 'User is not verified',
-                    'error_name': 'user_not_verified',
-                    'error_username': login_user.username,
-                    'error_email': login_user.email,
-                    'error_phone_number': login_user.phone_number
-                }, status=403)
-            elif login_user:
-                return JsonResponse({
-                    'error': 'Invalid credentials', 
-                    'description' : 'Incorrect Password',
-                    'error_name': 'invalid_credentials',
-                    'error_username': login_user.username,
-                    'error_email': login_user.email,
-                    'error_phone_number': login_user.phone_number
-                }, status=400)
-            else:
-                return JsonResponse({
-                    'error': 'Invalid credentials', 
-                    'description' : 'Username does not exist',
-                    'error_name': 'invalid_username',
-                }, status=400)
-        except json.JSONDecodeError:
-            
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+    return login_utils.login(request)
 
 
 def logout(request):
@@ -289,14 +210,12 @@ def logout(request):
                 jti   = token['jti']
                 revoked_token = RevokedToken(jti=jti)
                 revoked_token.save()
-            except (InvalidToken, TokenError) as e:
+            except (InvalidToken, TokenError):
                 return JsonResponse({'error':'Invalid token'}, status=400)
         logger.info(f'User {user_reporter["username"]} logged out')
         current_user = LoginUser.objects(username=user_reporter['username']).first()
         if current_user:
             current_user.last_login = timezone.now()
-            # current_user.show_tour_guide_modal = True
-            # current_user.show_intro_guide_modal = True
             set_initial_tour_and_intro(current_user)
             current_user.save()
             external_user = ExternalUsers.objects(user=current_user).first()
@@ -314,215 +233,28 @@ def logout(request):
                 managed_data='User logged out successfully'
             )
             return JsonResponse({'data': 'User logged out'}, status=200)
-        return JsonResponse({'error': 'User not found', 'description': 'User does not exist'}, status=404)
+        return JsonResponse(constants.USER_NOT_FOUND, status=404)
     return JsonResponse({'error': 'User not logged in', 'description': 'User not logged in'}, status=400)
 
 
 def register(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
-            if not username or not password:
-                return JsonResponse({'error': 'Username and password required', 'description': 'Username and password required'}, status=400)
-            if LoginUser.objects(username=username, is_verified=True).first():
-                return JsonResponse({
-                    'error': 'Username already exists and is active', 
-                    'description': 'Username already exists and is active', 
-                    'error_name': 'username_exists',
-                    'error_mail': None
-                }, status=400)
-            user = LoginUser.objects(username=username, is_verified=False).first()
-            if user:
-                return JsonResponse({
-                    'error': 'Username already exists and is NOT verified', 
-                    'description': 'Username already exists and is NOT verified',
-                    'error_name': 'username_not_verified',
-                    'error_email': user.email,
-                    'error_phone_number': user.phone_number
-                }, status=400)
-            company_name = data.get('companyName', '')
-            user_exists_company = LoginUser.objects(company_name=company_name, is_approved=True).first()
-            if user_exists_company:
-                return JsonResponse({
-                    'error': 'Company already exists and is active', 
-                    'description': 'Company already exists and is active', 
-                    'error_name': 'company_exists',
-                    'error_mail': None
-                }, status=400)
-            user_role_name = settings.DJANGO_REGISTER_USER_ROLE
-            user_role = UserRole.objects(name=user_role_name).first()
-            if not user_role:
-                logger.warning(f'User role {user_role_name} does not exist, creating it')
-                user_role = UserRole(
-                    name=user_role_name,
-                    created_time=timezone.now(),
-                    last_modified_time=timezone.now()
-                )
-                user_role.save()
-                logger.info(f'User role {user_role_name} created successfully')
-            user = LoginUser(
-                username=username,
-                first_name=data.get('firstName', ''),
-                last_name=data.get('lastName', ''),
-                company_name=data.get('companyName', ''),
-                email=data.get('email', ''),
-                phone_number=data.get('phoneNumber', ''),
-                is_staff=data.get('is_staff', False),
-                is_active=True,
-                created_time=timezone.now(),
-                last_modified_time=timezone.now(),
-                date_joined=timezone.now(),
-                is_verified=data.get('is_verified', False),
-                user_role=user_role,
-                avatar_url=data.get('avatarUrl', ''),
-                disapproval_count=0,
-                show_tour_guide_modal=True,
-                show_intro_guide_modal=True,
-            )
-            user.set_password(password)
-            user.save()
-            
-            reward_points = RewardPoints(
-                user=user,
-                total_gained_points=0,
-                total_spent_points=0,
-                total_assigned_points=0,
-                total_substracted_points=0,
-                total_amount_invoices=0,
-                invoices=[],
-                created_time=timezone.now(),
-                last_modified_time=timezone.now()
-            )
-
-            reward_points.save()
-
-            get_rewards_points(user)
-            
-            logger.info(f'User {username} registered successfully')
-            expiration = datetime.now(dt_timezone.utc) + timedelta(minutes=10)
-            
-            code = generate_verification_code()
-            
-            LoginUserVerificationCode.objects.create(
-                user=user,
-                code=code,
-                expires_at=expiration
-            )
-            
-            phone = user.phone_number
-            message = f"Your (Reward Points System) verification code is: {code}. It will expire in 10 minutes."
-            # send_sms_verification_code(phone, message)
-            logger.info(f'SMS sent to {phone} with code {code}')
-            print(f'SMS sent to {phone} with code {code}')
-            list_emails = [user.email, 'robertoc@newwindowsystem.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
-            # list_emails = ['robertoc@newwindowsystem.com']
-            template = 'email_send_verification_code.html'
-            response_message = 'Verification code sent successfully.'
-            first_name = user.first_name
-            last_name = user.last_name
-            subject = f'Verification Code for Customer Portal ({first_name} {last_name})'
-            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
-            logger.info(f'Email sent to {user.email} with code {code}')
-            # print(f'Email sent to {email} with code {code}')
-            
-            # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
-            
-            create_tracking(
-                user, 
-                'register', 
-                object_id=str(user.id), 
-                object_type='LoginUser', 
-                object_name=user.username, 
-                managed_data='User registered successfully'
-            )
-            
-            return JsonResponse({'data': {'username': user.username}}, status=201)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+    return register_utils.register(request)
 
 
 def verify_user(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            username = data.get('username')
-            code = data.get('code')
-            if not username or not code:
-                return JsonResponse({'error': 'Username and code required', 'description': 'Username and code required'}, status=400)
-            user = LoginUser.objects(username=username).first()
-            if not user:
-                return JsonResponse({'error': 'User not found', 'description': 'User does not exist'}, status=404)
-            verification_code = LoginUserVerificationCode.objects(user=user, code=code).first()
-            if not verification_code:
-                return JsonResponse({
-                    'error': 'Invalid verification code', 
-                    'description': 'Verification code is invalid',
-                    'error_name': 'verification_code_invalid',
-                    'error_username': username,
-                    'error_email': user.email,
-                    'error_phone_number': user.phone_number
-                }, status=400)
-            if verification_code.is_expired():
-                return JsonResponse({
-                    'error': 'Expired verification code', 
-                    'description': 'Verification code has expired, please request a new one',
-                    'error_name': 'verification_code_expired',
-                    'error_username': username,
-                    'error_email': user.email,
-                    'error_phone_number': user.phone_number
-                }, status=400)
-            user.is_verified = True
-            user.save()
-            verification_code.delete()
-            logger.info(f'User {username} verified successfully')
-            reward_points = RewardPoints.objects(user=user).first()
-            if reward_points:
-                points = reward_points.total_gained_points
-                if points > 0:
-                    send_email_pending_approval(
-                        points=points,
-                        username=user.username,
-                        first_name=user.first_name,
-                        last_name=user.last_name,
-                        list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
-                    )
-            create_tracking(
-                user, 
-                'verify_user', 
-                object_id=str(user.id), 
-                object_type='LoginUser', 
-                object_name=user.username, 
-                managed_data='User verified successfully'
-            )
-            return JsonResponse({'data': 'User verified successfully'}, status=200)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+    return verify_user_utils.verify_user(request)
 
 
 def send_verification_code(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            # phone_number = data.get('phoneNumber')
-            # if not phone_number:
-            #     return JsonResponse({'error': 'Phone number required', 'description': 'Phone number is required'}, status=400)
-            # verification_code = generate_verification_code()
-            # message = f'Your (Reward Points System) verification code is: {verification_code}'
-            # send_sms_verification_code(phone_number, message)
-            # logger.info(f'SMS sent to {phone_number} with code {verification_code}')
-            # print(f'SMS sent to {phone_number} with code {verification_code}')
-            # return JsonResponse({'data': 'SMS sent successfully'}, status=200)
             email = data.get('email')
             if not email:
-                return JsonResponse({'error': 'Email required', 'description': 'Email is required'}, status=400)
+                return JsonResponse(constants.ERROR_EMAIL_REQUIRED, status=400)
             username = data.get('username')
             if not username:
-                return JsonResponse({'error': 'Username required', 'description': 'Username is required'}, status=400)
+                return JsonResponse(constants.ERROR_USERNAME_REQUIRED, status=400)
             user = LoginUser.objects(username=username).first()
             if not user:
                 return JsonResponse({'error': 'User not found', 'description': 'User does not exist'}, status=404)
@@ -536,9 +268,8 @@ def send_verification_code(request):
                 code=code,
                 expires_at=expiration
             )
-            list_emails = [email, 'robertoc@newwindowsystem.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
-            # list_emails = ['robertoc@newwindowsystem.com']
+            list_emails = [email, settings.EMAIL_SUPPORT] if \
+                settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
             template = 'email_send_verification_code.html'
             response_message = 'Verification code sent successfully.'
             first_name = user.first_name
@@ -549,8 +280,8 @@ def send_verification_code(request):
             print(f'Email sent to {email} with code {code}')
             return JsonResponse({'data': 'Email sent successfully'}, status=200)
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+            return JsonResponse(constants.ERROR_INVALID_JSON, status=400)
+    return JsonResponse(constants.ERROR_METHOD_NOT_ALLOWED, status=405)
 
 
 def reset_password(request):
@@ -584,15 +315,8 @@ def reset_password(request):
                 code=code,
                 expires_at=expiration
             )
-            
-            phone = user.phone_number
-            message = f"Your verification code to RECOVER PASSWORD is: {code}. It will expire in 10 minutes."
-            # send_sms_verification_code(phone, message)
-            logger.info(f'SMS sent to {phone} with code {code}')
-            print(f'SMS sent to {phone} with code {code}')
-            list_emails = [user.email, 'robertoc@newwindowsystem.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com']
-            # list_emails = ['robertoc@newwindowsystem.com']
+            list_emails = [user.email, settings.EMAIL_SUPPORT] if \
+                settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
             template = 'email_send_recover_code.html'
             response_message = 'Recovery code sent successfully.'
             first_name = user.first_name
@@ -600,9 +324,6 @@ def reset_password(request):
             subject = f'Recovery Code for Customer Portal ({first_name} {last_name})'
             send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
             logger.info(f'Email sent to {user.email} with code {code}')
-            # print(f'Email sent to {email} with code {code}')
-            
-            # tracking_info = transform_data_to_mongo(user, exclude_fields=['password'])
             
             create_tracking(
                 user, 
@@ -622,8 +343,8 @@ def reset_password(request):
             }, status=201)
             
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+            return JsonResponse(constants.ERROR_INVALID_JSON, status=400)
+    return JsonResponse(constants.ERROR_METHOD_NOT_ALLOWED, status=405)
 
 
 def update_password(request):
@@ -640,24 +361,18 @@ def update_password(request):
                 
             confirmation_code = data.get('confirmationCode')
             if not confirmation_code:
-                return JsonResponse({
-                    'error': 'Confirmation code required', 
-                    'description': 'Confirmation code is required'
-                }, status=400)
+                return JsonResponse(constants.ERROR_CONFIRMATION_CODE_REQUIRED, status=400)
                 
             new_password = data.get('newPassword')
             if not new_password:
-                return JsonResponse({
-                    'error': 'New password required',
-                    'description': 'New password is required'
-                }, status=400)
+                return JsonResponse(constants.ERROR_NEW_PASSWORD_REQUIRED, status=400)
 
             user = LoginUser.objects(email=email, is_verified=True, is_approved=True).first()
             if not user:
                 return JsonResponse({
-                    'error': 'User not found or inactive',
-                    'description': 'User not found or inactive',
-                    'error_name': 'user_not_found',
+                    'error': constants.USER_NOT_FOUND_OR_INACTIVE['error'],
+                    'description': constants.USER_NOT_FOUND_OR_INACTIVE['description'],
+                    'error_name': constants.USER_NOT_FOUND_OR_INACTIVE['error_name'],
                     'error_mail': None
                 }, status=400)
                 
@@ -665,9 +380,9 @@ def update_password(request):
 
             if not existing_recovery_code:
                 return JsonResponse({
-                    'error': 'Invalid or expired confirmation code',
-                    'description': 'Invalid or expired confirmation code',
-                    'error_name': 'invalid_confirmation_code',
+                    'error': constants.ERROR_CONFIRMATION_CODE_INVALID_OR_EXPIRED['error'],
+                    'description': constants.ERROR_CONFIRMATION_CODE_INVALID_OR_EXPIRED['description'],
+                    'error_name': constants.ERROR_CONFIRMATION_CODE_INVALID_OR_EXPIRED['error_name'],
                     'error_mail': None
                 }, status=400)
 
@@ -694,8 +409,8 @@ def update_password(request):
             }, status=201)
             
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON', 'description': 'Request is not in a valid format'}, status=400)
-    return JsonResponse({'error': 'Method not allowed', 'description': 'Method not allowed'}, status=405)
+            return JsonResponse(constants.ERROR_INVALID_JSON, status=400)
+    return JsonResponse(constants.ERROR_METHOD_NOT_ALLOWED, status=405)
 
 
 def get_refetch_rewards_points(id):

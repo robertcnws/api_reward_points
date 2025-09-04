@@ -26,5 +26,5 @@ class MongoDBBackend(BaseBackend):
         try:
             user = LoginUser.objects(id=user_id).first()
             return user
-        except:
+        except LoginUser.DoesNotExist:
             return None

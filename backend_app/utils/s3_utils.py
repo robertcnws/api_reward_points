@@ -6,6 +6,7 @@ import subprocess
 import io
 import zipfile
 import tarfile
+import re
 from pathlib import Path
 from PIL import Image, ImageOps
 from botocore.exceptions import ClientError
@@ -228,9 +229,12 @@ def generate_default_file_url(object_key):
 def delete_attachment_from_s3(key):
     bucket = settings.AWS_STORAGE_BUCKET_NAME
     account = getattr(settings, 'AWS_ACCOUNT_ID', None)
-    extra_args = {"ExpectedBucketOwner": account} if account else None
+    kwargs = {"Bucket": bucket, "Key": key}
+    if account:
+        if re.fullmatch(r"\d{12}", str(account)):
+            kwargs["ExpectedBucketOwner"] = str(account)
     try:
-        s3_client.delete_object(Bucket=bucket, Key=key, ExtraArgs=extra_args)
+        s3_client.delete_object(**kwargs)
         return True
     except ClientError as e:
         print("Error deleting file from S3:", e)
@@ -239,7 +243,6 @@ def delete_attachment_from_s3(key):
     
 def backup_mongo_to_s3(logger, mongo_uri, db_name, s3_bucket, s3_prefix):
     account = getattr(settings, 'AWS_ACCOUNT_ID', None)
-    extra_args = {"ExpectedBucketOwner": account} if account else None
     backup_folder = '/tmp/mongo_backup'
     if os.path.exists(backup_folder):
         subprocess.run(["rm", "-rf", backup_folder], check=True)
@@ -266,24 +269,26 @@ def backup_mongo_to_s3(logger, mongo_uri, db_name, s3_bucket, s3_prefix):
         logger.error("Error executing mongodump: %s", e.stderr.decode())
         raise
     try:
-        resp = s3_client.list_objects_v2(
-            Bucket=s3_bucket, 
-            Prefix=s3_prefix, 
-            ExtraArgs=extra_args
-        )
+        kwargs = {"Bucket": s3_bucket, "Prefix": s3_prefix}
+        if account:
+            if re.fullmatch(r"\d{12}", str(account)):
+                kwargs["ExpectedBucketOwner"] = str(account)
+        resp = s3_client.list_objects_v2(**kwargs)
         if 'Contents' in resp:
+            kwargs = {"Bucket": s3_bucket}
+            if account:
+                if re.fullmatch(r"\d{12}", str(account)):
+                    kwargs["ExpectedBucketOwner"] = str(account)
             for obj in resp['Contents']:
+                kwargs["Key"] = obj['Key']
                 logger.info("Deleting object in S3: %s", obj['Key'])
-                s3_client.delete_object(
-                    Bucket=s3_bucket, 
-                    Key=obj['Key'], 
-                    ExtraArgs=extra_args
-                )
+                s3_client.delete_object(**kwargs)
     except Exception as e:
         logger.error("Error deleting objects in S3: %s", e)
         raise
     try:
         s3_key = os.path.join(s3_prefix, backup_filename)
+        extra_args = {'ExpectedBucketOwner': str(account)} if account else {}
         s3_client.upload_file(
             backup_filepath, 
             s3_bucket, 

@@ -99,9 +99,6 @@ FRONTEND_URL = env('FRONTEND_URL', default='https://customerportal.newwindowsyst
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
@@ -336,6 +333,10 @@ EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
+# EMAIL ADDRESSES
+EMAIL_ADMIN = env('EMAIL_ADMIN', default='')
+EMAIL_SUPPORT = env('EMAIL_SUPPORT', default='')
 
 # AWS
 AWS_ACCOUNT_ID = env('AWS_ACCOUNT_ID', default='')
