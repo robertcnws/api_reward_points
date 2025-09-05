@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -11,22 +11,20 @@ import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter, usePathname } from 'src/routes/hooks';
-import { UserQuickChangePasswordForm } from 'src/sections/user/user-quick-change-password';
-import { useDataContext } from 'src/auth/context/data/data-context';
-import AvatarWithUpdate from 'src/sections/user/avatar-with-update';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
-import { varAlpha } from 'src/theme/styles';
-
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { AnimateAvatar } from 'src/components/animate';
+
+import AvatarWithUpdate from 'src/sections/user/avatar-with-update';
+import { UserQuickChangePasswordForm } from 'src/sections/user/user-quick-change-password';
 
 import { useMockedUser } from 'src/auth/hooks';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';

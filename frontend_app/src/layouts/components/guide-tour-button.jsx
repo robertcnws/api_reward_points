@@ -1,14 +1,13 @@
-import { m } from 'framer-motion';
 
-import Badge from '@mui/material/Badge';
-import SvgIcon from '@mui/material/SvgIcon';
 import IconButton from '@mui/material/IconButton';
-
-import { useSettingsContext } from 'src/components/settings/context';
 import { Box, Tooltip, Typography } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
-import { useDataContext } from 'src/auth/context/data/data-context';
+
 import { useRouter } from 'src/routes/hooks';
+
+import { Iconify } from 'src/components/iconify';
+import { useSettingsContext } from 'src/components/settings/context';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 // ----------------------------------------------------------------------
 

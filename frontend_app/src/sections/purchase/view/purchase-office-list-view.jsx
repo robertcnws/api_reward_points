@@ -173,12 +173,6 @@ export function PurchaseOfficeListView() {
     }
   }, [table]);
 
-  // useEffect(() => {
-  //   if (loadedPurchases && loadedPurchases?.length > 0) {
-  //     setTableData(loadedPurchases);
-  //   }
-  // }, [loadedPurchases]);
-
   useEffect(() => {
     const url = !isClient(roleName) ?
       wsEndpoints.rewardPoints.storeProductSelectionBuy.all :
@@ -189,25 +183,6 @@ export function PurchaseOfficeListView() {
       console.error('WebSocket error (toString):', errorEvent.toString());
     };
     socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-
-      // setTableData((prev) => {
-      //   switch (message.type) {
-      //     case 'created':
-      //       return [message.item, ...prev];
-
-      //     case 'updated':
-      //       return prev.map((row) =>
-      //         row.id === message.item.id ? message.item : row
-      //       );
-
-      //     case 'deleted':
-      //       return prev.filter((row) => row.id !== message.item.id);
-
-      //     default:
-      //       return prev;
-      //   }
-      // });
       refetchPurchases?.().catch(console.error);
     };
     return () => {

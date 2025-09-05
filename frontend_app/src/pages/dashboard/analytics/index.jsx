@@ -1,16 +1,15 @@
-import { Box, Button, IconButton, Typography } from '@mui/material';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useDataContext } from 'src/auth/context/data/data-context';
-import { LoadingContext } from 'src/auth/context/loading-context';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { Iconify } from 'src/components/iconify';
+import { useMemo, useEffect, useCallback } from 'react';
 
-import { CONFIG } from 'src/config-global';
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+
+import { CONFIG } from 'src/config-global';
+
 import { OverviewAnalyticsView } from 'src/sections/overview/analytics/view';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
+
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 // ----------------------------------------------------------------------
 

@@ -4,13 +4,11 @@ import { useMemo, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
-import IconButton, { iconButtonClasses } from '@mui/material/IconButton';
-import { Iconify } from 'src/components/iconify';
-import { Portal, Tooltip } from '@mui/material';
+import { iconButtonClasses } from '@mui/material/IconButton';
+
+import { useRouter } from 'src/routes/hooks';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useRouter } from 'src/routes/hooks';
-import { useZohoSalesIQ } from 'src/hooks/use-zoho-salesiq';
 
 import { wsEndpoints } from 'src/utils/axios';
 import { isClient } from 'src/utils/check-permissions';
@@ -25,11 +23,13 @@ import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/fie
 
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
+import ChatLauncher from './chat-laucher';
 import { layoutClasses } from '../classes';
 import { NavVertical } from './nav-vertical';
 import { CustomFooter } from '../main/footer';
 import { NavHorizontal } from './nav-horizontal';
 import { _account } from '../config-nav-account';
+import OnboardingGuide from './onboarding-guide';
 import { Searchbar } from '../components/searchbar';
 import { MenuButton } from '../components/menu-button';
 import { LayoutSection } from '../core/layout-section';
@@ -39,9 +39,6 @@ import { StyledDivider, useNavColorVars } from './styles';
 import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
-import OnboardingGuide from './onboarding-guide';
-import { GuideTourButton } from '../components/guide-tour-button';
-import ChatLauncher from './chat-laucher';
 
 // ----------------------------------------------------------------------
 

@@ -1,19 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { useRouter } from 'src/routes/hooks';
-import { Box, Button, IconButton, Typography } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { LoadingContext } from 'src/auth/context/loading-context';
-
-import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { OverviewAdminView } from '../../admin/view';
-import { WelcomeTypography } from '../welcome-typography';
 import { OverviewEcommerceView } from '../../e-commerce/view';
 
 

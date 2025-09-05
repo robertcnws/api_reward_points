@@ -1,6 +1,6 @@
-import { Box, IconButton, Portal, Paper, Tooltip, Button, Typography, ClickAwayListener, Divider, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import CloseIcon from '@mui/icons-material/CloseRounded';
-import ChatIcon from '@mui/icons-material/ChatBubbleRounded';
+import { Box, Paper, Button, Select, Tooltip, Divider, MenuItem, IconButton, Typography, InputLabel, FormControl, ClickAwayListener } from '@mui/material';
+
 import { Iconify } from 'src/components/iconify';
 
 export default function ChatContainer({

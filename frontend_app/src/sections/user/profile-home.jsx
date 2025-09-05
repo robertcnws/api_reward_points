@@ -10,7 +10,7 @@ import Divider from '@mui/material/Divider';
 import InputBase from '@mui/material/InputBase';
 import Grid from '@mui/material/Unstable_Grid2';
 import CardHeader from '@mui/material/CardHeader';
-import { IconButton, Tooltip, Typography } from '@mui/material';
+import { Tooltip, IconButton, Typography } from '@mui/material';
 
 import { fNumber } from 'src/utils/format-number';
 
@@ -20,11 +20,10 @@ import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/asse
 
 import { Iconify } from 'src/components/iconify';
 
-import { ProfilePostItem } from './profile-post-item';
 import { ProfileAboutEditForm } from './profile-about-edit-form';
 import { ProfileSchoolEditForm } from './profile-school-edit-form';
-import { ProfileAddressEditForm } from './profile-address-edit-form';
 import { ProfileSocialEditForm } from './profile-social-edit-form';
+import { ProfileAddressEditForm } from './profile-address-edit-form';
 
 
 // ----------------------------------------------------------------------

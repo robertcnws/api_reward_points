@@ -4,18 +4,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import Box from '@mui/material/Box';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Label } from 'src/components/label';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
+
 import { b64urlEncode } from 'src/utils/obfuscate';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { PasswordIcon } from 'src/assets/icons';
 
+import { Label } from 'src/components/label';
 import { Form, Field } from 'src/components/hook-form';
 
-import { resetPassword } from '../../context/amplify';
 import { FormHead } from '../../components/form-head';
 import { FormReturnLink } from '../../components/form-return-link';
 
@@ -53,7 +53,7 @@ export function JwtResetPasswordView() {
         email: data.email
       });
 
-      const email = response.data.data.email;
+      const {email} = response.data.data;
 
       const encodedEmail = b64urlEncode(email);
 

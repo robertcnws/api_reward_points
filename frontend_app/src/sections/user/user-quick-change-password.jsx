@@ -12,15 +12,15 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
+import { useRouter } from 'src/routes/hooks';
+
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
 
+import { signOut } from 'src/auth/context/jwt';
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { setSession, signOut } from 'src/auth/context/jwt';
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 

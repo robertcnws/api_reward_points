@@ -9,7 +9,6 @@ import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Card, TextField, Typography, LinearProgress } from '@mui/material';
-import { Label } from 'src/components/label';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -19,6 +18,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
+import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Form, Field } from 'src/components/hook-form';

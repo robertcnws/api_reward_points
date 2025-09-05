@@ -1,7 +1,7 @@
 import { z as zod } from 'zod';
-import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -10,11 +10,12 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
-import { b64urlDecode } from 'src/utils/obfuscate';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useCountdownSeconds } from 'src/hooks/use-countdown';
+
+import { b64urlDecode } from 'src/utils/obfuscate';
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { SentIcon } from 'src/assets/icons';
 
@@ -22,10 +23,9 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
 import { FormHead } from '../../components/form-head';
+import { CustomErrorComponent } from './custom-error-component';
 import { FormReturnLink } from '../../components/form-return-link';
 import { FormResendCode } from '../../components/form-resend-code';
-import { resetPassword, updatePassword } from '../../context/amplify';
-import { CustomErrorComponent } from './custom-error-component';
 
 
 // ----------------------------------------------------------------------

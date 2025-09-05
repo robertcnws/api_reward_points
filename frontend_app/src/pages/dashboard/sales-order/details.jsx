@@ -1,13 +1,13 @@
-import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
+
+import { useParams } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/config-global';
 
 import { SalesOrderDetailsView } from 'src/sections/sales-order/view';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
-import { useParams } from 'src/routes/hooks';
 
 // ----------------------------------------------------------------------
 

@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+
 import { isClient } from 'src/utils/check-permissions';
 
 import { _socials } from 'src/_mock';
@@ -21,6 +22,7 @@ import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/asse
 import { Logo } from 'src/components/logo';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+
 import { GuideTourButton } from '../components/guide-tour-button';
 
 

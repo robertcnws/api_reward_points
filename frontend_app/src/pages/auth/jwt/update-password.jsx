@@ -1,16 +1,19 @@
+import { useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
+import { Box, Alert, Typography, LinearProgress } from '@mui/material';
+
+import { paths } from 'src/routes/paths';
+import { useSearchParams } from 'src/routes/hooks';
+
+import { b64urlDecode } from 'src/utils/obfuscate';
+
 import { CONFIG } from 'src/config-global';
+import { useRewardLoginUserRecoveryCodeByEmail } from 'src/_mock/__reward-login-users-recovery-code';
 
 import { JwtUpdatePasswordView } from 'src/auth/view/jwt';
-import { useRewardLoginUserRecoveryCodeByEmail } from 'src/_mock/__reward-login-users-recovery-code';
-import { useParams, useSearchParams } from 'src/routes/hooks';
-import { fieldsUserRecoveryCode } from 'src/auth/context/data/field-descriptors/field-descriptors-login-users-recovery-code';
-import { Alert, Box, LinearProgress, Typography } from '@mui/material';
-import { b64urlDecode } from 'src/utils/obfuscate';
-import { paths } from 'src/routes/paths';
 import { FormReturnLink } from 'src/auth/components/form-return-link';
-import { useEffect, useMemo } from 'react';
+import { fieldsUserRecoveryCode } from 'src/auth/context/data/field-descriptors/field-descriptors-login-users-recovery-code';
 
 // ----------------------------------------------------------------------
 

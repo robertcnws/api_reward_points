@@ -1,9 +1,13 @@
-import React, { useState, useCallback, useMemo, useContext, createContext } from 'react';
+import React, { useMemo, useState, useContext, useCallback, createContext } from 'react';
 
 import {
   useRewardPoints,
   RewardPointsProvider
 } from './contexts/reward-points-context';
+import {
+  useRewardJoyRides,
+  RewardJoyRidesProvider
+} from './contexts/reward-joy-rides-context';
 import {
   useRewardUserRoles,
   RewardUserRolesProvider
@@ -12,6 +16,10 @@ import {
   useRewardLoginUsers,
   RewardLoginUsersProvider
 } from './contexts/reward-login-users-context';
+import {
+  useRewardIntroSteps,
+  RewardIntroStepsProvider
+} from './contexts/reward-intro-steps-context';
 import {
   useRewardPointsSettings,
   RewardPointsSettingsProvider
@@ -36,16 +44,6 @@ import {
   useRewardStoreProductSelectionCart,
   RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
-
-import {
-  useRewardJoyRides,
-  RewardJoyRidesProvider
-} from './contexts/reward-joy-rides-context';
-
-import {
-  useRewardIntroSteps,
-  RewardIntroStepsProvider
-} from './contexts/reward-intro-steps-context';
 
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);

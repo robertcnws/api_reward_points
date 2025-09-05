@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { useTheme } from '@mui/material/styles';
@@ -9,7 +10,7 @@ import { fNumber } from 'src/utils/format-number';
 
 import { varAlpha } from 'src/theme/styles';
 
-import { Chart, ChartSelect, useChart } from 'src/components/chart';
+import { Chart, useChart, ChartSelect } from 'src/components/chart';
 
 
 // ----------------------------------------------------------------------

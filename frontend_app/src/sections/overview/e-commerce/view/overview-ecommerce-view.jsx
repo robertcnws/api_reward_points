@@ -1,28 +1,26 @@
 import dayjs from 'dayjs';
-import { useMemo, useContext, useCallback, useEffect, useState } from 'react';
+import { useMemo, useContext, useCallback } from 'react';
 
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Box, Typography, LinearProgress, IconButton } from '@mui/material';
+import { Box, Typography, LinearProgress } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
 import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
+import OnboardingGuide from 'src/layouts/dashboard/onboarding-guide';
 
 import { Iconify } from 'src/components/iconify';
-import { useBoolean } from 'src/hooks/use-boolean';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
-import OnboardingGuide from 'src/layouts/dashboard/onboarding-guide';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { EcommerceWelcome } from '../ecommerce-welcome';
 import { EcommerceWebsiteVisits } from '../ecommerce-website-visits';
@@ -306,11 +304,9 @@ export function OverviewEcommerceView({
                             Welcome 🎉 {`${displayFirstName} ${displayLastName}`}
                           </Typography>
                           {!isMobile && (
-                            <>
-                              <Typography variant="h6">
+                            <Typography variant="h6">
                                 Company: <b>{displayCompanyName}</b>
                               </Typography>
-                            </>
                           )}
                         </Box>
                         {!isMobile && (

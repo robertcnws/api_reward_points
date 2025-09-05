@@ -15,8 +15,8 @@ import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 import { varAlpha } from 'src/theme/styles';
 
 import { Image } from 'src/components/image';
-import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
 import { Iconify } from 'src/components/iconify';
+import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
 
 // ----------------------------------------------------------------------
 

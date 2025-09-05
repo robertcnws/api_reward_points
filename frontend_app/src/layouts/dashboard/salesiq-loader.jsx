@@ -9,7 +9,7 @@ export default function SalesIQLoader({ widgetCode, onReady }) {
     const prev = w.$zoho.salesiq?.ready;
     
     w.$zoho.salesiq = w.$zoho.salesiq || {};
-    w.$zoho.salesiq.ready = function () {
+    w.$zoho.salesiq.ready = () => {
       if (typeof prev === 'function') prev();
       if (typeof onReady === 'function') onReady(w.$zoho.salesiq);
     };

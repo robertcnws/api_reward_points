@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Joyride, { STATUS, ACTIONS, EVENTS } from 'react-joyride';
+import React, { useState, useEffect } from 'react';
+import Joyride, { STATUS, ACTIONS } from 'react-joyride';
+
 import { useDataContext } from 'src/auth/context/data/data-context';
 
 const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, disableBeacon = false }) => {

@@ -1,9 +1,12 @@
-import { useState, useMemo, useCallback, useEffect, useContext } from 'react';
-import { LoadingContext } from 'src/auth/context/loading-context';
+import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+
 import {
     Box,
     Portal,
 } from '@mui/material';
+
+import { LoadingContext } from 'src/auth/context/loading-context';
+
 import ChatContainer from './chat-container';
 
 

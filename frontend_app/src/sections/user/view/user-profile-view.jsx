@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -9,15 +9,15 @@ import { paths } from 'src/routes/paths';
 
 import { useTabs } from 'src/hooks/use-tabs';
 
+import { isClient } from 'src/utils/check-permissions';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import { _userAbout, _userFeeds, _userFriends, _userGallery, _userFollowers } from 'src/_mock';
-import { isClient } from 'src/utils/check-permissions';
-import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { ProfileHome } from '../profile-home';
 import { ProfileCover } from '../profile-cover';

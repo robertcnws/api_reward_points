@@ -1,3 +1,5 @@
+import { useContext } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { Typography } from '@mui/material';
@@ -9,8 +11,8 @@ import { varAlpha, stylesMode } from 'src/theme/styles';
 
 import { Iconify } from 'src/components/iconify';
 import { Chart, useChart } from 'src/components/chart';
+
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { useContext } from 'react';
 
 // ----------------------------------------------------------------------
 

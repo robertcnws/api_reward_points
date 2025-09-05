@@ -1,11 +1,12 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
 import { useTheme } from '@mui/material/styles';
 import ListItemText from '@mui/material/ListItemText';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
+
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { varAlpha, bgGradient } from 'src/theme/styles';
+
 import AvatarWithUpdate from './avatar-with-update';
 
 // ----------------------------------------------------------------------

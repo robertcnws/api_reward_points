@@ -1,10 +1,11 @@
+// app.jsx
 import 'src/global.css';
 
-// ----------------------------------------------------------------------
-
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+
+import { Box, Button, IconButton, Typography } from '@mui/material';
 
 import { Router } from 'src/routes/sections';
 
@@ -19,25 +20,20 @@ import { Snackbar } from 'src/components/snackbar';
 import { ProgressBar } from 'src/components/progress-bar';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/components/settings';
-import { Box, Button, IconButton, Typography } from '@mui/material';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
-import { getSession, AuthProvider as JwtAuthProvider, setSession } from 'src/auth/context/jwt';
 import { AuthProvider as Auth0AuthProvider } from 'src/auth/context/auth0';
 import { AuthProvider as AmplifyAuthProvider } from 'src/auth/context/amplify';
-import { useBoolean } from './hooks/use-boolean';
-import { ConfirmDialog } from './components/custom-dialog';
-import { Iconify } from './components/iconify';
-import { axiosInstanceBackend, endpoints } from './utils/axios';
+import { getSession, AuthProvider as JwtAuthProvider } from 'src/auth/context/jwt';
 
 import client from './utils/graphql-client';
+import { Iconify } from './components/iconify';
+import { useBoolean } from './hooks/use-boolean';
+import { ConfirmDialog } from './components/custom-dialog';
 import { RouteProvider } from './auth/context/router-context';
-import { DataProvider, useDataContext } from './auth/context/data/data-context';
+import { endpoints, axiosInstanceBackend } from './utils/axios';
 import BackdropBackground from './layouts/components/backdrop-background';
-import OnboardingGuide from './layouts/dashboard/onboarding-guide';
-
-
-
+import { DataProvider, useDataContext } from './auth/context/data/data-context';
 
 // ----------------------------------------------------------------------
 
@@ -48,10 +44,239 @@ const AuthProvider =
 
 const queryClient = new QueryClient();
 
+const isClientRole = (roleName) =>
+  String(roleName || '').toLowerCase() === 'client';
+
+function useAuthBoot(session, loadingUserByUsername) {
+  const isLoggedIn = Boolean(session);
+  const authResolved = session !== undefined;
+  const bootReady = authResolved && (!isLoggedIn || !loadingUserByUsername);
+  return { isLoggedIn, bootReady };
+}
+
+function useIntroController({
+  session,
+  userLogged,
+  userByUsername,
+  loadingUserByUsername,
+  loadedAllRewardIntroSteps,
+  refetchUserByUsername,
+}) {
+  const roleName =
+    userLogged?.data?.user_role?.name ??
+    userLogged?.data?.userRole?.name ??
+    '';
+
+  const isClient = isClientRole(roleName);
+  const { isLoggedIn, bootReady } = useAuthBoot(session, loadingUserByUsername);
+
+  const showModalIntro = useBoolean(false);
+  const isTranslated = useBoolean(false);
+  const [index, setIndex] = useState(0);
+
+  const totalSteps = loadedAllRewardIntroSteps?.length || 0;
+
+  useEffect(() => {
+    showModalIntro.setValue(Boolean(isLoggedIn && isClient && userByUsername?.showIntroGuideModal));
+  }, [isLoggedIn, isClient, userByUsername, showModalIntro]);
+
+  const introTitle = useMemo(() => {
+    const step = loadedAllRewardIntroSteps?.[index];
+    return isTranslated.value ? step?.translation?.es?.title : step?.title;
+  }, [index, loadedAllRewardIntroSteps, isTranslated]);
+
+  const introContent = useMemo(() => {
+    const step = loadedAllRewardIntroSteps?.[index];
+    return isTranslated.value ? step?.translation?.es?.content : step?.content;
+  }, [index, loadedAllRewardIntroSteps, isTranslated]);
+
+  const isLast = index >= Math.max(0, totalSteps - 1);
+
+  const handleCloseIntro = useCallback(async () => {
+    try {
+      if (isClient) {
+        await axiosInstanceBackend.post(
+          endpoints.user.changeShowIntroGuide.user(userByUsername?.id),
+          { userReporter: JSON.stringify(userLogged?.data) }
+        );
+        await (refetchUserByUsername?.() || Promise.resolve());
+      }
+    } finally {
+      showModalIntro.onFalse();
+    }
+  }, [isClient, userByUsername, userLogged, refetchUserByUsername, showModalIntro]);
+
+  const next = useCallback(async () => {
+    if (index < totalSteps - 1) {
+      setIndex((i) => i + 1);
+      return;
+    }
+    await handleCloseIntro();
+  }, [index, totalSteps, handleCloseIntro]);
+
+  const prev = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
+  const toggleLang = useCallback(() => isTranslated.setValue(!isTranslated.value), [isTranslated]);
+
+  const shouldShowIntro = Boolean(isLoggedIn && isClient && showModalIntro.value && totalSteps);
+
+  return {
+    bootReady,
+    shouldShowIntro,
+    introTitle,
+    introContent,
+    isTranslated,
+    index,
+    isLast,
+    prev,
+    next,
+    toggleLang,
+    handleCloseIntro,
+  };
+}
+
+function buttonLabel(isLast, isTranslated) {
+  let label;
+  if (isLast) {
+    label = isTranslated ? 'Iniciar Tour' : 'Start Tour';
+  } else {
+    label = isTranslated ? 'Siguiente' : 'Next';
+  }
+  return label;
+}
+
+function IntroDialog({
+  title,
+  content,
+  isMobile,
+  isTranslated,
+  onToggleLang,
+  onPrev,
+  onNext,
+  onClose,
+  canGoBack,
+  isLast,
+}) {
+  return (
+    <ConfirmDialog
+      maxWidth="md"
+      open
+      onClose={onClose}
+      title={
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: !isMobile ? 'row' : 'column',
+            justifyContent: !isMobile ? 'space-between' : 'flex-start',
+            gap: 1,
+            width: 1,
+          }}
+        >
+          <Typography variant="h6">{title}</Typography>
+          <IconButton
+            onClick={onToggleLang}
+            sx={{
+              fontSize: 14,
+              '&:hover': { boxShadow: 'none', backgroundColor: 'transparent' },
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+            }}
+          >
+            <Iconify icon="ri:translate" />
+            &nbsp;Translate {!isTranslated ? 'to Spanish' : 'to English'}
+          </IconButton>
+        </Box>
+      }
+      content={
+        <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
+          {content}
+        </Typography>
+      }
+      closeName={!isTranslated ? 'Skip' : 'Omitir'}
+      action={
+        <>
+          {canGoBack && (
+            <Button variant="contained" color="success" onClick={onPrev}>
+              {!isTranslated ? 'Previous' : 'Anterior'}
+            </Button>
+          )}
+          <Button variant="contained" color="primary" onClick={onNext}>
+            {buttonLabel(isLast, isTranslated)}
+          </Button>
+        </>
+      }
+      BackdropProps={{ style: { backgroundColor: 'whitesmoke' } }}
+    />
+  );
+}
+
+function AppInner({ session }) {
+  const { loading, error, setError, component, isMobile } = useContext(LoadingContext);
+  const {
+    userByUsername,
+    loadingUserByUsername,
+    refetchUserByUsername,
+    loadedAllRewardIntroSteps,
+  } = useDataContext();
+
+  const userLogged = useMemo(
+    () => JSON.parse(sessionStorage.getItem('userLogged') || 'null'),
+    []
+  );
+
+  const {
+    bootReady,
+    shouldShowIntro,
+    introTitle,
+    introContent,
+    isTranslated,
+    index,
+    isLast,
+    prev,
+    next,
+    toggleLang,
+    handleCloseIntro,
+  } = useIntroController({
+    session,
+    userLogged,
+    userByUsername,
+    loadingUserByUsername,
+    loadedAllRewardIntroSteps,
+    refetchUserByUsername,
+  });
+
+  if (!bootReady) return null;
+
+  if (shouldShowIntro) {
+    return (
+      <IntroDialog
+        title={introTitle}
+        content={introContent}
+        isMobile={isMobile}
+        isTranslated={isTranslated.value}
+        onToggleLang={toggleLang}
+        onPrev={prev}
+        onNext={next}
+        onClose={handleCloseIntro}
+        canGoBack={index > 0}
+        isLast={isLast}
+      />
+    );
+  }
+
+  return (
+    <MotionLazy>
+      <Snackbar />
+      <ProgressBar />
+      <SettingsDrawer />
+      <Router />
+      <BackdropBackground loading={loading} error={error} setError={setError} component={component} />
+    </MotionLazy>
+  );
+}
+
 export default function App() {
   useScrollToTop();
-
-  const { loading, error, setError, component, isMobile } = useContext(LoadingContext);
 
   const [session, setSessionState] = useState(undefined);
 
@@ -63,149 +288,6 @@ export default function App() {
     return () => { isMounted = false; };
   }, []);
 
-  function AppInner() {
-    const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
-
-    const {
-      userByUsername,
-      loadingUserByUsername,
-      refetchUserByUsername,
-      loadedAllRewardIntroSteps,
-    } = useDataContext();
-
-    const roleName =
-      userLogged?.data?.user_role?.name ??
-      userLogged?.data?.userRole?.name ?? '';
-    const isClient = String(roleName || '').toLowerCase() === 'client';
-    
-    const isLoggedIn = Boolean(session);
-    const authResolved = session !== undefined;
-
-    const showModalIntro = useBoolean(false);
-    const showModalTour = useBoolean(false);
-    const isTranslated = useBoolean(false);
-    const [currentIntroIndex, setCurrentIntroIndex] = useState(0);
-
-    const introTitle = useMemo(
-      () => (!isTranslated.value
-        ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.title
-        : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.title),
-      [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
-    );
-
-    const introContent = useMemo(
-      () => (!isTranslated.value
-        ? loadedAllRewardIntroSteps?.[currentIntroIndex]?.content
-        : loadedAllRewardIntroSteps?.[currentIntroIndex]?.translation?.es?.content),
-      [currentIntroIndex, loadedAllRewardIntroSteps, isTranslated]
-    );
-
-    useEffect(() => {
-      const shouldShow = Boolean(
-        isLoggedIn && isClient && userByUsername?.showIntroGuideModal
-      );
-      showModalIntro.setValue(shouldShow);
-    }, [isLoggedIn, isClient, userByUsername, showModalIntro]);
-
-    const handleShowIntroGuide = useCallback(async () => {
-      try {
-        if (isClient) {
-          await axiosInstanceBackend.post(
-            endpoints.user.changeShowIntroGuide.user(userByUsername?.id),
-            { userReporter: JSON.stringify(userLogged?.data) }
-          );
-          await (refetchUserByUsername?.() || Promise.resolve());
-        }
-      } finally {
-        showModalIntro.onFalse();
-      }
-    }, [isClient, userByUsername, userLogged, refetchUserByUsername, showModalIntro]);
-    
-    const bootReady = authResolved && (!isLoggedIn || !loadingUserByUsername);
-    if (!bootReady) {
-      return null; // o <BackdropBackground loading />
-    }
-    
-    const shouldShowIntro = Boolean(
-      isLoggedIn && isClient && userByUsername?.showIntroGuideModal
-    );
-    
-    if (shouldShowIntro) {
-      const total = loadedAllRewardIntroSteps?.length || 0;
-      const isLast = currentIntroIndex >= total - 1;
-      
-      if (!total) return null; // o un loader
-
-      return (
-        <ConfirmDialog
-          maxWidth="md"
-          open
-          onClose={handleShowIntroGuide}
-          title={
-            <Box sx={{
-              display: 'flex',
-              flexDirection: !isMobile ? 'row' : 'column',
-              justifyContent: !isMobile ? 'space-between' : 'flex-start',
-              gap: 1, width: 1,
-            }}>
-              <Typography variant="h6">{introTitle}</Typography>
-              <IconButton
-                onClick={() => isTranslated.setValue(!isTranslated.value)}
-                sx={{
-                  fontSize: 14, '&:hover': { boxShadow: 'none', backgroundColor: 'transparent' },
-                  display: 'flex', flexDirection: 'row', justifyContent: 'flex-start'
-                }}
-              >
-                <Iconify icon="ri:translate" />
-                &nbsp;Translate {!isTranslated.value ? 'to Spanish' : 'to English'}
-              </IconButton>
-            </Box>
-          }
-          content={<Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>{introContent}</Typography>}
-          closeName={!isTranslated.value ? 'Skip' : 'Omitir'}
-          action={
-            <>
-              {currentIntroIndex > 0 && (
-                <Button variant="contained" color="success"
-                  onClick={() => setCurrentIntroIndex(i => Math.max(0, i - 1))}>
-                  {!isTranslated.value ? 'Previous' : 'Anterior'}
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={async () => {
-                  if (currentIntroIndex < (loadedAllRewardIntroSteps?.length || 0) - 1) {
-                    setCurrentIntroIndex(i => i + 1);
-                  } else {
-                    await handleShowIntroGuide();
-                    showModalTour.onTrue();
-                  }
-                }}
-              >
-                {isLast
-                  ? (!isTranslated.value ? 'Start Tour' : 'Iniciar Tour')
-                  : (!isTranslated.value ? 'Next' : 'Siguiente')}
-              </Button>
-            </>
-          }
-          BackdropProps={{ style: { backgroundColor: 'whitesmoke' } }}
-        />
-      );
-    }
-    
-    return (
-      <MotionLazy>
-        <Snackbar />
-        <ProgressBar />
-        <SettingsDrawer />
-        <Router />
-        <BackdropBackground loading={loading} error={error} setError={setError} component={component} />
-      </MotionLazy>
-    );
-  }
-
-
   return (
     <I18nProvider>
       <LocalizationProvider>
@@ -216,7 +298,7 @@ export default function App() {
                 <SettingsProvider settings={defaultSettings}>
                   <ThemeProvider>
                     <DataProvider>
-                      <AppInner />
+                      <AppInner session={session} />
                     </DataProvider>
                   </ThemeProvider>
                 </SettingsProvider>
@@ -225,6 +307,6 @@ export default function App() {
           </ApolloProvider>
         </AuthProvider>
       </LocalizationProvider>
-    </I18nProvider >
+    </I18nProvider>
   );
 }

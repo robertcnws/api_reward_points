@@ -49,16 +49,18 @@ def fetch_sales_orders(data):
     
     items_to_get = []
     session = requests.Session()
+    page = 1
     while True:
         try:
-            response = session.get(url, headers=headers)
+            paged_url = f"{url}&page={page}" if '?' in url else f"{url}?page={page}"
+            response = session.get(paged_url, headers=headers)
             response.raise_for_status()
             items = response.json()
-            items_confirmed = [item for item in items.get('results', [])]
+            items_confirmed = list(items.get('results', []))
             items_to_get.extend(items_confirmed)
             if not items.get('next', None):
                 break
-            params['page'] = int(params.get('page', 0) or 0) + 1
+            page += 1
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching sales orders: {e}")
             return {'error': 'Failed to fetch sales orders to reward points'}
@@ -84,52 +86,43 @@ def list_client_invoices(request):
 #############################################
     
 def fetch_client_invoices(data):
-    print(f"Fetching client invoices with data: {data}")
     headers = config_headers()
-    company_name = data.get('companyName', None)
-    first_name = data.get('firstName', None)
-    last_name = data.get('lastName', None)
-    phone = data.get('phone', None)
-    email = data.get('email', None)
-    status = data.get('status', None)
-    last_modified_time = data.get('lastModifiedTime', None)
+    base_url = f"{settings.API_MAIN_DATA_URL}/zoho/invoices_to_rewards_points/"
     
-    params = []
-    url = f'{settings.API_MAIN_DATA_URL}/zoho/invoices_to_rewards_points/?'
-    if company_name and company_name != '':
-        params.append(f"company_name={company_name}")
-    if first_name and first_name != '':
-        params.append(f"first_name={first_name}")
-    if last_name and last_name != '':
-        params.append(f"last_name={last_name}")
-    if phone and phone != '':
-        params.append(f"phone={phone}")
-    if email and email != '':
-        params.append(f"email={email}")
-    if status and status != '':
-        params.append(f"status={status}")  
-    if last_modified_time and last_modified_time != '':
-        params.append(f"last_modified_time={last_modified_time}")
-    
-    if len(params) > 0:
-        url = f"{url}{'&'.join(params)}"
-    
-    items_to_get = []
+    field_map = {
+        "companyName": "company_name",
+        "firstName": "first_name",
+        "lastName": "last_name",
+        "phone": "phone",
+        "email": "email",
+        "status": "status",
+        "lastModifiedTime": "last_modified_time",
+    }
+    base_params = {
+        api_key: data.get(src_key)
+        for src_key, api_key in field_map.items()
+        if data.get(src_key)
+    }
+
     session = requests.Session()
-    while True:
+    items = []
+    next_url = base_url
+    params = base_params  
+
+    while next_url:
         try:
-            response = session.get(url, headers=headers)
-            response.raise_for_status()
-            items = response.json()
-            items_confirmed = [item for item in items.get('results', [])]
-            items_to_get.extend(items_confirmed)
-            if not items.get('next', None):
-                break
-            params['page'] += 1
+            resp = session.get(next_url, headers=headers, params=params, timeout=30)
+            resp.raise_for_status()
+            payload = resp.json()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching invoices: {e}")
-            return {'error': 'Failed to fetch invoices to reward points'}
-    return {'count': len(items_to_get), 'results': items_to_get}
+            logger.error("Error fetching invoices: %s", e)
+            return {"error": "Failed to fetch invoices to reward points"}
+
+        items.extend(payload.get("results", []))
+        next_url = payload.get("next")
+        params = None 
+
+    return {"count": len(items), "results": items}
 
 
 #############################################
@@ -138,8 +131,6 @@ def fetch_client_invoices(data):
 
 def list_items(request):
     data = request.query_params if hasattr(request, 'query_params') else request.GET
-    # if not data:
-    #     return JsonResponse({'error': 'No data provided'}, status=400)
     response = fetch_items(data)
     if 'error' in response:
         return JsonResponse({'error': response['error']}, status=500)   
@@ -158,11 +149,6 @@ def fetch_items(data=None):
     
     page = data.get('page', 1) if data else 1
     page_size = data.get('page_size', 100) if data else 100
-    # params.append(f"page={page if page else 1}")
-    # params.append(f"page_size={page_size if page_size else 100}")
-    
-    # if len(params) > 0:
-    #     url = f"{url}{'&'.join(params)}"
     
     params = {
         'page': int(page) if page else 1,
@@ -177,7 +163,7 @@ def fetch_items(data=None):
             response.raise_for_status()
             items = response.json()
             # print(f"Items fetched: {items}")
-            items_confirmed = [item for item in items.get('results', [])]
+            items_confirmed = list(items.get('results', []))
             items_to_get.extend(items_confirmed)
             if not items.get('next', None):
                 break

@@ -1,9 +1,12 @@
-import { Box, Avatar, IconButton, Tooltip } from '@mui/material';
+import { useState, useEffect } from 'react';
+
 import { useTheme } from '@mui/material/styles';
+import { Box, Avatar, Tooltip, IconButton } from '@mui/material';
 import PhotoCameraRoundedIcon from '@mui/icons-material/PhotoCameraRounded';
+
+import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+
 import { varAlpha } from 'src/theme/styles';
-import { useEffect, useState } from 'react';
-import { axiosInstanceBackend, endpoints } from 'src/utils/axios';
 
 function AvatarWithUpdate({ name, avatarUrl, keyAvatar, onSelectFile = null }) {
     const theme = useTheme();
