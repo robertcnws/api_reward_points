@@ -105,7 +105,8 @@ def create_reward_joyrides():
                 "component_id": "dashboard-overview",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "1-welcome"
             },
             {
                 "title": "Orders & Balances",
@@ -119,7 +120,8 @@ def create_reward_joyrides():
                 "component_id": "orders-metrics",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "2-order-and-balances"
             },
             {
                 "title": "Invoice History",
@@ -133,7 +135,8 @@ def create_reward_joyrides():
                 "component_id": "invoice-history-chart",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "3-invoice-history"
             },
             {
                 "title": "Browse Rewards",
@@ -147,7 +150,8 @@ def create_reward_joyrides():
                 "component_id": "reward-store-link",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_vertical"
+                "module": "nav_vertical",
+                "related_image_name": "4-reward-carrousel"
             },
             {
                 "title": "My Sales Orders",
@@ -161,7 +165,8 @@ def create_reward_joyrides():
                 "component_id": "my-sales-orders-link",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_vertical"
+                "module": "nav_vertical",
+                "related_image_name": "7-my-sales-order"
             },
             {
                 "title": "My Rewards Orders",
@@ -175,7 +180,8 @@ def create_reward_joyrides():
                 "component_id": "my-rewards-orders-link",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_vertical"
+                "module": "nav_vertical",
+                "related_image_name": "6-my-reward-order"
             },
             {
                 "title": "Rewards Carrousel",
@@ -189,7 +195,8 @@ def create_reward_joyrides():
                 "component_id": "rewards-carrousel",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "8-my-reward-orders"
             },
             {
                 "title": "Reward Points History",
@@ -203,7 +210,8 @@ def create_reward_joyrides():
                 "component_id": "reward-points-history-list",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "5-my-reward-points-history"
             },
             {
                 "title": "My Cart",
@@ -217,7 +225,8 @@ def create_reward_joyrides():
                 "component_id": "my-cart",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_top"
+                "module": "nav_top",
+                "related_image_name": "9-my-carts"
             },
             {
                 "title": "My Navigation Links",
@@ -231,7 +240,8 @@ def create_reward_joyrides():
                 "component_id": "my-navigation-links",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_top"
+                "module": "nav_top",
+                "related_image_name": "10-my-navigation-link"
             },
             {
                 "title": "My UI Settings",
@@ -245,7 +255,8 @@ def create_reward_joyrides():
                 "component_id": "my-ui-settings",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "nav_top"
+                "module": "nav_top",
+                "related_image_name": "11-my-ui-setting"
             },
             {
                 "title": "Chat with operator(s)",
@@ -259,7 +270,8 @@ def create_reward_joyrides():
                 "component_id": "chat-with-operators",
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
-                "module": "dashboard"
+                "module": "dashboard",
+                "related_image_name": "12-chat-with-operators"
             },
     ]
     for step in array_of_steps:
@@ -272,10 +284,19 @@ def create_reward_joyrides():
                 component_id=step['component_id'],
                 created_time=step['created_time'],
                 last_modified_time=step['last_modified_time'],
-                module=step['module']
+                module=step['module'],
+                related_image_name=step['related_image_name']
             )
+        elif not joyride_step.title:
+            joyride_step.title = step['title']
+        elif not joyride_step.description:
+            joyride_step.description = step['description']
         elif not joyride_step.translation:
             joyride_step.translation = step['translation']
+        elif not joyride_step.related_image_name:
+            joyride_step.related_image_name = step['related_image_name']
+        elif not joyride_step.module:
+            joyride_step.module = step['module']
         joyride_step.save()
     print("Default reward joyrides created.")
     

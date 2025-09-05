@@ -25,15 +25,22 @@ export const Logo = forwardRef(
 
     const fullLogoPNG = (
       <img
-        src="/logo/logo-removebg.png"
+        // src="/logo/logo-removebg.png"
+        src="/logo/design/0-login.png"
         alt="Logo"
         width={width}
         height={height}
         className={className}
-        style={{ objectFit: 'contain', ...sx }}
+        style={{ 
+          objectFit: 'contain', 
+          marginBottom: '15px',
+          ...sx 
+        }}
         {...other}
       />
     )
+
+
 
     const fullLogo = (
       <svg

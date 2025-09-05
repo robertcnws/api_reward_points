@@ -16,10 +16,11 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, dis
     useEffect(() => {
         if (joyRides && joyRides.length > 0) {
             const finalJoyRides = stepFilters ? joyRides.filter(stepFilters) : joyRides;
-            setSteps(finalJoyRides.map(({ componentId, title, description, placement }, index) => ({
+            setSteps(finalJoyRides.map(({ componentId, title, description, placement, relatedImageName }, index) => ({
                 target: `#${componentId}`,
                 content: (
                     <>
+                        {relatedImageName && <img src={`/logo/design/${relatedImageName}.png`} alt={title} />}
                         <h3>{title}</h3>
                         <p>{description}</p>
                     </>
@@ -63,7 +64,21 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, dis
             showSkipButton
             showProgress
             callback={handleJoyrideCallback}
-            styles={{ options: { zIndex: 10000, primaryColor: '#00A78E' } }}
+            styles={{
+                options: {
+                    zIndex: 10000,
+                    primaryColor: '#00A78E',
+                },
+                tooltip: {
+                    borderRadius: 20,        
+                },
+                tooltipContainer: {
+                    borderRadius: 20,        
+                },
+                spotlight: {
+                    borderRadius: 12,        
+                },
+            }}
         />
     );
 };
