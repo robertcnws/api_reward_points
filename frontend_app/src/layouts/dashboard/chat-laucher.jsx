@@ -88,7 +88,14 @@ export default function ChatLauncher({
     // ],
     position = { right: 10, bottomMobile: 40, bottomDesktop: 32 },
     label = 'Chat with us',
+    refetchUsers,
 }) {
+
+    useEffect(() => {
+        if (refetchUsers) {
+            refetchUsers();
+        }
+    }, [refetchUsers]);
 
     useEffect(() => {
         const id = 'siq-offset-fix';

@@ -107,8 +107,6 @@ export function DashboardLayout({ sx, children, header, data }) {
   } = dataContextHook;
 
   const loadedPurchases = roleName === 'client' ? clientData : otherData;
-  const loadingPurchases = roleName === 'client' ? clientLoading : otherLoading;
-  const errorPurchases = roleName === 'client' ? clientError : otherError;
   const refetchPurchases = roleName === 'client' ? clientRefetch : otherRefetch;
 
   const [pendingUsers, setPendingUsers] = useState(loadedPendingUsers);
@@ -119,10 +117,10 @@ export function DashboardLayout({ sx, children, header, data }) {
     refetchUsers?.();
     setPendingUsers(loadedPendingUsers);
     setOperators(
-      loadedOfficeStaffUsers?.map((user) => ({
-        id: user.id,
-        name: `${user.firstName} ${user.lastName} (${user.userRole.name})`,
-        chatUrl: `/chat/${user.id}`,
+      loadedOfficeStaffUsers?.filter((user) => user?.isActive).map((user) => ({
+        id: user?.id,
+        name: `${user?.firstName} ${user?.lastName} (${user?.userRole?.name})`,
+        chatUrl: `/chat/${user?.id}`,
       }))
     );
     refetchRewardPoints?.();
@@ -372,6 +370,7 @@ export function DashboardLayout({ sx, children, header, data }) {
               <ChatLauncher
                 componentId='chat-with-operators'
                 operators={operators}
+                refetchUsers={refetchUsers}
               />
             )}
             <CustomFooter roleName={roleName} />

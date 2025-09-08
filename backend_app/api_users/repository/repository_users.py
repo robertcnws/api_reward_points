@@ -390,8 +390,13 @@ def change_approval_user(request, id):
 
         company_name = user.company_name
         if company_name:
-            if not user.is_approved: 
-                user_exists_company = LoginUser.objects(company_name=company_name, is_approved=True).first()
+            if not user.is_approved:
+                role_client = UserRole.objects(name='client').first() 
+                user_exists_company = LoginUser.objects(
+                    user_role=role_client,
+                    company_name=company_name, 
+                    is_approved=True
+                ).first()
                 if user_exists_company:
                     return Response({
                             'error': 'User cannot be approved because company already exists and is active', 
@@ -401,12 +406,12 @@ def change_approval_user(request, id):
                     }, status=400)
             else:
                 users_exists_company = LoginUser.objects(
+                    user_role=role_client,
                     company_name=company_name, 
                     is_approved=False,
                     id__ne=user.id
                 ).first()
                 if users_exists_company:
-                    
                     inherit_from_unapproved_user(user_exists_company, user)
         
         user.is_approved = not user.is_approved
