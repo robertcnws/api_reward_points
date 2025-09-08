@@ -1,11 +1,13 @@
-import { useId, forwardRef } from 'react';
+import { useId, forwardRef, useContext } from 'react';
 
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { RouterLink } from 'src/routes/components';
 
 import { logoClasses } from './classes';
+
 
 // ----------------------------------------------------------------------
 
@@ -15,6 +17,8 @@ export const Logo = forwardRef(
     ref
   ) => {
     const theme = useTheme();
+
+    const { isMobile } = useContext(LoadingContext); 
 
     const gradientId = useId();
 
@@ -115,6 +119,16 @@ export const Logo = forwardRef(
       }),
     };
 
+    // Extract the logo selection logic into a variable
+    let logoToRender;
+    if (isSingle) {
+      logoToRender = singleLogo;
+    } else if (typeof isMobile !== 'undefined' && isMobile) {
+      logoToRender = fullLogo;
+    } else {
+      logoToRender = fullLogoPNG;
+    }
+
     return (
       <Box
         ref={ref}
@@ -132,7 +146,7 @@ export const Logo = forwardRef(
         }}
         {...other}
       >
-        {isSingle ? singleLogo : fullLogoPNG}
+        {logoToRender}
         {/* {fullLogo} */}
         {/* {localStorage.getItem('userLogged') !== null && ( */}
         {/* <img src="/files/color_white_back" alt="logo" style={{ width: '50%', height: '70%'}}/> */}

@@ -29,21 +29,22 @@ export function Section({
         //   imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
         // }),
         // background: 'none !important',
-        backgroundImage: `
-          linear-gradient(transparent, transparent),
-          url(${CONFIG.assetsDir}/assets/background/bgrewards1.png)
-        `,
+        // backgroundImage: `
+        //   linear-gradient(transparent, transparent),
+        //   url(${CONFIG.assetsDir}/assets/background/bgrewards1.png)
+        // `,
         backgroundRepeat: 'no-repeat, no-repeat',
         backgroundPosition: '0 0, center',
         backgroundSize: '100% 100%, cover',
-        backgroundColor: 'transparent !important',
+        // backgroundColor: 'transparent !important',
+        backgroundColor: 'primary.dark',
         px: 2,
         pb: 2,
         flex: '0 0 auto',
 
         // Tamaño: fijo por breakpoint + relación de aspecto estable
-        width: { xs: '100%', md: 200, lg: 500, xl: 500 },
-        maxWidth: { xs: '100%', md: 200, lg: 500, xl: 500 },
+        width: { xs: '100%', md: 200, lg: 700, xl: 700 },
+        maxWidth: { xs: '100%', md: 200, lg: 700, xl: 700 },
         aspectRatio: '16 / 9',
         display: 'none',
         position: 'relative',

@@ -61,19 +61,19 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 // minHeight: '100dvh',
-                width: 450,
+                width: 650,
                 px: 1,
                 // mt: !isMobile ? 150 : 120,
                 // ml: !isMobile ? 1 : 0,
                 // mb: !isMobile ? 0 : 10,
-                mt: !isMobile ? '45%' : 20,
+                mt: !isMobile ? '45%' : 60,
                 // ml: !isMobile ? 25 : '15%',
-                mb: 0
+                mb: !isMobile ? 0 : 30,
               }}>
                 <Logo
                   isSingle={false}
                   sx={{
-                    width: !isMobile ? 400 : 100,
+                    width: !isMobile ? 500 : 200,
                     height: 'auto',
                   }}
                 />
@@ -84,13 +84,14 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                   gap: 1,
                   mt: !isMobile ? 0 : 2,
                   mb: !isMobile ? 0 : 2,
+                  color: 'whitesmoke',
                 }}>
                   <Typography
                     variant="h3"
                     paragraph
                     sx={{
                       ml: 0,
-                      mt: -4,
+                      mt: !isMobile ? 10 : 0,
                       alignItems: 'center',
                       textAlign: 'center',
                     }}>
