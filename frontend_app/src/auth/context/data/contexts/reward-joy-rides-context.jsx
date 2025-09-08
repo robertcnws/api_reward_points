@@ -11,9 +11,25 @@ export function RewardJoyRidesProvider({ children }) {
 
   const fields = useMemo(() => fieldsJoyRides, []);
 
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const roleName = useMemo(() => {
+    const user = userLogged?.data;
+    return user?.user_role ? user.user_role.name : '';
+  }, [userLogged]);
+
   const allJoyRidesQuery = useAllRewardJoyRides(fields);
 
-  const loadedAllRewardJoyRides =  allJoyRidesQuery.data
+  const initialAllRewardJoyRides = allJoyRidesQuery.data
+
+  const loadedAllRewardJoyRides = useMemo(() => {
+    if (initialAllRewardJoyRides && initialAllRewardJoyRides.length > 0) {
+      return initialAllRewardJoyRides.filter(
+        (step) => step.role?.includes(roleName) || step.role === 'all'
+      );
+    }
+    return [];
+  }, [initialAllRewardJoyRides, roleName]);
 
   const refetchAllRewardJoyRides = useMemo(() => allJoyRidesQuery.refetch, [allJoyRidesQuery]);
 

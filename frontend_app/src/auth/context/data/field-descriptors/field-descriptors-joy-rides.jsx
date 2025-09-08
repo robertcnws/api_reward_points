@@ -8,4 +8,5 @@ export const fieldsJoyRides = [
     'module',
     'translation',
     'relatedImageName',
+    'role',
   ];

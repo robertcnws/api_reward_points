@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 
 import { varHover, AnimateAvatar } from 'src/components/animate';
+import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -33,28 +34,30 @@ export function AccountButton({ open, photoURL, displayName, sx, ...other }) {
   );
 
   return (
-    <IconButton
-      component={m.button}
-      whileTap="tap"
-      whileHover="hover"
-      variants={varHover(1.05)}
-      sx={{ p: 0, ...sx }}
-      {...other}
-    >
-      <NoSsr fallback={renderFallback}>
-        <AnimateAvatar
-          slotProps={{
-            avatar: { src: photoURL, alt: displayName },
-            overlay: {
-              border: 1,
-              spacing: 2,
-              color: `conic-gradient(${theme.vars.palette.primary.main}, ${theme.vars.palette.warning.main}, ${theme.vars.palette.primary.main})`,
-            },
-          }}
-        >
-          {displayName?.charAt(0).toUpperCase()}
-        </AnimateAvatar>
-      </NoSsr>
-    </IconButton>
+    <Box id='profile-avatar'>
+      <IconButton
+        component={m.button}
+        whileTap="tap"
+        whileHover="hover"
+        variants={varHover(1.05)}
+        sx={{ p: 0, ...sx }}
+        {...other}
+      >
+        <NoSsr fallback={renderFallback}>
+          <AnimateAvatar
+            slotProps={{
+              avatar: { src: photoURL, alt: displayName },
+              overlay: {
+                border: 1,
+                spacing: 2,
+                color: `conic-gradient(${theme.vars.palette.primary.main}, ${theme.vars.palette.warning.main}, ${theme.vars.palette.primary.main})`,
+              },
+            }}
+          >
+            {displayName?.charAt(0).toUpperCase()}
+          </AnimateAvatar>
+        </NoSsr>
+      </IconButton>
+    </Box>
   );
 }

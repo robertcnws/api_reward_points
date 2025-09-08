@@ -3,16 +3,19 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
-import { Typography, LinearProgress } from '@mui/material';
+import { Typography, LinearProgress, Button } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fDate } from 'src/utils/format-time';
-import { listRolesAndSubroles } from 'src/utils/check-permissions';
+import { isOfficeStaff, listRolesAndSubroles } from 'src/utils/check-permissions';
 import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
+import OnboardingGuide from 'src/layouts/dashboard/onboarding-guide';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import {
   BookingIllustration,
   CheckInIllustration,
@@ -31,7 +34,6 @@ import { AdminWidgetSummary } from '../admin-widget-summary';
 import { AdminCheckInWidgets } from '../admin-check-in-widgets';
 import { AdminCustomerReviews } from '../admin-customer-reviews';
 import { WelcomeTypography } from '../../analytics/welcome-typography';
-
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +63,18 @@ export function OverviewAdminView({
   refetchStoreProducts,
   loadingStoreProducts,
   errorStoreProducts,
+  handleShowTourGuide,
+  tookTourGuide,
+  showModalTour,
+  tookIntroGuide,
+  showModalIntro
 }) {
+
+  const {
+    runDashboard,
+    setRunDashboard,
+    finishDashboard,
+  } = useDataContext();
 
   const confirmDeleteReview = useBoolean();
 
@@ -70,23 +83,23 @@ export function OverviewAdminView({
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
   const seriesDoughnut = useMemo(() => ([
-      {
-        value: 'today',
-        name: 'today',
-      },
-      {
-        value: 'week',
-        name: 'week',
-      },
-      {
-        value: 'month',
-        name: 'month',
-      },
-      {
-        value: 'year',
-        name: 'year',
-      },
-    ]), []);
+    {
+      value: 'today',
+      name: 'today',
+    },
+    {
+      value: 'week',
+      name: 'week',
+    },
+    {
+      value: 'month',
+      name: 'month',
+    },
+    {
+      value: 'year',
+      name: 'year',
+    },
+  ]), []);
 
   const [selectedSeriesDoughnut, setSelectedSeriesDoughnut] = useState(seriesDoughnut[0].name);
 
@@ -382,20 +395,36 @@ export function OverviewAdminView({
       ) : 0;
   }, [spentSeriesByMonth]);
 
-  const refundSeriesByMonth = useMemo(
-    () => accumulateByMonth(approvedRewardPointsHistory || [], null, 'gainedPoints', 'createdTime'),
-    [approvedRewardPointsHistory]
+  // const refundSeriesByMonth = useMemo(
+  //   () => accumulateByMonth(approvedRewardPointsHistory || [], null, 'gainedPoints', 'createdTime'),
+  //   [approvedRewardPointsHistory]
+  // );
+
+  // const avgRefundTrendPercent = useMemo(() => {
+  //   if (refundSeriesByMonth.length === 0) return 0;
+  //   return refundSeriesByMonth.length > 0 ?
+  //     avgStepTrendPercent(
+  //       refundSeriesByMonth.slice(
+  //         refundSeriesByMonth.length - 12, refundSeriesByMonth.length
+  //       ).map((item) => item.total)
+  //     ) : 0;
+  // }, [refundSeriesByMonth]);
+
+
+  const gainedSeriesByMonth = useMemo(
+    () => accumulateByMonth(approvedRewardPoints || [], null, 'totalGainedPoints', 'createdTime'),
+    [approvedRewardPoints]
   );
 
-  const avgRefundTrendPercent = useMemo(() => {
-    if (refundSeriesByMonth.length === 0) return 0;
-    return refundSeriesByMonth.length > 0 ?
+  const avgGainedTrendPercent = useMemo(() => {
+    if (gainedSeriesByMonth.length === 0) return 0;
+    return gainedSeriesByMonth.length > 0 ?
       avgStepTrendPercent(
-        refundSeriesByMonth.slice(
-          refundSeriesByMonth.length - 12, refundSeriesByMonth.length
+        gainedSeriesByMonth.slice(
+          gainedSeriesByMonth.length - 12, gainedSeriesByMonth.length
         ).map((item) => item.total)
       ) : 0;
-  }, [refundSeriesByMonth]);
+  }, [gainedSeriesByMonth]);
 
   const seriesPoints = useMemo(
     () => {
@@ -532,188 +561,238 @@ export function OverviewAdminView({
   // console.log('series', series);
 
   return (
-    <DashboardContent>
-      {(!loadedRewardPoints &&
-        !loadedStoreProducts &&
-        !loadedPendingUsers &&
-        !loadedRewardPointsHistory &&
-        !loadedRewardPointsGainedHistory &&
-        !loadedRewardPointsSpentHistory) ? (
-        <Box
-          sx={{
-            width: 350,
-            height: '80vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: 'auto',
-          }}
-        >
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Loading data for admin dashboard...
-          </Typography>
-          <LinearProgress
+    <>
+      <DashboardContent>
+        {(!loadedRewardPoints &&
+          !loadedStoreProducts &&
+          !loadedPendingUsers &&
+          !loadedRewardPointsHistory &&
+          !loadedRewardPointsGainedHistory &&
+          !loadedRewardPointsSpentHistory) ? (
+          <Box
             sx={{
-              mb: 2,
-              width: '100%',
-              '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
-              backgroundColor: '#e0e0e0',
+              width: 350,
+              height: '80vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 'auto',
             }}
-          />
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 2 }}>
-          <WelcomeTypography
-            userLogged={userLogged}
-          />
-          <Grid container spacing={2} disableEqualOverflow>
-            <Grid xs={12} md={3}>
-              <AdminWidgetSummary
-                title="Total Active Clients"
-                percent={avgUsersTrendPercent}
-                total={totalClients}
-                icon={<BookingIllustration />}
-              />
-            </Grid>
+          >
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Loading data for admin dashboard...
+            </Typography>
+            <LinearProgress
+              sx={{
+                mb: 2,
+                width: '100%',
+                '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
+                backgroundColor: '#e0e0e0',
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 2 }}>
+            <WelcomeTypography
+              userLogged={userLogged}
+            />
+            <Grid container spacing={2} disableEqualOverflow>
+              <Box id='summary-metrics-section'
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Grid xs={12} md={3}>
+                  <AdminWidgetSummary
+                    title="Total Active Clients"
+                    percent={avgUsersTrendPercent}
+                    total={totalClients}
+                    icon={<BookingIllustration />}
+                  />
+                </Grid>
 
-            <Grid xs={12} md={3}>
-              <AdminWidgetSummary
-                title="Clients Pending Approval"
-                percent={avgPendingUsersTrendPercent}
-                total={totalPendingClients}
-                icon={<ServerErrorIllustration />}
-              />
-            </Grid>
+                <Grid xs={12} md={3}>
+                  <AdminWidgetSummary
+                    title="Clients Pending Approval"
+                    percent={avgPendingUsersTrendPercent}
+                    total={totalPendingClients}
+                    icon={<ServerErrorIllustration />}
+                  />
+                </Grid>
 
-            <Grid xs={12} md={3}>
-              <AdminWidgetSummary
-                title="Refunded Reward Points"
-                percent={avgRefundTrendPercent}
-                total={totalRefundedRewardPoints}
-                icon={<CheckoutIllustration />}
-              />
-            </Grid>
+                <Grid xs={12} md={3}>
+                  <AdminWidgetSummary
+                    title="Current Earned Points"
+                    percent={avgGainedTrendPercent}
+                    total={totalGainedRewardPoints}
+                    icon={<CheckoutIllustration />}
+                  />
+                </Grid>
 
-            <Grid xs={12} md={3}>
-              <AdminWidgetSummary
-                title="Redeemed Reward Points"
-                percent={avgSpentTrendPercent}
-                total={totalSpentRewardPoints}
-                icon={<CheckInIllustration />}
-              />
-            </Grid>
+                <Grid xs={12} md={3}>
+                  <AdminWidgetSummary
+                    title="Current Redeemed Points"
+                    percent={avgSpentTrendPercent}
+                    total={totalSpentRewardPoints}
+                    icon={<CheckInIllustration />}
+                  />
+                </Grid>
+              </Box>
 
-            <Grid container xs={12}>
-              <Grid xs={12} md={7} lg={8}>
-                <Box
-                  sx={{
-                    mb: 3,
-                    p: { md: 1 },
-                    display: 'flex',
-                    gap: { xs: 3, md: 1 },
-                    borderRadius: { md: 2 },
-                    flexDirection: 'column',
-                    bgcolor: { md: 'background.neutral' },
-                  }}
-                >
+              <Grid container xs={12}>
+                <Grid xs={12} md={7} lg={8}>
                   <Box
                     sx={{
+                      mb: 3,
                       p: { md: 1 },
-                      display: 'grid',
-                      gap: { xs: 3, md: 0 },
+                      display: 'flex',
+                      gap: { xs: 3, md: 1 },
                       borderRadius: { md: 2 },
-                      bgcolor: { md: 'background.paper' },
-                      gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
+                      flexDirection: 'column',
+                      bgcolor: { md: 'background.neutral' },
                     }}
                   >
-                    <AdminTotalIncomes
-                      title="Total Invoices Amount"
-                      total={invoicesAmount}
-                      percent={avgStepTrendPercent(invoicesSeriesByMonth?.map((item) => item.total))}
-                      chart={{
-                        categories: invoicesSeriesByMonth?.slice(
-                          invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                        )?.map((item) => item.period),
-                        series: [{
-                          data: invoicesSeriesByMonth?.slice(
-                            invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                          )?.map((item) => item.total)
-                        }],
+                    <Box
+                      sx={{
+                        p: { md: 1 },
+                        display: 'grid',
+                        gap: { xs: 3, md: 0 },
+                        borderRadius: { md: 2 },
+                        bgcolor: { md: 'background.paper' },
+                        gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
                       }}
-                    />
+                    >
+                      <Box id='total-invoices-amount-card'
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                        }}>
+                        <AdminTotalIncomes
+                          title="Total Invoices Amount"
+                          total={invoicesAmount}
+                          percent={avgStepTrendPercent(invoicesSeriesByMonth?.map((item) => item.total))}
+                          chart={{
+                            categories: invoicesSeriesByMonth?.slice(
+                              invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                            )?.map((item) => item.period),
+                            series: [{
+                              data: invoicesSeriesByMonth?.slice(
+                                invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                              )?.map((item) => item.total)
+                            }],
+                          }}
+                        />
+                      </Box>
 
-                    <AdminBooked
-                      title="Reward Points Overview"
-                      data={seriesPoints || []}
-                      sx={{ boxShadow: { md: 'none' } }}
-                    />
+                      <Box id='reward-points-overview-card'
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                        }}>
+
+                        <AdminBooked
+                          title="Reward Points Overview"
+                          data={seriesPoints || []}
+                          sx={{ boxShadow: { md: 'none' } }}
+                        />
+
+                      </Box>
+                    </Box>
+
+                    <Box id='donuts-charts-by-percent-and-type'
+                      sx={{
+                        width: '100%',
+                      }}>
+
+                      <AdminCheckInWidgets
+                        chart={{
+                          series: [
+                            {
+                              label: 'Earned',
+                              percent: (((totalGainedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                              total: totalGainedRewardPoints,
+                              color: '#FFB74D'
+                            },
+                            {
+                              label: 'Spent',
+                              percent: (((totalSpentRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                              total: totalSpentRewardPoints,
+                              color: '#FF6B6B'
+                            },
+                            {
+                              label: 'Assigned',
+                              percent: (((totalAssignedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
+                              total: totalAssignedRewardPoints,
+                              color: '#4DB6AC'
+                            },
+                          ],
+                        }}
+                        sx={{ boxShadow: { md: 'none' } }}
+                      />
+                    </Box>
                   </Box>
 
-                  <AdminCheckInWidgets
-                    chart={{
-                      series: [
-                        {
-                          label: 'Earned',
-                          percent: (((totalGainedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
-                          total: totalGainedRewardPoints,
-                          color: '#FFB74D'
-                        },
-                        {
-                          label: 'Spent',
-                          percent: (((totalSpentRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
-                          total: totalSpentRewardPoints,
-                          color: '#FF6B6B'
-                        },
-                        {
-                          label: 'Assigned',
-                          percent: (((totalAssignedRewardPoints / totalAllPoints) * 100) || 0).toFixed(2),
-                          total: totalAssignedRewardPoints,
-                          color: '#4DB6AC'
-                        },
-                      ],
-                    }}
-                    sx={{ boxShadow: { md: 'none' } }}
-                  />
-                </Box>
+                  <Box id='statistics-top10-chart'
+                    sx={{
+                      width: '100%',
+                    }}>
 
-                <AdminStatistics
-                  title="Statistics (Top 10)"
-                  chart={{ series }}
-                />
+                    <AdminStatistics
+                      title="Statistics (Top 10)"
+                      chart={{ series }}
+                    />
+                  </Box>
+                </Grid>
+
+                <Grid xs={12} md={5} lg={4}>
+                  <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column', height: 1 }}>
+                    <Box id='clients-chart'
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                      }}>
+                      <AdminAvailable
+                        title="Clients (today/week/month/year)"
+                        seriesDoughnut={seriesDoughnut}
+                        selectedSeriesDoughnut={selectedSeriesDoughnut}
+                        setSelectedSeriesDoughnut={setSelectedSeriesDoughnut}
+                        handleChangeSeriesDoughnut={handleChangeSeriesDoughnut}
+                        chart={{
+                          series: [
+                            { id: 'active_clients', label: 'Active Clients', value: totalApprovedClients },
+                            { id: 'pending_clients', label: 'Pending Approval', value: totalPendingClients },
+                          ],
+                        }}
+                        seedAttr='active_clients'
+                      />
+                    </Box>
+
+                    <Box id='customer-reviews-panel'
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                      }}>
+
+                      <AdminCustomerReviews
+                        title="Customer reviews"
+                        subheader={`${reviews?.length} Reviews`}
+                        list={reviews}
+                        onDeleteReview={onDeleteReview}
+                        openConfirmDeleteReview={confirmDeleteReview.value}
+                        onConfirmDeleteReview={confirmDeleteReview.onTrue}
+                        onCancelDeleteReview={confirmDeleteReview.onFalse}
+                      />
+
+                    </Box>
+                  </Box>
+                </Grid>
               </Grid>
 
-              <Grid xs={12} md={5} lg={4}>
-                <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column', height: 1 }}>
-                  <AdminAvailable
-                    title="Clients (today/week/month/year)"
-                    seriesDoughnut={seriesDoughnut}
-                    selectedSeriesDoughnut={selectedSeriesDoughnut}
-                    setSelectedSeriesDoughnut={setSelectedSeriesDoughnut}
-                    handleChangeSeriesDoughnut={handleChangeSeriesDoughnut}
-                    chart={{
-                      series: [
-                        { id: 'active_clients', label: 'Active Clients', value: totalApprovedClients },
-                        { id: 'pending_clients', label: 'Pending Approval', value: totalPendingClients },
-                      ],
-                    }}
-                    seedAttr='active_clients'
-                  />
-
-                  <AdminCustomerReviews
-                    title="Customer reviews"
-                    subheader={`${reviews?.length} Reviews`}
-                    list={reviews}
-                    onDeleteReview={onDeleteReview}
-                    openConfirmDeleteReview={confirmDeleteReview.value}
-                    onConfirmDeleteReview={confirmDeleteReview.onTrue}
-                    onCancelDeleteReview={confirmDeleteReview.onFalse}
-                  />
-                </Box>
-              </Grid>
-            </Grid>
-
-            {/* <Grid xs={12}>
+              {/* <Grid xs={12}>
             <AdminNewest
               title="Newest booking"
               subheader={`${_bookingNew.length} bookings`}
@@ -721,18 +800,64 @@ export function OverviewAdminView({
             />
           </Grid> */}
 
-            {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
-              <Grid xs={12}>
-                <AdminDetails
-                  title="Last purchases (Top 5)"
-                />
-                {/* <PurchaseListView lengthLimit={5} /> */}
-              </Grid>
-            )}
-          </Grid>
-        </Box>
+              {listRolesAndSubroles(roleName).includes(CONFIG.roles.administrator) && (
+                <Grid xs={12}>
+                  <Box id='last-purchases-top5-panel'
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                    }}>
+                    <AdminDetails
+                      title="Last purchases (Top 5)"
+                    />
+                    {/* <PurchaseListView lengthLimit={5} /> */}
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        )}
+      </DashboardContent>
+      {runDashboard && (
+        <OnboardingGuide
+          run={runDashboard}
+          setRun={setRunDashboard}
+          ready={loadingRewardPoints && loadingRewardPointsHistory}
+          onFinish={finishDashboard}
+          stepFilters={(step) => step.module === 'dashboard'}
+          disableBeacon
+        />
       )}
-    </DashboardContent>
+      <ConfirmDialog
+        open={
+          isOfficeStaff(roleName) &&
+          showModalTour.value && 
+          !loadingRewardPoints && 
+          !loadingRewardPointsHistory && 
+          !tookTourGuide
+        }
+        onClose={async () => {
+          // showModalTour.onFalse();
+          await handleShowTourGuide();
+        }}
+        title="Tour Guide"
+        content="Would you like to take a tour of this site?"
+        closeName='Skip'
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={async () => {
+              await handleShowTourGuide();
+              setRunDashboard(true);
+              // showModalTour.onFalse();
+            }}
+          >
+            Show Tour
+          </Button>
+        }
+      />
+    </>
   );
 }
 

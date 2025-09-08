@@ -88,7 +88,21 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
     items: [
       {
         key: `${paths.dashboard.general.analytics}-1`,
-        title: isClient(userRole) ? 'Dashboard' : 'Analytics',
+        title: (
+            <Box component="span" id={isClient(userRole) ? '' : 'analytics-link'}>
+              <Typography
+                variant={isNavMini ? 'caption' : 'subtitle2'}
+                sx={{
+                  mr: 1,
+                  color: 'text.secondary',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {isClient(userRole) ? 'Dashboard' : 'Analytics'}
+              </Typography>
+            </Box>
+          ),
         path: paths.dashboard.general.analytics,
         icon: ICONS.analytics
       },
@@ -363,6 +377,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
               <React.Fragment key='purchases-checkout-fragment'>
                 <Box
                   key='purchases-checkout'
+                  id='checkout-link'
                   component="span"
                   sx={{
                     display: 'flex',

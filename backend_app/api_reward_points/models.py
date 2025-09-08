@@ -439,6 +439,7 @@ class RewardJoyRide(Document):
     last_modified_time = DateTimeField(default=timezone.now, null=True)
     module = StringField(null=True, blank=True)
     related_image_name = StringField(null=True, blank=True)
+    role = StringField(null=True, blank=True)
 
     meta = {
         'collection': 'reward_joy_ride',

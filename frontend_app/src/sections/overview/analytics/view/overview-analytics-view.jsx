@@ -18,8 +18,6 @@ export function OverviewAnalyticsView({
   showModalIntro
 }) {
 
-  const router = useRouter();
-
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
   const currentRole = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
@@ -86,6 +84,11 @@ export function OverviewAnalyticsView({
           refetchStoreProducts={refetchStoreProducts}
           loadingStoreProducts={loadingStoreProducts}
           errorStoreProducts={errorStoreProducts}
+          handleShowTourGuide={handleShowTourGuide}
+          tookTourGuide={tookTourGuide}
+          showModalTour={showModalTour}
+          tookIntroGuide={tookIntroGuide}
+          showModalIntro={showModalIntro}
         />
       ) : (
         <OverviewEcommerceView
