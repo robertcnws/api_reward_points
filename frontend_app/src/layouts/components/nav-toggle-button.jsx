@@ -2,6 +2,7 @@ import SvgIcon from '@mui/material/SvgIcon';
 import IconButton from '@mui/material/IconButton';
 
 import { varAlpha } from 'src/theme/styles';
+import { Box } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -32,21 +33,23 @@ export function NavToggleButton({ isNavMini, sx, ...other }) {
       }}
       {...other}
     >
-      <SvgIcon
-        sx={{
-          width: 16,
-          height: 16,
-          ...(isNavMini && {
-            transform: 'scaleX(-1)',
-          }),
-        }}
-      >
-        {/* https://icon-sets.iconify.design/eva/arrow-ios-back-fill/ */}
-        <path
-          fill="currentColor"
-          d="M13.83 19a1 1 0 0 1-.78-.37l-4.83-6a1 1 0 0 1 0-1.27l5-6a1 1 0 0 1 1.54 1.28L10.29 12l4.32 5.36a1 1 0 0 1-.78 1.64"
-        />
-      </SvgIcon>
+      <Box id='nav-collapse-btn'>
+        <SvgIcon
+          sx={{
+            width: 16,
+            height: 16,
+            ...(isNavMini && {
+              transform: 'scaleX(-1)',
+            }),
+          }}
+        >
+          {/* https://icon-sets.iconify.design/eva/arrow-ios-back-fill/ */}
+          <path
+            fill="currentColor"
+            d="M13.83 19a1 1 0 0 1-.78-.37l-4.83-6a1 1 0 0 1 0-1.27l5-6a1 1 0 0 1 1.54 1.28L10.29 12l4.32 5.36a1 1 0 0 1-.78 1.64"
+          />
+        </SvgIcon>
+      </Box>
     </IconButton>
   );
 }
