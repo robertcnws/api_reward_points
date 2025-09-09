@@ -267,7 +267,8 @@ export const CustomFooter = ({roleName}) => {
                 {social.value === 'linkedin' && <LinkedinIcon />}
               </IconButton>
             ))} */}
-            {(isClient(roleName) || isOfficeStaff(roleName)) && <GuideTourButton width={25}/>}
+            {/* {(isClient(roleName) || isOfficeStaff(roleName)) && <GuideTourButton width={25}/>} */}
+            <GuideTourButton width={25}/>
           </Stack>
         </Box>
       </Box>

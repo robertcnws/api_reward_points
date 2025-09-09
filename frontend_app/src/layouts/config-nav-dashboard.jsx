@@ -89,20 +89,20 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       {
         key: `${paths.dashboard.general.analytics}-1`,
         title: (
-            <Box component="span" id={isClient(userRole) ? '' : 'analytics-link'}>
-              <Typography
-                variant={isNavMini ? 'caption' : 'subtitle2'}
-                sx={{
-                  mr: 1,
-                  color: 'text.secondary',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {isClient(userRole) ? 'Dashboard' : 'Analytics'}
-              </Typography>
-            </Box>
-          ),
+          <Box component="span" id={isClient(userRole) ? '' : 'analytics-link'}>
+            <Typography
+              variant={isNavMini ? 'caption' : 'subtitle2'}
+              sx={{
+                mr: 1,
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {isClient(userRole) ? 'Dashboard' : 'Analytics'}
+            </Typography>
+          </Box>
+        ),
         path: paths.dashboard.general.analytics,
         icon: ICONS.analytics
       },
@@ -220,7 +220,10 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
               key: `${paths.dashboard.user.root}-4`,
               title: (
                 <React.Fragment key='users-all-fragment'>
-                  <Box component="span" key='users'
+                  <Box
+                    component="span"
+                    key='users'
+                    id='users-link'
                     sx={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -325,6 +328,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                   <Box
                     key='purchases-all'
                     component="span"
+                    id='reward-orders-link'
                     sx={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -415,7 +419,24 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
         ...(userLogged && !isClient(userRole) ? [
           {
             key: `${paths.dashboard.storeProduct.root}-10`,
-            title: 'Rewards',
+            title: (
+              <Box
+                component="span"
+                id='rewards-link'
+              >
+                <Typography
+                  variant={isNavMini ? 'caption' : 'subtitle2'}
+                  sx={{
+                    mr: 1,
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  Rewards
+                </Typography>
+              </Box>
+            ),
             path: paths.dashboard.storeProduct.root,
             icon: ICONS.item,
             children: [
@@ -439,7 +460,21 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           ...(userLogged && !isClient(userRole) ? [
             {
               key: `${paths.dashboard.pointsSettings.root}-14`,
-              title: 'Points Settings',
+              title: (
+                <Box component="span" id='points-settings-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Points Settings
+                  </Typography>
+                </Box>
+              ),
               path: paths.dashboard.pointsSettings.root,
               icon: ICONS.pointsSettings,
               children: [
@@ -457,7 +492,21 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
             },
             {
               key: `${paths.dashboard.role.root}-17`,
-              title: 'Roles',
+              title: (
+                <Box component="span" id='roles-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Roles
+                  </Typography>
+                </Box>
+              ),
               path: paths.dashboard.role.root,
               icon: ICONS.access,
               children: [

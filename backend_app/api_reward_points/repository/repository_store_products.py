@@ -289,7 +289,6 @@ def update_store_product(request, id):
                 info += f'{', ' if number_changes > 0 else ' '}new status {new_status}'
 
             module='store_products'
-            info=info
             info_id=store_product.id
             type='update_store_product'
             create_notification(module, info_id, info, type, user_reporter.username)
