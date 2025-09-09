@@ -54,15 +54,6 @@ class MyTokenRefreshView(TokenRefreshView):
 
 
 # ======================
-#  Helpers
-# ======================
-def _ensure_json(request):
-    if request.method == "POST" and request.content_type != "application/json":
-        return Response({"detail": "Unsupported Media Type"}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-    return None
-
-
-# ======================
 #  Public endpoints (sin cookies → sin CSRF)
 #  Quitamos SessionAuthentication con @authentication_classes([])
 # ======================
@@ -87,8 +78,6 @@ def is_user_verified(request):
 @authentication_classes([])
 @throttle_classes([LoginThrottle])
 def transfer_login(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.transfer_login(request)
 
 @api_view(["POST"])
@@ -96,8 +85,6 @@ def transfer_login(request):
 @authentication_classes([])
 @throttle_classes([LoginThrottle])
 def login(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.login(request)
 
 @api_view(["POST"])
@@ -105,8 +92,6 @@ def login(request):
 @authentication_classes([])
 @throttle_classes([PublicThrottle])
 def logout(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.logout(request)
 
 @api_view(["POST"])
@@ -114,8 +99,6 @@ def logout(request):
 @authentication_classes([])
 @throttle_classes([RegisterThrottle])
 def register(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.register(request)
 
 @api_view(["POST"])
@@ -123,8 +106,6 @@ def register(request):
 @authentication_classes([])
 @throttle_classes([VerifyThrottle])
 def verify_user(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.verify_user(request)
 
 @api_view(["POST"])
@@ -132,8 +113,6 @@ def verify_user(request):
 @authentication_classes([])
 @throttle_classes([VerifyThrottle])
 def send_verification_code(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.send_verification_code(request)
 
 @api_view(["POST"])
@@ -141,8 +120,6 @@ def send_verification_code(request):
 @authentication_classes([])
 @throttle_classes([ResetPwdThrottle])
 def reset_password(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.reset_password(request)
 
 @api_view(["POST"])
@@ -150,8 +127,6 @@ def reset_password(request):
 @authentication_classes([])
 @throttle_classes([ResetPwdThrottle])
 def update_password(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_authorization.update_password(request)
 
 @api_view(["GET"])

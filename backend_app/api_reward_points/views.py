@@ -25,14 +25,6 @@ class PublicReadThrottle(AnonRateThrottle):
 class AuthWriteThrottle(UserRateThrottle):
     scope = "auth_write"
 
-# ======================
-# Helpers
-# ======================
-def _ensure_json(request):
-    if request.method == "POST" and request.content_type != "application/json":
-        return Response({"detail": "Unsupported Media Type"}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-    return None
-
 # *******************************************#
 # REWARD STORE PRODUCTS API
 # *******************************************#
@@ -56,8 +48,6 @@ def delete_all_store_product_files(request, id, folder):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_store_product(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_products.create_store_product(request)
 
 # UPDATE STORE PRODUCT
@@ -65,8 +55,6 @@ def create_store_product(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def update_store_product(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_products.update_store_product(request, id)
 
 # DELETE STORE PRODUCT
@@ -88,8 +76,6 @@ def delete_list_store_products(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_active_store_product(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_products.manage_active_store_product(request, id)
 
 # GET FILE URL (si realmente es público)
@@ -109,8 +95,6 @@ def get_default_file_url(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_points_settings(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_point_settings.create_points_settings(request)
 
 # UPDATE POINTS SETTINGS
@@ -118,8 +102,6 @@ def create_points_settings(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def update_points_settings(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_point_settings.update_points_settings(request, id)
 
 # DELETE POINTS SETTINGS
@@ -145,8 +127,6 @@ def delete_list_points_settings(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_store_product_review(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_reviews.create_store_product_review(request, id)
 
 # DELETE STORE PRODUCT REVIEW
@@ -161,8 +141,6 @@ def delete_store_product_review(request, id):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_store_product_review_reaction(request, review_id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_review_reactions.manage_store_product_review_reaction(request, review_id)
 
 # *******************************************#
@@ -174,8 +152,6 @@ def manage_store_product_review_reaction(request, review_id):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_store_product_selection_cart(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.create_store_product_selection_cart(request, id)
 
 # DELETE STORE PRODUCT SELECTION CART
@@ -197,16 +173,12 @@ def delete_all_store_product_selection_carts(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_store_product_selection_cart_buy(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.create_store_product_selection_cart_buy(request, id)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_all_store_product_selection_cart_buy(request):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.create_all_store_product_selection_cart_buy(request)
 
 # CREATE STORE PRODUCT SELECTION BUY
@@ -214,8 +186,6 @@ def create_all_store_product_selection_cart_buy(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def create_store_product_selection_buy(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.create_store_product_selection_buy(request, id)
 
 # DELETE STORE PRODUCT SELECTION BUY
@@ -237,8 +207,6 @@ def delete_list_store_product_selection_buys(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_remove_store_product_selection_buy(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.manage_remove_store_product_selection_buy(request, id)
 
 # MANAGE STORE PRODUCT SELECTION BUY REFUND
@@ -246,8 +214,6 @@ def manage_remove_store_product_selection_buy(request, id):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_refund_store_product_selection_buy(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.manage_refund_store_product_selection_buy(request, id)
 
 # MANAGE STORE PRODUCT SELECTION BUY USE
@@ -255,8 +221,6 @@ def manage_refund_store_product_selection_buy(request, id):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_use_store_product_selection_buy(request, id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_store_product_selections.manage_use_store_product_selection_buy(request, id)
 
 # *******************************************#
@@ -268,8 +232,6 @@ def manage_use_store_product_selection_buy(request, id):
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])
 def manage_points(request, user_id):
-    bad = _ensure_json(request)
-    if bad: return bad
     return repository_points.manage_points(request, user_id)
 
 # *******************************************#
