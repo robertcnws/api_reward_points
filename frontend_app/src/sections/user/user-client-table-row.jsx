@@ -72,7 +72,7 @@ export function UserClientTableRow({
   }, [rowRewardPoints]);
 
   useEffect(() => {
-    const socket = new WebSocket(wsEndpoints.rewardPoints.storeProduct.byId(rowRewardPoints?.id));
+    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.byId(rowRewardPoints?.id));
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
