@@ -117,7 +117,6 @@ def create_store_product_selection_cart(request, id):
                 f'{total_carts_points}'
 
             module='store_product_selection_carts'
-            info=info
             info_id=cart.id
             type='create_store_product_selection_cart'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -438,7 +437,6 @@ def create_store_product_selection_cart_buy(request, id):
                 {buy.store_product_selection.store_product.assigned_points * buy.store_product_selection.quantity}'
 
             module='store_product_selection_buys'
-            info=info
             info_id=buy.id
             type='create_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -577,7 +575,6 @@ def create_all_store_product_selection_cart_buy(request):
                 {total_purchased_points}'
 
             module='store_product_selection_buys'
-            info=info
             info_id=','.join(ids)
             type='create_all_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -764,7 +761,6 @@ def create_store_product_selection_buy(request, id):
                 {total_buys_points}'
 
             module='store_product_selection_buys'
-            info=info
             info_id=buy.id
             type='create_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -931,7 +927,6 @@ def delete_store_product_selection_buy(request, id):
                 points to user {user.username}'
 
             module='store_product_selection_buys'
-            info=info
             info_id=buy.id
             type='delete_store_product_selection_buy'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -1239,7 +1234,6 @@ def manage_refund_store_product_selection_buy(request, id):
                 {refund_buy.store_product_selection.store_product.name}'
 
             module='store_product_selection_buys'
-            info=info
             info_id=refund_buy.id
             type='manage_store_product_selection_buy_refund'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -1324,7 +1318,6 @@ def manage_use_store_product_selection_buy(request, id):
                 with quantity {total_quantity_used} to user {buy.store_product_selection.user.username} effectively'
 
             module='store_product_selection_buys'
-            info=info
             info_id=buy.id
             type='manage_store_product_selection_buy_use'
             create_notification(module, info_id, info, type, user_reporter.username)
@@ -1397,7 +1390,6 @@ def manage_remove_store_product_selection_buy(request, id):
                 for user {buy.store_product_selection.user.username} effectively'
 
             module='store_product_selection_buys'
-            info=info
             info_id=buy.id
             type='manage_store_product_selection_buy_remove'
             create_notification(module, info_id, info, type, user_reporter.username)
