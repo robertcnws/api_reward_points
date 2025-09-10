@@ -209,7 +209,7 @@ array_of_steps_joyride = [
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
                 "module": "nav_vertical",
-                "related_image_name": None,
+                "related_image_name": "13-customer-portal-home",
                 "role": "all"
             },
             {
@@ -337,7 +337,7 @@ array_of_steps_joyride = [
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
                 "module": "nav_vertical",
-                "related_image_name": None,
+                "related_image_name": "14-collapse-navigation",
                 "role": "all"
             },
             {
@@ -353,7 +353,7 @@ array_of_steps_joyride = [
                 "created_time": datetime.now(),
                 "last_modified_time": datetime.now(),
                 "module": "nav_top",
-                "related_image_name": None,
+                "related_image_name": "15-profile",
                 "role": "all"
             },
             {
