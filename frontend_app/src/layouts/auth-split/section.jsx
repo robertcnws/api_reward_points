@@ -43,8 +43,8 @@ export function Section({
         flex: '0 0 auto',
 
         // Tamaño: fijo por breakpoint + relación de aspecto estable
-        width: { xs: '100%', md: 200, lg: 700, xl: 700 },
-        maxWidth: { xs: '100%', md: 200, lg: 700, xl: 700 },
+        width: { xs: '100%', md: '100%', lg: '44%', xl: '44%' },
+        maxWidth: { xs: '100%', md: '100%', lg: '44%', xl: '44%' },
         aspectRatio: '16 / 9',
         display: 'none',
         position: 'relative',

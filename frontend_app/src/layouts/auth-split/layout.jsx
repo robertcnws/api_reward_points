@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -11,6 +11,7 @@ import { varAlpha, bgGradient } from 'src/theme/styles';
 import { Logo } from 'src/components/logo';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { getSession } from 'src/auth/context/jwt';
 
 import { Section } from './section';
 import { Main, Content } from './main';
@@ -18,15 +19,24 @@ import { CustomFooter } from '../main/footer';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 
-
-
-
 // ----------------------------------------------------------------------
 
 export function AuthSplitLayout({ sx, section, children, header }) {
   const layoutQuery = 'md';
 
   const { isMobile } = useContext(LoadingContext);
+
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchSession() {
+      const sess = await getSession();
+      if (mounted) setSession(sess);
+    }
+    fetchSession();
+    return () => { mounted = false; };
+  }, []);
 
   const theme = useTheme();
 
@@ -61,14 +71,15 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 // minHeight: '100dvh',
-                width: 650,
+                width: { xs: '100%', md: '100%', lg: '40%', xl: '40%' },
                 px: 1,
                 // mt: !isMobile ? 150 : 120,
                 // ml: !isMobile ? 1 : 0,
                 // mb: !isMobile ? 0 : 10,
-                mt: !isMobile ? '45%' : 60,
+                mt: { xs: 60, md: 60, lg: 100, xl: 100 },
+                // mt: !isMobile ? '45%' : 60,
                 // ml: !isMobile ? 25 : '15%',
-                mb: !isMobile ? 0 : 30,
+                mb: { xs: 30, md: 30, lg: 0, xl: 0 },
               }}>
                 <Logo
                   isSingle={false}
@@ -82,8 +93,8 @@ export function AuthSplitLayout({ sx, section, children, header }) {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1,
-                  mt: !isMobile ? 0 : 2,
-                  mb: !isMobile ? 0 : 2,
+                  mt: !isMobile ? 0 : -2,
+                  mb: !isMobile ? 0 : 5,
                   color: 'whitesmoke',
                 }}>
                   <Typography
@@ -133,17 +144,19 @@ export function AuthSplitLayout({ sx, section, children, header }) {
       // footerSection={null}
       // footerSection={homePage ? <HomeFooter /> : <Footer layoutQuery={layoutQuery} />}
       // footerSection={<Footer layoutQuery={layoutQuery} />}
-      footerSection={< CustomFooter />}
+      footerSection={session ? <CustomFooter /> : null}
       /** **************************************
        * Style
        *************************************** */
       cssVars={{ '--layout-auth-content-width': '420px' }}
       sx={{
-        ...(isMobile ? bgGradient({
-          color: `1deg, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)},
-                    ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
-          imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
-        }) : {}),
+        // ...(isMobile ? bgGradient({
+        //   color: `1deg, ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)},
+        //             ${varAlpha(theme.vars.palette.background.neutralChannel, 0.1)}`,
+        //   imgUrl: `${CONFIG.assetsDir}/assets/background/bgrewards1.png`,
+        // }) : {}),
+
+        backgroundColor: isMobile ? 'primary.dark' : 'transparent',
         ...sx
       }}
     >
@@ -155,7 +168,7 @@ export function AuthSplitLayout({ sx, section, children, header }) {
           // imgUrl='/logo/logo.png'
           method={CONFIG.auth.method}
           subtitle={section?.subtitle}
-          // sx={{ bgcolor: 'error.main' }}
+        // sx={{ bgcolor: 'error.main' }}
         // methods={[
         //   {
         //     label: 'Jwt',

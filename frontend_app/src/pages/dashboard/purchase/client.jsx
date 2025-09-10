@@ -29,8 +29,6 @@ export default function Page() {
 
   const { id } = useParams();
 
-  console.log('clientId', id);
-
   const client = useMemo(() => {
     refetchUsers()?.catch(() => { });
     return loadedAllUsers?.find((user) => user.id === id) || null;
@@ -49,8 +47,6 @@ export default function Page() {
     byUsernameQuery?.data?.id,
     fieldsHistory
   );
-
-  console.log('historyQuery', historyQuery);
 
   const loadedRewardPoints = byUsernameQuery?.data;
 

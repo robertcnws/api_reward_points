@@ -602,8 +602,8 @@ export function OverviewAdminView({
                 sx={{
                   width: '100%',
                   height: '100%',
-                  display: 'flex',
-                  flexDirection: 'row',
+                  // display: 'flex',
+                  // flexDirection: 'row',
                   alignItems: 'center',
                 }}>
                 <Grid xs={12} md={3}>

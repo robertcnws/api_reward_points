@@ -351,7 +351,7 @@ export function JwtSignInView() {
 
   return (
     <Card sx={{
-      mt: !isMobile ? 0 : 20,
+      mt: !isMobile ? 0 : 22,
       p: 3,
       width: 1,
       ml: 0,
@@ -367,7 +367,7 @@ export function JwtSignInView() {
         description={
           <Box
             display="flex"
-            justifyContent={isMobile ? 'center' : 'flex-start'}
+            // justifyContent={isMobile ? 'center' : 'flex-start'}
             alignItems="center"
             gap={1}
             mb={-2}
