@@ -25,7 +25,6 @@ import { IncrementerText } from '../items/components/incrementer-text';
 
 export function UserManagePointsModalForm({
   currentUser,
-  currentRewardPoints,
   open,
   onClose
 }) {
@@ -39,8 +38,8 @@ export function UserManagePointsModalForm({
     [currentUser]
   );
 
-  const totalAvailablePoints = useMemo(() => currentRewardPoints?.totalAvailablePoints || 0,
-    [currentRewardPoints]
+  const totalAvailablePoints = useMemo(() => currentUser?.totalAvailablePoints || 0,
+    [currentUser]
   );
 
   const currentAssignedPoints = useMemo(() => totalAvailablePoints || 0,

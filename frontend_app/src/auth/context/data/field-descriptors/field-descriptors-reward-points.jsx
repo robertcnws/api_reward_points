@@ -70,7 +70,26 @@ export const fieldsRewardPoints = [
   },
   {
     name: 'user',
-    fields: ['id', 'companyName', 'firstName', 'email', 'lastName', 'phoneNumber', 'isApproved'],
+    fields: [
+      'id', 
+      'companyName', 
+      'firstName', 
+      'email', 
+      'lastName', 
+      'phoneNumber', 
+      'isApproved',
+      'isVerified',
+      'isActive',
+      'createdTime',
+      'lastModifiedTime',
+      'avatarUrl',
+      'keyAvatar',
+      'username',
+      {
+        name: 'userRole',
+        fields: ['id', 'name'],
+      },
+    ],
   },
 ];
 

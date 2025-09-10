@@ -89,8 +89,8 @@ export function UserClientListView() {
   const confirm = useBoolean();
 
   const {
-    loadedAllUsers,
-    refetchUsers,
+    // loadedAllUsers,
+    // refetchUsers,
     loadedUserRoles,
     loadedRewardPoints,
     refetchRewardPoints,
@@ -98,38 +98,26 @@ export function UserClientListView() {
 
   const [tableData, setTableData] = useState([]);
 
-  const [rewardPointsData, setRewardPointsData] = useState([]);
-
   const filters = useSetState({ name: '', status: 'all' });
 
-  // console.log('loadedRewardPoints', loadedRewardPoints);
+  console.log('loadedRewardPoints', loadedRewardPoints);
 
   useEffect(() => {
-    if (refetchUsers) {
-      refetchUsers();
-    }
     if (refetchRewardPoints) {
       refetchRewardPoints();
     }
-    setTableData(loadedAllUsers.filter((u) => u.userRole.name === 'client') || []);
-    setRewardPointsData(loadedRewardPoints || []);
-  }, [refetchUsers, loadedAllUsers, refetchRewardPoints, loadedRewardPoints]);
-
-  useEffect(() => {
-    if (loadedAllUsers) {
-      setTableData(loadedAllUsers.filter((u) => u.userRole.name === 'client'));
-    }
-  }, [loadedAllUsers]);
-
-  useEffect(() => {
-    if (loadedRewardPoints) {
-      setRewardPointsData(loadedRewardPoints);
-    }
-  }, [loadedRewardPoints]);
+    setTableData(loadedRewardPoints.map(
+      (reward) => ({
+          ...reward?.user,
+          rewardPointsId: reward?.id,
+          totalAvailablePoints: reward?.totalAvailablePoints,
+        })
+    ) || []);
+  }, [refetchRewardPoints, loadedRewardPoints]);
 
 
   useEffect(() => {
-    const socket = new WebSocket(wsEndpoints.users.all);
+    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.all);
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
@@ -137,7 +125,7 @@ export function UserClientListView() {
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
-        refetchUsers?.().catch((error) => {
+        refetchRewardPoints?.().catch((error) => {
           console.error('Error refetching users:', error);
         });
       }
@@ -147,7 +135,7 @@ export function UserClientListView() {
         socket.close();
       }
     };
-  }, [refetchUsers]);
+  }, [refetchRewardPoints]);
 
 
   // useEffect(() => {
@@ -249,7 +237,7 @@ export function UserClientListView() {
           totalRowsInPage: dataInPage.length,
           totalRowsFiltered: dataFiltered.length,
         });
-        refetchUsers?.();
+        refetchRewardPoints?.();
       }
       else {
         toast.error(response.data.error);
@@ -259,7 +247,7 @@ export function UserClientListView() {
       toast.error(error.response.data.error);
     }
 
-  }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged, refetchUsers]);
+  }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged, refetchRewardPoints]);
 
   const handleChangeApprovalRow = useCallback(
     async (id) => {
@@ -271,7 +259,7 @@ export function UserClientListView() {
         });
 
         if (response.data.message) {
-          refetchUsers?.();
+          refetchRewardPoints?.();
           toast.success(response.data.message);
         }
         else {
@@ -282,7 +270,7 @@ export function UserClientListView() {
         toast.error(error.response.data.error);
       }
     },
-    [userLogged, refetchUsers]
+    [userLogged, refetchRewardPoints]
   );
 
   const handleChangeVerifyRow = useCallback(
@@ -293,14 +281,14 @@ export function UserClientListView() {
       });
 
       if (response.data.message) {
-        refetchUsers?.();
+        refetchRewardPoints?.();
         toast.success(response.data.message);
       }
       else {
         toast.error(response.data.error);
       }
     },
-    [userLogged, refetchUsers]
+    [userLogged, refetchRewardPoints]
   );
 
   const handleEditRow = useCallback(
@@ -469,7 +457,7 @@ export function UserClientListView() {
                       <UserClientTableRow
                         key={row.id}
                         row={row}
-                        rowRewardPoints={rewardPointsData?.find((reward) => reward?.user?.id === row.id)}
+                        refetchRewardPoints={refetchRewardPoints}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}

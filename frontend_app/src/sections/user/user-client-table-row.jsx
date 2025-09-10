@@ -34,7 +34,7 @@ import { UserManagePointsModalForm } from './user-manage-points-modal-form';
 
 export function UserClientTableRow({
   row,
-  rowRewardPoints,
+  refetchRewardPoints,
   selected,
   onEditRow,
   onSelectRow,
@@ -46,8 +46,6 @@ export function UserClientTableRow({
 }) {
 
   const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
-
-  const [currentRowRewardPoints, setCurrentRowRewardPoints] = useState(null);
 
   const { isMobile } = useContext(LoadingContext)
 
@@ -66,35 +64,15 @@ export function UserClientTableRow({
   const confirmManagePoints = useBoolean();
 
   useEffect(() => {
-    if (rowRewardPoints) {
-      setCurrentRowRewardPoints(rowRewardPoints);
-    }
-  }, [rowRewardPoints]);
-
-  useEffect(() => {
-    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.byId(rowRewardPoints?.id));
+    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.byId(row?.rewardPointsId));
     socket.onerror = (errorEvent) => {
       console.dir(errorEvent);
       console.error('WebSocket error (toString):', errorEvent.toString());
     };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      // console.log("WebSocket message:", message);
-      if (message.type === 'created' || message.type === 'updated') {
-        setCurrentRowRewardPoints((prevData) => {
-          if (prevData?.id === message.item.id) {
-            return message.item;
-          }
-          return prevData;
-        });
-      }
-      else if (message.type === 'deleted') {
-        setCurrentRowRewardPoints((prevData) => {
-          if (prevData?.id === message.item.id) {
-            return null;
-          }
-          return prevData;
-        });
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchRewardPoints?.().catch((error) => { console.error(error); });
       }
     };
     return () => {
@@ -102,11 +80,11 @@ export function UserClientTableRow({
         socket.close();
       }
     };
-  }, [rowRewardPoints]);
+  }, [refetchRewardPoints, row?.rewardPointsId]);
 
-  const totalAvailablePoints = useMemo(() => currentRowRewardPoints?.totalAvailablePoints || 0,
-    [currentRowRewardPoints]
-  );
+  // const totalAvailablePoints = useMemo(() => currentRowRewardPoints?.totalAvailablePoints || 0,
+  //   [currentRowRewardPoints]
+  // );
 
   const [currentUrl, setCurrentUrl] = useState(row?.avatarUrl);
 
@@ -170,10 +148,10 @@ export function UserClientTableRow({
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.lastName}</TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
-            {totalAvailablePoints > 0 ? (
+            {row.totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {totalAvailablePoints || 0}
+                {row.totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">
@@ -301,10 +279,10 @@ export function UserClientTableRow({
                     Phone: <b>{row.phoneNumber}</b>
                   </Typography>
                   <Typography variant='body2'>
-                    Reward Points: {totalAvailablePoints > 0 ? (
+                    Reward Points: {row.totalAvailablePoints > 0 ? (
                       <Label color="success">
                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                        {totalAvailablePoints || 0}
+                        {row.totalAvailablePoints || 0}
                       </Label>
                     ) : (
                       <Label color="error">
@@ -380,7 +358,6 @@ export function UserClientTableRow({
 
       <UserManagePointsModalForm
         currentUser={row}
-        currentRewardPoints={currentRowRewardPoints}
         open={confirmManagePoints.value}
         onClose={confirmManagePoints.onFalse}
       />

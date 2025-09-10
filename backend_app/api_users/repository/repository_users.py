@@ -8,7 +8,7 @@ from utils.data_util import (
 )
 from api_authorization.models import LoginUser, UserRole
 
-from api_reward_points.models import RewardAttachment
+from api_reward_points.models import RewardAttachment, RewardPoints
 
 from utils.s3_utils import (
     upload_attachment_to_s3, 
@@ -300,6 +300,11 @@ def delete_user(request, id):
             info_id=user.id
             type='delete_user'
             create_notification(module, info_id, info, type, user_reporter['username'])
+            
+            if user.user_role and user.user_role.name == 'client':
+                reward_points = RewardPoints.objects(user=user).all()
+                for rp in reward_points:
+                    rp.delete()
                 
             user.delete()
             
@@ -364,6 +369,12 @@ def delete_users(request):
             create_notification(module, info_id, info, type, user_reporter['username'])
                 
             for user in users:
+                
+                if user.user_role and user.user_role.name == 'client':
+                    reward_points = RewardPoints.objects(user=user).all()
+                    for rp in reward_points:
+                        rp.delete()
+                        
                 user.delete()
             
             return Response({'message': 'Users deleted successfully'}, status=200)
