@@ -148,6 +148,11 @@ export function JwtSignInView() {
       });
       sessionStorage.setItem('userSignedInEmail', error.error_email);
       sessionStorage.setItem('userSignedInUsername', data.username);
+      sessionStorage.setItem('userSignedUpEmail', error.error_email);
+      sessionStorage.setItem('userSignedUpUsername', data.username);
+      sessionStorage.setItem('userSignedUp', JSON.stringify(
+        { data: { username: data.username, email: error.error_email } }
+      ));
     }
   });
 

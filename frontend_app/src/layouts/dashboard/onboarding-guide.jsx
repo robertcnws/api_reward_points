@@ -46,14 +46,20 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, dis
             setSteps(finalJoyRides.map(({ componentId, title, description, placement, relatedImageName, translation }, index) => {
                 const tTitle = isEnglish ? title : (translation?.es?.title || title);
                 const tDesc = isEnglish ? description : (translation?.es?.content || description);
-                
+
                 return ({
                     target: `#${componentId}`,
                     content: (
                         <>
-                            {relatedImageName && <img src={`/logo/design/${relatedImageName}.png`} alt={title} />}
+                            {relatedImageName &&
+                                <img
+                                    src={`/logo/design/${relatedImageName}.png`}
+                                    alt={title}
+                                    style={{ width: '100%', maxHeight: 120, objectFit: 'contain', marginBottom: 10 }}
+                                />
+                            }
                             <h3>{tTitle}</h3>
-                            <p>{tDesc}</p>
+                            <p style={{ fontSize: 14 }}>{tDesc}</p>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -65,7 +71,7 @@ const OnboardingGuide = ({ run, setRun, ready, onFinish, stepFilters = null, dis
                                 onClick={translate}
                             >
                                 <Iconify icon="ri:translate" />
-                                <Typography sx={{ fontSize: 13 }}>
+                                <Typography sx={{ fontSize: 12 }}>
                                     Translate to {isEnglish ? 'Spanish' : 'English'}
                                 </Typography>
                             </Box>
