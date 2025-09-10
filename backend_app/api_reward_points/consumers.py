@@ -103,7 +103,6 @@ class RewardPointsByIdConsumer(AsyncJsonWebsocketConsumer):
 ######################################################
 # RewardStoreProduct BY ID
 ######################################################
-
 class RewardStoreProductByIdConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.store_product_id = self.scope["url_route"]["kwargs"]["store_product_id"]

@@ -491,7 +491,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
               ],
             },
             {
-              key: `${paths.dashboard.role.root}-17`,
+              key: `${paths.dashboard.role.root}-171`,
               title: (
                 <Box component="span" id='roles-link'>
                   <Typography
