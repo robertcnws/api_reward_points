@@ -12,6 +12,7 @@ import { fDateTime } from 'src/utils/format-time';
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { Iconify } from 'src/components/iconify';
+import { useEffect, useState } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,25 @@ export function StoreProductReviewItem({ review, refetch }) {
   const currentUserHasReacted = (type) => review.reactions?.some(
     (reaction) => reaction.user.id === userLogged?.data?.id && reaction.reactionType === type
   );
+
+  const [currentUrl, setCurrentUrl] = useState(review?.user?.avatarUrl);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(review?.user?.keyAvatar));
+        if (!response.data || !response.data.url) {
+          console.error('Error fetching URL', response.statusText);
+        }
+        const values = await response.data;
+
+        setCurrentUrl(values.url);
+      } catch (error) {
+        console.error('Error al obtener la URL:', error);
+      }
+    }
+    fetchData();
+  }, [review?.user?.keyAvatar]);
 
   const makeReaction = async (type) => {
     if (!currentUserHasReacted(type)) {
@@ -50,7 +70,8 @@ export function StoreProductReviewItem({ review, refetch }) {
       sx={{ width: { md: 240 }, textAlign: { md: 'center' } }}
     >
       <Avatar
-        src={review.user.avatarUrl}
+        alt={review?.user?.username}
+        src={currentUrl}
         sx={{ width: { xs: 48, md: 64 }, height: { xs: 48, md: 64 } }}
       />
 

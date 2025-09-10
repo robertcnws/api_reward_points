@@ -100,7 +100,7 @@ export function UserClientListView() {
 
   const filters = useSetState({ name: '', status: 'all' });
 
-  console.log('loadedRewardPoints', loadedRewardPoints);
+  // console.log('loadedRewardPoints', loadedRewardPoints);
 
   useEffect(() => {
     if (refetchRewardPoints) {

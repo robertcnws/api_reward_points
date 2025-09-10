@@ -76,7 +76,9 @@ export const fieldsRewardStoreProductDetails = [
                             'email',
                             'firstName',
                             'lastName',
-                            'username'
+                            'username',
+                            'keyAvatar',
+                            'avatarUrl'
                         ]
                     }
                 ]
@@ -88,6 +90,9 @@ export const fieldsRewardStoreProductDetails = [
                     'email',
                     'firstName',
                     'lastName',
+                    'username',
+                    'keyAvatar',
+                    'avatarUrl',
                     'username'
                 ]
             }

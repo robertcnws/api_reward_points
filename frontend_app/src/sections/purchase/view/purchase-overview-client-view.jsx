@@ -15,6 +15,10 @@ import { MotivationIllustration } from 'src/assets/illustrations';
 
 import { Iconify } from 'src/components/iconify';
 
+import { paths } from 'src/routes/paths';
+
+import { FormReturnLink } from 'src/auth/components/form-return-link';
+
 import { EcommerceWelcome } from 'src/sections/overview/e-commerce/ecommerce-welcome';
 import { EcommerceWebsiteVisits } from 'src/sections/overview/e-commerce/ecommerce-website-visits';
 import { EcommerceRewardPointsAttribute } from 'src/sections/overview/e-commerce/ecommerce-amount-spent';
@@ -252,6 +256,17 @@ export function PurchaseOverviewClientView({
         </Box>
       ) : (
         <Grid container spacing={3}>
+          <Box
+            sx={{
+              width: '100%',
+              mb: 0,
+              px: 1
+            }}>
+            <FormReturnLink
+              href={paths.dashboard.user.client}
+              label='Back to Clients List'
+            />
+          </Box>
           <Grid xs={12} md={images.length > 0 ? 8 : 12}>
             <EcommerceWelcome
               title={
