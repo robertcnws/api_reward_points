@@ -400,9 +400,9 @@ def change_approval_user(request, id):
         disapproval_count = user.disapproval_count
 
         company_name = user.company_name
+        role_client = UserRole.objects(name='client').first() 
         if company_name:
             if not user.is_approved:
-                role_client = UserRole.objects(name='client').first() 
                 user_exists_company = LoginUser.objects(
                     user_role=role_client,
                     company_name=company_name, 
