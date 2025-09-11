@@ -240,6 +240,24 @@ export function UserListView() {
     [userLogged, refetchUsers]
   );
 
+  const handleChangeActiveRow = useCallback(
+    async (id) => {
+
+      const response = await axiosInstanceBackend.post(endpoints.user.changeActive.user(id), {
+        userReporter: userLogged?.data,
+      });
+
+      if (response.data.message) {
+        refetchUsers?.();
+        toast.success(response.data.message);
+      }
+      else {
+        toast.error(response.data.error);
+      }
+    },
+    [userLogged, refetchUsers]
+  );
+
   const handleEditRow = useCallback(
     (id) => {
       router.push(paths.dashboard.user.edit(id));
@@ -393,6 +411,7 @@ export function UserListView() {
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
                         onChangeApprovalRow={() => handleChangeApprovalRow(row.id)}
+                        onActiveRow={() => handleChangeActiveRow(row.id)}
                       />
                     ))}
 

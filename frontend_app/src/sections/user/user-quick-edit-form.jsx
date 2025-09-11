@@ -1,5 +1,5 @@
 import { z as zod } from 'zod';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
@@ -83,6 +83,12 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
+
+  useEffect(() => {
+    if (open) {
+      reset(defaultValues);
+    }
+  }, [open, reset, defaultValues]);
 
   const onSubmit = handleSubmit(async (data) => {
     const { id } = currentUser;

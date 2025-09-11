@@ -37,6 +37,7 @@ export function UserTableRow({
   onEditRow,
   onSelectRow,
   onDeleteRow,
+  onActiveRow,
   onChangeApprovalRow
 }) {
 
@@ -53,6 +54,8 @@ export function UserTableRow({
   const quickChangePassword = useBoolean();
 
   const confirmApproval = useBoolean();
+
+  const confirmActive = useBoolean();
 
   const [currentUrl, setCurrentUrl] = useState(row?.avatarUrl);
 
@@ -230,15 +233,28 @@ export function UserTableRow({
       >
         <MenuList>
           {userLogged?.data.username !== row.username && (
-            <MenuItem
-              onClick={() => {
-                confirmApproval.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="material-symbols:disabled-by-default-rounded" />
-              Disapprove
-            </MenuItem>
+            <>
+              <MenuItem
+                onClick={() => {
+                  confirmApproval.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="material-symbols:disabled-by-default-rounded" />
+                Disapprove
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  confirmActive.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon={
+                  row?.isActive ? 'fe:disabled' : 'material-symbols:enable'
+                } />
+                {row?.isActive ? 'Set Inactive' : 'Set Active'}
+              </MenuItem>
+            </>
           )}
           <MenuItem
             onClick={() => {
@@ -306,6 +322,28 @@ export function UserTableRow({
         action={
           <Button variant="contained" color="warning" onClick={onChangeApprovalRow}>
             Disapprove
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        maxWidth='md'
+        open={confirmActive.value}
+        onClose={confirmActive.onFalse}
+        title={row.isActive ? "Set User Inactive" : "Set User Active"}
+        content={
+          <ListItemText
+            primary={`Do you want to ${row.isActive ? "set inactive" : "set active"} this user (${row.firstName} ${row.lastName}, username: ${row.username}) ?`}
+          />
+        }
+        action={
+          <Button variant="contained" color={row.isActive ? "warning" : "primary"} onClick={
+            async () => {
+              await onActiveRow(row.id);
+              confirmActive.onFalse();
+            }
+          }>
+            {row.isActive ? "Set Inactive" : "Set Active"}
           </Button>
         }
       />

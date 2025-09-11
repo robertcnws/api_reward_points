@@ -903,3 +903,50 @@ def change_social_user(request, id):
     
     except LoginUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# CHANGE ACTIVE USER
+#############################################
+
+def change_active_user(request, id):
+    data = request.data
+    user_reporter = data.get('userReporter')
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.is_active = not user.is_active
+        user.save()
+        
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['is_active', 'username', 'id']
+        )
+        
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+        
+        if user_reporter:
+            
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'change to {"active" if user.is_active else "NOT active"}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+                
+            module='users'
+            info=f'has change active user ({user.username}) to {"active" if user.is_active else "not active"}'
+            info_id=user.id
+            type='change_active_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User active change successfully'}, status=200)
+        
+        return Response({'error': 'User reporter not found'}, status=404)
+    
+    except LoginUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)

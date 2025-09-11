@@ -291,6 +291,24 @@ export function UserClientListView() {
     [userLogged, refetchRewardPoints]
   );
 
+  const handleChangeActiveRow = useCallback(
+    async (id) => {
+
+      const response = await axiosInstanceBackend.post(endpoints.user.changeActive.user(id), {
+        userReporter: userLogged?.data,
+      });
+
+      if (response.data.message) {
+        refetchRewardPoints?.();
+        toast.success(response.data.message);
+      }
+      else {
+        toast.error(response.data.error);
+      }
+    },
+    [userLogged, refetchRewardPoints]
+  );
+
   const handleEditRow = useCallback(
     (id) => {
       router.push(paths.dashboard.user.edit(id));
@@ -464,6 +482,7 @@ export function UserClientListView() {
                         onEditRow={() => handleEditRow(row.id)}
                         onApprovalRow={() => handleChangeApprovalRow(row.id)}
                         onVerifyRow={() => handleChangeVerifyRow(row.id)}
+                        onActiveRow={() => handleChangeActiveRow(row.id)}
                         onProfileRow={() => handleProfileRow(row.id)}
                         onRefetchRow={() => handleRefetchPointsRow(row.id)}
                       />

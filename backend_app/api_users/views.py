@@ -104,6 +104,13 @@ def change_approval_user(request, id):
 def change_verify_user(request, id):
     return repository_users.change_verify_user(request, id)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def change_active_user(request, id):
+    return repository_users.change_active_user(request, id)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @throttle_classes([AuthWriteThrottle])

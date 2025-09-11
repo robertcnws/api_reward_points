@@ -41,6 +41,7 @@ export function UserClientTableRow({
   onDeleteRow,
   onApprovalRow,
   onVerifyRow,
+  onActiveRow,
   onProfileRow,
   onRefetchRow,
 }) {
@@ -60,6 +61,8 @@ export function UserClientTableRow({
   const confirmApproval = useBoolean();
 
   const confirmVerify = useBoolean();
+
+  const confirmActive = useBoolean();
 
   const confirmManagePoints = useBoolean();
 
@@ -421,6 +424,17 @@ export function UserClientTableRow({
           </MenuItem>
           <MenuItem
             onClick={() => {
+              confirmActive.onTrue();
+              popover.onClose();
+            }}
+          >
+            <Iconify icon={
+              row?.isActive ? 'fe:disabled' : 'material-symbols:enable'
+            } />
+            {row?.isActive ? 'Set Inactive' : 'Set Active'}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
               quickEdit.onTrue();
               popover.onClose();
             }}
@@ -508,6 +522,29 @@ export function UserClientTableRow({
         action={
           <Button variant="contained" color={row.isVerified ? "warning" : "primary"} onClick={onVerifyRow}>
             {row.isVerified ? "Unverify" : "Verify  "}
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        maxWidth='md'
+        open={confirmActive.value}
+        onClose={confirmActive.onFalse}
+        title={row.isActive ? "Set User Inactive" : "Set User Active"}
+        content={
+          <ListItemText
+            primary={`Do you want to ${row.isActive ? "set inactive" : "set active"} this user (${row.firstName} ${row.lastName}, username: ${row.username}) ?`}
+            secondary={`Company: ${row.companyName}, Email: ${row.email}`}
+          />
+        }
+        action={
+          <Button variant="contained" color={row.isActive ? "warning" : "primary"} onClick={
+            async () => {
+              await onActiveRow(row.id);
+              confirmActive.onFalse();
+            }
+          }>
+            {row.isActive ? "Set Inactive" : "Set Active"}
           </Button>
         }
       />

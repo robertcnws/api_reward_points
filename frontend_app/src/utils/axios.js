@@ -181,6 +181,9 @@ export const endpoints = {
     changeVerify: {
       user: (id) => `/users/change-verify/${id}/`,
     },
+    changeActive: {
+      user: (id) => `/users/change-active/${id}/`,
+    },
     changeShowTourGuide: {
       user: (id) => `/users/change-show-tour-guide/${id}/`,
     },
