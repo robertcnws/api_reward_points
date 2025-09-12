@@ -232,7 +232,7 @@ export function PurchaseDetailsModalTemplate({
                         sx={{ width: '100%', gap: !isMobile ? 3 : 1 }}
                     >
                         <Label color="default" sx={{ width: '100%', justifyContent: 'flex-start' }} variant="none">
-                            <b>ORDER:</b>
+                            <b>ORDER #:</b>
                         </Label>
                         <Typography
                             variant="body2"
@@ -245,7 +245,7 @@ export function PurchaseDetailsModalTemplate({
                                 ml: !isMobile ? -4 : 0,
                             }}
                         >
-                            {`No. ${currentBuy?.orderNumber || 'N/A'}`}
+                            {currentBuy?.orderNumber || 'N/A'}
                         </Typography>
                     </Box>
                     <Box
