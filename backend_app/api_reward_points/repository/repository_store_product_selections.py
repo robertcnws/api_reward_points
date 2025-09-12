@@ -1287,6 +1287,7 @@ def manage_use_store_product_selection_buy(request, id):
                 buy.notes = notes
             buy.last_modified_time = to_aware(timezone.now())
             buy.redeemed_time = to_aware(timezone.now())
+            buy.salesorder_person = user_reporter
             buy.save()
             
             tracking_info = transform_data_to_mongo(
@@ -1299,7 +1300,7 @@ def manage_use_store_product_selection_buy(request, id):
                     'quantity_used', 
                     'order_number', 
                     'confirmation_number',
-                    'notes'
+                    'notes',
                 ]
             )
             

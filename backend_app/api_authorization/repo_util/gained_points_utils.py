@@ -59,9 +59,10 @@ def compute_sales_orders_pending(sales_orders):
         if so.status and so.status.lower() not in ('fulfilled', 'draft')
     ]
 
-def compute_invoice_metrics(invoices, cutoff_dt):
+def compute_invoice_metrics(invoices, cutoff_dt, existing_invoice_ids):
     eligible = []
-    for inv in invoices:
+    real_invoices = [inv for inv in invoices if inv.invoice_id not in existing_invoice_ids]
+    for inv in real_invoices:
         inv_dt = to_dt(getattr(inv, "date", None))
         if inv_dt and inv_dt >= cutoff_dt and \
              money(inv.payment_made) > 0 and \
@@ -157,9 +158,9 @@ def _build_cutoff_dt(user):
     return cutoff
 
 
-def _compute_metrics_and_points(sorted_invoices, sorted_sales_orders, cutoff):
+def _compute_metrics_and_points(sorted_invoices, sorted_sales_orders, cutoff, existing_invoice_ids):
     pendings = compute_sales_orders_pending(sorted_sales_orders)
-    metrics = compute_invoice_metrics(sorted_invoices, cutoff_dt=cutoff)
+    metrics = compute_invoice_metrics(sorted_invoices, cutoff_dt=cutoff, existing_invoice_ids=existing_invoice_ids)
     total_gained_points_new = calculate_reward_points(metrics["total_amount_to_rewards"])
     return pendings, metrics, total_gained_points_new
 
@@ -209,24 +210,24 @@ def _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_
 
 
 def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders, total_gained_points_new, description):
-    old_total = rp.total_gained_points + rp.total_spent_points
-    delta_points = total_gained_points_new - old_total
+    # old_total = rp.total_gained_points + rp.total_spent_points + rp.total_assigned_points
+    # delta_points = total_gained_points_new - old_total
 
-    rp.total_gained_points = total_gained_points_new - rp.total_spent_points
-    rp.total_amount_invoices = metrics["total_amount_invoices"]
-    rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"]
-    rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"]
-    rp.total_tax_amount_invoices = metrics["total_tax_amount_invoices"]
+    rp.total_gained_points = total_gained_points_new + rp.total_gained_points
+    rp.total_amount_invoices = metrics["total_amount_invoices"] + rp.total_amount_invoices
+    rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"] + rp.total_paid_amount_invoices
+    rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"] + rp.total_opened_balance_invoices
+    rp.total_tax_amount_invoices = metrics["total_tax_amount_invoices"] + rp.total_tax_amount_invoices
     rp.qty_pending_orders = len(pendings)
     rp.invoices = sorted_invoices
     rp.sales_orders = sorted_sales_orders
     rp.last_modified_time = now
 
     history = None
-    if delta_points > 0:
-        history = _make_history(now, rp, "gained", delta_points, description, sorted_invoices)
-    elif delta_points < 0:
-        history = _make_history(now, rp, "substracted", delta_points, description, sorted_invoices)
+    if total_gained_points_new > 0:
+        history = _make_history(now, rp, "gained", total_gained_points_new, description, sorted_invoices)
+    # elif delta_points < 0:
+    #     history = _make_history(now, rp, "substracted", delta_points, description, sorted_invoices)
 
     return rp, history
 
@@ -254,11 +255,20 @@ def get_rewards_points(user, description=None):
     all_invoices = _merge_invoices(local_invoices, new_invoices)
     sorted_invoices, sorted_sales_orders = _load_sorted_local_collections(user, all_invoices)
     
+    rp = RewardPoints.objects(user=user).first()
+    
+    existing_invoice_ids = [inv.invoice_id for inv in rp.invoices] if rp else []
+    
     cutoff = _build_cutoff_dt(user)
-    pendings, metrics, total_gained_points_new = _compute_metrics_and_points(sorted_invoices, sorted_sales_orders, cutoff)
+    pendings, metrics, total_gained_points_new = _compute_metrics_and_points(
+        sorted_invoices, 
+        sorted_sales_orders, 
+        cutoff,
+        existing_invoice_ids
+    )
 
     now = timezone.now()
-    rp = RewardPoints.objects(user=user).first()
+    
     if not rp:
         rp, history = _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_sales_orders,
                                             total_gained_points_new, description)

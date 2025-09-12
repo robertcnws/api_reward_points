@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
 
 import { isClient } from 'src/utils/check-permissions';
 
@@ -17,6 +18,7 @@ import { toast } from 'src/components/snackbar';
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { PurchaseDetailsModalTemplate } from './purchase-details-modal-template';
+
 
 
 
@@ -83,8 +85,8 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
       </DialogTitle>
 
       <DialogContent>
-        <PurchaseDetailsModalTemplate 
-          currentBuy={currentBuy} 
+        <PurchaseDetailsModalTemplate
+          currentBuy={currentBuy}
           isMobile={isMobile}
           assignedPoints={assignedPoints}
           quantity={quantity}
@@ -107,6 +109,14 @@ export function PurchaseDetailsModal({ currentBuy, open, openUse }) {
               Proceed
             </Button>
           )}
+        {currentBuy?.hasBeenUsed && (
+          <Button
+            variant="contained"
+            onClick={() => generateRedeemedReport({ currentBuy })}
+          >
+            Print Report
+          </Button>
+        )}
         <Button variant="outlined" onClick={() => open.onFalse()}>
           Cancel
         </Button>

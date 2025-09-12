@@ -130,7 +130,7 @@ class RewardInvoice(Document):
         return f"Invoice {self.invoice_number} - {self.user.username} - {self.status}"
     
 class RewardPoints(Document):
-    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2, unique=True)  # CASCADE
     total_gained_points = IntField(default=0)
     total_spent_points = IntField(default=0)
     total_assigned_points = IntField(default=0)
@@ -410,6 +410,7 @@ class RewardStoreProductSelectionBuy(Document):
         default=list,
         null=True,
     )
+    salesorder_person = ReferenceField(LoginUser, null=True, blank=True, reverse_delete_rule=PULL)  # CASCADE
 
     meta = {
         'collection': 'reward_store_product_selection_buy',

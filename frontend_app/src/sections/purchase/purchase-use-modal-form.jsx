@@ -22,9 +22,9 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 
+import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
+
 import { PurchaseDetailsModalTemplate } from './purchase-details-modal-template';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -211,6 +211,14 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
               Checkout!
             </Button>
           )}
+          {isUsed && (
+            <Button
+              variant="contained"
+              onClick={() => generateRedeemedReport({ currentBuy })}
+            >
+              See Report
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => {
             open?.onFalse();
             openDetails?.onTrue();
@@ -234,6 +242,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
             color="warning"
             onClick={async () => {
               await handleUsePurchase(currentBuy.id);
+              generateRedeemedReport({ currentBuy });
               confirmUse.onFalse();
               open.onFalse();
               openDetails.onFalse();

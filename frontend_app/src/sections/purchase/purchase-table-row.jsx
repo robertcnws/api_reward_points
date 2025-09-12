@@ -14,6 +14,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { fDateTime } from 'src/utils/format-time';
 import { fNumber } from 'src/utils/format-number';
 import { isClient } from 'src/utils/check-permissions';
+import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -25,6 +26,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { PurchaseDetailsModal } from './purchase-details-modal';
 import { PurchaseUseModalForm } from './purchase-use-modal-form';
 import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
+
 
 
 // ----------------------------------------------------------------------
@@ -405,6 +407,16 @@ export function PurchaseTableRow({
             />
             View Order Details
           </MenuItem>
+          {(row?.hasBeenUsed) && (
+            <MenuItem
+              onClick={() => generateRedeemedReport({ currentBuy: row })}
+            >
+              <Iconify
+                icon='stash:invoice'
+              />
+              Print Report
+            </MenuItem>
+          )}
           {(!row?.hasBeenUsed && !isClient(roleName)) && (
             <MenuItem
               onClick={() => {

@@ -15,7 +15,10 @@ const fieldDesctiptorsRewardStoreProductSelection = [
             'id',
             'username',
             'firstName',
-            'lastName'
+            'lastName',
+            'companyName',
+            'email',
+            'phoneNumber'
         ]
     }
 ]
@@ -50,5 +53,16 @@ export const fieldsRewardStoreProductSelectionBuys = [
     {
         name: 'storeProductSelection',
         fields: fieldDesctiptorsRewardStoreProductSelection
-    }
+    },
+    {
+        name: 'salesorderPerson',
+        fields: [
+            'id',
+            'username',
+            'firstName',
+            'lastName',
+            'email',
+            'phoneNumber'
+        ]
+    },
 ]
