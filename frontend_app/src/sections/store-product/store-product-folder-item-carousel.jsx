@@ -28,57 +28,60 @@ export function StoreProductFolderItemCarousel({
   const [initialFiles, setInitialFiles] = useState([]);
 
   useEffect(() => {
-    const attachments = images?.length > 0 ? [...images] : [];
+    let alive = true;
 
-    if (attachments?.length === 0) {
-      const defaultFile = {
-        file: 'store_products/nws_reward_points_preview.png',
-        name: 'Default Image',
-        isNew: false,
+    const toFileUrl = async (att) => {
+      try {
+        if (att instanceof File) {
+          return { fileUrl: URL.createObjectURL(att), name: att.name, isNew: true };
+        }
+        if (typeof att === 'string') {
+          return { fileUrl: att, name: 'image' };
+        }
+        if (att?.fileUrl) return att;
+        if (att?.url) return { ...att, fileUrl: att.url };
+        if (att?.src) return { ...att, fileUrl: att.src };
+        
+        if (att?.file) {
+          const { data } = await axiosInstanceBackend.get(
+            endpoints.rewardPoints.getFileUrl(att.file)
+          );
+          return { ...att, fileUrl: data?.url || '' };
+        }
+        
+        return att;
+      } catch (e) {
+        console.error('Error al obtener URL de imagen:', e);
+        return att;
       }
-      attachments.push(defaultFile);
-      // setInitialFiles([defaultFile]);
-      // return;
-    }
-    const loadFiles = async () => {
-      const loaded = await Promise.all(
-        attachments?.map(async (attachment) => {
-          if (attachment instanceof File) {
-            return {
-              ...attachment,
-              fileUrl: URL.createObjectURL(attachment),
-              name: attachment.name,
-              isNew: true,
-            };
-          }
-          if (!attachment.file) {
-            return attachment;
-          }
-          try {
-            const response = await axiosInstanceBackend.get(endpoints.rewardPoints.getFileUrl(attachment.file));
-            if (!response.data) {
-              console.error('Error fetching URL', response.statusText);
-              return attachment;
-            }
-            const values = await response.data;
-
-            return {
-              ...attachment,
-              fileUrl: values.url,
-              isNew: false,
-            };
-          } catch (error) {
-            console.error('Error al obtener la URL:', error);
-            return attachment;
-          }
-        })
-      );
-      setInitialFiles(loaded);
     };
-    loadFiles();
-  }, [images]);
 
-  const slides = initialFiles?.map((img) => ({ src: img.fileUrl })) || [];
+    (async () => {
+      const base = Array.isArray(images) ? images : [];
+      const loaded = await Promise.all(base.map(toFileUrl));
+      let valid = loaded.filter((x) => !!x?.fileUrl);
+      
+      if (valid.length === 0) {
+        try {
+          const fallbackKey = 'store_products/nws_reward_points_preview.png';
+          const { data } = await axiosInstanceBackend.get(
+            endpoints.rewardPoints.getFileUrl(fallbackKey)
+          );
+          valid = [{ fileUrl: data?.url, name: 'Default Image', isNew: false }];
+        } catch {
+          valid = [{ fileUrl: '/assets/nws_reward_points_preview.png', name: 'Default Image' }];
+        }
+      }
+
+      if (alive) setInitialFiles(valid);
+    })();
+
+    return () => { alive = false; };
+  }, [images]);
+  
+  const slides = (initialFiles ?? [])
+    .map((img) => ({ src: img.fileUrl }))
+    .filter((s) => !!s.src);
 
   const lightbox = useLightBox(slides);
 
