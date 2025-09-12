@@ -52,3 +52,29 @@ export function useAllRewardStoreProductSelectionBuys(fieldsDescriptor) {
 
   return { loading, error, data: value, refetch };
 }
+
+export function useRewardStoreProductSelectionBuyById(id, fieldsDescriptor) {
+  const QUERY = useMemo(() => {
+    const selection = buildSelection(fieldsDescriptor).join('\n      ');
+    return gql`
+      query RewardStoreProductSelectionBuyById($id: String!) {
+        rewardStoreProductSelectionBuyById(id: $id) {
+          ${selection}
+        }
+      }
+    `;
+  }, [fieldsDescriptor]);
+
+  const { loading, error, data, refetch } = useQuery(QUERY, {
+    context: {
+      clientName: 'RewardPoints',
+    },
+    variables: { id },
+    skip: !id,
+    fetchPolicy: 'network-only',
+  });
+
+  const value = data?.rewardStoreProductSelectionBuyById || null;
+
+  return { loading, error, data: value, refetch };
+}

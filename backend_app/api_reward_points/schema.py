@@ -121,6 +121,11 @@ class Query(graphene.ObjectType):
         RewardStoreProductSelectionBuyType,
         username=graphene.String(required=True)
     )
+
+    reward_store_product_selection_buy_by_id = graphene.Field(
+        RewardStoreProductSelectionBuyType,
+        id=graphene.String(required=True)
+    )
     
     all_reward_joyrides = graphene.List(
         RewardJoyRideType
@@ -255,6 +260,9 @@ class Query(graphene.ObjectType):
         ).all()
 
         return list(buys) if buys else []
+    
+    def resolve_reward_store_product_selection_buy_by_id(self, info, id):
+        return RewardStoreProductSelectionBuy.objects(id=id).first()
     
     def resolve_all_reward_joyrides(self, info):
         return RewardJoyRide.objects.all()

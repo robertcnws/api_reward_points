@@ -14,6 +14,8 @@ import { useRouter } from 'src/routes/hooks';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
+import { useRewardStoreProductSelectionBuyById } from 'src/_mock/__reward-store-product-selection-buys';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -26,9 +28,21 @@ import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
 
 import { PurchaseDetailsModalTemplate } from './purchase-details-modal-template';
 
+
 // ----------------------------------------------------------------------
 
 export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
+
+  const [actualBuy, setActualBuy] = useState(currentBuy);
+
+  useEffect(() => {
+    setActualBuy(currentBuy);
+  }, [currentBuy]);
+
+  const { refetch: refetchUpdatedBuy } = useRewardStoreProductSelectionBuyById(
+    actualBuy?.id,
+    fieldsRewardStoreProductSelectionBuys
+  );
 
   const router = useRouter();
 
@@ -38,19 +52,19 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
   const { isMobile } = useContext(LoadingContext);
 
-  const productName = useMemo(() => currentBuy?.storeProductSelection?.storeProduct?.name || '', [currentBuy]);
+  const productName = useMemo(() => actualBuy?.storeProductSelection?.storeProduct?.name || '', [actualBuy]);
 
   const userFullName = useMemo(() => {
-    const user = currentBuy?.storeProductSelection?.user;
+    const user = actualBuy?.storeProductSelection?.user;
     return user ? `${user.firstName} ${user.lastName}` : 'N/A';
-  }, [currentBuy]);
+  }, [actualBuy]);
 
-  const assignedPoints = useMemo(() => currentBuy?.storeProductSelection?.storeProduct?.assignedPoints || 0,
-    [currentBuy]
+  const assignedPoints = useMemo(() => actualBuy?.storeProductSelection?.storeProduct?.assignedPoints || 0,
+    [actualBuy]
   );
 
-  const quantity = useMemo(() => currentBuy?.storeProductSelection?.quantity || 0,
-    [currentBuy]
+  const quantity = useMemo(() => actualBuy?.storeProductSelection?.quantity || 0,
+    [actualBuy]
   );
 
   const totalPoints = useMemo(() => assignedPoints * quantity,
@@ -58,23 +72,23 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
   );
 
   const available = useMemo(() => {
-    const used = currentBuy?.quantityUsed || 0;
+    const used = actualBuy?.quantityUsed || 0;
     return quantity - used;
-  }, [quantity, currentBuy]);
+  }, [quantity, actualBuy]);
 
   const isUsed = useMemo(
-    () => (currentBuy?.hasBeenUsed && currentBuy?.quantityUsed === quantity) || false,
-    [currentBuy, quantity]
+    () => (actualBuy?.hasBeenUsed && actualBuy?.quantityUsed === quantity) || false,
+    [actualBuy, quantity]
   );
 
   const isPartiallyUsed = useMemo(
-    () => currentBuy?.hasBeenUsed && currentBuy?.quantityUsed > 0 && currentBuy?.quantityUsed < quantity,
-    [currentBuy, quantity]
+    () => actualBuy?.hasBeenUsed && actualBuy?.quantityUsed > 0 && actualBuy?.quantityUsed < quantity,
+    [actualBuy, quantity]
   );
 
   const [quantityUsed, setQuantityUsed] = useState(1);
 
-  const [notes, setNotes] = useState(currentBuy?.notes || '');
+  const [notes, setNotes] = useState(actualBuy?.notes || '');
 
   const confirmUse = useBoolean();
 
@@ -82,9 +96,9 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
   useEffect(() => {
     if (open.value) {
-      setNotes(currentBuy?.notes ?? '');
+      setNotes(actualBuy?.notes ?? '');
     }
-  }, [open.value, currentBuy?.notes]);
+  }, [open.value, actualBuy?.notes]);
 
   const handleUsePurchase = useCallback(
     async (id) => {
@@ -94,17 +108,24 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
           quantityUsed,
           notes,
         });
-        toast.success('Delete success!');
+        const res = await refetchUpdatedBuy?.();
+        const fresh = res?.data ?? null;
+        if (fresh) {
+          setActualBuy(fresh?.rewardStoreProductSelectionBuyById);
+          return fresh;
+        }
       } catch (error) {
         console.error(error);
         toast.error(error.response.data.error);
+        return null;
       }
+      return null;
     },
-    [userLogged?.data, quantityUsed, notes]
+    [userLogged?.data, quantityUsed, notes, refetchUpdatedBuy]
   );
 
   const handleNavigateClient = () => {
-    const userId = currentBuy?.storeProductSelection?.user?.id;
+    const userId = actualBuy?.storeProductSelection?.user?.id;
     if (userId) {
       const userPath = paths.dashboard.purchase.client(userId);
       router.openNew(userPath);
@@ -124,7 +145,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
       >
         <DialogTitle>
           Using Redeemed Order
-          {currentBuy?.hasRequestedRefund && (
+          {actualBuy?.hasRequestedRefund && (
             <Label color="secondary" sx={{ ml: 1, mt: -3, display: 'inline-flex', alignItems: 'center' }}>
               Refund Requested
             </Label>
@@ -143,7 +164,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
 
         <DialogContent>
           <PurchaseDetailsModalTemplate
-            currentBuy={currentBuy}
+            currentBuy={actualBuy}
             isMobile={isMobile}
             assignedPoints={assignedPoints}
             quantity={quantity}
@@ -214,7 +235,7 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
           {isUsed && (
             <Button
               variant="contained"
-              onClick={() => generateRedeemedReport({ currentBuy })}
+              onClick={() => generateRedeemedReport({ actualBuy })}
             >
               See Report
             </Button>
@@ -241,12 +262,16 @@ export function PurchaseUseModalForm({ currentBuy, open, openDetails }) {
             variant="contained"
             color="warning"
             onClick={async () => {
-              await handleUsePurchase(currentBuy.id);
-              generateRedeemedReport({ currentBuy });
-              confirmUse.onFalse();
-              open.onFalse();
-              openDetails.onFalse();
-              confirmSuccess.onTrue();
+              const fresh = await handleUsePurchase(actualBuy?.id);
+              if (fresh) {
+                generateRedeemedReport({ currentBuy: fresh?.rewardStoreProductSelectionBuyById });
+              } else {
+                generateRedeemedReport({ currentBuy: actualBuy });
+              }
+              confirmUse?.onFalse();
+              open?.onFalse();
+              openDetails?.onFalse();
+              confirmSuccess?.onTrue();
             }}
           >
             Confirm
