@@ -476,7 +476,7 @@ export function OverviewEcommerceView({
 
 
               <Grid xs={12} md={6} lg={8}>
-                <Box id='invoice-history-chart' sx={{ width: '100%', height: '100%' }}>
+                <Box id='invoice-history-chart' sx={{ width: '100%', height: 440 }}>
                   <EcommerceWebsiteVisits
                     title='Invoice History'
                     metricUnit="USD"
@@ -491,7 +491,7 @@ export function OverviewEcommerceView({
 
               <Grid xs={12} md={6} lg={4}>
                 {/* <EcommerceLatestProducts title="Latest products" list={_ecommerceLatestProducts} /> */}
-                <Box id='reward-points-history-list' sx={{ width: '100%', height: '100%' }}>
+                <Box id='reward-points-history-list' sx={{ width: '100%', height: 440 }}>
                   <EcommerceRewardPointsHistoryList
                     title='Reward Points History'
                     subheader='Latest reward points history'

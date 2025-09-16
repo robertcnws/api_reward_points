@@ -446,9 +446,12 @@ def create_store_product_selection_cart_buy(request, id):
             file = buy.store_product_selection.store_product.attachments[0].file if \
                 len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
             buy.default_url = generate_default_file_url(file)
-
-            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
+            
+            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
+            
+            if settings.ENVIRONMENT == 'prod':
+                if user_reporter.email and user_reporter.email not in list_receivers:
+                    list_receivers.append(user_reporter.email)
 
             send_email_confirmation(
                 type='purchase',
@@ -588,8 +591,11 @@ def create_all_store_product_selection_cart_buy(request):
                     len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
                 buy.default_url = generate_default_file_url(file)
                 
-            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
+            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
+            
+            if settings.ENVIRONMENT == 'prod':
+                if user_reporter.email and user_reporter.email not in list_receivers:
+                    list_receivers.append(user_reporter.email)
 
             send_email_confirmation(
                 type='purchase',
@@ -772,10 +778,13 @@ def create_store_product_selection_buy(request, id):
                 file = buy.store_product_selection.store_product.attachments[0].file if \
                     len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
                 buy.default_url = generate_default_file_url(file)
-                
-            list_receivers = [user_reporter.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
-            
+
+            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
+
+            if settings.ENVIRONMENT == 'prod':
+                if user_reporter.email and user_reporter.email not in list_receivers:
+                    list_receivers.append(user_reporter.email)
+
             send_email_confirmation(
                 type='purchase',
                 points=total_buys_points,
@@ -936,10 +945,14 @@ def delete_store_product_selection_buy(request, id):
             file = buy.store_product_selection.store_product.attachments[0].file if \
                 len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
             buy.default_url = generate_default_file_url(file)
+                
+            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
             
-            list_receivers = [buy.store_product_selection.user.email, 'robertoc@newwindowsystem.com', 'nnws15815@gmail.com'] if \
-                settings.ENVIRONMENT == 'prod' else ['robertoc@newwindowsystem.com', 'nnws15815@gmail.com']
-            
+            if settings.ENVIRONMENT == 'prod':
+                if buy.store_product_selection.user.email and \
+                    buy.store_product_selection.user.email not in list_receivers:
+                    list_receivers.append(buy.store_product_selection.user.email)
+
             send_email_confirmation(
                 type='refund',
                 points=purchased_points,
@@ -1150,14 +1163,12 @@ def delete_list_store_product_selection_buys(request):
                 )
                 list_buys_by_users.append((user, user_buys, refunded_points))
 
-            list_receivers = [
-                'robertoc@newwindowsystem.com', 
-                'nnws15815@gmail.com'
-            ] 
+            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
 
             for user, user_buys, refunded_points in list_buys_by_users:
                 if settings.ENVIRONMENT == 'prod':
-                    list_receivers.append(user.email)
+                    if user.email and user.email not in list_receivers:
+                        list_receivers.append(user.email)
                 send_email_confirmation(
                     type='refund',
                     points=refunded_points,
@@ -1409,14 +1420,16 @@ def manage_remove_store_product_selection_buy(request, id):
 
 
 def send_email_confirmation(type, points, user, purchases, list_receivers):
+    current_year = timezone.now().year
     email_html_message = render_to_string(
             f"api_reward_points/email_send_{type}_confirmation.html",  
             {
-             "username": user.username, 
-             "first_name": user.first_name, 
-             "last_name": user.last_name, 
-             "purchase_total_points": points,
-             "list_purchases": purchases,
+                "username": user.username, 
+                "first_name": user.first_name, 
+                "last_name": user.last_name, 
+                "purchase_total_points": points,
+                "list_purchases": purchases,
+                "current_year": current_year
             }, 
     )
     message = f"Thank you for your {type}! Your redeemed order has been successfully processed. \

@@ -1,152 +1,297 @@
 {% load math_filters %}
 
-<!DOCTYPE html>
-<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>User's Redeemed Rewards Refund</title>
-    <style>
-      body,
-      table,
-      td,
-      a {
-        font-family: 'Open Sans', sans-serif;
-        color: #333333;
-      }
-
-      body {
-        background-color: #f8f8f8;
-      }
-
-      a {
-        color: #669a41;
-        text-decoration: none;
-      }
-
-      p {
-        font-size: 14px;
-        line-height: 1.5;
-      }
-
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        color: #333333;
-        line-height: 1.2;
-      }
-
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-
-      .header,
-      .footer {
-        background-color: #ffffff;
-      }
-
-      .header {
-        padding: 20px;
-        text-align: center;
-      }
-
-      .footer {
-        padding: 20px;
-        text-align: center;
-        font-size: 12px;
-      }
-
-      .content {
-        background-color: #ffffff;
-        padding: 20px;
-      }
-
-      .button {
-        display: inline-block;
-        padding: 15px 25px;
-        background-color: #669a41;
-        color: #ffffff;
-        border-radius: 5px;
-        text-align: center;
-      }
-
-      .button:hover {
-        background-color: #567a33;
-      }
-    </style>
+    <link
+      rel="preload"
+      as="image"
+      href="https://new.email/static/app/placeholder.png" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
   </head>
-  <body style="font-family: 'Open Sans', sans-serif; color: #333333; background-color: #f8f8f8">
-    <div style="max-width: 600px; margin: 0 auto; padding: 20px">
-      <div style="background-color: #669a41; color: #ffffff; text-align: center; padding: 20px">
-        <h1 style="color: #ffffff; line-height: 1.2">NWS Redeemed Rewards Refund</h1>
-      </div>
-      <div style="background-color: #ffffff; color: #333333; padding: 20px">
-        <p style="font-size: 14px; line-height: 1.5">Hello, {{ first_name }} {{ last_name }}</p>
-        <p style="font-size: 14px; line-height: 1.5">
-          You have received a refund of <strong>{{ purchase_total_points }}</strong> points:<br/><br/>
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th 
-                style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;"
-                colspan="2"
-              >
-                Product
-              </th>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
-                Qty
-              </th>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
-                Points
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in list_purchases %}
-            <tr>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                <img 
-                  src="{{ item.default_url }}" 
-                  alt="" 
-                  role="presentation" 
-                  aria-hidden="true"
-                  width="60" height="60"
-                  style="display:block;width:60px;height:60px;border-radius:5px;border:0;"
-                >
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.store_product_selection.store_product.name }}
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.store_product_selection.quantity }}
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.store_product_selection.quantity|mul:item.store_product_selection.store_product.assigned_points }}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" style="padding: 10px; border-top: 1px solid #dddddd; text-align: right;">
-                Total Refund:
-              </td>
-              <td colspan="1" style="padding: 10px; border-top: 1px solid #dddddd;">
-                {{ purchase_total_points }}
-              </td>
-            </tr>
-        </table>
-        <p style="font-size: 14px; line-height: 1.5">
-          Should you have any questions or need further assistance, please do not hesitate to contact us.
-        </p>
-        <p style="font-size: 14px; line-height: 1.5">Best regards,</p>
-        <p style="font-size: 14px; line-height: 1.5">Your NWS Team</p>
-      </div>
-    </div>
+  <body
+    style='background-color:rgb(243,244,246);font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";padding-top:40px;padding-bottom:40px'>
+    <!--$-->
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color:rgb(255,255,255);margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px;padding-top:40px;padding-bottom:40px;border-radius:8px;max-width:600px">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center;margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <h1
+                      style="font-size:24px;font-weight:700;color:rgb(17,24,39);margin:0px;margin-bottom:16px">
+                      NWS Rewards Refund
+                    </h1>
+                    <p
+                      style="font-size:16px;color:rgb(75,85,99);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Your reward points have been refunded to your account
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="font-size:16px;color:rgb(31,41,55);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Hello
+                      <!-- -->{{ first_name }}<!-- -->
+                      <!-- -->{{ last_name }}<!-- -->,
+                    </p>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      You have received a refund of
+                      <strong style="color:rgb(22,163,74)">{{ purchase_total_points }}</strong> points:
+                    </p>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="border-width:1px;border-color:rgb(229,231,235);border-radius:8px;overflow:hidden;margin-bottom:32px">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <table
+                              align="center"
+                              width="100%"
+                              border="0"
+                              cellpadding="0"
+                              cellspacing="0"
+                              role="presentation"
+                              style="background-color:rgb(249,250,251);border-bottom-width:1px;border-color:rgb(229,231,235)">
+                              <tbody style="width:100%">
+                                <tr style="width:100%">
+                                  <td
+                                    data-id="__react-email-column"
+                                    style="width:120px;text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                    <p
+                                      style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                      Product
+                                    </p>
+                                  </td>
+                                  <td
+                                    data-id="__react-email-column"
+                                    style="width:80px;text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                    <p
+                                      style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                      Qty
+                                    </p>
+                                  </td>
+                                  <td
+                                    data-id="__react-email-column"
+                                    style="text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                    <p
+                                      style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                      Points
+                                    </p>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            {% for item in list_purchases %}
+                              <table
+                                align="center"
+                                width="100%"
+                                border="0"
+                                cellpadding="0"
+                                cellspacing="0"
+                                role="presentation"
+                                style="border-bottom-width:1px;border-color:rgb(229,231,235)">
+                                <tbody style="width:100%">
+                                  <tr style="width:100%">
+                                    <td
+                                      data-id="__react-email-column"
+                                      style="width:120px;padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px">
+                                      <table
+                                        align="center"
+                                        width="100%"
+                                        border="0"
+                                        cellpadding="0"
+                                        cellspacing="0"
+                                        role="presentation"
+                                        style="margin-bottom:8px">
+                                        <tbody>
+                                          <tr>
+                                            <td>
+                                              <img
+                                                alt="Product"
+                                                height="50"
+                                                src="{{ item.default_url }}"
+                                                style="width:50px;height:50px;border-radius:5px;border-width:0px;display:block;outline:none;border:none;text-decoration:none"
+                                                width="50" />
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                      <p
+                                        style="font-size:12px;color:rgb(55,65,81);margin:0px;line-height:16px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                        {{ item.store_product_selection.store_product.name }}
+                                      </p>
+                                    </td>
+                                    <td
+                                      data-id="__react-email-column"
+                                      style="width:80px;padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px;vertical-align:top">
+                                      <p
+                                        style="font-size:14px;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                        {{ item.store_product_selection.quantity }}
+                                      </p>
+                                    </td>
+                                    <td
+                                      data-id="__react-email-column"
+                                      style="padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px;vertical-align:top">
+                                      <p
+                                        style="font-size:14px;color:rgb(31,41,55);margin:0px;font-weight:600;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                        {{ item.store_product_selection.quantity|mul:item.store_product_selection.store_product.assigned_points }}
+                                      </p>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            {% endfor %}
+                            <table
+                              align="center"
+                              width="100%"
+                              border="0"
+                              cellpadding="0"
+                              cellspacing="0"
+                              role="presentation"
+                              style="background-color:rgb(249,250,251);border-top-width:2px;border-color:rgb(209,213,219)">
+                              <tbody style="width:100%">
+                                <tr style="width:100%">
+                                  <td
+                                    colspan="2"
+                                    data-id="__react-email-column"
+                                    style="padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                    <p
+                                      style="font-size:14px;color:rgb(31,41,55);margin:0px;font-weight:600;text-align:right;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                      Total Refund:
+                                    </p>
+                                  </td>
+                                  <td
+                                    data-id="__react-email-column"
+                                    style="padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                    <p
+                                      style="font-size:16px;color:rgb(22,163,74);margin:0px;font-weight:700;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                      {{ purchase_total_points }}
+                                    </p>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="background-color:rgb(239,246,255);border-width:1px;border-color:rgb(191,219,254);border-radius:8px;padding:20px;margin-bottom:24px">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;font-weight:600;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              💰 Refund Processed
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(29,78,216);margin:0px;line-height:20px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                              The refunded points have been added back to your
+                              account balance. You can use these points for
+                              future purchases in our rewards store.
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Should you have any questions or need further assistance,
+                      please do not hesitate to contact us.
+                    </p>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Best regards,
+                    </p>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Your NWS Team
+                    </p>
+                    <p
+                      style="font-size:14px;color:rgb(107,114,128);margin:0px;line-height:20px;margin-top:24px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Need help? Contact us at admin@newwindowsystem.com
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr
+              style="border-color:rgb(229,231,235);margin-top:32px;margin-bottom:32px;width:100%;border:none;border-top:1px solid #eaeaea" />
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="font-size:14px;color:rgb(107,114,128);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Customer Portal - Digital Products &amp; Services
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      9501 NW 80th Ave, Hialeah Gardens, FL 33016
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;margin-top:8px;line-height:24px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      ©
+                      <!-- -->{{ current_year }}<!-- -->
+                      NWS. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!--7--><!--/$-->
   </body>
 </html>

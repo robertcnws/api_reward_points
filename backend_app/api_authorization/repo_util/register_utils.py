@@ -129,16 +129,18 @@ def _notify_user_with_code(user, code, settings):
     logger.info('SMS sent to %s with code %s', phone, code)
     
     if settings.ENVIRONMENT == 'prod':
-        list_emails = [user.email, 'robertoc@newwindowsystem.com']
+        list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
+        list_emails.append(user.email)
     else:
-        list_emails = ['robertoc@newwindowsystem.com']
+        list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
 
     template = 'email_send_verification_code.html'
     response_message = 'Verification code sent successfully.'
     subject = f'Verification Code for Customer Portal ({user.first_name} {user.last_name})'
+    current_year = datetime.now().year
 
     auth_utils.send_email_verification_code(
-        list_emails, code, template, response_message, subject, user.first_name, user.last_name
+        list_emails, code, template, response_message, subject, user.first_name, user.last_name, current_year
     )
     logger.info('Email sent to %s with code %s', user.email, code)
 

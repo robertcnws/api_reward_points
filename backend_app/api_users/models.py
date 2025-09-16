@@ -53,6 +53,7 @@ class IntroStep(Document):
     content = StringField(null=True)
     translation = DynamicField(null=True)
     order = IntField(null=True)
+    related_image_name = StringField(max_length=255, null=True)
     meta = {
         'collection': 'intro_step',
         'indexes': [

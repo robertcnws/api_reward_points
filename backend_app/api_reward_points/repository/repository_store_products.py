@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from django.utils import timezone
+from django.conf import settings
 from django.template.loader import render_to_string
 from api_authorization.models import LoginUser
 from api_authorization.repo_util.authorization_utils import send_generic_email
@@ -681,17 +682,20 @@ def set_expiration_to_related_buys(product, default_url):
                 buy.save()  
             
             if not product.is_active:
+                list_receivers = [buy.store_product_selection.user.email, settings.EMAIL_SUPPORT] if \
+                                 settings.ENVIRONMENT == 'prod' else [settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS]
                 send_email_expire_confirmation(
                     user=buy.store_product_selection.user,
                     purchases=buys,
                     default_url=default_url,
                     # list_receivers=[buy.store_product_selection.user.email]
-                    list_receivers=['nnws15815@gmail.com']
+                    list_receivers=list_receivers
                 )
                 
                 
 
 def send_email_expire_confirmation(user, purchases, default_url, list_receivers):
+    current_year = timezone.now().year
     email_html_message = render_to_string(
             f"api_reward_points/email_send_expire_confirmation.html",  
             {
@@ -700,6 +704,7 @@ def send_email_expire_confirmation(user, purchases, default_url, list_receivers)
              "last_name": user.last_name,
              "list_purchases": purchases,
              "default_url": default_url,
+             "current_year": current_year
             }, 
     )
     message = f"Hello {user.first_name} {user.last_name},\n\nThe following products are set to expire soon (within 30 days):\n"

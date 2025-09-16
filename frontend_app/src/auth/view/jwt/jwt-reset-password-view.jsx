@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +19,7 @@ import { Form, Field } from 'src/components/hook-form';
 
 import { FormHead } from '../../components/form-head';
 import { FormReturnLink } from '../../components/form-return-link';
+import { CustomErrorComponent } from './custom-error-component';
 
 // ----------------------------------------------------------------------
 
@@ -33,6 +35,11 @@ export const JwtResetPasswordSchema = zod.object({
 export function JwtResetPasswordView() {
   const router = useRouter();
 
+  const [errorMsg, setErrorMsg] = useState({
+    message: '',
+    name: '',
+  });
+
   const defaultValues = {
     email: '',
   };
@@ -44,8 +51,15 @@ export function JwtResetPasswordView() {
 
   const {
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = methods;
+
+  const watchEmail = watch('email');
+
+  useEffect(() => {
+    setErrorMsg({ name: '', message: '', email: '' });
+  }, [watchEmail]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -53,7 +67,7 @@ export function JwtResetPasswordView() {
         email: data.email
       });
 
-      const {email} = response.data.data;
+      const { email } = response.data.data;
 
       const encodedEmail = b64urlEncode(email);
 
@@ -65,6 +79,10 @@ export function JwtResetPasswordView() {
 
     } catch (error) {
       console.error(error);
+      setErrorMsg({
+        message: error.description || error.detail || 'An error occurred while processing your request. Please try again.',
+        name: error.error_name || 'ErrorNotFoundOrInactive',
+      });
     }
   });
 
@@ -126,6 +144,12 @@ export function JwtResetPasswordView() {
         title="Forgot your password?"
         description={`Please enter the email address associated with your account and we'll email you a link to reset your password.`}
       />
+
+      {!!errorMsg.message && (
+        <CustomErrorComponent
+          errorMsg={errorMsg}
+        />
+      )}
 
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}

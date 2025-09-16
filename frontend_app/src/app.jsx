@@ -34,6 +34,8 @@ import { RouteProvider } from './auth/context/router-context';
 import { endpoints, axiosInstanceBackend } from './utils/axios';
 import BackdropBackground from './layouts/components/backdrop-background';
 import { DataProvider, useDataContext } from './auth/context/data/data-context';
+import { StoreProductDetailsCarousel } from './sections/store-product/store-product-details-carousel';
+import { Image } from './components/image';
 
 // ----------------------------------------------------------------------
 
@@ -90,6 +92,13 @@ function useIntroController({
     return isTranslated.value ? step?.translation?.es?.content : step?.content;
   }, [index, loadedAllRewardIntroSteps, isTranslated]);
 
+  const introRelatedImageName = useMemo(() => {
+    const step = loadedAllRewardIntroSteps?.[index];
+    return step?.relatedImageName || null;
+  }, [index, loadedAllRewardIntroSteps]);
+
+  console.log('introRelatedImageName', introRelatedImageName);
+
   const isLast = index >= Math.max(0, totalSteps - 1);
 
   const handleCloseIntro = useCallback(async () => {
@@ -124,6 +133,7 @@ function useIntroController({
     shouldShowIntro,
     introTitle,
     introContent,
+    introRelatedImageName,
     isTranslated,
     index,
     isLast,
@@ -147,6 +157,7 @@ function buttonLabel(isLast, isTranslated) {
 function IntroDialog({
   title,
   content,
+  relatedImageName,
   isMobile,
   isTranslated,
   onToggleLang,
@@ -188,9 +199,17 @@ function IntroDialog({
         </Box>
       }
       content={
-        <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
-          {content}
-        </Typography>
+        <Box sx={{ width: 1, textAlign: 'center', mt: 1 }}>
+          <Image
+            alt={relatedImageName}
+            src={`/logo/intro/${relatedImageName}.png`}
+            // ratio="1/1"
+            sx={{ borderRadius: 1, mb: 1 }}
+          />
+          <Typography variant="body2" align="justify" sx={{ mt: 2, fontSize: 17 }}>
+            {content}
+          </Typography>
+        </Box>
       }
       closeName={!isTranslated ? 'Skip' : 'Omitir'}
       action={
@@ -205,7 +224,13 @@ function IntroDialog({
           </Button>
         </>
       }
-      BackdropProps={{ style: { backgroundColor: 'whitesmoke' } }}
+      BackdropProps={{ style: { backgroundColor: 'whitesmoke' }, invisible: true }}
+      // hideBackdrop
+      // BackdropProps={{ invisible: true }}  // o: hideBackdrop
+      PaperProps={{
+        elevation: 0,
+        sx: { boxShadow: 'none', backgroundImage: 'none' },
+      }}
     />
   );
 }
@@ -229,6 +254,7 @@ function AppInner({ session }) {
     shouldShowIntro,
     introTitle,
     introContent,
+    introRelatedImageName,
     isTranslated,
     index,
     isLast,
@@ -252,6 +278,7 @@ function AppInner({ session }) {
       <IntroDialog
         title={introTitle}
         content={introContent}
+        relatedImageName={introRelatedImageName}
         isMobile={isMobile}
         isTranslated={isTranslated.value}
         onToggleLang={toggleLang}

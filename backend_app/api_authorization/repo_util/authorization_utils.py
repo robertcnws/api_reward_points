@@ -30,10 +30,19 @@ def send_sms_verification_code(phone_number, message):
         raise e
 
 
-def send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name):
+def send_email_verification_code(
+    list_emails, 
+    code, 
+    template, 
+    response_message, 
+    subject, 
+    first_name, 
+    last_name, 
+    current_year
+):
         email_html_message = render_to_string(
             f"api_authorization/{template}",  
-            {"code": code, "first_name": first_name, "last_name": last_name}, 
+            {"code": code, "first_name": first_name, "last_name": last_name, "current_year": current_year}, 
         )
         return send_generic_email(
             list_emails, 
@@ -43,16 +52,39 @@ def send_email_verification_code(list_emails, code, template, response_message, 
         )
         
 
-def send_email_pending_approval(points, username, first_name, last_name, list_receivers):
+def send_email_pending_approval(
+    points, 
+    username, 
+    first_name, 
+    last_name, 
+    email, 
+    role_name, 
+    company_name, 
+    created_time,
+    current_year, 
+    list_receivers, 
+    pending_url
+):
     email_html_message = render_to_string(
             "api_authorization/email_send_pending_approval_user.html",  
-            {"username": username, "first_name": first_name, "last_name": last_name, "points": points}, 
+            {
+                "username": username, 
+                "first_name": first_name, 
+                "last_name": last_name, 
+                "points": points,
+                "email": email,
+                "role_name": role_name,
+                "company_name": company_name,
+                "created_time": created_time,
+                "current_year": current_year,
+                "pending_url": pending_url,
+            }, 
     )
     message = "Pending approval email sent successfully."
     return send_generic_email(
         list_receivers, 
         email_html_message, 
-        f"Pending Approval (user: {username}) for Reward Points System",
+        f"Pending Approval (user: {username}) for Customer Portal",
         message_response=message
     )
     

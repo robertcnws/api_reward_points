@@ -14,6 +14,7 @@ from api_authorization.repo_util.authorization_utils import (
     send_email_pending_approval,
 )
 from utils.data_util import create_tracking
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -65,18 +66,25 @@ def _mark_verified_and_cleanup(user, verification_code):
     logger.info('User %s verified successfully', user.username)
 
 def _notify_admin_if_points(user):
+    current_year = datetime.now().year
     rp = RewardPoints.objects(user=user).first()
     if not rp:
         return
     points = rp.total_gained_points
-    if points > 0:
-        send_email_pending_approval(
-            points=points,
-            username=user.username,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS,
-        )
+    # if points > 0:
+    send_email_pending_approval(
+        points=points,
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role_name=user.user_role.name if user.user_role else "No Role",
+        company_name=user.company_name if user.company_name else "No Company",
+        created_time=user.created_time,
+        current_year=current_year,
+        list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS,
+        pending_url=settings.DJANGO_PENDING_USERS_URL
+    )
 
 def _track_verify(user):
     create_tracking(

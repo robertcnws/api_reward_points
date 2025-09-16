@@ -319,7 +319,8 @@ def reset_password(request):
             first_name = user.first_name
             last_name = user.last_name
             subject = f'Recovery Code for Customer Portal ({first_name} {last_name})'
-            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name)
+            current_year = datetime.now().year
+            send_email_verification_code(list_emails, code, template, response_message, subject, first_name, last_name, current_year)
             logger.info(f'Email sent to {user.email} with code {code}')
             
             create_tracking(

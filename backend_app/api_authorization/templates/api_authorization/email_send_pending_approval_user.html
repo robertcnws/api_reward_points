@@ -1,99 +1,222 @@
-<!DOCTYPE html>
-<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Pending approval for new user</title>
-    <style>
-      body,
-      table,
-      td,
-      a {
-        font-family: 'Open Sans', sans-serif;
-        color: #333333;
-      }
-
-      body {
-        background-color: #f8f8f8;
-      }
-
-      a {
-        color: #669a41;
-        text-decoration: none;
-      }
-
-      p {
-        font-size: 14px;
-        line-height: 1.5;
-      }
-
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        color: #333333;
-        line-height: 1.2;
-      }
-
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-
-      .header,
-      .footer {
-        background-color: #ffffff;
-      }
-
-      .header {
-        padding: 20px;
-        text-align: center;
-      }
-
-      .footer {
-        padding: 20px;
-        text-align: center;
-        font-size: 12px;
-      }
-
-      .content {
-        background-color: #ffffff;
-        padding: 20px;
-      }
-
-      .button {
-        display: inline-block;
-        padding: 15px 25px;
-        background-color: #669a41;
-        color: #ffffff;
-        border-radius: 5px;
-        text-align: center;
-      }
-
-      .button:hover {
-        background-color: #567a33;
-      }
-    </style>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
   </head>
-  <body style="font-family: 'Open Sans', sans-serif; color: #333333; background-color: #f8f8f8">
-    <div style="max-width: 600px; margin: 0 auto; padding: 20px">
-      <div style="background-color: #669a41; color: #ffffff; text-align: center; padding: 20px">
-        <h1 style="color: #ffffff; line-height: 1.2">New Window System Customer Portal</h1>
-      </div>
-      <div style="background-color: #ffffff; color: #333333; padding: 20px">
-        <p style="font-size: 14px; line-height: 1.5">Hello Administrator</p>
-        <p style="font-size: 14px; line-height: 1.5">
-          You have a pending approval for new verified user <br/><br/>
-          <strong>{{ username }}</strong> ({{ first_name }} {{ last_name }})<br/>
-          With <strong>{{ points }}</strong> reward points.<br/>
-          <br/>
-          Please sign in to the NWS Reward Points Portal and proceed to APPROVE.
-        </p>
-        <p style="font-size: 14px; line-height: 1.5">Best regards,</p>
-        <p style="font-size: 14px; line-height: 1.5">Your NWS Team</p>
-      </div>
-    </div>
+  <body
+    style='background-color:rgb(243,244,246);font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";padding-top:40px;padding-bottom:40px'>
+    <!--$-->
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color:rgb(255,255,255);margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px;padding-top:40px;padding-bottom:40px;border-radius:8px;max-width:600px">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center;margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <h1
+                      style="font-size:24px;font-weight:700;color:rgb(17,24,39);margin:0px;margin-bottom:16px">
+                      New User Pending Approval
+                    </h1>
+                    <p
+                      style="font-size:16px;color:rgb(75,85,99);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Action required: Review and approve user registration
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="font-size:16px;color:rgb(31,41,55);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Hello
+                      <!-- -->Administrator<!-- -->,
+                    </p>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      A new user has registered and is waiting for approval to
+                      access the platform. Please review the details below and
+                      take appropriate action.
+                    </p>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="background-color:rgb(239,246,255);border-width:1px;border-color:rgb(191,219,254);border-radius:8px;padding:24px;margin-bottom:24px">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <h1
+                              style="font-size:18px;font-weight:600;color:rgb(30,58,138);margin:0px;margin-bottom:16px">
+                              User Details
+                            </h1>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Username:</strong>
+                              <!-- --><strong>{{ username }}</strong>
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Full Name:</strong>
+                              <!-- -->{{ first_name }} {{ last_name }}
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Company Name:</strong>
+                              <!-- -->{{ company_name }}
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Email:</strong>
+                              <!-- -->{{ email }}
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Initial Points:</strong>
+                              <!-- -->{{ points }}
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              <strong>Registration Date:</strong>
+                              <!-- -->{{ created_time | date:"Y-m-d" }}
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(30,64,175);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                              <strong>Requested Role:</strong>
+                              <!-- -->{{ role_name}}
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p
+                      style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Please review this user&#x27;s information and decide
+                      whether to approve or reject their access request. The
+                      user will be notified automatically once you make your
+                      decision.
+                    </p>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="text-align:center;margin-bottom:24px">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <a
+                              href="{{ pending_url }}"
+                              style="background-color:rgb(22,163,74);color:rgb(255,255,255);padding-left:32px;padding-right:32px;padding-top:14px;padding-bottom:14px;border-radius:6px;font-size:16px;font-weight:600;text-decoration-line:none;box-sizing:border-box;margin-right:16px;display:inline-block;line-height:100%;text-decoration:none;max-width:100%;mso-padding-alt:0px"
+                              target="_blank"
+                              ><span
+                                ><!--[if mso]><i style="mso-font-width:400%;mso-text-raise:21" hidden>&#8202;&#8202;&#8202;&#8202;</i><![endif]--></span
+                              ><span
+                                style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:10.5px"
+                                >Approve User</span
+                              ><span
+                                ><!--[if mso]><i style="mso-font-width:400%" hidden>&#8202;&#8202;&#8202;&#8202;&#8203;</i><![endif]--></span
+                              ></a
+                            >
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="background-color:rgb(255,247,237);border-width:1px;border-color:rgb(254,215,170);border-radius:8px;padding:20px;margin-bottom:24px">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <p
+                              style="font-size:14px;color:rgb(154,52,18);margin:0px;font-weight:600;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                              ⚠️ Reminder
+                            </p>
+                            <p
+                              style="font-size:14px;color:rgb(194,65,12);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                              Please respond within 48 hours to maintain a good
+                              user experience. Pending users will receive
+                              automatic follow-up notifications.
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr
+              style="border-color:rgb(229,231,235);margin-top:32px;margin-bottom:32px;width:100%;border:none;border-top:1px solid #eaeaea" />
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="font-size:14px;color:rgb(107,114,128);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Admin Panel - User Management System
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      This is an automated notification. Please do not reply to
+                      this email.
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;margin-top:8px;line-height:24px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      ©
+                      <!-- -->{{ current_year}}<!-- -->
+                      New Window System. Customer Portal. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!--7--><!--/$-->
   </body>
 </html>

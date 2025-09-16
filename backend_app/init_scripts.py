@@ -121,7 +121,7 @@ def create_reward_joyrides():
         elif not joyride_step.role:
             joyride_step.role = step['role']
         joyride_step.save()
-    print("Default reward joyrides created.")
+    print("Default reward joyrides created/updated.")
     
     
 def create_intro_steps():
@@ -133,10 +133,20 @@ def create_intro_steps():
                 title=step['title'],
                 content=step['content'],
                 translation=step['translation'],
-                order=step['order']
+                order=step['order'],
+                related_image_name=step['related_image_name'],
             )
-            intro_step.save()
-        print("Default intro steps created.")
+        elif not intro_step.content:
+            intro_step.content = step['content']
+        elif not intro_step.translation:
+            intro_step.translation = step['translation']
+        elif not intro_step.order:
+            intro_step.order = step['order']
+        elif not intro_step.related_image_name:
+            intro_step.related_image_name = step['related_image_name']
+        intro_step.save()
+        
+        print("Default intro steps created/updated.")
 
 
 if __name__ == "__main__":

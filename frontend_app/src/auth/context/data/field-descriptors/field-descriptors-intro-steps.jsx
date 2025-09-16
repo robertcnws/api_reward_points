@@ -3,5 +3,6 @@ export const fieldsIntroSteps = [
     'title',
     'content',
     'translation',
-    'order'
+    'order',
+    'relatedImageName',
   ];

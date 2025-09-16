@@ -1,149 +1,288 @@
 {% load math_filters %}
 
-<!DOCTYPE html>
-<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>User's Redeemed Reward Expiration</title>
-    <style>
-      body,
-      table,
-      td,
-      a {
-        font-family: 'Open Sans', sans-serif;
-        color: #333333;
-      }
-
-      body {
-        background-color: #f8f8f8;
-      }
-
-      a {
-        color: #669a41;
-        text-decoration: none;
-      }
-
-      p {
-        font-size: 14px;
-        line-height: 1.5;
-      }
-
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        color: #333333;
-        line-height: 1.2;
-      }
-
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-
-      .header,
-      .footer {
-        background-color: #ffffff;
-      }
-
-      .header {
-        padding: 20px;
-        text-align: center;
-      }
-
-      .footer {
-        padding: 20px;
-        text-align: center;
-        font-size: 12px;
-      }
-
-      .content {
-        background-color: #ffffff;
-        padding: 20px;
-      }
-
-      .button {
-        display: inline-block;
-        padding: 15px 25px;
-        background-color: #669a41;
-        color: #ffffff;
-        border-radius: 5px;
-        text-align: center;
-      }
-
-      .button:hover {
-        background-color: #567a33;
-      }
-    </style>
+    <link
+      rel="preload"
+      as="image"
+      href="https://new.email/static/app/placeholder.png" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
   </head>
-  <body style="font-family: 'Open Sans', sans-serif; color: #333333; background-color: #f8f8f8">
-    <div style="max-width: 600px; margin: 0 auto; padding: 20px">
-      <div style="background-color: #669a41; color: #ffffff; text-align: center; padding: 20px">
-        <h1 style="color: #ffffff; line-height: 1.2">Notification of expiration redeemed orders</h1>
-      </div>
-      <div style="background-color: #ffffff; color: #333333; padding: 20px">
-        <p style="font-size: 14px; line-height: 1.5">Hello, {{ first_name }} {{ last_name }}</p>
-        <p style="font-size: 14px; line-height: 1.5">
-          The following redeemed orders are set to expire soon (within 30 days):
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th 
-                style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;"
-                colspan="2"
-              >
-                Product
-              </th>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
-                CONFIRM #
-              </th>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
-                PIN
-              </th>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #dddddd;">
-                Expiration
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in list_purchases %}
-            <tr>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                <img
-                  src="{{ default_url }}"
-                  alt="" 
-                  role="presentation" 
-                  aria-hidden="true"
-                  width="60" height="60"
-                  style="display:block;width:60px;height:60px;border-radius:5px;border:0;"
-                >
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.store_product_selection.store_product.name }}
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.confirmation_number }}
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.pin_number }}
-              </td>
-              <td style="padding: 10px; border-bottom: 1px solid #dddddd;">
-                {{ item.expiration_time }}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <p style="font-size: 14px; line-height: 1.5">
-          Should you have any questions or need further assistance, please do not hesitate to contact us.
-        </p>
-        <p style="font-size: 14px; line-height: 1.5">Best regards,</p>
-        <p style="font-size: 14px; line-height: 1.5">Your NWS Team</p>
-      </div>
-    </div>
+  <body
+    style='background-color:rgb(243,244,246);font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";padding-top:40px;padding-bottom:40px'>
+    <!--$-->
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color:rgb(255,255,255);margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px;padding-top:40px;padding-bottom:40px;border-radius:8px;max-width:600px">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center;margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <h1
+                      style="font-size:24px;font-weight:700;color:rgb(17,24,39);margin:0px;margin-bottom:16px">
+                      Order Expiration Notice
+                    </h1>
+                    <p
+                      style="font-size:16px;color:rgb(75,85,99);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Your redeemed orders are expiring soon
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                  <tr>
+                    <td>
+                      <p
+                        style="font-size:16px;color:rgb(31,41,55);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                        Hello
+                        <!-- -->{{ first_name }}<!-- -->
+                        <!-- -->{{ last_name }}<!-- -->,
+                      </p>
+                      <p
+                        style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                        The following redeemed orders are set to expire soon
+                        (within 30 days). Please use them before the expiration
+                        date to avoid losing your purchases.
+                      </p>
+                      <table
+                        align="center"
+                        width="100%"
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        role="presentation"
+                        style="border-width:1px;border-color:rgb(229,231,235);border-radius:8px;overflow:hidden;margin-bottom:32px">
+                        <tbody>
+                          
+                            <tr>
+                              <td>
+                                <table
+                                  align="center"
+                                  width="100%"
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  role="presentation"
+                                  style="background-color:rgb(249,250,251);border-bottom-width:1px;border-color:rgb(229,231,235)">
+                                  <tbody style="width:100%">
+                                    <tr style="width:100%">
+                                      <td
+                                        data-id="__react-email-column"
+                                        style="width:120px;text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                        <p
+                                          style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                          Product
+                                        </p>
+                                      </td>
+                                      <td
+                                        data-id="__react-email-column"
+                                        style="text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                        <p
+                                          style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                          Confirm #
+                                        </p>
+                                      </td>
+                                      <td
+                                        data-id="__react-email-column"
+                                        style="text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                        <p
+                                          style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                          PIN
+                                        </p>
+                                      </td>
+                                      <td
+                                        data-id="__react-email-column"
+                                        style="text-align:left;padding-left:12px;padding-right:12px;padding-top:12px;padding-bottom:12px">
+                                        <p
+                                          style="font-size:14px;font-weight:600;color:rgb(31,41,55);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                          Expiration
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                {% for item in list_purchases %}
+                                  <table
+                                    align="center"
+                                    width="100%"
+                                    border="0"
+                                    cellpadding="0"
+                                    cellspacing="0"
+                                    role="presentation"
+                                    style="border-bottom-width:1px;border-color:rgb(229,231,235)">
+                                    <tbody style="width:100%">
+                                      <tr style="width:100%">
+                                        <td
+                                          data-id="__react-email-column"
+                                          style="width:120px;padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px">
+                                          <table
+                                            align="center"
+                                            width="100%"
+                                            border="0"
+                                            cellpadding="0"
+                                            cellspacing="0"
+                                            role="presentation"
+                                            style="margin-bottom:8px">
+                                            <tbody>
+                                              <tr>
+                                                <td>
+                                                  <img
+                                                    alt="Product"
+                                                    height="50"
+                                                    src="{{ default_url }}"
+                                                    style="width:50px;height:50px;border-radius:6px;border-width:0px;display:block;outline:none;border:none;text-decoration:none"
+                                                    width="50" />
+                                                </td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                          <p
+                                            style="font-size:12px;color:rgb(55,65,81);margin:0px;line-height:16px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                            {{ item.store_product_selection.store_product.name }}
+                                          </p>
+                                        </td>
+                                        <td
+                                          data-id="__react-email-column"
+                                          style="padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px;vertical-align:top">
+                                          <p
+                                            style='font-size:14px;color:rgb(31,41,55);margin:0px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px'>
+                                            {{ item.confirmation_number }}
+                                          </p>
+                                        </td>
+                                        <td
+                                          data-id="__react-email-column"
+                                          style="padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px;vertical-align:top">
+                                          <p
+                                            style='font-size:14px;color:rgb(31,41,55);margin:0px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-weight:600;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px'>
+                                            {{ item.pin_number }}
+                                          </p>
+                                        </td>
+                                        <td
+                                          data-id="__react-email-column"
+                                          style="padding-left:12px;padding-right:12px;padding-top:16px;padding-bottom:16px;vertical-align:top">
+                                          <p
+                                            style="font-size:14px;color:rgb(234,88,12);margin:0px;font-weight:600;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                            {{ item.expiration_time }}
+                                          </p>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                {% endfor %}
+                              </td>
+                            </tr>
+
+                        </tbody>
+                      </table>
+                      <table
+                        align="center"
+                        width="100%"
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        role="presentation"
+                        style="background-color:rgb(255,247,237);border-width:1px;border-color:rgb(254,215,170);border-radius:8px;padding:20px;margin-bottom:24px">
+                        <tbody>
+                          <tr>
+                            <td>
+                              <p
+                                style="font-size:14px;color:rgb(154,52,18);margin:0px;font-weight:600;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                                ⚠️ Important Notice
+                              </p>
+                              <p
+                                style="font-size:14px;color:rgb(194,65,12);margin:0px;line-height:20px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                                Please use your redeemed orders before they
+                                expire. Once expired, these orders cannot be
+                                recovered or extended. Contact support if you need
+                                assistance accessing your orders.
+                              </p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <p
+                        style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                        Should you have any questions or need further assistance,
+                        please do not hesitate to contact us.
+                      </p>
+                      <p
+                        style="font-size:16px;color:rgb(55,65,81);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                        Best regards,
+                      </p>
+                      <p
+                        style="font-size:16px;color:rgb(55,65,81);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                        Your NWS Team
+                      </p>
+                      <p
+                        style="font-size:14px;color:rgb(107,114,128);margin:0px;line-height:20px;margin-top:24px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                        Need help? Contact us at admin@newwindowsystem.com
+                      </p>
+                    </td>
+                  </tr>
+              </tbody>
+            </table>
+            <hr
+              style="border-color:rgb(229,231,235);margin-top:32px;margin-bottom:32px;width:100%;border:none;border-top:1px solid #eaeaea" />
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="font-size:14px;color:rgb(107,114,128);margin-bottom:0px;margin:0px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Customer Portal - Digital Products &amp; Services
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      9501 NW 80th Ave, Hialeah Gardens, FL 33016
+                    </p>
+                    <p
+                      style="font-size:12px;color:rgb(156,163,175);margin:0px;margin-top:8px;line-height:24px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      ©
+                      <!-- -->{{ current_year }}<!-- -->
+                      New Windows System. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!--7--><!--/$-->
   </body>
 </html>
+
