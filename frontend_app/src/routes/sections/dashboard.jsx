@@ -46,6 +46,8 @@ const SalesOrdersListPage = lazy(() => import('src/pages/dashboard/sales-order/l
 const SalesOrderDetailsPage = lazy(() => import('src/pages/dashboard/sales-order/details'));
 // Error
 const Page403 = lazy(() => import('src/pages/error/403'));
+// FAQ Tutorial
+const FAQTutorialListView = lazy(() => import('src/pages/dashboard/faq-tutorial/list'));
 
 // ----------------------------------------------------------------------
 
@@ -70,6 +72,10 @@ export const dashboardRoutes = (user) => [
       {
         path: 'analytics',
         element: <OverviewAnalyticsPage />
+      },
+      {
+        path: 'faqs-tutorial',
+        element: <FAQTutorialListView />
       },
       {
         path: 'user/profile',

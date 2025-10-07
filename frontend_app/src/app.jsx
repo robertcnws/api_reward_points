@@ -97,7 +97,7 @@ function useIntroController({
     return step?.relatedImageName || null;
   }, [index, loadedAllRewardIntroSteps]);
 
-  console.log('introRelatedImageName', introRelatedImageName);
+  // console.log('introRelatedImageName', introRelatedImageName);
 
   const isLast = index >= Math.max(0, totalSteps - 1);
 

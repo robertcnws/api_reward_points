@@ -65,10 +65,12 @@ export const paths = {
     kanban: `${ROOTS.DASHBOARD}/kanban`,
     calendar: `${ROOTS.DASHBOARD}/calendar`,
     fileManager: `${ROOTS.DASHBOARD}/file-manager`,
+    faqsTutorial: `${ROOTS.DASHBOARD}/faqs-tutorial`,
     general: {
       app: `${ROOTS.DASHBOARD}/app`,
       analytics: `${ROOTS.DASHBOARD}/analytics`,
       calendar: `${ROOTS.DASHBOARD}/calendar`,
+      faqsTutorial: `${ROOTS.DASHBOARD}/faqs-tutorial`,
     },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,

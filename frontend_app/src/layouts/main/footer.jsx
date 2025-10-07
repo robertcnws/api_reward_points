@@ -24,6 +24,7 @@ import { Logo } from 'src/components/logo';
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { GuideTourButton } from '../components/guide-tour-button';
+import { HelpCenterButton } from '../components/help-center-button';
 
 
 // ----------------------------------------------------------------------
@@ -251,7 +252,7 @@ export const CustomFooter = ({roleName}) => {
           </Typography>
         </Box>
 
-        <Box display='flex' justifyContent="flex-end" sx={{ width: '100%', px: 1 }}>
+        <Box display='flex' justifyContent="flex-end" sx={{ width: '100%', px: 0.5 }}>
           <Stack
             direction="row"
             spacing={1}
@@ -268,6 +269,7 @@ export const CustomFooter = ({roleName}) => {
               </IconButton>
             ))} */}
             {/* {(isClient(roleName) || isOfficeStaff(roleName)) && <GuideTourButton width={25}/>} */}
+            <HelpCenterButton width={25}/>
             <GuideTourButton width={25}/>
           </Stack>
         </Box>
