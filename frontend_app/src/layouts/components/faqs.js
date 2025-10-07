@@ -25,9 +25,9 @@ export const FAQS = [
   },
   {
     questionEn: 'Who do I contact for support?',
-    answerEn: 'Use the “Contact Support” link or send an email to support@newwindowsystem.com. Our team will assist you.',
+    answerEn: 'Use the “Contact Support” link or send an email to admin@newwindowsystem.com. Our team will assist you.',
     questionEsp: '¿Con quién me pongo en contacto para soporte?',
-    answerEsp: 'Utilice el enlace “Contactar soporte” o envíe un correo electrónico a support@newwindowsystem.com. Nuestro equipo le asistirá.'
+    answerEsp: 'Utilice el enlace “Contactar soporte” o envíe un correo electrónico a admin@newwindowsystem.com. Nuestro equipo le asistirá.'
   },
   {
     questionEn: 'How do I view my invoices or orders?',

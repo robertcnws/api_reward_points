@@ -39,7 +39,7 @@ export function HelpCenterButton({ width, sx, ...other }) {
 
   return (
     <Box width='100%'>
-      <Tooltip title="Guide Tour" arrow placement="bottom">
+      <Tooltip title="Help Center Info" arrow placement="bottom">
         <IconButton
           aria-label="settings"
           onClick={() => openDrawer.onTrue()}
