@@ -88,6 +88,32 @@ def send_email_pending_approval(
         message_response=message
     )
     
+
+def send_email_approved_user(
+    username, 
+    first_name, 
+    last_name, 
+    email,
+    login_url
+):
+    email_html_message = render_to_string(
+            "api_authorization/email_send_approved_user.html",  
+            {
+                "username": username, 
+                "first_name": first_name, 
+                "last_name": last_name, 
+                "email": email,
+                "login_url": login_url,
+            }, 
+    )
+    message = "Approved user email sent successfully."
+    return send_generic_email(
+        [email], 
+        email_html_message, 
+        f"Approved User (user: {username}) for Customer Portal",
+        message_response=message
+    )
+    
     
 def send_generic_email(list_receivers, email_html_message, subject, sender=settings.EMAIL_HOST_USER, message_response=None):
         email_msg = EmailMessage(

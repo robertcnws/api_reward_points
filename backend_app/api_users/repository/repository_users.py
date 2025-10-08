@@ -7,6 +7,7 @@ from utils.data_util import (
     create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole
+from api_authorization.repo_util import authorization_utils
 
 from api_reward_points.models import RewardAttachment, RewardPoints
 
@@ -428,6 +429,13 @@ def change_approval_user(request, id):
         user.is_approved = not user.is_approved
         if not approval_status and disapproval_count == 0:
             user.approved_time = timezone.now()
+            authorization_utils.send_email_approved_user(
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                email=user.email,
+                login_url=f"{settings.FRONTEND_URL}"
+            )
         if approval_status:
             disapproval_count += 1
             user.disapproval_count = disapproval_count
