@@ -128,11 +128,13 @@ def _notify_user_with_code(user, code, settings):
     # send_sms_verification_code(phone, message)
     logger.info('SMS sent to %s with code %s', phone, code)
     
-    if settings.ENVIRONMENT == 'prod':
-        list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
-        list_emails.append(user.email)
-    else:
-        list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
+    list_emails = [user.email]
+    
+    # if settings.ENVIRONMENT == 'prod':
+    #     list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
+    #     list_emails.append(user.email)
+    # else:
+    #     list_emails = settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS
 
     template = 'email_send_verification_code.html'
     response_message = 'Verification code sent successfully.'

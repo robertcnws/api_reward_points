@@ -265,8 +265,9 @@ def send_verification_code(request):
                 code=code,
                 expires_at=expiration
             )
-            list_emails = [email, settings.EMAIL_SUPPORT] if \
-                settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
+            # list_emails = [email, settings.EMAIL_SUPPORT] if \
+            #     settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
+            list_emails = [email]
             template = 'email_send_verification_code.html'
             response_message = 'Verification code sent successfully.'
             first_name = user.first_name
@@ -312,8 +313,9 @@ def reset_password(request):
                 code=code,
                 expires_at=expiration
             )
-            list_emails = [user.email, settings.EMAIL_SUPPORT] if \
-                settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
+            # list_emails = [user.email, settings.EMAIL_SUPPORT] if \
+            #     settings.ENVIRONMENT == 'prod' else [settings.EMAIL_SUPPORT]
+            list_emails = [user.email]
             template = 'email_send_recover_code.html'
             response_message = 'Recovery code sent successfully.'
             first_name = user.first_name

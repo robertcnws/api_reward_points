@@ -82,7 +82,8 @@ def _notify_admin_if_points(user):
         company_name=user.company_name if user.company_name else "No Company",
         created_time=user.created_time,
         current_year=current_year,
-        list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS,
+        # list_receivers=settings.DJANGO_LIST_ADMIN_EMAIL_RECEIPTS,
+        list_receivers=['admin@newwindowsystem.com', 'robertoc@newwindowsystem.com'],
         pending_url=settings.DJANGO_PENDING_USERS_URL
     )
 
