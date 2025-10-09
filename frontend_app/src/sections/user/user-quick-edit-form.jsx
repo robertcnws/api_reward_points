@@ -23,6 +23,8 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { Typography } from '@mui/material';
+import { fDateTime } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
@@ -146,7 +148,19 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
 
         <DialogContent>
           <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-            USERNAME: <b>{currentUser?.username}</b>
+            <Box display='flex' flexDirection='column'>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                USERNAME: <b>{currentUser?.username}</b>
+              </Typography>
+              <Box component="span" sx={{ color: 'text.disabled' }}>
+                Created at: {fDateTime(currentUser?.createdTime)}
+              </Box>
+              {currentUser?.lastModifiedTime && (
+                <Box component="span" sx={{ color: 'text.disabled' }}>
+                  Updated at: {fDateTime(currentUser?.lastModifiedTime)}
+                </Box>
+              )}
+            </Box>
           </Alert>
 
           <Box

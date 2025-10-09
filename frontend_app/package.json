@@ -22,7 +22,6 @@
   "engines": {
     "node": "20.x"
   },
-  "packageManager": "yarn@1.22.22",
   "dependencies": {
     "@apollo/client": "^3.11.8",
     "@auth0/auth0-react": "^2.2.4",

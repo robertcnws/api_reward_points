@@ -47,7 +47,7 @@ export function RewardLoginUsersProvider({ children }) {
   );
 
   const loadedPendingRewardLoginUsers = useMemo(
-    () => listAllRewardLoginUsers.filter(user => !user.isApproved),
+    () => listAllRewardLoginUsers.filter(user => !user.isApproved && user.isVerified),
     [listAllRewardLoginUsers]
   );
 

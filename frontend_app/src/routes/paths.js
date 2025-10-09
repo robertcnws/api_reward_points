@@ -72,6 +72,10 @@ export const paths = {
       calendar: `${ROOTS.DASHBOARD}/calendar`,
       faqsTutorial: `${ROOTS.DASHBOARD}/faqs-tutorial`,
     },
+    client: {
+      root: `${ROOTS.DASHBOARD}/client`,
+      list: `${ROOTS.DASHBOARD}/client/list`,
+    },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,

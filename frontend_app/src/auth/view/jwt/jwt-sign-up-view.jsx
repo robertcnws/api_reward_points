@@ -1,5 +1,5 @@
 import { z as zod } from 'zod';
-import { useState, useContext } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -24,15 +24,12 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { Form, Field } from 'src/components/hook-form';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { useDataContext } from 'src/auth/context/data/data-context';
 
 import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
-
-
-
-
 
 // ----------------------------------------------------------------------
 
@@ -64,6 +61,19 @@ export const SignUpSchema = zod.object({
 export function JwtSignUpView() {
   const { checkUserSession } = useAuthContext();
 
+  const { loadedAllUsers } = useDataContext();
+
+  const existingEmails = useMemo(
+    () =>
+      new Set(
+        (loadedAllUsers ?? [])
+          .filter((u) => u?.isVerified)
+          .map((u) => String((u?.email) ?? '').trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    [loadedAllUsers]
+  );
+
   const router = useRouter();
 
   const password = useBoolean();
@@ -93,8 +103,23 @@ export function JwtSignUpView() {
     phoneNumber: '',
   };
 
+  const SignUpSchemaWithEmailUnique = useMemo(
+    () =>
+      SignUpSchema.superRefine((data, ctx) => {
+        const emailNorm = String(data.email).trim().toLowerCase();
+        if (existingEmails.has(emailNorm)) {
+          ctx.addIssue({
+            path: ['email'],
+            code: zod.ZodIssueCode.custom,
+            message: 'This email is already registered!',
+          });
+        }
+      }),
+    [existingEmails]
+  );
+
   const methods = useForm({
-    resolver: zodResolver(SignUpSchema),
+    resolver: zodResolver(SignUpSchemaWithEmailUnique),
     defaultValues,
   });
 

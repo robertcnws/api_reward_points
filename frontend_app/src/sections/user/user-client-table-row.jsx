@@ -129,7 +129,7 @@ export function UserClientTableRow({
                 <Box component="span" sx={{ color: 'text.disabled' }}>
                   Email: {row.email}
                 </Box>
-                <Box component="span" sx={{ color: 'text.disabled' }}>
+                {/* <Box component="span" sx={{ color: 'text.disabled' }}>
                   Phone: {row.phoneNumber}
                 </Box>
                 <Box component="span" sx={{ color: 'text.disabled' }}>
@@ -139,16 +139,19 @@ export function UserClientTableRow({
                   <Box component="span" sx={{ color: 'text.disabled' }}>
                     Updated at: {fDateTime(row.lastModifiedTime)}
                   </Box>
-                )}
+                )} */}
               </Stack>
             </Stack>
           </TableCell>
 
-          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.companyName}</TableCell>
-
-          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.firstName}</TableCell>
-
-          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>{row.lastName}</TableCell>
+          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>
+            <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
+              {row.companyName}
+              <Box component="span" sx={{ color: 'text.disabled' }}>
+                  Full Name: {row.firstName} {row.lastName}
+                </Box>
+            </Stack>
+          </TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
             {row.totalAvailablePoints > 0 ? (
@@ -177,18 +180,6 @@ export function UserClientTableRow({
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
             <Label
-              color={row.isVerified ? 'success' : 'error'}
-              sx={{ alignItems: 'center' }}
-            >
-              {row?.isVerified ?
-                <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-              }
-            </Label>
-          </TableCell>
-
-          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
-            <Label
               color={row.isApproved ? 'success' : 'error'}
               sx={{ alignItems: 'center' }}
             >
@@ -206,18 +197,18 @@ export function UserClientTableRow({
                 columnGap={0}
                 display="grid"
                 gridTemplateColumns={{
-                  xs: 'repeat(2, 1fr)',
-                  sm: 'repeat(2, 1fr)',
+                  xs: 'repeat(3, 1fr)',
+                  sm: 'repeat(3, 1fr)',
                 }}
               >
-                <Tooltip title={row.isVerified ? "Unverify" : "Verify"} placement="top" arrow>
+                {/* <Tooltip title={row.isVerified ? "Unverify" : "Verify"} placement="top" arrow>
                   <IconButton
                     color={confirmVerify ? 'inherit' : 'default'}
                     onClick={confirmVerify.onTrue}
                   >
                     <Iconify icon={row.isVerified ? "si:close-square-duotone" : "line-md:check-list-3"} />
                   </IconButton>
-                </Tooltip>
+                </Tooltip> */}
                 <Tooltip title={row.isApproved ? "Unapprove" : "Approve"} placement="top" arrow>
                   <IconButton
                     color={confirmApproval.value ? 'inherit' : 'default'}
@@ -294,28 +285,6 @@ export function UserClientTableRow({
                     )}
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                    <Typography variant='body2'>
-                      Active: <Label
-                        color={row.isActive ? 'success' : 'error'}
-                        sx={{ alignItems: 'center' }}
-                      >
-                        {row?.isActive ?
-                          <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                          <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-                        }
-                      </Label>
-                    </Typography>
-                    <Typography variant='body2'>
-                      Verified: <Label
-                        color={row.isVerified ? 'success' : 'error'}
-                        sx={{ alignItems: 'center' }}
-                      >
-                        {row?.isVerified ?
-                          <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
-                          <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
-                        }
-                      </Label>
-                    </Typography>
                     <Typography variant='body2'>
                       Approved: <Label
                         color={row.isApproved ? 'success' : 'error'}
@@ -404,7 +373,7 @@ export function UserClientTableRow({
             Manage reward points
             {/* <Label color="info" sx={{ ml: 1 }}>NEW</Label> */}
           </MenuItem>
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               confirmVerify.onTrue();
               popover.onClose();
@@ -412,7 +381,7 @@ export function UserClientTableRow({
           >
             <Iconify icon={row.isVerified ? "si:close-square-duotone" : "line-md:check-list-3"} />
             {row.isVerified ? "Unverify" : "Verify"}
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() => {
               confirmApproval.onTrue();
@@ -422,7 +391,7 @@ export function UserClientTableRow({
             <Iconify icon={row.isApproved ? "line-md:close-circle-twotone" : "mdi:approve"} />
             {row.isApproved ? "Unapprove" : "Approve"}
           </MenuItem>
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               confirmActive.onTrue();
               popover.onClose();
@@ -432,7 +401,7 @@ export function UserClientTableRow({
               row?.isActive ? 'fe:disabled' : 'material-symbols:enable'
             } />
             {row?.isActive ? 'Set Inactive' : 'Set Active'}
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() => {
               quickEdit.onTrue();

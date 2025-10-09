@@ -49,29 +49,22 @@ import { UserTableFiltersResult } from '../user-table-filters-result';
 
 const USEL_CLIENT_OPTIONS = [
   { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'unapproved', label: 'Unapproved' },
-  { value: 'verified', label: 'Verified' },
-  { value: 'unverified', label: 'Unverified' },
+  { value: 'pending', label: 'Pending' },
 ]
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USEL_CLIENT_OPTIONS];
 
 const TABLE_HEAD = [
   { id: 'username', label: 'Username' },
-  { id: 'company', label: 'Company Name' },
-  { id: 'firstName', label: 'First Name' },
-  { id: 'lastName', label: 'Last Name' },
+  { id: 'company', label: 'Info' },
   { id: 'points', label: 'Reward Points' },
-  { id: 'active', label: 'Active' },
-  { id: 'verified', label: 'Verified' },
+  { id: 'sync', label: 'Sync (Zoho)' },
   { id: 'approved', label: 'Approved' },
   { id: '' },
 ];
 
 const TABLE_HEAD_MOBILE = [
-  { id: 'info', label: 'Users' },
+  { id: 'info', label: 'Clients' },
 ];
 
 // ----------------------------------------------------------------------
@@ -106,13 +99,14 @@ export function UserClientListView() {
     if (refetchRewardPoints) {
       refetchRewardPoints();
     }
-    setTableData(loadedRewardPoints.map(
-      (reward) => ({
+    setTableData(loadedRewardPoints
+      .map(
+        (reward) => ({
           ...reward?.user,
           rewardPointsId: reward?.id,
           totalAvailablePoints: reward?.totalAvailablePoints,
         })
-    ) || []);
+      ) || []);
   }, [refetchRewardPoints, loadedRewardPoints]);
 
 
@@ -170,7 +164,9 @@ export function UserClientListView() {
 
 
   const dataFiltered = useMemo(() => applyFilter({
-    inputData: tableData.filter((u) => u.userRole.name === 'client').sort((a, b) => {
+    inputData: tableData.filter(
+      (u) => u.userRole.name === 'client' && u.isVerified
+    ).sort((a, b) => {
       if (a.createdTime && b.createdTime) return dayjs(b.createdTime).diff(dayjs(a.createdTime));
       if (!a.createdTime && b.createdTime) return 1;
       if (a.createdTime && !b.createdTime) return -1;
@@ -357,7 +353,7 @@ export function UserClientListView() {
           // heading="List"
           links={[
             { name: 'Dashboard', href: paths.dashboard.general.analytics },
-            { name: 'Client', href: paths.dashboard.user.client },
+            { name: 'Client', href: paths.dashboard.client.list },
             { name: 'Client List' },
           ]}
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -387,20 +383,14 @@ export function UserClientListView() {
                     }
                     color={
                       (tab.value === 'active' && 'info') ||
-                      (tab.value === 'inactive' && 'error') ||
-                      (tab.value === 'approved' && 'success') ||
-                      (tab.value === 'unapproved' && 'warning') ||
-                      (tab.value === 'verified' && 'primary') ||
-                      (tab.value === 'unverified' && 'secondary') ||
+                      (tab.value === 'pending' && 'error') ||
                       'default'
                     }
                   >
                     {['active', 'inactive'].includes(tab.value)
-                      ? tableData.filter((user) => tab.value === 'active' ? user.isActive : !user.isActive).length
-                      : ['approved', 'unapproved'].includes(tab.value)
-                        ? tableData.filter((user) => tab.value === 'approved' ? user.isApproved : !user.isApproved).length
-                        : ['verified', 'unverified'].includes(tab.value)
-                          ? tableData.filter((user) => tab.value === 'verified' ? user.isVerified : !user.isVerified).length
+                      ? tableData.filter((user) => tab.value === 'active' ? (user.isApproved && user.isVerified) : !user.isActive).length
+                        : ['pending'].includes(tab.value)
+                          ? tableData.filter((user) => !user.isApproved && user.isVerified).length
                           : tableData.length}
                   </Label>
                 }
@@ -577,22 +567,10 @@ function applyFilter({ inputData, comparator, filters }) {
 
   if (status !== 'all') {
     if (status === 'active') {
-      inputData = inputData.filter((user) => user?.isActive);
+      inputData = inputData.filter((user) => user?.isApproved && user?.isVerified);
     }
-    else if (status === 'inactive') {
-      inputData = inputData.filter((user) => !user?.isActive);
-    }
-    else if (status === 'approved') {
-      inputData = inputData.filter((user) => user?.isApproved);
-    }
-    else if (status === 'unapproved') {
-      inputData = inputData.filter((user) => !user?.isApproved);
-    }
-    else if (status === 'verified') {
-      inputData = inputData.filter((user) => user?.isVerified);
-    }
-    else if (status === 'unverified') {
-      inputData = inputData.filter((user) => !user?.isVerified);
+    else if (status === 'pending') {
+      inputData = inputData.filter((user) => !user?.isApproved && user?.isVerified);
     }
   }
 

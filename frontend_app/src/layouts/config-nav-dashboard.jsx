@@ -68,6 +68,7 @@ const ICONS = {
   store: icon('ic-store'),
   purchase: icon('ic-purchase'),
   checkout: icon('ic-checkout'),
+  client: icon('ic-client'),
 };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -241,7 +242,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                         alignItems: 'center',
                       }}
                     >
-                      Users
+                      Clients
                     </Typography>
                     {(loadedPendingUsers?.length > 0 && !isNavMini) && (
                       <Box
@@ -272,53 +273,43 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                   </Box>
                 </React.Fragment>
               ),
-              path: paths.dashboard.user.root,
-              icon: ICONS.user,
+              path: paths.dashboard.client.list,
+              icon: ICONS.client,
               children: [
-                {
-                  key: `${paths.dashboard.user.pending}-5`,
-                  title: (
-                    <React.Fragment key='pending-approval-users-fragment'>
-                      <Box
-                        key='pending-approval-users'
-                        component="span"
-                        sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            mr: 1,
-                            color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
-                          }}
-                        >
-                          Pending Approval
-                        </Typography>
-                        {loadedPendingUsers?.length > 0 && (
-                          <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
-                            {loadedPendingUsers?.length}
-                          </Label>
-                        )}
-                      </Box>
-                    </React.Fragment>
-                  ),
-                  path: paths.dashboard.user.pending,
-                },
+                // {
+                //   key: `${paths.dashboard.user.pending}-5`,
+                //   title: (
+                //     <React.Fragment key='pending-approval-users-fragment'>
+                //       <Box
+                //         key='pending-approval-users'
+                //         component="span"
+                //         sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                //         <Typography
+                //           variant="subtitle2"
+                //           sx={{
+                //             mr: 1,
+                //             color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
+                //           }}
+                //         >
+                //           Pending Approval
+                //         </Typography>
+                //         {loadedPendingUsers?.length > 0 && (
+                //           <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
+                //             {loadedPendingUsers?.length}
+                //           </Label>
+                //         )}
+                //       </Box>
+                //     </React.Fragment>
+                //   ),
+                //   path: paths.dashboard.user.pending,
+                // },
                 {
                   key: `${paths.dashboard.user.client}-6`,
                   title: 'All Clients',
-                  path: paths.dashboard.user.client,
-                },
-                {
-                  key: `${paths.dashboard.user.list}-7`,
-                  title: 'Approved Users',
-                  path: paths.dashboard.user.list,
-                },
-                {
-                  key: `${paths.dashboard.user.new}-8`,
-                  title: 'Create',
-                  path: paths.dashboard.user.new,
-                },
-              ],
+                  path: paths.dashboard.client.list,
+                }],
             },
+            
           ] : []),
           ...(userLogged && isAdministrator(userRole) ? [
             {
@@ -487,6 +478,38 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                   key: `${paths.dashboard.pointsSettings.new}-16`,
                   title: 'Create',
                   path: paths.dashboard.pointsSettings.new,
+                },
+              ],
+            },
+            {
+              key: `${paths.dashboard.user.root}-2`,
+              title: (
+                <Box component="span" id='my-users-user-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Users
+                  </Typography>
+                </Box>
+              ),
+              path: paths.dashboard.user.root,
+              icon: ICONS.user,
+              children: [
+                {
+                  key: `${paths.dashboard.user.list}-7`,
+                  title: 'Approved Users',
+                  path: paths.dashboard.user.list,
+                },
+                {
+                  key: `${paths.dashboard.user.new}-8`,
+                  title: 'Create',
+                  path: paths.dashboard.user.new,
                 },
               ],
             },
