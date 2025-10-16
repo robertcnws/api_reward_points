@@ -2,7 +2,7 @@ import React, { useMemo, useContext, createContext } from 'react';
 
 import { useAllRewardStoreProductDetails } from 'src/_mock/__reward-store-products';
 
-import { fieldsRewardStoreProductDetails } from '../field-descriptors/field-descriptors-reward-store-products';
+import { fieldsRewardStoreProductDetails, fieldsRewardStoreProducts } from '../field-descriptors/field-descriptors-reward-store-products';
 
 const RewardStoreProductsContext = createContext();
 export const useRewardStoreProducts = () => useContext(RewardStoreProductsContext);
@@ -11,7 +11,7 @@ export function RewardStoreProductsProvider({ children }) {
 
   // const fields = useMemo(() => fieldsRewardStoreProducts, []);
 
-  const fields = useMemo(() => fieldsRewardStoreProductDetails, []);
+  const fields = useMemo(() => fieldsRewardStoreProducts, []);
 
   // const allStoreProductsQuery = useAllRewardStoreProducts(fields);
 
@@ -24,6 +24,8 @@ export function RewardStoreProductsProvider({ children }) {
   const loadingAllRewardStoreProducts = allStoreProductsQuery.loading || false;
 
   const errorRewardStoreProducts = allStoreProductsQuery.error || null;
+
+  // console.log('loadedAllRewardStoreProducts', loadedAllRewardStoreProducts);
 
   const value = useMemo(
     () => ({

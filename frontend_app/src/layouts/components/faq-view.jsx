@@ -3,7 +3,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/
 
 export function FAQView({ faq, keyIndex }) {
     return (
-        <Accordion key={keyIndex} sx={{ mb: 0 }}>
+        <Accordion sx={{ mb: 0 }}>
             <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
                 <Typography sx={{ fontWeight: 'bold' }}>{faq.questionEn}</Typography>
             </AccordionSummary>

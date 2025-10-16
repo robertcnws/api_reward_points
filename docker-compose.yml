@@ -1,5 +1,6 @@
 services:
   api_rewards:
+    # platform: linux/arm64/v8
     build:
       context: ./backend_app
       dockerfile: Dockerfile
@@ -15,6 +16,24 @@ services:
       - ./backend_app/.env
     networks:
       - shared-network
+
+  mongodb_installation:
+    # platform: linux/arm64/v8
+    image: mongo:7.0
+    container_name: mongodb_installation
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    env_file:
+      - ./mongo_db/.env
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo_db/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - shared-network
+
+volumes:
+  mongodb_data:
 
 networks:
   shared-network:

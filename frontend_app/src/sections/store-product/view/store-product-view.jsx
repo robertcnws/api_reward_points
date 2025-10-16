@@ -108,42 +108,9 @@ export function StoreProductView() {
     }, [userLogged?.data?.user_role?.name, userLogged?.data?.username, refetchStoreProducts]);
 
     const filters = useSetState({
-        // list: localStorage.getItem('projectFilterList') || 'in progress',
         name: localStorage.getItem('storeProductFilterName') || '',
-        // type: JSON.parse(localStorage.getItem('projectFilterType')) || [],
-        // startDate: localStorage.getItem('projectFilterStartDate') ? dayjs(localStorage.getItem('projectFilterStartDate')) : null,
-        // endDate: localStorage.getItem('projectFilterEndDate') ? dayjs(localStorage.getItem('projectFilterEndDate')) : null,
-        // installer: JSON.parse(localStorage.getItem('projectFilterInstaller')) || {
-        //     id: null,
-        //     name: null,
-        // },
-        // custom: JSON.parse(localStorage.getItem('projectFilterCustom')) || {
-        //     hasPermission: false,
-        //     isPreparation: {
-        //         name: 'preparation',
-        //         value: false,
-        //     },
-        //     isCoordination: {
-        //         name: 'coordination',
-        //         value: false,
-        //     },
-        //     isInstallation: {
-        //         name: 'installation',
-        //         value: false,
-        //     },
-        //     isPermission: {
-        //         name: 'permission',
-        //         value: false,
-        //     },
-        //     isClosing: {
-        //         name: 'closing',
-        //         value: false,
-        //     },
-        //     hasComments: false,
-        // }
     });
-
-    // const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+    
     const dateError = false;
 
     const dataFiltered = applyFilter({
@@ -157,17 +124,6 @@ export function StoreProductView() {
 
     const canReset =
         !!filters.state.name
-    // ||
-    // filters.state.type.length > 0 ||
-    // (!!filters.state.startDate && !!filters.state.endDate) ||
-    // filters.state.custom.hasPermission ||
-    // filters.state.custom.isPreparation?.value ||
-    // filters.state.custom.isCoordination?.value ||
-    // filters.state.custom.isInstallation?.value ||
-    // filters.state.custom.isPermission?.value ||
-    // filters.state.custom.isClosing?.value ||
-    // filters.state.custom.hasComments ||
-    // (!!filters.state.installer.id && !!filters.state.installer.name)
 
     const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -362,6 +318,8 @@ export function StoreProductView() {
     );
 
     const [titleLinearProgress, setTitleLinearProgress] = useState('Loading store products data...');
+
+    // console.log('loadedStoreProducts', loadedStoreProducts);
 
     return (
         <>

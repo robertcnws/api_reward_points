@@ -107,11 +107,11 @@ export function StoreProductFolderItem({
   ]), [currentProduct]);
 
   useEffect(() => {
-    if (product) {
+    if (product && !productLoading && !productError) {
       setCurrentProduct(product);
       setFolderName(product.name);
     }
-  }, [product]);
+  }, [product, productLoading, productError]);
 
 
   useEffect(() => {

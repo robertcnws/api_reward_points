@@ -87,7 +87,7 @@ export function HelpCenterButton({ width, sx, ...other }) {
           </Box>
           <Box sx={{ px: 2, py: 1 }}>
             {FAQS.slice(0, 5).map((faq, index) => (
-              <FAQView faq={faq} keyIndex={index} />
+              <FAQView faq={faq} key={faq.id ?? `faq-${index}`} />
             ))}
             <Box sx={{ py: 1 }}>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0 }}>

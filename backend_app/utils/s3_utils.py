@@ -215,6 +215,8 @@ def make_s3_archive_stream(keys, number, stage, task):
     
     
 def generate_default_file_url(object_key):
+    # if not object_key or object_key in ('undefined', 'null'):
+    #     object_key = settings.AWS_S3_DEFAULT_STORE_PRODUCT_FILE_KEY
     url = s3_client.generate_presigned_url(
         'get_object',
         Params={

@@ -595,6 +595,8 @@ def get_default_file_url(request):
     object_key = request.query_params.get('key')
     if not object_key:
         return Response({'error': 'A key was not sended'}, status=400)
+    # elif object_key in ('undefined', 'null'):
+    #     object_key = settings.AWS_S3_DEFAULT_STORE_PRODUCT_FILE_KEY
     try:
         url = generate_default_file_url(object_key)
         return Response({'url': url})
