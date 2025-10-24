@@ -145,6 +145,7 @@ class RewardPoints(Document):
     sales_orders = ListField(ReferenceField(RewardSalesOrder, reverse_delete_rule=2), null=True, blank=True, default=list)  # CASCADE
     created_time = DateTimeField(default=timezone.now, null=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
+    is_sync_with_zoho = BooleanField(default=False)
 
     meta = {
         'collection': 'reward_points',

@@ -161,6 +161,7 @@ def event_reward_points(
                 "salesOrders": full_selection_sales_orders if document.sales_orders else [],
                 "createdTime": document.created_time,
                 "lastModifiedTime": document.last_modified_time,
+                "isSyncWithZoho": document.is_sync_with_zoho,
             }
 
         }

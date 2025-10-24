@@ -12,6 +12,7 @@ export const fieldsRewardPoints = [
   'totalOpenedBalanceInvoices',
   'totalTaxAmountInvoices',
   'qtyPendingOrders',
+  'isSyncWithZoho',
   {
     name: 'invoices',
     fields: [

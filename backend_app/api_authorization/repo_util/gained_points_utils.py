@@ -1,4 +1,7 @@
 from django.utils import timezone
+from bson import ObjectId
+from bson.dbref import DBRef
+from mongoengine.errors import DoesNotExist, ValidationError
 from api_reward_points.models import (
     RewardPoints, 
     RewardPointsHistory,
@@ -7,7 +10,8 @@ from api_reward_points.models import (
 )
 from api_integration.repository.repository_integration import (
     fetch_client_invoices,
-    fetch_sales_orders
+    fetch_sales_orders,
+    fetch_client_sync_with_zoho,
 )
 from utils.data_util import (
     transform_data_to_mongo, 
@@ -61,7 +65,7 @@ def compute_sales_orders_pending(sales_orders):
 
 def compute_invoice_metrics(invoices, cutoff_dt, existing_invoice_ids):
     eligible = []
-    real_invoices = [inv for inv in invoices if inv.invoice_id not in existing_invoice_ids]
+    real_invoices = [inv for inv in invoices if str(inv.invoice_id) not in existing_invoice_ids]
     for inv in real_invoices:
         inv_dt = to_dt(getattr(inv, "date", None))
         if inv_dt and inv_dt >= cutoff_dt and \
@@ -232,6 +236,28 @@ def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sa
     return rp, history
 
 
+def _fetch_doc(ref, Model):
+    """Devuelve el Document o None desde ref que puede ser Document, LazyReference, DBRef u ObjectId."""
+    if ref is None:
+        return None
+    try:
+        # Ya es Document
+        if hasattr(ref, "id") and not isinstance(ref, DBRef):
+            return ref
+        # LazyReferenceField
+        if hasattr(ref, "fetch"):
+            return ref.fetch()
+        # DBRef crudo
+        if isinstance(ref, DBRef):
+            return Model.objects.with_id(ref.id)
+        # Solo ObjectId
+        if isinstance(ref, ObjectId):
+            return Model.objects.with_id(ref)
+    except (DoesNotExist, ValidationError):
+        return None
+    return None
+
+
 # =========================
 # API principal (complejidad baja)
 # =========================
@@ -256,9 +282,15 @@ def get_rewards_points(user, description=None):
     sorted_invoices, sorted_sales_orders = _load_sorted_local_collections(user, all_invoices)
     
     rp = RewardPoints.objects(user=user).first()
+    existing_invoice_ids = []
     
-    existing_invoice_ids = [inv.invoice_id for inv in rp.invoices] if rp else []
-    
+    if rp and rp.invoices:
+        existing_invoice_ids = []
+        for inv_ref in rp.invoices:
+            inv_doc = _fetch_doc(inv_ref, RewardInvoice)
+            if inv_doc is not None:
+                existing_invoice_ids.append(str(inv_doc.invoice_id))
+
     cutoff = _build_cutoff_dt(user)
     pendings, metrics, total_gained_points_new = _compute_metrics_and_points(
         sorted_invoices, 
@@ -275,6 +307,14 @@ def get_rewards_points(user, description=None):
     else:
         rp, history = _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders,
                                             total_gained_points_new, description)
+    is_sync_with_zoho = False
+    payload_sync = build_fetch_payload(user, has_local_data=False)
+    response_sync = fetch_client_sync_with_zoho(payload_sync)
+    
+    if response_sync and 'results' in response_sync and len(response_sync['results']) > 0:
+        is_sync_with_zoho = True
+    
+    rp.is_sync_with_zoho = is_sync_with_zoho
 
     rp.save()
     if history:

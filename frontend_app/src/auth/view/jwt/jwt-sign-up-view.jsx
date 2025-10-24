@@ -67,7 +67,7 @@ export function JwtSignUpView() {
     () =>
       new Set(
         (loadedAllUsers ?? [])
-          .filter((u) => u?.isVerified)
+          // .filter((u) => u?.isVerified)
           .map((u) => String((u?.email) ?? '').trim().toLowerCase())
           .filter(Boolean)
       ),

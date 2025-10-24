@@ -82,6 +82,44 @@ def list_client_invoices(request):
 
 
 #############################################
+# FETCH CLIENT SYNC WITH ZOHO
+#############################################
+    
+def fetch_client_sync_with_zoho(data):
+    headers = config_headers()
+    base_url = f"{settings.API_MAIN_DATA_URL}/zoho/customers/"
+    
+    field_map = {
+        "email": "email",
+    }
+    base_params = {
+        api_key: data.get(src_key)
+        for src_key, api_key in field_map.items()
+        if data.get(src_key)
+    }
+
+    session = requests.Session()
+    items = []
+    next_url = base_url
+    params = base_params  
+
+    while next_url:
+        try:
+            resp = session.get(next_url, headers=headers, params=params, timeout=30)
+            resp.raise_for_status()
+            payload = resp.json()
+        except requests.exceptions.RequestException as e:
+            logger.error("Error fetching invoices: %s", e)
+            return {"error": "Failed to fetch invoices to reward points"}
+
+        items.extend(payload.get("results", []))
+        next_url = payload.get("next")
+        params = None 
+
+    return {"count": len(items), "results": items}
+
+
+#############################################
 # FETCH CLIENT INVOICES TO REWARDS
 #############################################
     

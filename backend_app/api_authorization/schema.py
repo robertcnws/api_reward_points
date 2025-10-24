@@ -39,6 +39,7 @@ class LoginUserType(MongoengineObjectType):
     last_login = graphene.String()
     date_joined = graphene.String()
     approved_time = graphene.String()
+    is_sync_with_zoho = graphene.Boolean()
 
     class Meta:
         model = LoginUser

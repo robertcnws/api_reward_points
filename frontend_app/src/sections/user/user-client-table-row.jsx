@@ -168,10 +168,10 @@ export function UserClientTableRow({
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }} onClick={quickEdit.onTrue} align="center">
             <Label
-              color={row.isActive ? 'success' : 'error'}
+              color={row.isSyncWithZoho ? 'success' : 'error'}
               sx={{ alignItems: 'center' }}
             >
-              {row?.isActive ?
+              {row?.isSyncWithZoho ?
                 <Iconify icon="fontisto:checkbox-active" sx={{ mr: 0.5 }} /> :
                 <Iconify icon="material-symbols:tab-close-inactive" sx={{ mr: 0.5 }} />
               }

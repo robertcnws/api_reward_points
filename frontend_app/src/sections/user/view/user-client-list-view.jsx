@@ -8,7 +8,7 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import { TableContainer } from '@mui/material';
+import { LinearProgress, TableContainer, Typography } from '@mui/material';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 
@@ -82,10 +82,12 @@ export function UserClientListView() {
   const confirm = useBoolean();
 
   const {
-    // loadedAllUsers,
+    loadedAllUsers,
+    loadingAllUsers,
     // refetchUsers,
     loadedUserRoles,
     loadedRewardPoints,
+    loadingRewardPoints,
     refetchRewardPoints,
   } = useDataContext();
 
@@ -99,15 +101,20 @@ export function UserClientListView() {
     if (refetchRewardPoints) {
       refetchRewardPoints();
     }
-    setTableData(loadedRewardPoints
+    console.log('refetchRewardPoints called');
+    console.log('loadedRewardPoints', loadedRewardPoints);
+    const actuallyRewardPoints = loadedRewardPoints.filter((reward) => loadedAllUsers.some((user) => String(user?.id) === String(reward?.user?.id)));
+    console.log('actuallyRewardPoints', actuallyRewardPoints);
+    setTableData(actuallyRewardPoints
       .map(
         (reward) => ({
           ...reward?.user,
           rewardPointsId: reward?.id,
           totalAvailablePoints: reward?.totalAvailablePoints,
+          isSyncWithZoho: reward?.isSyncWithZoho,
         })
       ) || []);
-  }, [refetchRewardPoints, loadedRewardPoints]);
+  }, [refetchRewardPoints, loadedRewardPoints, loadedAllUsers]);
 
 
   useEffect(() => {
@@ -345,6 +352,39 @@ export function UserClientListView() {
     },
     [refetchRewardPoints]
   );
+
+  if (loadingAllUsers || loadingRewardPoints) {
+    return (
+      <DashboardContent>
+        <Box
+          sx={{
+            width: '350px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '80vh',
+            margin: 'auto'
+          }}
+        >
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Loading clients data...
+          </Typography>
+          <LinearProgress
+            key="error"
+            sx={{
+              mb: 2,
+              width: '100%',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: 'black',
+              },
+              backgroundColor: '#e0e0e0',
+            }}
+          />
+        </Box>
+      </DashboardContent>
+    );
+  }
 
   return (
     <>
