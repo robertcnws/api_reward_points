@@ -27,6 +27,7 @@ import { EcommerceRewardPointsHistoryClientList } from 'src/sections/overview/e-
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { SalesOrdersList } from 'src/sections/sales-order/view';
 
 // ----------------------------------------------------------------------
 
@@ -228,6 +229,16 @@ export function PurchaseOverviewClientView({
     [currentAssignedPointsArray]
   );
 
+  const sortedSalesOrders = useMemo(() => {
+    const salesOrders = loadedRewardPoints?.salesOrders ?? [];
+    return [...salesOrders].sort((a, b) => {
+      if (a.date && b.date) return dayjs(b.date).diff(dayjs(a.date));
+      if (!a.date && b.date) return 1;
+      if (a.date && !b.date) return -1;
+      return 0;
+    });
+  }, [loadedRewardPoints?.salesOrders]);
+
   return (
     <DashboardContent maxWidth="xl">
       {(loadingRewardPointsHistory || loadingRewardPoints) ? (
@@ -263,7 +274,7 @@ export function PurchaseOverviewClientView({
               px: 1
             }}>
             <FormReturnLink
-              href={paths.dashboard.user.client}
+              href={paths.dashboard.client.list}
               label='Back to Clients List'
             />
           </Box>
@@ -568,6 +579,28 @@ export function PurchaseOverviewClientView({
               errorRewardPointsHistory={errorRewardPointsHistory}
             />
           </Grid>
+          
+            <SalesOrdersList
+              title="Sales Orders History"
+              tableData={sortedSalesOrders}
+              headLabel={[
+                { id: 'date', label: 'Date', align: 'left' },
+                { id: 'order', label: 'Sales Order' },
+                // { id: 'order', label: 'INV #' },
+                ...!isMobile ? [
+                  { id: 'totalItems', label: 'Qty of Items', align: 'center' },
+                ] : [],
+                { id: 'status', label: 'Status', align: 'center' },
+                { id: 'paymentMade', label: 'Total', align: 'right' },
+                ...!isMobile ? [
+                  { id: 'taxTotal', label: 'Total Tax', align: 'right' },
+                  { id: 'salespersonName', label: 'Salesperson', align: 'center' },
+                ] : []
+              ]}
+              isDashboardView
+              loadedRewardPoints={loadedRewardPoints}
+            />
+            
         </Grid>
       )}
     </DashboardContent>

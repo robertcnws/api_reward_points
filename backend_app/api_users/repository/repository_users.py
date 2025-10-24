@@ -9,7 +9,7 @@ from utils.data_util import (
 from api_authorization.models import LoginUser, UserRole
 from api_authorization.repo_util import authorization_utils
 
-from api_reward_points.models import RewardAttachment, RewardPoints
+from api_reward_points.models import RewardAttachment, RewardPoints, RewardPointsHistory
 
 from utils.s3_utils import (
     upload_attachment_to_s3, 
@@ -305,6 +305,9 @@ def delete_user(request, id):
             if user.user_role and user.user_role.name == 'client':
                 reward_points = RewardPoints.objects(user=user).all()
                 for rp in reward_points:
+                    rp_history = RewardPointsHistory.objects(reward_points=rp).all()
+                    for rph in rp_history:
+                        rph.delete()
                     rp.delete()
                 
             user.delete()

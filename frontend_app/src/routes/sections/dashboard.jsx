@@ -81,6 +81,10 @@ export const dashboardRoutes = (user) => [
         path: 'user/profile',
         element: <UserProfilePage />
       },
+      {
+        path: 'sales-order/:id/details',
+        element: <SalesOrderDetailsPage />
+      },
       ...isClient(user?.user_role?.name) ? [
         {
           path: 'purchase',
@@ -94,10 +98,7 @@ export const dashboardRoutes = (user) => [
           path: 'sales-order',
           element: <SalesOrdersListPage />
         },
-        {
-          path: 'sales-order/:id/details',
-          element: <SalesOrderDetailsPage />
-        }
+
       ] : [],
       ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
         [
@@ -218,7 +219,7 @@ export const dashboardRoutes = (user) => [
                   CONFIG.roles.administrator
                 ) ? <UserClientListPage /> : <Page403 />
               },
-               {
+              {
                 path: 'list',
                 element: listRolesAndSubroles(
                   user?.user_role?.name

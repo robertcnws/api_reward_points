@@ -101,10 +101,7 @@ export function UserClientListView() {
     if (refetchRewardPoints) {
       refetchRewardPoints();
     }
-    console.log('refetchRewardPoints called');
-    console.log('loadedRewardPoints', loadedRewardPoints);
     const actuallyRewardPoints = loadedRewardPoints.filter((reward) => loadedAllUsers.some((user) => String(user?.id) === String(reward?.user?.id)));
-    console.log('actuallyRewardPoints', actuallyRewardPoints);
     setTableData(actuallyRewardPoints
       .map(
         (reward) => ({

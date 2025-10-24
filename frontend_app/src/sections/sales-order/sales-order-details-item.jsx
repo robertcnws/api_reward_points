@@ -4,9 +4,9 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import CardHeader from '@mui/material/CardHeader';
-import { Grid, Table, TableRow, TableBody, TableCell, TableHead, TableContainer, TextareaAutosize } from '@mui/material';
+import { Grid, Table, TableRow, TableBody, TableCell, TableHead, TableContainer, TextareaAutosize, Typography } from '@mui/material';
 
-import { fDate } from 'src/utils/format-time';
+import { fDate, fDateTime } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
@@ -15,7 +15,7 @@ import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-export function SalesOrderDetailsItems({ salesOrder, isMobile, invoices }) {
+export function SalesOrderDetailsItems({ salesOrder, isMobile, invoices, isDashboardView }) {
 
   const renderTotal = (
     <Stack spacing={1} alignItems="flex-start" sx={{ p: 3, textAlign: 'left', typography: 'body2' }}>
@@ -127,7 +127,7 @@ export function SalesOrderDetailsItems({ salesOrder, isMobile, invoices }) {
                         <TableCell align="right">Total Payment</TableCell>
                         <TableCell align="right">Tax Payment</TableCell>
                         <TableCell align="right">Balance</TableCell>
-                        
+
                       </TableRow>
                     ) : (
                       <TableRow sx={{ p: 0 }}>
@@ -206,7 +206,33 @@ export function SalesOrderDetailsItems({ salesOrder, isMobile, invoices }) {
   return (
     <Card>
       <CardHeader
-        title="Sales Order Details"
+        title={
+          isDashboardView ?
+            (
+              <Stack spacing={0.5} sx={{ mb: 2 }}>
+                <Stack spacing={1} direction='row' alignItems="center">
+                  <Typography variant="h5"> Sales Order </Typography>
+                  <Label variant="soft" color="default">{salesOrder?.salesorderNumber}</Label>
+                  <Label
+                    variant="soft"
+                    color={
+                      (salesOrder?.status === 'confirmed' && 'warning') ||
+                      (salesOrder?.status === 'partially_shipped' && 'info') ||
+                      (salesOrder?.status === 'overdue' && 'error') ||
+                      (salesOrder?.status === 'fulfilled' && 'success') ||
+                      'default'
+                    }
+                  >
+                    {salesOrder?.status}
+                  </Label>
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                  Last Modified: {fDateTime(salesOrder?.lastModifiedTime)}
+                </Typography>
+              </Stack>
+            ) :
+            'Sales Order Details'
+        }
       />
       {renderTotal}
     </Card>

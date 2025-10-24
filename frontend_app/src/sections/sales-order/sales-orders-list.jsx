@@ -1,4 +1,4 @@
-import { useContext, useCallback } from 'react';
+import { useContext, useCallback, useState } from 'react';
 
 import { Box } from '@mui/material';
 import Card from '@mui/material/Card';
@@ -12,29 +12,43 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { useSetState } from 'src/hooks/use-set-state';
+import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fDate } from 'src/utils/format-time';
 import { fNumber, fCurrency } from 'src/utils/format-number';
+import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useTable, TableNoData, TableHeadCustom } from 'src/components/table';
 import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
-
-import { LoadingContext } from 'src/auth/context/loading-context';
-
+import { SalesOrderDetailsItems } from './sales-order-details-item';
 import { SalesOrdersListFilters } from './sales-orders-list-filters';
-
 
 // ----------------------------------------------------------------------
 
-export function SalesOrdersList({ title, subheader, tableData, headLabel, ...other }) {
+export function SalesOrdersList({
+  title,
+  subheader,
+  tableData,
+  headLabel,
+  isDashboardView = false,
+  loadedRewardPoints = null,
+  ...other
+}) {
 
   const { isMobile } = useContext(LoadingContext);
 
   const router = useRouter();
+
+  const openModalIsDashboardView = useBoolean(false);
+
+  const [selectedSalesOrder, setSelectedSalesOrder] = useState(null);
+
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
 
   const table = useTable({
     defaultDense: true,
@@ -82,81 +96,114 @@ export function SalesOrdersList({ title, subheader, tableData, headLabel, ...oth
     router.push(paths.dashboard.salesOrder.details(id));
   };
 
-  return (
-    <DashboardContent>
-      <Card {...other}>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: !isMobile ? 'row' : 'column',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          p: 1,
-          width: '100%'
-        }}>
-          <CardHeader
-            title={setTitle()}
-            subheader={subheader}
-            sx={{
-              mb: !isMobile ? 3 : 0,
-              width: '100%'
-            }}
-          />
-          <SalesOrdersListFilters
-            filters={filters}
-            allSalespersons={allSalespersons}
-            allStatuses={allStatuses}
-            isMobile={isMobile}
-          />
-        </Box>
+  const handleOpenModalIsDashboardView = useCallback((id) => {
+    const salesOrder = tableData.find((so) => so.id === id);
+    setSelectedSalesOrder(salesOrder);
+    const invoicesAll = loadedRewardPoints?.invoices ?? [];
+    console.log('invoicesAll', invoicesAll);
+    const invoices = [...invoicesAll].filter((inv) => inv.salesorder?.id === id);
+    setSelectedInvoices(invoices);
+    openModalIsDashboardView.onTrue();
+  }, [setSelectedSalesOrder, setSelectedInvoices, tableData, openModalIsDashboardView, loadedRewardPoints]);
 
-        <Scrollbar sx={{ overflowY: 'auto' }}>
-          <Table sx={{ position: 'relative' }} stickyHeader>
-            <TableHeadCustom headLabel={headLabel} />
-            {filteredData?.length > 0 ? (
-              <TableBody>
-                {filteredData.slice(
-                  table.page * table.rowsPerPage,
-                  table.page * table.rowsPerPage + table.rowsPerPage
-                ).map((row, index) => (
-                  <RowItem
-                    key={`${row.id}-${index}`}
-                    row={row}
-                    isMobile={isMobile}
-                    onView={() => handleDetailsView(row.id)}
+  const handleView = (id) => {
+    if (isDashboardView) {
+      handleOpenModalIsDashboardView(id);
+    } else {
+      handleDetailsView(id);
+    }
+  };
+
+  return (
+    <>
+      <DashboardContent>
+        <Card {...other}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: !isMobile ? 'row' : 'column',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 1,
+            width: '100%'
+          }}>
+            <CardHeader
+              title={setTitle()}
+              subheader={subheader}
+              sx={{
+                mb: !isMobile ? 3 : 0,
+                width: '100%'
+              }}
+            />
+            <SalesOrdersListFilters
+              filters={filters}
+              allSalespersons={allSalespersons}
+              allStatuses={allStatuses}
+              isMobile={isMobile}
+            />
+          </Box>
+
+          <Scrollbar sx={{ overflowY: 'auto' }}>
+            <Table sx={{ position: 'relative' }} stickyHeader>
+              <TableHeadCustom headLabel={headLabel} />
+              {filteredData?.length > 0 ? (
+                <TableBody>
+                  {filteredData.slice(
+                    table.page * table.rowsPerPage,
+                    table.page * table.rowsPerPage + table.rowsPerPage
+                  ).map((row, index) => (
+                    <RowItem
+                      key={`${row.id}-${index}`}
+                      row={row}
+                      isMobile={isMobile}
+                      onView={() => handleView(row.id)}
+                    />
+                  ))}
+                  <TableCustomPaginationZohoStyleRow
+                    columnsLength={headLabel.length}
+                    data={filteredData}
+                    page={table.page}
+                    rowsPerPage={table.rowsPerPage}
+                    handleChangePage={(event, newPage) => {
+                      localStorage.setItem('itemPage', newPage);
+                      table.onChangePage(event, newPage);
+                    }}
+                    handleChangeRowsPerPage={(event) => {
+                      localStorage.setItem('itemRowsPerPage', event.target.value);
+                      table.onChangeRowsPerPage(event);
+                    }}
+                    dense={table.dense}
+                    onChangeDense={table.onChangeDense}
                   />
-                ))}
-                <TableCustomPaginationZohoStyleRow
-                  columnsLength={headLabel.length}
-                  data={filteredData}
-                  page={table.page}
-                  rowsPerPage={table.rowsPerPage}
-                  handleChangePage={(event, newPage) => {
-                    localStorage.setItem('itemPage', newPage);
-                    table.onChangePage(event, newPage);
-                  }}
-                  handleChangeRowsPerPage={(event) => {
-                    localStorage.setItem('itemRowsPerPage', event.target.value);
-                    table.onChangeRowsPerPage(event);
-                  }}
-                  dense={table.dense}
-                  onChangeDense={table.onChangeDense}
-                />
-              </TableBody>
-            ) : (
-              <TableBody>
-                <TableNoData notFound={filteredData?.length === 0} />
-              </TableBody>
-            )}
-          </Table>
-        </Scrollbar>
-      </Card>
-    </DashboardContent>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  <TableNoData notFound={filteredData?.length === 0} />
+                </TableBody>
+              )}
+            </Table>
+          </Scrollbar>
+        </Card>
+      </DashboardContent>
+      <ConfirmDialog
+        open={openModalIsDashboardView.value}
+        onClose={openModalIsDashboardView.onFalse}
+        maxWidth='lg'
+        content={
+          <SalesOrderDetailsItems
+            salesOrder={selectedSalesOrder}
+            isMobile={isMobile}
+            invoices={selectedInvoices}
+            isDashboardView={isDashboardView}
+          />
+        }
+      />
+    </>
   );
 }
 
 // ----------------------------------------------------------------------
 
-function RowItem({ row, isMobile, onView }) {
+function RowItem({ row, isMobile, onView, defaultBackLink }) {
 
   return (
     <TableRow sx={{

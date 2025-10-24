@@ -35,7 +35,7 @@ export function SalesOrderDetailsToolbar({
           <Stack spacing={0.5}>
             <Stack spacing={1} direction='row' alignItems="center">
               <Typography variant="h5"> Sales Order </Typography>
-              <Label variant="soft" color="default">{salesOrder.salesorderNumber}</Label>
+              <Label variant="soft" color="default">{salesOrder?.salesorderNumber}</Label>
               <Label
                 variant="soft"
                 color={
@@ -50,7 +50,7 @@ export function SalesOrderDetailsToolbar({
               </Label>
             </Stack>
             <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-              Last Modified: {fDateTime(salesOrder.lastModifiedTime)}
+              Last Modified: {fDateTime(salesOrder?.lastModifiedTime)}
             </Typography>
           </Stack>
         </Stack>
