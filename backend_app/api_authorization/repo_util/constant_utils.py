@@ -52,6 +52,11 @@ COMPANY_EXISTS_AND_IS_ACTIVE = {
     'description': 'Company already exists and is active', 
     'error_name': 'company_exists',
 }
+EMAIL_NOT_REGISTERED_IN_ZOHO = {
+    'error': 'Email not registered in Zoho customers', 
+    'description': 'Email not registered in Zoho customers', 
+    'error_name': 'email_not_registered_in_zoho',
+}
 
 
 ERROR_VERIFICATION_CODE_EXPIRED = {

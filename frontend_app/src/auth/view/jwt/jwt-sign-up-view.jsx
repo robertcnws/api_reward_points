@@ -1,5 +1,6 @@
 import { z as zod } from 'zod';
 import { useState, useContext, useMemo } from 'react';
+import axios from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -25,11 +26,13 @@ import { Form, Field } from 'src/components/hook-form';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { useZohoEmailChecker } from 'src/routes/hooks/use-zoho-email-checker';
 
 import { signUp } from '../../context/jwt';
 import { useAuthContext } from '../../hooks';
 import { FormHead } from '../../components/form-head';
 import { CustomErrorComponent } from './custom-error-component';
+
 
 // ----------------------------------------------------------------------
 
@@ -58,10 +61,22 @@ export const SignUpSchema = zod.object({
 
 // ----------------------------------------------------------------------
 
+export const isCanceled = (err) =>
+  // axios v1
+  err?.code === 'ERR_CANCELED' ||
+  err?.name === 'CanceledError' ||
+  // fetch/DOM
+  err?.name === 'AbortError' ||
+  // compat antigua
+  (typeof axios.isCancel === 'function' && axios.isCancel(err));
+
+
 export function JwtSignUpView() {
   const { checkUserSession } = useAuthContext();
 
   const { loadedAllUsers } = useDataContext();
+
+  const checkZohoEmail = useZohoEmailChecker();
 
   const existingEmails = useMemo(
     () =>
@@ -105,8 +120,14 @@ export function JwtSignUpView() {
 
   const SignUpSchemaWithEmailUnique = useMemo(
     () =>
-      SignUpSchema.superRefine((data, ctx) => {
-        const emailNorm = String(data.email).trim().toLowerCase();
+      SignUpSchema.superRefine(async (data, ctx) => {
+        const emailNorm = String(data.email || '').trim().toLowerCase();
+        if (!emailNorm) return;
+        try {
+          zod.string().email().parse(emailNorm);
+        } catch {
+          return;
+        }
         if (existingEmails.has(emailNorm)) {
           ctx.addIssue({
             path: ['email'],
@@ -114,12 +135,41 @@ export function JwtSignUpView() {
             message: 'This email is already registered!',
           });
         }
+        try {
+          const queried = emailNorm;
+          const count = await checkZohoEmail(queried);
+          const still = String(data.email || '').trim().toLowerCase();
+          if (still !== queried) return;
+          if (count === 0) {
+            ctx.addIssue({
+              path: ['email'],
+              code: zod.ZodIssueCode.custom,
+              message: 'Email not registered in Zoho customers!',
+            });
+          }
+        }
+        catch (err) {
+          if (isCanceled(err)) {
+            const status = err?.response?.status;
+            ctx.addIssue({
+              path: ['email'],
+              code: zod.ZodIssueCode.custom,
+              message: status
+                ? `Zoho lookup failed (HTTP ${status}). Please try again later.`
+                : 'Could not verify email in Zoho. Please try again later.',
+            });
+          }
+        }
       }),
-    [existingEmails]
+    [existingEmails, checkZohoEmail]
   );
+
+
 
   const methods = useForm({
     resolver: zodResolver(SignUpSchemaWithEmailUnique),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues,
   });
 

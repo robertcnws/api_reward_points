@@ -18,6 +18,7 @@ from utils.data_util import (
     get_national_phone_number, 
     calculate_reward_points,
     to_dt,
+    build_fetch_payload,
 )
 from utils.model_util import (
     create_reward_invoice_instance,
@@ -27,22 +28,6 @@ from utils.model_util import (
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-
-def build_fetch_payload(user, has_local_data: bool):
-    data = {
-        'companyName': user.company_name,
-        'firstName': user.first_name,
-        'lastName': user.last_name,
-        'phone': get_national_phone_number(user.phone_number) if user.phone_number else None,
-        'email': user.email,
-        # 'status': 'paid',
-    }
-    if has_local_data:
-        yesterday = timezone.now() - timezone.timedelta(days=1)
-        data['lastModifiedTime'] = yesterday.strftime('%Y-%m-%dT00:00:00Z')
-    return data
 
 
 def merge_unique_by(items_a, items_b, key):

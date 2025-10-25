@@ -18,6 +18,7 @@ export const CONFIG = {
   frontendUrl: import.meta.env.VITE_FRONTEND_URL ?? '',
   frontendPort: import.meta.env.VITE_FRONTEND_PORT ?? 3030,
   wsProtocol: import.meta.env.VITE_WEBSOCKET_PROTOCOL ?? 'ws',
+  mainLoadDataUrl: import.meta.env.VITE_MAIN_LOAD_DATA_URL ?? '',
   roles: {
     superadmin: import.meta.env.VITE_ROLE_SUPERADMIN ?? '',
     administrator: import.meta.env.VITE_ROLE_ADMINISTRATOR ?? '',

@@ -73,6 +73,11 @@ export const endpoints = {
     updatePassword: '/authorization/update_password/'
   },
   rewardPoints: {
+    integration: {
+      zoho: {
+        fetchCustomerByEmail: '/integration/fetch_customer_by_email/',
+      }
+    },
     getFileUrl: (key) => `/reward-points/get-file-url/?key=${encodeURIComponent(key)}`,
     download: {
       backup: '/reward-points/download/backup/',

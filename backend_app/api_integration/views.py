@@ -41,3 +41,14 @@ def list_client_invoices(request):
 @throttle_classes([IntegrationThrottle])
 def list_items(request):
     return repository_integration.list_items(request)
+
+
+#############################################
+# FETCH CUSTOMER BY EMAIL
+#############################################
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+@throttle_classes([IntegrationThrottle])
+def fetch_customer_by_email(request):
+    return repository_integration.fetch_customer_by_email(request)

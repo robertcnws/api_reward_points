@@ -251,3 +251,44 @@ def update_items_to_rewards(items=None):
                 last_modified_time = timezone.now(),
                 can_be_bought      = True
             ).save()
+            
+#############################################
+# FETCH ITEMS TO REWARDS
+#############################################
+    
+def fetch_customer_by_email(request):
+    data = request.query_params if hasattr(request, 'query_params') else request.GET
+    print(f"Fetching customer by email: {data}")
+    headers = config_headers()
+    
+    url = f'{settings.API_MAIN_DATA_URL}/zoho/customers/?'
+    
+    page = data.get('page', 1) if data else 1
+    page_size = data.get('page_size', 100) if data else 100
+    email = data.get('email', '') if data else ''
+    
+    params = {
+        'page': int(page) if page else 1,
+        'page_size': int(page_size) if page_size else 100,
+        'email': email
+    }
+    
+    items_to_get = []
+    session = requests.Session()
+    while True:
+        try:
+            response = session.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            items = response.json()
+            items_confirmed = list(items.get('results', []))
+            items_to_get.extend(items_confirmed)
+            if not items.get('next', None):
+                break
+            params['page'] += 1
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching customers: {e}")
+            return {'error': 'Failed to fetch customers by email'}
+    response = {'count': len(items_to_get), 'results': items_to_get}
+    if 'error' in response:
+        return JsonResponse({'error': response['error']}, status=500)   
+    return JsonResponse(response, status=200)

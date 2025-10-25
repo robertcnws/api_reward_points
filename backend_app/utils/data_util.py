@@ -330,3 +330,18 @@ class DateTimeJSONEncoder(json.JSONEncoder):
 
 def serializing_datetime(obj):
     return json.loads(json.dumps(obj, cls=DateTimeJSONEncoder))
+
+
+def build_fetch_payload(user, has_local_data: bool):
+    data = {
+        'companyName': user.company_name,
+        'firstName': user.first_name,
+        'lastName': user.last_name,
+        'phone': get_national_phone_number(user.phone_number) if user.phone_number else None,
+        'email': user.email,
+        # 'status': 'paid',
+    }
+    if has_local_data:
+        yesterday = timezone.now() - timezone.timedelta(days=1)
+        data['lastModifiedTime'] = yesterday.strftime('%Y-%m-%dT00:00:00Z')
+    return data

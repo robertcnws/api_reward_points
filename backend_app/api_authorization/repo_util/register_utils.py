@@ -10,6 +10,8 @@ from api_authorization.models import (
 from api_reward_points.models import RewardPoints
 from utils.data_util import create_tracking
 from utils.api_utils import ApiError
+from api_integration.repository.repository_integration import fetch_customer_by_email
+
 import json
 import logging
 import api_authorization.repo_util.constant_utils as constants
@@ -63,6 +65,18 @@ def _check_company_name_available(company_name):
             'error_name': constants.COMPANY_EXISTS_AND_IS_ACTIVE['error_name'],
             'error_mail': None,
         })
+        
+def _check_email_is_sync_with_zoho(email):
+    payload = {'email': email}
+    response = fetch_customer_by_email(payload)
+    if response and 'results' in response and len(response['results']) > 0:
+        return True
+    return ApiError(400, {
+        'error': constants.EMAIL_NOT_REGISTERED_IN_ZOHO['error'],
+        'description': constants.EMAIL_NOT_REGISTERED_IN_ZOHO['description'],
+        'error_name': constants.EMAIL_NOT_REGISTERED_IN_ZOHO['error_name'],
+        'error_mail': None,
+    })
 
 def _get_or_create_user_role(role_name: str):
     role = UserRole.objects(name=role_name).first()
@@ -171,6 +185,7 @@ def register(request):
         username, password = _require_username_password(data)
         _check_username_not_taken(username)
         _check_company_name_available(data.get('companyName', ''))
+        _check_email_is_sync_with_zoho(data.get('email', ''))
         
         user_role_name = settings.DJANGO_REGISTER_USER_ROLE
         user_role = _get_or_create_user_role(user_role_name)
