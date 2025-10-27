@@ -253,42 +253,109 @@ def update_items_to_rewards(items=None):
             ).save()
             
 #############################################
-# FETCH ITEMS TO REWARDS
+# FETCH CUSTOMERS BY EMAIL
 #############################################
     
-def fetch_customer_by_email(request):
-    data = request.query_params if hasattr(request, 'query_params') else request.GET
-    print(f"Fetching customer by email: {data}")
-    headers = config_headers()
-    
-    url = f'{settings.API_MAIN_DATA_URL}/zoho/customers/?'
-    
-    page = data.get('page', 1) if data else 1
-    page_size = data.get('page_size', 100) if data else 100
-    email = data.get('email', '') if data else ''
-    
-    params = {
-        'page': int(page) if page else 1,
-        'page_size': int(page_size) if page_size else 100,
-        'email': email
-    }
-    
+def _is_drf_request(obj):
+    # DRF Request tiene .query_params
+    return hasattr(obj, "query_params")
+
+def _is_django_request(obj):
+    # Django HttpRequest tiene .GET
+    return hasattr(obj, "GET")
+
+def _to_plain_params(obj):
+    """
+    Devuelve un dict plano con los parámetros independientemente de si:
+    - viene de DRF Request (query_params)
+    - Django HttpRequest (GET)
+    - ya es un dict
+    """
+    if _is_drf_request(obj):
+        return obj.query_params
+    if _is_django_request(obj):
+        return obj.GET
+    if isinstance(obj, dict):
+        return obj
+    # fallback
+    return {}
+
+def _pick_scalar(d, key, default=None):
+    """
+    Extrae un valor escalar de un dict / QueryDict:
+    - Si el valor es lista, toma el primero
+    - Si falta, devuelve default
+    """
+    if d is None:
+        return default
+    val = d.get(key, default)
+    if isinstance(val, (list, tuple)):
+        return val[0] if val else default
+    return val
+
+def fetch_customer_by_email(request_or_params):
+    """
+    Puede usarse como view handler (pasando HttpRequest/DRF Request) o como función interna (pasando dict).
+    - Si recibe request, responde JsonResponse
+    - Si recibe dict, devuelve dict
+    """
+    raw = _to_plain_params(request_or_params)
+    logger.debug(f"Fetching customer by email: {raw}")
+
+    try:
+        page = int(_pick_scalar(raw, "page", 1) or 1)
+    except Exception:
+        page = 1
+
+    try:
+        page_size = int(_pick_scalar(raw, "page_size", 100) or 100)
+    except Exception:
+        page_size = 100
+
+    email = (_pick_scalar(raw, "email", "") or "").strip()
+
+    headers = config_headers()  # asumes que ya existe
+    base_url = f"{settings.API_MAIN_DATA_URL}/zoho/customers/"
+    params = {"page": page, "page_size": page_size}
+    if email:
+        params["email"] = email
+
     items_to_get = []
     session = requests.Session()
-    while True:
-        try:
-            response = session.get(url, headers=headers, params=params)
-            response.raise_for_status()
-            items = response.json()
-            items_confirmed = list(items.get('results', []))
-            items_to_get.extend(items_confirmed)
-            if not items.get('next', None):
+
+    try:
+        while True:
+            resp = session.get(base_url, headers=headers, params=params, timeout=15)
+            resp.raise_for_status()
+            body = resp.json()
+
+            # Soporta respuesta paginada estilo DRF ({results, next}) o lista simple
+            if isinstance(body, dict):
+                batch = list(body.get("results", []) or [])
+                items_to_get.extend(batch)
+                next_url = body.get("next")
+                if not next_url:
+                    break
+                # Si el backend usa ?page=... en next, incrementamos localmente:
+                params["page"] += 1
+            elif isinstance(body, list):
+                items_to_get.extend(body)
                 break
-            params['page'] += 1
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching customers: {e}")
-            return {'error': 'Failed to fetch customers by email'}
-    response = {'count': len(items_to_get), 'results': items_to_get}
-    if 'error' in response:
-        return JsonResponse({'error': response['error']}, status=500)   
-    return JsonResponse(response, status=200)
+            else:
+                # formato inesperado
+                logger.error(f"Unexpected customers response format: {type(body)}")
+                break
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error fetching customers: {e}")
+        payload = {"error": "Failed to fetch customers by email"}
+        # Si nos llamaron como view -> JsonResponse; si no, dict
+        if _is_drf_request(request_or_params) or _is_django_request(request_or_params):
+            return JsonResponse(payload, status=502)
+        return payload
+
+    payload = {"count": len(items_to_get), "results": items_to_get}
+
+    # Si nos llamaron como view -> JsonResponse; si no, dict
+    if _is_drf_request(request_or_params) or _is_django_request(request_or_params):
+        return JsonResponse(payload, status=200)
+    return payload
