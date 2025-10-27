@@ -126,10 +126,10 @@ def create_reward_invoice_instance(json_data, user):
     salesorder_id = json_data.get('salesorder_id')
     if salesorder_id:
         existing_order = RewardSalesOrder.objects(
-            salesorder_id=salesorder_id, user=user
+            salesorder_id=salesorder_id
         ).first()
 
-    query = dict(invoice_id=inv_id, user=user)
+    query = dict(invoice_id=inv_id)
     inv = RewardInvoice.objects(**query).first()
     if not inv:
         inv = RewardInvoice(**query)
