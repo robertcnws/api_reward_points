@@ -84,7 +84,7 @@ def create_sales_order_instance(json_data, user):
     if not so_id:
         return None  # o raise
 
-    query = dict(salesorder_id=so_id, user=user)
+    query = dict(salesorder_id=so_id)
     order = RewardSalesOrder.objects(**query).first()
     if not order:
         order = RewardSalesOrder(**query)
