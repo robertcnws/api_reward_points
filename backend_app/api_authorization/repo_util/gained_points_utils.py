@@ -139,8 +139,9 @@ def _load_sorted_local_collections(user, all_invoices):
 # =========================
 
 def _build_cutoff_dt(user):
-    starting_sum_date = user.approved_time if user.approved_time else timezone.now()
-    base = starting_sum_date.strftime("%Y-%m-%d")
+    # starting_sum_date = user.approved_time if user.approved_time else timezone.now()
+    # base = starting_sum_date.strftime("%Y-%m-%d")
+    base = '2025-01-01'  # Fecha fija para el cálculo de puntos
     cutoff = to_dt(f"{base}T00:00:00Z")
     if cutoff is None:
         raise ValueError(f"starting_sum_date inválido para user={user.id if hasattr(user,'id') else user}")
