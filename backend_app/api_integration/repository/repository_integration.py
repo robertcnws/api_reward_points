@@ -128,13 +128,13 @@ def fetch_client_invoices(data):
     base_url = f"{settings.API_MAIN_DATA_URL}/zoho/invoices_to_rewards_points/"
     
     field_map = {
-        "companyName": "company_name",
-        "firstName": "first_name",
-        "lastName": "last_name",
-        "phone": "phone",
+        # "companyName": "company_name",
+        # "firstName": "first_name",
+        # "lastName": "last_name",
+        # "phone": "phone",
         "email": "email",
         "status": "status",
-        "lastModifiedTime": "last_modified_time",
+        # "lastModifiedTime": "last_modified_time",
     }
     base_params = {
         api_key: data.get(src_key)
