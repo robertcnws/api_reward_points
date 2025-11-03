@@ -371,7 +371,7 @@ export function UserClientListView() {
     [table]
   );
 
-  if (loadingAllUsers || loadingRewardPoints) {
+  if (loadingRewardPoints) {
     return (
       <DashboardContent>
         <Box
