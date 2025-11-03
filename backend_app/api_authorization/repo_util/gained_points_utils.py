@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.conf import settings
 from bson import ObjectId
 from bson.dbref import DBRef
 from mongoengine.errors import DoesNotExist, ValidationError
@@ -48,7 +49,7 @@ def compute_sales_orders_pending(sales_orders):
         if so.status and so.status.lower() not in ('fulfilled', 'draft')
     ]
 
-def compute_invoice_metrics(invoices, cutoff_dt, existing_invoice_ids):
+def compute_invoice_metrics(invoices, cutoff_dt, existing_invoice_ids, existing_invoices=None, existing_assigned_points=0):
     eligible = []
     real_invoices = [inv for inv in invoices if str(inv.invoice_id) not in existing_invoice_ids]
     for inv in real_invoices:
@@ -68,12 +69,22 @@ def compute_invoice_metrics(invoices, cutoff_dt, existing_invoice_ids):
 
     total_amount_to_rewards = sum(money(inv.payment_made) for inv in eligible)
 
+    if existing_invoices and len(existing_invoices) > 0:
+        existing_paid_amount_invoices = sum(
+            money(inv.payment_made) for inv in existing_invoices
+            if (getattr(inv, "status", None) or "").lower() == "paid" and \
+                to_dt(getattr(inv, "date", None)) and \
+                    to_dt(getattr(inv, "date", None)) >= cutoff_dt
+        )
+        difference_new_existing_amount = existing_paid_amount_invoices - existing_assigned_points
+
     return {
         "total_amount_invoices": total_amount_invoices,
         "total_paid_amount_invoices": total_paid_amount_invoices,
         "total_opened_balance_invoices": total_opened_balance_invoices,
         "total_tax_amount_invoices": total_tax_amount_invoices,
         "total_amount_to_rewards": total_amount_to_rewards,
+        "difference_new_existing_amount": difference_new_existing_amount if existing_invoices else 0,
     }
 
 
@@ -141,18 +152,32 @@ def _load_sorted_local_collections(user, all_invoices):
 def _build_cutoff_dt(user):
     # starting_sum_date = user.approved_time if user.approved_time else timezone.now()
     # base = starting_sum_date.strftime("%Y-%m-%d")
-    base = '2025-01-01'  # Fecha fija para el cálculo de puntos
+    base = settings.REWARDS_START_DATE
     cutoff = to_dt(f"{base}T00:00:00Z")
     if cutoff is None:
         raise ValueError(f"starting_sum_date inválido para user={user.id if hasattr(user,'id') else user}")
     return cutoff
 
 
-def _compute_metrics_and_points(sorted_invoices, sorted_sales_orders, cutoff, existing_invoice_ids):
+def _compute_metrics_and_points(
+    sorted_invoices, 
+    sorted_sales_orders, 
+    cutoff, 
+    existing_invoice_ids,
+    existing_invoices=None,
+    existing_assigned_points=0,
+):
     pendings = compute_sales_orders_pending(sorted_sales_orders)
-    metrics = compute_invoice_metrics(sorted_invoices, cutoff_dt=cutoff, existing_invoice_ids=existing_invoice_ids)
+    metrics = compute_invoice_metrics(
+        sorted_invoices, 
+        cutoff_dt=cutoff, 
+        existing_invoice_ids=existing_invoice_ids,
+        existing_invoices=existing_invoices,
+        existing_assigned_points=existing_assigned_points
+    )
     total_gained_points_new = calculate_reward_points(metrics["total_amount_to_rewards"])
-    return pendings, metrics, total_gained_points_new
+    difference_new_existing_amount = calculate_reward_points(metrics["difference_new_existing_amount"])
+    return pendings, metrics, total_gained_points_new, difference_new_existing_amount
 
 # =========================
 # Helpers de upsert + historial
@@ -178,10 +203,21 @@ def _make_history(now, rp, action, delta_points, description, sorted_invoices):
     )
 
 
-def _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_sales_orders, total_gained_points_new, description):
+def _create_reward_points(
+    now, 
+    user, 
+    metrics, 
+    pendings, 
+    sorted_invoices, 
+    sorted_sales_orders, 
+    total_gained_points_new, 
+    difference_new_existing_amount, 
+    description
+):
+    real_total_gained_points = total_gained_points_new + difference_new_existing_amount if difference_new_existing_amount > 0 else total_gained_points_new
     rp = RewardPoints(
         user=user,
-        total_gained_points=total_gained_points_new,
+        total_gained_points=real_total_gained_points,
         total_spent_points=0,
         total_amount_invoices=metrics["total_amount_invoices"],
         total_paid_amount_invoices=metrics["total_paid_amount_invoices"],
@@ -194,16 +230,18 @@ def _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_
         last_modified_time=now,
     )
     history = None
-    if total_gained_points_new != 0:
-        history = _make_history(now, rp, "gained", total_gained_points_new, description, sorted_invoices)
+    if real_total_gained_points != 0:
+        history = _make_history(now, rp, "gained", real_total_gained_points, description, sorted_invoices)
     return rp, history
 
 
-def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders, total_gained_points_new, description):
+def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders, total_gained_points_new, difference_new_existing_amount, description):
     # old_total = rp.total_gained_points + rp.total_spent_points + rp.total_assigned_points
     # delta_points = total_gained_points_new - old_total
 
-    rp.total_gained_points = total_gained_points_new + rp.total_gained_points
+    real_total_gained_points = total_gained_points_new + difference_new_existing_amount if difference_new_existing_amount > 0 else total_gained_points_new
+
+    rp.total_gained_points = real_total_gained_points + rp.total_gained_points
     rp.total_amount_invoices = metrics["total_amount_invoices"] + rp.total_amount_invoices
     rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"] + rp.total_paid_amount_invoices
     rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"] + rp.total_opened_balance_invoices
@@ -216,6 +254,15 @@ def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sa
     history = None
     if total_gained_points_new > 0:
         history = _make_history(now, rp, "gained", total_gained_points_new, description, sorted_invoices)
+    if difference_new_existing_amount > 0:
+        extra_history = _make_history(now, rp, "gained", difference_new_existing_amount, description, sorted_invoices)
+        if history:
+            # Combinar info de ambos historiales
+            history.gained_points += extra_history.gained_points
+            history.description += f" .Additionally, {extra_history.gained_points} point(s) were added due to adjustment."
+            history.info.extend(extra_history.info)
+        else:
+            history = extra_history
     # elif delta_points < 0:
     #     history = _make_history(now, rp, "substracted", delta_points, description, sorted_invoices)
 
@@ -278,21 +325,23 @@ def get_rewards_points(user, description=None):
                 existing_invoice_ids.append(str(inv_doc.invoice_id))
 
     cutoff = _build_cutoff_dt(user)
-    pendings, metrics, total_gained_points_new = _compute_metrics_and_points(
+    pendings, metrics, total_gained_points_new, difference_new_existing_amount = _compute_metrics_and_points(
         sorted_invoices, 
         sorted_sales_orders, 
         cutoff,
-        existing_invoice_ids
+        existing_invoice_ids,
+        existing_invoices=rp.invoices if rp else None,
+        existing_assigned_points=rp.total_gained_points if rp else 0,
     )
 
     now = timezone.now()
     
     if not rp:
         rp, history = _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_sales_orders,
-                                            total_gained_points_new, description)
+                                            total_gained_points_new, difference_new_existing_amount,description)
     else:
         rp, history = _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders,
-                                            total_gained_points_new, description)
+                                            total_gained_points_new, difference_new_existing_amount, description)
     is_sync_with_zoho = False
     payload_sync = build_fetch_payload(user, has_local_data=False)
     response_sync = fetch_client_sync_with_zoho(payload_sync)

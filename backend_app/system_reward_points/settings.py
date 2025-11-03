@@ -34,6 +34,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 REDIS_HOST = env('REDIS_HOST', default='localhost')
 
+REWARDS_START_DATE = env('REWARDS_START_DATE', default='2025-01-01')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
