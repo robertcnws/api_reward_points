@@ -36,6 +36,7 @@ import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
+import { isAdministrator } from 'src/utils/check-permissions';
 import {
   useTable,
   rowInPage,
@@ -51,6 +52,7 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserClientTableRow } from '../user-client-table-row';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+
 
 // ----------------------------------------------------------------------
 
@@ -190,7 +192,7 @@ export function UserClientListView() {
   // --- Deferred search
   const filterStatus = filters.state.status;
   const filterNameDeferred = useDeferredValue(filters.state.name);
-  
+
   const dataFiltered = useMemo(() => {
     const baseInput = Array.isArray(tableData) ? tableData : [];
     let base = baseInput.filter(
@@ -508,11 +510,13 @@ export function UserClientListView() {
                   rowCount={dataFiltered.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      dataFiltered.map((row) => row.id)
-                    )
+                  onSelectAllRows={
+                    isAdministrator(userLogged?.data?.user_role?.name) ?
+                      (checked) =>
+                        table.onSelectAllRows(
+                          checked,
+                          dataFiltered.map((row) => row.id)
+                        ) : undefined
                   }
                 />
 

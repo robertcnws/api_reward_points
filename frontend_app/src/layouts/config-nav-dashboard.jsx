@@ -4,7 +4,7 @@ import { Box, Typography } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 
-import { isClient, isAdministrator } from 'src/utils/check-permissions';
+import { isClient, isAdministrator, isOfficeStaff } from 'src/utils/check-permissions';
 
 import { CONFIG } from 'src/config-global';
 
@@ -216,7 +216,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
       subheader: 'Management',
       items: [
         ...(userLogged && !isClient(userRole) ? [
-          ...(userLogged && isAdministrator(userRole) ? [
+          ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
             {
               key: `${paths.dashboard.user.root}-4`,
               title: (

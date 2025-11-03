@@ -25,6 +25,7 @@ import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { Typography } from '@mui/material';
 import { fDateTime } from 'src/utils/format-time';
+import { isAdministrator } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -176,7 +177,11 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
               '& .MuiTextField-root': { width: '100%' }
             }}
           >
-            <Field.Text name="companyName" label="Company Name" />
+            <Field.Text
+              name="companyName"
+              label="Company Name"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            />
           </Box>
 
           <Box
@@ -188,7 +193,11 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
               sm: 'repeat(2, 1fr)'
             }}
           >
-            <Field.Select name="status" label="Status">
+            <Field.Select
+              name="status"
+              label="Status"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            >
               {USER_STATUS_OPTIONS.map((status) => (
                 <MenuItem key={status.value} value={status.value}>
                   <Label>
@@ -209,13 +218,28 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
             </Field.Select>
 
             {/* <Box sx={{ display: { xs: 'none', sm: 'block' } }} /> */}
-            <Field.Text name="email" label="Email address" />
+            <Field.Text
+              name="email"
+              label="Email address"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            />
 
-            <Field.Text name="firstName" label="First name" />
-            <Field.Text name="lastName" label="Last name" />
+            <Field.Text
+              name="firstName"
+              label="First name"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            />
+            <Field.Text
+              name="lastName"
+              label="Last name"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            />
 
-            <Field.Phone name="phoneNumber" label="Phone number" />
-
+            <Field.Phone
+              name="phoneNumber"
+              label="Phone number"
+              disabled={!isAdministrator(userLogged?.data?.user_role?.name)}
+            />
             {/* <Field.CountrySelect
               fullWidth
               name="country"
@@ -235,20 +259,24 @@ export function UserQuickEditForm({ currentUser, open, onClose, onProfileRow }) 
                   Female
                 </MenuItem>
             </Field.Select> */}
-            <Field.Select name="role" label="Role">
-              {loadedUserRoles.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.name}
-                </MenuItem>
-              ))}
-            </Field.Select>
+            {isAdministrator(userLogged?.data?.user_role?.name) && (
+              <Field.Select name="role" label="Role">
+                {loadedUserRoles.map((role) => (
+                  <MenuItem key={role.id} value={role.id}>
+                    {role.name}
+                  </MenuItem>
+                ))}
+              </Field.Select>
+            )}
           </Box>
         </DialogContent>
 
         <DialogActions>
-          <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-            Update
-          </LoadingButton>
+          {isAdministrator(userLogged?.data?.user_role?.name) && (
+            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+              Update
+            </LoadingButton>
+          )}
           {onProfileRow && (
             <Button variant="contained" color="primary" onClick={onProfileRow}>
               View Rewards Profile

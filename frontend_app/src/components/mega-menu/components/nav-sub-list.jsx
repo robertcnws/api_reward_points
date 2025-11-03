@@ -15,7 +15,7 @@ import { NavLi, NavUl } from '../../nav-section';
 export function NavSubList({ data, slotProps, ...other }) {
   const pathname = usePathname();
 
-  console.log('NavSubList data:', data);
+  // console.log('NavSubList data:', data);
 
   return (
     <>

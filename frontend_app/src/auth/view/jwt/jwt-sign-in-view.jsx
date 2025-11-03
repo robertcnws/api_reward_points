@@ -158,7 +158,7 @@ export function JwtSignInView() {
   });
 
   const handleResendCode = async () => {
-    console.log('Resend verification code');
+    // console.log('Resend verification code');
     setTitleIsSending('Resending verification code...');
     isSending.onTrue();
     try {

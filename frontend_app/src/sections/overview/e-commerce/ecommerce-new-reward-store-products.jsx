@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 
 import Box from '@mui/material/Box';
@@ -17,6 +17,7 @@ import { varAlpha } from 'src/theme/styles';
 import { Image } from 'src/components/image';
 import { Iconify } from 'src/components/iconify';
 import { Carousel, useCarousel, CarouselDotButtons } from 'src/components/carousel';
+import { isOfficeStaff } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,8 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
   const [initialFiles, setInitialFiles] = useState([]);
 
   const [isEmpty, setIsEmpty] = useState(false);
+
+  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
   useEffect(() => {
 
@@ -110,7 +113,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
 
       <Carousel carousel={carousel} sx={{ height: 370 }}>
         {initialFiles?.map((item, index) => (
-          <CarouselItem key={`${item.id}-${index}`} item={item} router={router} isEmpty={isEmpty} />
+          <CarouselItem key={`${item.id}-${index}`} item={item} router={router} isEmpty={isEmpty} userLogged={userLogged} />
         ))}
       </Carousel>
     </Card>
@@ -119,7 +122,7 @@ export function EcommerceNewrewardStoreProducts({ list, sx, ...other }) {
 
 // ----------------------------------------------------------------------
 
-function CarouselItem({ item, router, isEmpty, ...other }) {
+function CarouselItem({ item, router, isEmpty, userLogged, ...other }) {
   return (
     <Box sx={{ width: 1, position: 'relative', ...other }}>
       <Box
@@ -144,7 +147,7 @@ function CarouselItem({ item, router, isEmpty, ...other }) {
         </Link>
 
 
-        {!isEmpty && (
+        {!isEmpty && !isOfficeStaff(userLogged?.data?.user_role?.name) && (
           <Button
             variant="contained"
             sx={{

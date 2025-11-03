@@ -17,6 +17,7 @@ import { Typography, ListItemText } from '@mui/material';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { fDateTime } from 'src/utils/format-time';
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+import { isAdministrator } from 'src/utils/check-permissions';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -28,6 +29,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
 import { UserManagePointsModalForm } from './user-manage-points-modal-form';
+
 
 // --- cache simple en módulo para URLs de avatar por keyAvatar
 const avatarUrlCache = new Map();
@@ -64,6 +66,8 @@ function RowComponent({
       return null;
     }
   }, []);
+
+
 
   // ---------- Avatar: cache + abort ----------
   const [currentUrl, setCurrentUrl] = useState(row?.avatarUrl || null);
@@ -108,12 +112,19 @@ function RowComponent({
   return (
     <>
       {!isMobile ? (
-        <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
-          <TableCell padding="checkbox">
-            {userLogged?.data?.id !== row.id && (
-              <Checkbox id={row.id} checked={selected} onChange={onSelectRow} />
-            )}
-          </TableCell>
+        <TableRow
+          hover
+          selected={selected && isAdministrator(userLogged?.data?.user_role?.name)}
+          aria-checked={selected && isAdministrator(userLogged?.data?.user_role?.name)}
+          tabIndex={-1}
+        >
+          {isAdministrator(userLogged?.data?.user_role?.name) && (
+            <TableCell padding="checkbox">
+              {userLogged?.data?.id !== row.id && (
+                <Checkbox id={row.id} checked={selected} onChange={onSelectRow} />
+              )}
+            </TableCell>
+          )}
 
           <TableCell sx={{ cursor: 'pointer' }}>
             <Stack spacing={2} direction="row" alignItems="center">
@@ -183,42 +194,44 @@ function RowComponent({
 
           <TableCell>
             <Stack direction="row" alignItems="center">
-              <Box
-                rowGap={0}
-                columnGap={0}
-                display="grid"
-                gridTemplateColumns={{
-                  xs: 'repeat(3, 1fr)',
-                  sm: 'repeat(3, 1fr)',
-                }}
-              >
-                <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>
-                  <IconButton
-                    color={confirmApproval.value ? 'inherit' : 'default'}
-                    onClick={confirmApproval.onTrue}
-                  >
-                    <Iconify
-                      icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'}
-                    />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Change Password" placement="top" arrow>
-                  <IconButton
-                    color={quickChangePassword.value ? 'inherit' : 'default'}
-                    onClick={quickChangePassword.onTrue}
-                  >
-                    <Iconify icon="mdi:password-reset" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Quick Edit" placement="top" arrow>
-                  <IconButton
-                    color={quickEdit.value ? 'inherit' : 'default'}
-                    onClick={quickEdit.onTrue}
-                  >
-                    <Iconify icon="solar:pen-bold" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              {isAdministrator(userLogged?.data?.user_role?.name) && (
+                <Box
+                  rowGap={0}
+                  columnGap={0}
+                  display="grid"
+                  gridTemplateColumns={{
+                    xs: 'repeat(3, 1fr)',
+                    sm: 'repeat(3, 1fr)',
+                  }}
+                >
+                  <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>
+                    <IconButton
+                      color={confirmApproval.value ? 'inherit' : 'default'}
+                      onClick={confirmApproval.onTrue}
+                    >
+                      <Iconify
+                        icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Change Password" placement="top" arrow>
+                    <IconButton
+                      color={quickChangePassword.value ? 'inherit' : 'default'}
+                      onClick={quickChangePassword.onTrue}
+                    >
+                      <Iconify icon="mdi:password-reset" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Quick Edit" placement="top" arrow>
+                    <IconButton
+                      color={quickEdit.value ? 'inherit' : 'default'}
+                      onClick={quickEdit.onTrue}
+                    >
+                      <Iconify icon="solar:pen-bold" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              )}
 
               <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
                 <Iconify icon="eva:more-vertical-fill" />
@@ -324,72 +337,76 @@ function RowComponent({
             View rewards profile
           </MenuItem>
 
-          <MenuItem
-            onClick={async () => {
-              popover.onClose();
-              await onRefetchRow(); // el padre ya recibe row.id al crear el handler
-            }}
-            sx={{ fontWeight: 'bold' }}
-          >
-            <Iconify icon="codicon:repo-fetch" sx={{ fontWeight: 'bold' }} />
-            Refetch reward points
-          </MenuItem>
+          {isAdministrator(userLogged?.data?.user_role?.name) && (
+            <React.Fragment key='admin-actions-user-client'>
+              <MenuItem
+                onClick={async () => {
+                  popover.onClose();
+                  await onRefetchRow(); // el padre ya recibe row.id al crear el handler
+                }}
+                sx={{ fontWeight: 'bold' }}
+              >
+                <Iconify icon="codicon:repo-fetch" sx={{ fontWeight: 'bold' }} />
+                Refetch reward points
+              </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              confirmManagePoints.onTrue();
-              popover.onClose();
-            }}
-            sx={{ fontWeight: 'bold' }}
-          >
-            <Iconify icon="streamline-ultimate:reward-stars-2-bold" sx={{ fontWeight: 'bold' }} />
-            Manage reward points
-          </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  confirmManagePoints.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ fontWeight: 'bold' }}
+              >
+                <Iconify icon="streamline-ultimate:reward-stars-2-bold" sx={{ fontWeight: 'bold' }} />
+                Manage reward points
+              </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              confirmApproval.onTrue();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'} />
-            {row.isApproved ? 'Unapprove' : 'Approve'}
-          </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  confirmApproval.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'} />
+                {row.isApproved ? 'Unapprove' : 'Approve'}
+              </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              quickEdit.onTrue();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:pen-bold" />
-            Edit
-          </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  quickEdit.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="solar:pen-bold" />
+                Edit
+              </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              quickChangePassword.onTrue();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="mdi:password-reset" />
-            Change password
-          </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  quickChangePassword.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:password-reset" />
+                Change password
+              </MenuItem>
 
-          {userLogged?.data?.username !== row.username && (
-            <MenuItem
-              onClick={() => {
-                confirm.onTrue();
-                popover.onClose();
-              }}
-              sx={{ color: 'error.main' }}
-            >
-              <Iconify icon="solar:trash-bin-trash-bold" />
-              Delete
-            </MenuItem>
+              {userLogged?.data?.username !== row.username && (
+                <MenuItem
+                  onClick={() => {
+                    confirm.onTrue();
+                    popover.onClose();
+                  }}
+                  sx={{ color: 'error.main' }}
+                >
+                  <Iconify icon="solar:trash-bin-trash-bold" />
+                  Delete
+                </MenuItem>
+              )}
+            </React.Fragment>
           )}
         </MenuList>
-      </CustomPopover>
+      </CustomPopover >
 
       <ConfirmDialog
         maxWidth="md"

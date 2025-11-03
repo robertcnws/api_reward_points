@@ -207,7 +207,7 @@ export const dashboardRoutes = (user) => [
 
         ],
       },
-      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
         [
           {
             path: 'client',
@@ -216,7 +216,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <UserClientListPage /> : <Page403 />
               },
               {
@@ -224,7 +224,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <UserClientListPage /> : <Page403 />
               },
             ]

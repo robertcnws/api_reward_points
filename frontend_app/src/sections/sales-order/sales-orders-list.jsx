@@ -100,7 +100,7 @@ export function SalesOrdersList({
     const salesOrder = tableData.find((so) => so.id === id);
     setSelectedSalesOrder(salesOrder);
     const invoicesAll = loadedRewardPoints?.invoices ?? [];
-    console.log('invoicesAll', invoicesAll);
+    // console.log('invoicesAll', invoicesAll);
     const invoices = [...invoicesAll].filter((inv) => inv.salesorder?.id === id);
     setSelectedInvoices(invoices);
     openModalIsDashboardView.onTrue();
