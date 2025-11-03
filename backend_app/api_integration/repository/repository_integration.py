@@ -32,13 +32,13 @@ def list_sales_orders(request):
 def fetch_sales_orders(data):
     print(f"Fetching sales orders with data: {data}")
     headers = config_headers()
-    company_name = data.get('companyName', None)
+    email = data.get('email', None)
     last_modified_time = data.get('lastModifiedTime', None)
     
     params = []
     url = f'{settings.API_MAIN_DATA_URL}/zoho/sales_orders_to_service/?'
-    if company_name and company_name != '':
-        params.append(f"company_name={company_name}")
+    if email and email != '':
+        params.append(f"email={email}")
     if last_modified_time and last_modified_time != '':
         params.append(f"last_modified_time={last_modified_time}")
     
