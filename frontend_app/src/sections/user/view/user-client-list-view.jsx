@@ -1,5 +1,12 @@
-import dayjs from 'dayjs';
-import { useMemo, useState, useEffect, useContext, useCallback } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useRef,
+  useDeferredValue,
+} from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -50,7 +57,7 @@ import { UserTableFiltersResult } from '../user-table-filters-result';
 const USEL_CLIENT_OPTIONS = [
   { value: 'active', label: 'Active' },
   { value: 'pending', label: 'Pending' },
-]
+];
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USEL_CLIENT_OPTIONS];
 
@@ -63,28 +70,28 @@ const TABLE_HEAD = [
   { id: '' },
 ];
 
-const TABLE_HEAD_MOBILE = [
-  { id: 'info', label: 'Clients' },
-];
+const TABLE_HEAD_MOBILE = [{ id: 'info', label: 'Clients' }];
 
 // ----------------------------------------------------------------------
 
 export function UserClientListView() {
-
   const { isMobile } = useContext(LoadingContext);
 
-  const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+  const userLogged = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('userLogged'));
+    } catch {
+      return null;
+    }
+  }, []);
 
-  const table = useTable({ defaultDense: true });
-
+  const table = useTable({ defaultDense: true, defaultOrderBy: 'username' });
   const router = useRouter();
-
   const confirm = useBoolean();
 
   const {
     loadedAllUsers,
     loadingAllUsers,
-    // refetchUsers,
     loadedUserRoles,
     loadedRewardPoints,
     loadingRewardPoints,
@@ -92,123 +99,164 @@ export function UserClientListView() {
   } = useDataContext();
 
   const [tableData, setTableData] = useState([]);
-
   const filters = useSetState({ name: '', status: 'all' });
 
-  // console.log('loadedRewardPoints', loadedRewardPoints);
-
+  // --- ref estable a refetch (evita dependencias inestables)
+  const refetchRef = useRef(refetchRewardPoints);
   useEffect(() => {
-    if (refetchRewardPoints) {
-      refetchRewardPoints();
-    }
-    const actuallyRewardPoints = loadedRewardPoints.filter((reward) => loadedAllUsers.some((user) => String(user?.id) === String(reward?.user?.id)));
-    setTableData(actuallyRewardPoints
-      .map(
-        (reward) => ({
-          ...reward?.user,
-          rewardPointsId: reward?.id,
-          totalAvailablePoints: reward?.totalAvailablePoints,
-          isSyncWithZoho: reward?.isSyncWithZoho,
-        })
-      ) || []);
-  }, [refetchRewardPoints, loadedRewardPoints, loadedAllUsers]);
-
-
-  useEffect(() => {
-    const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.all);
-    socket.onerror = (errorEvent) => {
-      console.dir(errorEvent);
-      console.error('WebSocket error (toString):', errorEvent.toString());
-    };
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
-        refetchRewardPoints?.().catch((error) => {
-          console.error('Error refetching users:', error);
-        });
-      }
-    };
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
+    refetchRef.current = refetchRewardPoints;
   }, [refetchRewardPoints]);
 
+  // --- URL del WS en ref para no depender del objeto wsEndpoints en el effect
+  const wsUrlRef = useRef(wsEndpoints.rewardPoints.rewardPoints.all);
 
-  // useEffect(() => {
-  //   const socket = new WebSocket(wsEndpoints.rewardPoints.rewardPoints.all);
-  //   socket.onerror = (errorEvent) => {
-  //     console.dir(errorEvent);
-  //     console.error('WebSocket error (toString):', errorEvent.toString());
-  //   };
-  //   socket.onmessage = (event) => {
-  //     const message = JSON.parse(event.data);
-  //     if (message.type === 'created' || message.type === 'updated') {
-  //       setRewardPointsData((prevData) => {
-  //         const existingItemIndex = prevData.findIndex(item => String(item.id) === String(message.item.id));
-  //         if (existingItemIndex !== -1) {
-  //           const updatedData = [...prevData];
-  //           updatedData[existingItemIndex] = message.item;
-  //           return updatedData;
-  //         }
-  //         return [message.item, ...prevData];
-  //       });
-  //     }
-  //     else if (message.type === 'deleted') {
-  //       setRewardPointsData((prevData) => prevData.filter(item => String(item.id) !== String(message.item.id)));
-  //     }
-  //   };
-  //   return () => {
-  //     if (socket && socket.readyState === WebSocket.OPEN) {
-  //       socket.close();
-  //     }
-  //   };
-  // }, []);
+  // --- WebSocket: 1 sola conexión + debounce sin early return ni catch vacío
+  const socketRef = useRef(null);
+  const refetchTimerRef = useRef(null);
 
+  useEffect(() => {
+    let didOpen = false;
+    if (!socketRef.current) {
+      const socket = new WebSocket(wsUrlRef.current);
+      socketRef.current = socket;
+      didOpen = true;
 
-  const dataFiltered = useMemo(() => applyFilter({
-    inputData: tableData.filter(
-      (u) => u.userRole.name === 'client' && u.isVerified
-    ).sort((a, b) => {
-      if (a.createdTime && b.createdTime) return dayjs(b.createdTime).diff(dayjs(a.createdTime));
-      if (!a.createdTime && b.createdTime) return 1;
-      if (a.createdTime && !b.createdTime) return -1;
-      return 0;
-    }),
-    comparator: getComparator(table.order, table.orderBy),
-    filters: filters.state,
-  }), [tableData, table.order, table.orderBy, filters.state]);
+      socket.onerror = () => {
+        // opcional: usar tu logger si tienes uno; evitando console si tu ESLint lo prohíbe
+      };
 
-  const dataInPage = useMemo(() => rowInPage(dataFiltered, table.page, table.rowsPerPage), [dataFiltered, table.page, table.rowsPerPage]);
+      socket.onmessage = () => {
+        if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+        refetchTimerRef.current = setTimeout(() => {
+          if (typeof refetchRef.current === 'function') {
+            refetchRef.current().catch(() => {
+              // manejar error si deseas
+            });
+          }
+        }, 500);
+      };
+    }
 
-  const canReset = useMemo(() => (
-    !!filters.state.name ||
-    filters.state.status !== 'all'
-  ), [filters.state]);
+    // cleanup SI y solo si abrimos socket dentro de este effect
+    return () => {
+      if (didOpen) {
+        const s = socketRef.current;
+        if (s && (s.readyState === WebSocket.OPEN || s.readyState === WebSocket.CONNECTING)) {
+          // cerrar sin try/catch vacío
+          s.close();
+        }
+        socketRef.current = null;
+        if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      }
+    };
+  }, []); // sin dependencias: una vez por ciclo de vida
 
-  const notFound = useMemo(() => (!dataFiltered.length && canReset) || !dataFiltered.length, [dataFiltered.length, canReset]);
+  // --- Join O(1) users por id (sin for...of)
+  const userById = useMemo(() => {
+    const m = new Map();
+    const all = Array.isArray(loadedAllUsers) ? loadedAllUsers : [];
+    all.forEach((u) => {
+      m.set(String(u?.id), u);
+    });
+    return m;
+  }, [loadedAllUsers]);
 
+  // --- Derivar tableData (sin for...of ni continue)
+  useEffect(() => {
+    const rewards = Array.isArray(loadedRewardPoints) ? loadedRewardPoints : [];
+
+    const rows = rewards.reduce((acc, reward) => {
+      const uid = String(reward?.user?.id);
+      const u = userById.get(uid);
+      if (!u) return acc;
+      acc.push({
+        ...u,
+        rewardPointsId: reward?.id,
+        totalAvailablePoints: reward?.totalAvailablePoints,
+        isSyncWithZoho: reward?.isSyncWithZoho,
+      });
+      return acc;
+    }, []);
+
+    setTableData((prev) => {
+      if (prev.length !== rows.length) return rows;
+      for (let i = 0; i < prev.length; i += 1) {
+        if (String(prev[i].id) !== String(rows[i].id)) return rows;
+      }
+      return prev;
+    });
+  }, [loadedRewardPoints, userById]);
+
+  // --- Deferred search
+  const deferredName = useDeferredValue(filters.state.name);
+
+  // --- Filtrado + única ordenación
+  const dataFiltered = useMemo(() => {
+    const baseInput = Array.isArray(tableData) ? tableData : [];
+    let base = baseInput.filter((u) => u && u.userRole && u.userRole.name === 'client' && u.isVerified);
+
+    const q = (deferredName || '').toLowerCase();
+    if (q) {
+      base = base.filter((user) => {
+        const fields = [
+          user?.username,
+          user?.firstName,
+          user?.lastName,
+          user?.email,
+          user?.phoneNumber,
+          user?.companyName,
+        ];
+        for (let i = 0; i < fields.length; i += 1) {
+          const v = (fields[i] || '').toString().toLowerCase();
+          if (v.includes(q)) return true;
+        }
+        return false;
+      });
+    }
+
+    const status = filters.state.status;
+    if (status !== 'all') {
+      if (status === 'active') {
+        base = base.filter((u) => u.isApproved && u.isVerified);
+      } else if (status === 'pending') {
+        base = base.filter((u) => !u.isApproved && u.isVerified);
+      }
+    }
+
+    return [...base].sort(getComparator(table.order, table.orderBy));
+  }, [tableData, table.order, table.orderBy, filters.state.status, deferredName]);
+
+  const dataInPage = useMemo(
+    () => rowInPage(dataFiltered, table.page, table.rowsPerPage),
+    [dataFiltered, table.page, table.rowsPerPage]
+  );
+
+  const canReset = useMemo(
+    () => Boolean(filters.state.name) || filters.state.status !== 'all',
+    [filters.state]
+  );
+
+  const notFound = useMemo(() => (!dataFiltered.length && canReset) || !dataFiltered.length, [
+    dataFiltered.length,
+    canReset,
+  ]);
+
+  // --- Handlers estables
   const handleDeleteRow = useCallback(
     async (id) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
 
       const response = await axiosInstanceBackend.delete(endpoints.user.delete.user(id), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data: {
-          userReporter: userLogged?.data,
-        },
+        headers: { 'Content-Type': 'application/json' },
+        data: { userReporter: userLogged?.data },
       });
 
-      if (response.data.message) {
+      if (response.data && response.data.message) {
         setTableData(deleteRow);
         table.onUpdatePageDeleteRow(dataInPage.length);
         toast.success(response.data.message);
-      }
-      else {
-        toast.error(response.data.error);
+      } else {
+        toast.error(response?.data?.error || 'Error deleting user');
       }
     },
     [dataInPage.length, table, tableData, userLogged]
@@ -219,94 +267,63 @@ export function UserClientListView() {
       const rows = tableData.filter((row) => !table.selected.includes(row.id));
 
       const payload = {
-        userIds: table.selected.filter((id) => id !== userLogged?.data.id),
+        userIds: table.selected.filter((id) => id !== userLogged?.data?.id),
         userReporter: userLogged?.data,
-      }
+      };
 
       const response = await axiosInstanceBackend.delete(endpoints.user.delete.users, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         data: payload,
       });
 
-      if (response.data.message) {
+      if (response.data && response.data.message) {
         toast.success(response.data.message);
         setTableData(rows);
         table.onUpdatePageDeleteRows({
           totalRowsInPage: dataInPage.length,
           totalRowsFiltered: dataFiltered.length,
         });
-        refetchRewardPoints?.();
-      }
-      else {
-        toast.error(response.data.error);
+        if (typeof refetchRef.current === 'function') refetchRef.current();
+      } else {
+        toast.error(response?.data?.error || 'Error deleting users');
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response.data.error);
+      toast.error(error?.response?.data?.error || 'Error deleting users');
     }
+  }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged]);
 
-  }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged, refetchRewardPoints]);
-
-  const handleChangeApprovalRow = useCallback(
-    async (id) => {
-
+  const postSimple = useCallback(
+    async (urlBuilder, id, fallbackMsg) => {
       try {
-
-        const response = await axiosInstanceBackend.post(endpoints.user.changeApproval.user(id), {
+        const response = await axiosInstanceBackend.post(urlBuilder(id), {
           userReporter: userLogged?.data,
         });
-
-        if (response.data.message) {
-          refetchRewardPoints?.();
+        if (response.data && response.data.message) {
+          if (typeof refetchRef.current === 'function') refetchRef.current();
           toast.success(response.data.message);
-        }
-        else {
-          toast.error(response.data.error);
+        } else {
+          toast.error(response?.data?.error || fallbackMsg || 'Error');
         }
       } catch (error) {
-        console.error(error);
-        toast.error(error.response.data.error);
+        toast.error(error?.response?.data?.error || fallbackMsg || 'Error');
       }
     },
-    [userLogged, refetchRewardPoints]
+    [userLogged]
+  );
+
+  const handleChangeApprovalRow = useCallback(
+    (id) => postSimple(endpoints.user.changeApproval.user, id, 'Error changing approval'),
+    [postSimple]
   );
 
   const handleChangeVerifyRow = useCallback(
-    async (id) => {
-
-      const response = await axiosInstanceBackend.post(endpoints.user.changeVerify.user(id), {
-        userReporter: userLogged?.data,
-      });
-
-      if (response.data.message) {
-        refetchRewardPoints?.();
-        toast.success(response.data.message);
-      }
-      else {
-        toast.error(response.data.error);
-      }
-    },
-    [userLogged, refetchRewardPoints]
+    (id) => postSimple(endpoints.user.changeVerify.user, id, 'Error changing verify'),
+    [postSimple]
   );
 
   const handleChangeActiveRow = useCallback(
-    async (id) => {
-
-      const response = await axiosInstanceBackend.post(endpoints.user.changeActive.user(id), {
-        userReporter: userLogged?.data,
-      });
-
-      if (response.data.message) {
-        refetchRewardPoints?.();
-        toast.success(response.data.message);
-      }
-      else {
-        toast.error(response.data.error);
-      }
-    },
-    [userLogged, refetchRewardPoints]
+    (id) => postSimple(endpoints.user.changeActive.user, id, 'Error changing active'),
+    [postSimple]
   );
 
   const handleEditRow = useCallback(
@@ -331,23 +348,25 @@ export function UserClientListView() {
     [router]
   );
 
-  const handleRefetchPointsRow = useCallback(
-    async (id) => {
-      try {
-        const response = await axiosInstanceBackend.get(endpoints.user.refetchPoints.user(id));
-        if (response.data.message) {
-          refetchRewardPoints?.();
-          toast.success(response.data.message);
-        }
-        else {
-          toast.error(response.data.error);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error(error.response.data.error);
+  const handleRefetchPointsRow = useCallback(async (id) => {
+    try {
+      const response = await axiosInstanceBackend.get(endpoints.user.refetchPoints.user(id));
+      if (response.data && response.data.message) {
+        if (typeof refetchRef.current === 'function') refetchRef.current();
+        toast.success(response.data.message);
+      } else {
+        toast.error(response?.data?.error || 'Error refetching points');
       }
+    } catch (error) {
+      toast.error(error?.response?.data?.error || 'Error refetching points');
+    }
+  }, []);
+
+  const handleSelectRow = useCallback(
+    (id) => () => {
+      table.onSelectRow(id);
     },
-    [refetchRewardPoints]
+    [table]
   );
 
   if (loadingAllUsers || loadingRewardPoints) {
@@ -361,20 +380,17 @@ export function UserClientListView() {
             alignItems: 'center',
             justifyContent: 'center',
             height: '80vh',
-            margin: 'auto'
+            margin: 'auto',
           }}
         >
           <Typography variant="body2" sx={{ mb: 1 }}>
             Loading clients data...
           </Typography>
           <LinearProgress
-            key="error"
             sx={{
               mb: 2,
               width: '100%',
-              '& .MuiLinearProgress-bar': {
-                backgroundColor: 'black',
-              },
+              '& .MuiLinearProgress-bar': { backgroundColor: 'black' },
               backgroundColor: '#e0e0e0',
             }}
           />
@@ -387,7 +403,6 @@ export function UserClientListView() {
     <>
       <DashboardContent>
         <CustomBreadcrumbs
-          // heading="List"
           links={[
             { name: 'Dashboard', href: paths.dashboard.general.analytics },
             { name: 'Client', href: paths.dashboard.client.list },
@@ -424,11 +439,11 @@ export function UserClientListView() {
                       'default'
                     }
                   >
-                    {['active', 'inactive'].includes(tab.value)
-                      ? tableData.filter((user) => tab.value === 'active' ? (user.isApproved && user.isVerified) : !user.isActive).length
-                        : ['pending'].includes(tab.value)
-                          ? tableData.filter((user) => !user.isApproved && user.isVerified).length
-                          : tableData.length}
+                    {tab.value === 'active'
+                      ? tableData.filter((user) => user.isApproved && user.isVerified).length
+                      : tab.value === 'pending'
+                      ? tableData.filter((user) => !user.isApproved && user.isVerified).length
+                      : tableData.length}
                   </Label>
                 }
               />
@@ -441,24 +456,26 @@ export function UserClientListView() {
             options={{ roles: loadedUserRoles }}
           />
 
-          {canReset && (
+          {canReset ? (
             <UserTableFiltersResult
               filters={filters}
               totalResults={dataFiltered.length}
               onResetPage={table.onResetPage}
               sx={{ p: 2.5, pt: 0 }}
             />
-          )}
+          ) : null}
 
           <Box sx={{ position: 'relative' }}>
             <TableSelectedAction
               dense={table.dense}
-              numSelected={table.selected.filter((id) => id !== userLogged?.data.id).length}
-              rowCount={dataFiltered.filter((row) => row.id !== userLogged?.data.id).length}
+              numSelected={table.selected.filter((id) => id !== userLogged?.data?.id).length}
+              rowCount={dataFiltered.filter((row) => row.id !== userLogged?.data?.id).length}
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.filter((row) => row.id !== userLogged?.data.id).map((row) => row.id)
+                  dataFiltered
+                    .filter((row) => row.id !== userLogged?.data?.id)
+                    .map((row) => row.id)
                 )
               }
               action={
@@ -470,12 +487,17 @@ export function UserClientListView() {
               }
             />
 
-            <TableContainer sx={{
-              px: { md: 1 },
-              minWidth: !isMobile ? 960 : 380,
-              maxHeight: filters.state.status === 'all' ? 'calc(100vh - 380px)' : 'calc(100vh - 480px)',
-              overflowY: 'auto',
-            }} >
+            <TableContainer
+              sx={{
+                px: { md: 1 },
+                minWidth: !isMobile ? 960 : 380,
+                maxHeight:
+                  filters.state.status === 'all'
+                    ? 'calc(100vh - 380px)'
+                    : 'calc(100vh - 480px)',
+                overflowY: 'auto',
+              }}
+            >
               <Table size={table.dense ? 'small' : 'medium'} stickyHeader>
                 <TableHeadCustom
                   order={table.order}
@@ -504,7 +526,7 @@ export function UserClientListView() {
                         row={row}
                         refetchRewardPoints={refetchRewardPoints}
                         selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
+                        onSelectRow={handleSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
                         onApprovalRow={() => handleChangeApprovalRow(row.id)}
@@ -515,7 +537,7 @@ export function UserClientListView() {
                       />
                     ))}
 
-                  {dataFiltered?.length > 0 && (
+                  {dataFiltered.length > 0 ? (
                     <TableCustomPaginationZohoStyleRow
                       columnsLength={isMobile ? TABLE_HEAD_MOBILE.length : TABLE_HEAD.length}
                       data={dataFiltered}
@@ -532,23 +554,13 @@ export function UserClientListView() {
                       dense={table.dense}
                       onChangeDense={table.onChangeDense}
                     />
-                  )}
+                  ) : null}
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
               </Table>
             </TableContainer>
           </Box>
-
-          {/* <TablePaginationCustom
-            page={table.page}
-            dense={table.dense}
-            count={dataFiltered.length}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onChangeDense={table.onChangeDense}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-          /> */}
         </Card>
       </DashboardContent>
 
@@ -558,7 +570,11 @@ export function UserClientListView() {
         title="Delete"
         content={
           <>
-            Are you sure want to delete <strong> {table.selected.filter((id) => id !== userLogged?.data.id).length} </strong> items?
+            Are you sure want to delete{' '}
+            <strong>
+              {table.selected.filter((id) => id !== userLogged?.data?.id).length}
+            </strong>{' '}
+            items?
           </>
         }
         action={
@@ -576,40 +592,4 @@ export function UserClientListView() {
       />
     </>
   );
-}
-
-function applyFilter({ inputData, comparator, filters }) {
-  const { name, status } = filters;
-
-  const stabilizedThis = inputData.map((el, index) => [el, index]);
-
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis.map((el) => el[0]);
-
-  if (name) {
-    inputData = inputData.filter(
-      (user) => user?.username?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        user?.firstName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        user?.lastName?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        user?.email?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        user?.phoneNumber?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        user?.companyName?.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
-  }
-
-  if (status !== 'all') {
-    if (status === 'active') {
-      inputData = inputData.filter((user) => user?.isApproved && user?.isVerified);
-    }
-    else if (status === 'pending') {
-      inputData = inputData.filter((user) => !user?.isApproved && user?.isVerified);
-    }
-  }
-
-  return inputData;
 }
