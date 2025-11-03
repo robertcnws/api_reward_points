@@ -188,14 +188,16 @@ export function UserClientListView() {
   }, [loadedRewardPoints, userById]);
 
   // --- Deferred search
-  const deferredName = useDeferredValue(filters.state.name);
-
-  // --- Filtrado + única ordenación
+  const filterStatus = filters.state.status;
+  const filterNameDeferred = useDeferredValue(filters.state.name);
+  
   const dataFiltered = useMemo(() => {
     const baseInput = Array.isArray(tableData) ? tableData : [];
-    let base = baseInput.filter((u) => u && u.userRole && u.userRole.name === 'client' && u.isVerified);
+    let base = baseInput.filter(
+      (u) => u && u.userRole && u.userRole.name === 'client' && u.isVerified
+    );
 
-    const q = (deferredName || '').toLowerCase();
+    const q = (filterNameDeferred || '').toLowerCase();
     if (q) {
       base = base.filter((user) => {
         const fields = [
@@ -214,26 +216,26 @@ export function UserClientListView() {
       });
     }
 
-    const status = filters.state.status;
-    if (status !== 'all') {
-      if (status === 'active') {
+    if (filterStatus !== 'all') {
+      if (filterStatus === 'active') {
         base = base.filter((u) => u.isApproved && u.isVerified);
-      } else if (status === 'pending') {
+      } else if (filterStatus === 'pending') {
         base = base.filter((u) => !u.isApproved && u.isVerified);
       }
     }
 
     return [...base].sort(getComparator(table.order, table.orderBy));
-  }, [tableData, table.order, table.orderBy, filters.state.status, deferredName]);
+  }, [tableData, table.order, table.orderBy, filterStatus, filterNameDeferred]);
+
+  // y ajusta canReset para que no dependa del objeto completo:
+  const canReset = useMemo(
+    () => Boolean(filterNameDeferred) || filterStatus !== 'all',
+    [filterNameDeferred, filterStatus]
+  );
 
   const dataInPage = useMemo(
     () => rowInPage(dataFiltered, table.page, table.rowsPerPage),
     [dataFiltered, table.page, table.rowsPerPage]
-  );
-
-  const canReset = useMemo(
-    () => Boolean(filters.state.name) || filters.state.status !== 'all',
-    [filters.state]
   );
 
   const notFound = useMemo(() => (!dataFiltered.length && canReset) || !dataFiltered.length, [
@@ -442,8 +444,8 @@ export function UserClientListView() {
                     {tab.value === 'active'
                       ? tableData.filter((user) => user.isApproved && user.isVerified).length
                       : tab.value === 'pending'
-                      ? tableData.filter((user) => !user.isApproved && user.isVerified).length
-                      : tableData.length}
+                        ? tableData.filter((user) => !user.isApproved && user.isVerified).length
+                        : tableData.length}
                   </Label>
                 }
               />
