@@ -181,12 +181,18 @@ export const dashboardRoutes = (user) => [
         path: 'config/store-product',
         children: [
           {
-            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductPage /> : <Page403 />,
+            element: (
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+            ) ? <StoreProductPage /> : <Page403 />,
             index: true
           },
           {
             path: 'list',
-            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductPage /> : <Page403 />
+            element: (
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+            ) ? <StoreProductPage /> : <Page403 />
           },
           ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
             {
@@ -202,7 +208,10 @@ export const dashboardRoutes = (user) => [
           ] : [],
           {
             path: ':id/details',
-            element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ? <StoreProductDetailsPage /> : <Page403 />,
+            element: (
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+            ) ? <StoreProductDetailsPage /> : <Page403 />,
           }
 
         ],

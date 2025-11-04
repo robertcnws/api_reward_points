@@ -107,7 +107,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
         path: paths.dashboard.general.analytics,
         icon: ICONS.analytics
       },
-      ...(userLogged && isClient(userRole) ? [
+      ...(userLogged && (isClient(userRole) || isOfficeStaff(userRole)) ? [
         {
           key: `${paths.dashboard.storeProduct.root}-2`,
           title: (
@@ -128,6 +128,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           path: paths.dashboard.storeProduct.root,
           icon: ICONS.store,
         },
+        ...(userLogged && (isClient(userRole)) ? [
         {
           key: `${paths.dashboard.purchase.root}-3`,
           title: (
@@ -182,6 +183,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           path: paths.dashboard.purchase.root,
           icon: ICONS.purchase,
         },
+      
         // {
         //   key: `${paths.dashboard.invoice.root}-2`,
         //   title: "My Invoices",
@@ -208,6 +210,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
           path: paths.dashboard.salesOrder.root,
           icon: ICONS.salesOrder,
         },
+        ]:[]),
       ] : []),
     ],
   },

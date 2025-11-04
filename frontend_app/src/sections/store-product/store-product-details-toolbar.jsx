@@ -7,6 +7,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { Iconify } from 'src/components/iconify';
 import { usePopover } from 'src/components/custom-popover';
+import { isOfficeStaff } from 'src/utils/check-permissions';
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ export function StoreProductDetailsToolbar({
           </Tooltip>
         )} */}
 
-        {roleName !== 'client' && (
+        {(roleName !== 'client' && !isOfficeStaff(roleName)) && (
           <Tooltip title="Edit" arrow>
             <IconButton component={RouterLink} href={editLink}>
               <Iconify icon="solar:pen-bold" />

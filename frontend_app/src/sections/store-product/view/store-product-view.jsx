@@ -13,7 +13,7 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { isClient } from 'src/utils/check-permissions';
+import { isClient, isOfficeStaff } from 'src/utils/check-permissions';
 import { endpoints, wsEndpoints, axiosInstanceBackend } from 'src/utils/axios';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -66,7 +66,7 @@ export function StoreProductView() {
     const confirm = useBoolean();
 
     const defaultView = useMemo(
-        () => isClient(userRole) ? 'grid' :
+        () => isClient(userRole) || isOfficeStaff(userRole) ? 'grid' :
             localStorage.getItem('storeProductView') || 'list',
         [userRole]
     );
@@ -262,7 +262,7 @@ export function StoreProductView() {
             />
 
 
-            {!isClient(userRole) && (
+            {!(isClient(userRole) || isOfficeStaff(userRole)) && (
                 <Box sx={{
                     display: 'flex',
                     alignItems: 'right',
