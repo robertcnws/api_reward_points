@@ -28,6 +28,7 @@ import { EcommerceRewardPointsHistoryClientList } from 'src/sections/overview/e-
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { SalesOrdersList } from 'src/sections/sales-order/view';
+import { useBoolean } from 'src/hooks/use-boolean';
 
 // ----------------------------------------------------------------------
 
@@ -48,7 +49,9 @@ export function PurchaseOverviewClientView({
 
   const router = useRouter();
 
-  const { isMobile } = useContext(LoadingContext)
+  const openModalAvailableRewards = useBoolean();
+
+  const { isMobile } = useContext(LoadingContext);
 
   const displayFirstName = useMemo(() => client?.firstName, [client]);
   const displayLastName = useMemo(() => client?.lastName, [client]);
@@ -327,28 +330,36 @@ export function PurchaseOverviewClientView({
                     </Alert> */}
                   <Box sx={{
                     display: 'flex',
-                    flexDirection: 'row',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 1,
+                    gap: 0,
                     bgcolor: 'primary.main',
-                    p: 1,
+                    p: 0.3,
                     borderRadius: 1,
-                    mb: 2
+                    mb: 2,
+                    cursor: 'pointer'
                   }}>
-                    <Iconify
-                      icon="streamline-cyber-color:bookmark-favorite-star"
-                      sx={{
-                        mt: -0.5,
-                        width: 24,
-                        height: 24,
-                      }}
-                    />
-                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      {totalAvailablePoints || 0}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.85 }}>
-                      reward points
-                    </Typography>
+                    <Box display='flex' flexDirection='row' alignItems='center' gap={1}>
+                      <Iconify
+                        icon="streamline-cyber-color:bookmark-favorite-star"
+                        sx={{
+                          mt: -0.5,
+                          width: 24,
+                          height: 24,
+                        }}
+                      />
+                      <Typography variant="h4" sx={{ fontWeight: 700, mb: 0 }}>
+                        {totalAvailablePoints || 0}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.85 }}>
+                        reward points
+                      </Typography>
+                    </Box>
+                    <Box display='flex' flexDirection='row' gap={0} sx={{ mt: -0.7}}>
+                      <Typography variant="caption" sx={{ opacity: 0.6, fontSize: '0.65rem' }}>
+                        (Click to see available rewards)
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
               }
@@ -579,28 +590,28 @@ export function PurchaseOverviewClientView({
               errorRewardPointsHistory={errorRewardPointsHistory}
             />
           </Grid>
-          
-            <SalesOrdersList
-              title="Sales Orders History"
-              tableData={sortedSalesOrders}
-              headLabel={[
-                { id: 'date', label: 'Date', align: 'left' },
-                { id: 'order', label: 'Sales Order' },
-                // { id: 'order', label: 'INV #' },
-                ...!isMobile ? [
-                  { id: 'totalItems', label: 'Qty of Items', align: 'center' },
-                ] : [],
-                { id: 'status', label: 'Status', align: 'center' },
-                { id: 'paymentMade', label: 'Total', align: 'right' },
-                ...!isMobile ? [
-                  { id: 'taxTotal', label: 'Total Tax', align: 'right' },
-                  { id: 'salespersonName', label: 'Salesperson', align: 'center' },
-                ] : []
-              ]}
-              isDashboardView
-              loadedRewardPoints={loadedRewardPoints}
-            />
-            
+
+          <SalesOrdersList
+            title="Sales Orders History"
+            tableData={sortedSalesOrders}
+            headLabel={[
+              { id: 'date', label: 'Date', align: 'left' },
+              { id: 'order', label: 'Sales Order' },
+              // { id: 'order', label: 'INV #' },
+              ...!isMobile ? [
+                { id: 'totalItems', label: 'Qty of Items', align: 'center' },
+              ] : [],
+              { id: 'status', label: 'Status', align: 'center' },
+              { id: 'paymentMade', label: 'Total', align: 'right' },
+              ...!isMobile ? [
+                { id: 'taxTotal', label: 'Total Tax', align: 'right' },
+                { id: 'salespersonName', label: 'Salesperson', align: 'center' },
+              ] : []
+            ]}
+            isDashboardView
+            loadedRewardPoints={loadedRewardPoints}
+          />
+
         </Grid>
       )}
     </DashboardContent>

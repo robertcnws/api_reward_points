@@ -194,44 +194,46 @@ function RowComponent({
 
           <TableCell>
             <Stack direction="row" alignItems="center">
-              {isAdministrator(userLogged?.data?.user_role?.name) && (
-                <Box
-                  rowGap={0}
-                  columnGap={0}
-                  display="grid"
-                  gridTemplateColumns={{
-                    xs: 'repeat(3, 1fr)',
-                    sm: 'repeat(3, 1fr)',
-                  }}
-                >
-                  <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>
-                    <IconButton
-                      color={confirmApproval.value ? 'inherit' : 'default'}
-                      onClick={confirmApproval.onTrue}
-                    >
-                      <Iconify
-                        icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'}
-                      />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Change Password" placement="top" arrow>
-                    <IconButton
-                      color={quickChangePassword.value ? 'inherit' : 'default'}
-                      onClick={quickChangePassword.onTrue}
-                    >
-                      <Iconify icon="mdi:password-reset" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Quick Edit" placement="top" arrow>
-                    <IconButton
-                      color={quickEdit.value ? 'inherit' : 'default'}
-                      onClick={quickEdit.onTrue}
-                    >
-                      <Iconify icon="solar:pen-bold" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              )}
+              <Box
+                rowGap={0}
+                columnGap={0}
+                display="grid"
+                gridTemplateColumns={{
+                  xs: 'repeat(3, 1fr)',
+                  sm: 'repeat(3, 1fr)',
+                }}
+              >
+                <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>
+                  <IconButton
+                    color={confirmApproval.value ? 'inherit' : 'default'}
+                    onClick={confirmApproval.onTrue}
+                  >
+                    <Iconify
+                      icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'}
+                    />
+                  </IconButton>
+                </Tooltip>
+                {isAdministrator(userLogged?.data?.user_role?.name) && (
+                  <React.Fragment key='options-admin'>
+                    <Tooltip title="Change Password" placement="top" arrow>
+                      <IconButton
+                        color={quickChangePassword.value ? 'inherit' : 'default'}
+                        onClick={quickChangePassword.onTrue}
+                      >
+                        <Iconify icon="mdi:password-reset" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Quick Edit" placement="top" arrow>
+                      <IconButton
+                        color={quickEdit.value ? 'inherit' : 'default'}
+                        onClick={quickEdit.onTrue}
+                      >
+                        <Iconify icon="solar:pen-bold" />
+                      </IconButton>
+                    </Tooltip>
+                  </React.Fragment>
+                )}
+              </Box>
 
               <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
                 <Iconify icon="eva:more-vertical-fill" />
@@ -337,6 +339,16 @@ function RowComponent({
             View rewards profile
           </MenuItem>
 
+          <MenuItem
+            onClick={() => {
+              confirmApproval.onTrue();
+              popover.onClose();
+            }}
+          >
+            <Iconify icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'} />
+            {row.isApproved ? 'Unapprove' : 'Approve'}
+          </MenuItem>
+
           {isAdministrator(userLogged?.data?.user_role?.name) && (
             <React.Fragment key='admin-actions-user-client'>
               <MenuItem
@@ -359,16 +371,6 @@ function RowComponent({
               >
                 <Iconify icon="streamline-ultimate:reward-stars-2-bold" sx={{ fontWeight: 'bold' }} />
                 Manage reward points
-              </MenuItem>
-
-              <MenuItem
-                onClick={() => {
-                  confirmApproval.onTrue();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'} />
-                {row.isApproved ? 'Unapprove' : 'Approve'}
               </MenuItem>
 
               <MenuItem
