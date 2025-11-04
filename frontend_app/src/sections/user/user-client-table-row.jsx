@@ -164,6 +164,12 @@ function RowComponent({
             )}
           </TableCell>
 
+          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>
+            <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
+              {fDateTime(row?.createdTime)}
+            </Stack>
+          </TableCell>
+
           <TableCell
             sx={{ whiteSpace: 'nowrap', cursor: 'pointer', justifyContent: 'center' }}
             onClick={quickEdit.onTrue}
@@ -192,15 +198,15 @@ function RowComponent({
             </Label>
           </TableCell>
 
-          <TableCell>
-            <Stack direction="row" alignItems="center">
+          <TableCell sx={{ justifyContent: 'flex-end' }} >
+            <Stack direction="row" alignItems="right" justifyContent='flex-end'>
               <Box
                 rowGap={0}
                 columnGap={0}
                 display="grid"
                 gridTemplateColumns={{
-                  xs: 'repeat(3, 1fr)',
-                  sm: 'repeat(3, 1fr)',
+                  xs: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)',
+                  sm: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)',
                 }}
               >
                 <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>

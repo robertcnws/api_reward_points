@@ -67,6 +67,7 @@ const TABLE_HEAD = [
   { id: 'username', label: 'Username' },
   { id: 'company', label: 'Info' },
   { id: 'points', label: 'Reward Points' },
+  { id: 'createdTime', label: 'Created At' },
   { id: 'sync', label: 'Sync (Zoho)' },
   { id: 'approved', label: 'Approved' },
   { id: '' },
@@ -87,7 +88,7 @@ export function UserClientListView() {
     }
   }, []);
 
-  const table = useTable({ defaultDense: true, defaultOrderBy: 'username' });
+  const table = useTable({ defaultDense: true, defaultOrderBy: 'createdTime', defaultOrder: 'desc' });
   const router = useRouter();
   const confirm = useBoolean();
 
