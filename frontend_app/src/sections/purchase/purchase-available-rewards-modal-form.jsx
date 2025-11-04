@@ -16,6 +16,7 @@ import { Iconify } from 'src/components/iconify';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fNumber } from 'src/utils/format-number';
+import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
 
 // ----------------------------------------------------------------------
 
@@ -59,14 +60,14 @@ export function PurchaseAvailableRewardsModalForm({
       // fullWidth
       open={open.value}
       onClose={open.onFalse}
-      PaperProps={{ sx: { width: 600 } }}
+      PaperProps={{ sx: { width: 700 } }}
     >
       <DialogTitle>
         <Box sx={{ display: 'flex', flexDirection: 'column', mr: 2 }}>
           Available Rewards for {client?.firstName} {client?.lastName}
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', mb: 0.75 }}>
             <Typography variant="subtitle2" sx={{ color: 'text.secondary', mr: 1 }}>
-              Available Points:
+              Client Points:
             </Typography>
             {totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
@@ -138,17 +139,25 @@ export function PurchaseAvailableRewardsModalForm({
                       >
                         <ListItemText
                           primary={
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, pr: { xs: 14, sm: 18 } }}
-                              color={
-                                !product?.isActive ? 
-                                'text.disabled' : product?.assignedPoints > totalAvailablePoints ? 
-                                'text.disabled' : 'text.primary'
-                              }
-                            >
-                              {product?.name}
-                            </Typography>
+                            <Box display='flex' flexDirection='row' alignItems='center'>
+                              <StoreProductFolderItemCarousel 
+                              images={product?.attachments}
+                              maxHeight={50}
+                              maxWidth={50} 
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, pr: { xs: 14, sm: 18 } }}
+                                color={
+                                  !product?.isActive ?
+                                    'text.disabled' : product?.assignedPoints > totalAvailablePoints ?
+                                      'text.disabled' : 'text.primary'
+                                }
+                              >
+                                {product?.name}
+                              </Typography>
+                              
+                            </Box>
                           }
                         />
                       </ListItem>
