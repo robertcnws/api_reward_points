@@ -1,3 +1,4 @@
+from api_reward_points.helper_batch import warmup_rewardpoints_for_users
 import graphene
 from django.utils import timezone
 from mongoengine.queryset.visitor import Q
@@ -276,9 +277,61 @@ class Query(graphene.ObjectType):
     def resolve_all_reward_joyrides(self, info):
         return RewardJoyRide.objects.all()
 
-    def resolve_all_reward_clients(self, info):
+    def resolve_all_reward_clients(self, info, **kwargs):
         role = UserRole.objects(name="client").first()
-        return LoginUser.objects(user_role=role).all() if role else []
+        if not role:
+            return []
+
+        users = list(
+            LoginUser.objects(user_role=role)
+            .only(
+                "id",
+                "username",
+                "first_name",
+                "last_name",
+                "company_name",
+                "email",
+                "phone_number",
+                "is_staff",
+                "is_active",
+                "created_time",
+                "last_modified_time",
+                "user_role",
+                "key_avatar",
+                "avatar_url",
+                "is_verified",
+                "is_approved",
+                "approved_time",
+                "disapproval_count",
+                "country",
+                "address",
+                "zip_code",
+                "state",
+                "city",
+                "school",
+                "about",
+                "facebook_link",
+                "instagram_link",
+                "linkedin_link",
+                "twitter_link"
+            ).no_dereference()
+        )
+        
+        warmup_rewardpoints_for_users(
+            users, info.context,
+            only_fields=[
+                "id",
+                "user",
+                "total_assigned_points",
+                "total_gained_points",
+                "total_substracted_points",
+                "is_sync_with_zoho",
+                "invoices",
+                "sales_orders",           
+            ],
+        )
+        return users
+
 
     def resolve_reward_client_by_id(self, info, client_id):
         return LoginUser.objects(id=client_id).first()
