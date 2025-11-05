@@ -1,3 +1,4 @@
+from api_reward_points.signals_reward_clients import _emit_reward_client_event_for_user
 from mongoengine import signals
 from utils.data_util import (
     serialize_datetime, 
@@ -569,6 +570,8 @@ def reward_points_saved(sender, document, **kwargs):
         full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
+    if document.user:
+        _emit_reward_client_event_for_user(document.user, 'updated')
     
     
 def reward_points_deleted(sender, document, **kwargs):
@@ -596,6 +599,8 @@ def reward_points_deleted(sender, document, **kwargs):
         full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)('reward_points', serialize_datetime(event))
+    if document.user:
+        _emit_reward_client_event_for_user(document.user, 'updated')
     
 ##########################################################################
 # RewardPoints by ID
@@ -628,7 +633,8 @@ def reward_points_by_id_saved(sender, document, **kwargs):
         full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
-    
+    if document.user:
+        _emit_reward_client_event_for_user(document.user, 'updated')
 
 def reward_points_by_id_deleted(sender, document, **kwargs):
     channel_layer = get_channel_layer()
@@ -656,7 +662,8 @@ def reward_points_by_id_deleted(sender, document, **kwargs):
         full_selection_sales_orders=full_selection_sales_orders
     )
     async_to_sync(channel_layer.group_send)(group_name, serialize_datetime(event))
-    
+    if document.user:
+        _emit_reward_client_event_for_user(document.user, 'updated')
 
 
 signals.post_save.connect(points_settings_saved, sender=RewardPointsSettings)

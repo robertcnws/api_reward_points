@@ -443,7 +443,11 @@ def change_approval_user(request, id):
             disapproval_count += 1
             user.disapproval_count = disapproval_count
         user.save()
-        
+        # points = RewardPoints.objects(user=user).first()
+        # if points:
+        #     points.user = user
+        #     points.save()
+
         tracking_info = transform_data_to_mongo(
             user, 
             include_fields=['is_approved', 'username', 'id']

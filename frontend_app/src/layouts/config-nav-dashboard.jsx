@@ -79,7 +79,7 @@ const userRole = userLogged?.data?.user_role?.name;
 
 // ----------------------------------------------------------------------
 
-export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMini) => [
+export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavMini) => [
   // export const navData = (countLostItems) => [
   /**
    * Overview
@@ -240,14 +240,14 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                       variant={isNavMini ? 'caption' : 'subtitle2'}
                       sx={{
                         mr: 1,
-                        color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
+                        color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
                         display: 'flex',
                         alignItems: 'center',
                       }}
                     >
                       Clients
                     </Typography>
-                    {(loadedPendingUsers?.length > 0 && !isNavMini) && (
+                    {(loadedPendingClients?.length > 0 && !isNavMini) && (
                       <Box
                         key='pending-users-count'
                         sx={{
@@ -261,7 +261,7 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                           color="error"
                           sx={{ ml: 1, gap: 0 }}
                         >
-                          {loadedPendingUsers?.length}
+                          {loadedPendingClients?.length}
                           <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
                           <Typography
                             key='pending-users-label-text'
@@ -291,14 +291,14 @@ export const navData = (loadedPendingUsers, newPurchases, oldPurchases, isNavMin
                 //           variant="subtitle2"
                 //           sx={{
                 //             mr: 1,
-                //             color: loadedPendingUsers?.length > 0 ? 'error.main' : 'text.secondary',
+                //             color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
                 //           }}
                 //         >
                 //           Pending Approval
                 //         </Typography>
-                //         {loadedPendingUsers?.length > 0 && (
+                //         {loadedPendingClients?.length > 0 && (
                 //           <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
-                //             {loadedPendingUsers?.length}
+                //             {loadedPendingClients?.length}
                 //           </Label>
                 //         )}
                 //       </Box>

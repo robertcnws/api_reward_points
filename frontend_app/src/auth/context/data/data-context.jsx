@@ -45,6 +45,11 @@ import {
   RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
 
+import { 
+  RewardClientsProvider, 
+  useRewardClients 
+} from './contexts/reward-clients-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
@@ -59,11 +64,13 @@ export function DataProvider({ children }) {
                 <RewardUserRolesProvider>
                   <RewardExternalUsersProvider>
                     <RewardLoginUsersProvider>
-                      <RewardStoreProductsProvider>
-                        <RewardPointsProvider>
-                          <CombineProviders>{children}</CombineProviders>
-                        </RewardPointsProvider>
-                      </RewardStoreProductsProvider>
+                      <RewardClientsProvider>
+                        <RewardStoreProductsProvider>
+                          <RewardPointsProvider>
+                            <CombineProviders>{children}</CombineProviders>
+                          </RewardPointsProvider>
+                        </RewardStoreProductsProvider>
+                      </RewardClientsProvider>
                     </RewardLoginUsersProvider>
                   </RewardExternalUsersProvider>
                 </RewardUserRolesProvider>
@@ -131,6 +138,14 @@ function CombineProviders({ children }) {
     loadingUserByUsername,
     errorUserByUsername,
   } = useRewardLoginUsers();
+
+  const {
+    loadedAllRewardClients: loadedClients,
+    loadedPendingRewardClients: loadedPendingClients,
+    refetchAllRewardClients: refetchClients,
+    loadingAllRewardClients: loadingClients,
+    errorRewardClients: errorClients,
+  } = useRewardClients();
 
   const {
     loadedAllRewardPointsSettings: loadedPointsSettings,
@@ -273,6 +288,11 @@ function CombineProviders({ children }) {
     // refetchAllRewardItems,
     // loadingAllRewardItems,
     // errorRewardItems,
+    loadedClients,
+    loadedPendingClients,
+    refetchClients,
+    loadingClients,
+    errorClients,
     runDashboard,
     setRunDashboard,
     finishDashboard,
@@ -351,6 +371,11 @@ function CombineProviders({ children }) {
     // refetchAllRewardItems,
     // loadingAllRewardItems,
     // errorRewardItems,
+    loadedClients,
+    loadedPendingClients,
+    refetchClients,
+    loadingClients,
+    errorClients,
     runDashboard,
     setRunDashboard,
     finishDashboard,

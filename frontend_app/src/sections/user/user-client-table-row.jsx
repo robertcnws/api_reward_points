@@ -23,6 +23,7 @@ import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { LoadingButton } from '@mui/lab';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 
@@ -31,12 +32,13 @@ import { UserQuickChangePasswordForm } from './user-quick-change-password';
 import { UserManagePointsModalForm } from './user-manage-points-modal-form';
 
 
+
 // --- cache simple en módulo para URLs de avatar por keyAvatar
 const avatarUrlCache = new Map();
 
 function RowComponent({
   row,
-  refetchRewardPoints, // se mantiene por compatibilidad, pero ya no creamos WS por fila
+  refetchClients,
   selected,
   onEditRow,
   onSelectRow,
@@ -57,6 +59,7 @@ function RowComponent({
   const confirmVerify = useBoolean();
   const confirmActive = useBoolean();
   const confirmManagePoints = useBoolean();
+  const loading = useBoolean();
 
   // userLogged solo si lo necesitas realmente en esta fila
   const userLogged = useMemo(() => {
@@ -446,16 +449,23 @@ function RowComponent({
           />
         }
         action={
-          <Button
+          <LoadingButton
+            loading={loading.value}
             variant="contained"
             color={row.isApproved ? 'warning' : 'primary'}
             onClick={async () => {
-              await onApprovalRow(row.id);
-              confirmApproval.onFalse();
+              loading.onTrue();
+              try {
+                await onApprovalRow(confirmApproval);
+              }
+              finally {
+                loading.onFalse();
+              }
+
             }}
           >
             {row.isApproved ? 'Unapprove' : 'Approve'}
-          </Button>
+          </LoadingButton>
         }
       />
 

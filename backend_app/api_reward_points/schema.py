@@ -14,7 +14,7 @@ from api_reward_points.models import (
     RewardStoreProductSelectionBuy,
     RewardJoyRide,
 )
-from api_authorization.models import LoginUser
+from api_authorization.models import LoginUser, UserRole
 from api_reward_points.schema_types.reward_points_type import RewardPointsType
 from api_reward_points.schema_types.reward_invoice_type import RewardInvoiceType
 from api_reward_points.schema_types.reward_points_history_type import RewardPointsHistoryType
@@ -25,6 +25,7 @@ from api_reward_points.schema_types.reward_points_settings_type import RewardPoi
 from api_reward_points.schema_types.reward_store_product_selection_cart_type import RewardStoreProductSelectionCartType
 from api_reward_points.schema_types.reward_store_product_selection_buy_type import RewardStoreProductSelectionBuyType
 from api_reward_points.schema_types.reward_joy_ride_type import RewardJoyRideType
+from api_reward_points.schema_types.reward_client_type import RewardClientsType
      
 class Query(graphene.ObjectType):
     all_reward_points = graphene.List(
@@ -130,7 +131,15 @@ class Query(graphene.ObjectType):
     all_reward_joyrides = graphene.List(
         RewardJoyRideType
     )
-    
+
+    all_reward_clients = graphene.List(
+        RewardClientsType
+    )
+
+    reward_client_by_id = graphene.Field(
+        RewardClientsType,
+        client_id=graphene.String(required=True)
+    )
 
     def resolve_all_reward_points(self, info):
         # approved_users = LoginUser.objects(is_approved=True).all()
@@ -267,4 +276,9 @@ class Query(graphene.ObjectType):
     def resolve_all_reward_joyrides(self, info):
         return RewardJoyRide.objects.all()
 
-    
+    def resolve_all_reward_clients(self, info):
+        role = UserRole.objects(name="client").first()
+        return LoginUser.objects(user_role=role).all() if role else []
+
+    def resolve_reward_client_by_id(self, info, client_id):
+        return LoginUser.objects(id=client_id).first()

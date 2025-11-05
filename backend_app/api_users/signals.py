@@ -1,3 +1,4 @@
+from api_reward_points.signals_reward_clients import _emit_reward_client_event_for_user
 from mongoengine import signals
 from utils.data_util import (
     serialize_datetime,
@@ -59,6 +60,7 @@ def user_saved(sender, document, **kwargs):
         full_selection=full_selection
     )
     async_to_sync(channel_layer.group_send)('user', serialize_datetime(event))
+    _emit_reward_client_event_for_user(document, 'created' if created else 'updated')
     
     
 def user_deleted(sender, document, **kwargs):
@@ -74,6 +76,7 @@ def user_deleted(sender, document, **kwargs):
         full_selection=full_selection
     )
     async_to_sync(channel_layer.group_send)('user', serialize_datetime(event))
+    # _emit_reward_client_event_for_user(document, 'deleted')
     
     
 ##########################################################################    

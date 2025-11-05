@@ -93,25 +93,25 @@ export function UserClientListView() {
   const confirm = useBoolean();
 
   const {
-    loadedAllUsers,
-    loadingAllUsers,
+    loadedClients,
+    refetchClients,
+    loadingClients,
     loadedUserRoles,
-    loadedRewardPoints,
-    loadingRewardPoints,
-    refetchRewardPoints,
   } = useDataContext();
 
   const [tableData, setTableData] = useState([]);
   const filters = useSetState({ name: '', status: 'all' });
 
   // --- ref estable a refetch (evita dependencias inestables)
-  const refetchRef = useRef(refetchRewardPoints);
+  const refetchRef = useRef(refetchClients);
   useEffect(() => {
-    refetchRef.current = refetchRewardPoints;
-  }, [refetchRewardPoints]);
+    refetchRef.current = refetchClients;
+  }, [refetchClients]);
 
   // --- URL del WS en ref para no depender del objeto wsEndpoints en el effect
   const wsUrlRef = useRef(wsEndpoints.rewardPoints.rewardPoints.all);
+
+  const wsUrlUsersRef = useRef(wsEndpoints.users.all);
 
   // --- WebSocket: 1 sola conexión + debounce sin early return ni catch vacío
   const socketRef = useRef(null);
@@ -154,41 +154,74 @@ export function UserClientListView() {
     };
   }, []); // sin dependencias: una vez por ciclo de vida
 
-  // --- Join O(1) users por id (sin for...of)
-  const userById = useMemo(() => {
-    const m = new Map();
-    const all = Array.isArray(loadedAllUsers) ? loadedAllUsers : [];
-    all.forEach((u) => {
-      m.set(String(u?.id), u);
-    });
-    return m;
-  }, [loadedAllUsers]);
 
-  // --- Derivar tableData (sin for...of ni continue)
+  // --- WebSocket: 2 sola conexión + debounce sin early return ni catch vacío
+
   useEffect(() => {
-    const rewards = Array.isArray(loadedRewardPoints) ? loadedRewardPoints : [];
+    let didOpen = false;
+    if (!socketRef.current) {
+      const socket = new WebSocket(wsUrlUsersRef.current);
+      socketRef.current = socket;
+      didOpen = true;
 
-    const rows = rewards.reduce((acc, reward) => {
-      const uid = String(reward?.user?.id);
-      const u = userById.get(uid);
-      if (!u) return acc;
-      acc.push({
-        ...u,
-        rewardPointsId: reward?.id,
-        totalAvailablePoints: reward?.totalAvailablePoints,
-        isSyncWithZoho: reward?.isSyncWithZoho,
-      });
-      return acc;
-    }, []);
+      socket.onerror = () => {
+        // opcional: usar tu logger si tienes uno; evitando console si tu ESLint lo prohíbe
+      };
+
+      socket.onmessage = () => {
+        if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+        refetchTimerRef.current = setTimeout(() => {
+          if (typeof refetchRef.current === 'function') {
+            refetchRef.current().catch(() => {
+              // manejar error si deseas
+            });
+          }
+        }, 500);
+      };
+    }
+
+    // cleanup SI y solo si abrimos socket dentro de este effect
+    return () => {
+      if (didOpen) {
+        const s = socketRef.current;
+        if (s && (s.readyState === WebSocket.OPEN || s.readyState === WebSocket.CONNECTING)) {
+          // cerrar sin try/catch vacío
+          s.close();
+        }
+        socketRef.current = null;
+        if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const rewards = Array.isArray(loadedClients) ? loadedClients : [];
 
     setTableData((prev) => {
-      if (prev.length !== rows.length) return rows;
+      if (prev.length !== rewards.length) return rewards;
+
+      const nextById = new Map(rewards.map((u) => [String(u.id), u]));
+
       for (let i = 0; i < prev.length; i += 1) {
-        if (String(prev[i].id) !== String(rows[i].id)) return rows;
+        const p = prev[i];
+        const n = nextById.get(String(p.id));
+        if (!n) return rewards;
+
+        if (
+          p.totalAvailablePoints !== n.totalAvailablePoints ||
+          p.isApproved !== n.isApproved ||
+          p.isVerified !== n.isVerified ||
+          p.isActive !== n.isActive ||
+          p.isSyncWithZoho !== n.isSyncWithZoho ||
+          p.avatarUrl !== n.avatarUrl ||
+          p.keyAvatar !== n.keyAvatar
+        ) {
+          return rewards;
+        }
       }
       return prev;
     });
-  }, [loadedRewardPoints, userById]);
+  }, [loadedClients]);
 
   // --- Deferred search
   const filterStatus = filters.state.status;
@@ -298,11 +331,12 @@ export function UserClientListView() {
   }, [dataFiltered.length, dataInPage.length, table, tableData, userLogged]);
 
   const postSimple = useCallback(
-    async (urlBuilder, id, fallbackMsg) => {
+    async (urlBuilder, id, fallbackMsg, modalBoolean) => {
       try {
         const response = await axiosInstanceBackend.post(urlBuilder(id), {
           userReporter: userLogged?.data,
         });
+        if (modalBoolean) modalBoolean.onFalse();
         if (response.data && response.data.message) {
           if (typeof refetchRef.current === 'function') refetchRef.current();
           toast.success(response.data.message);
@@ -317,7 +351,11 @@ export function UserClientListView() {
   );
 
   const handleChangeApprovalRow = useCallback(
-    (id) => postSimple(endpoints.user.changeApproval.user, id, 'Error changing approval'),
+    async (id, modalBoolean) => {
+      await postSimple(endpoints.user.changeApproval.user, id, 'Error changing approval', modalBoolean);
+      // setTableData((prev) => prev.map((u) => (u.id === id ? { ...u, isApproved: !u.isApproved } : u)));
+      if (typeof refetchRef.current === 'function') refetchRef.current();
+    },
     [postSimple]
   );
 
@@ -374,7 +412,7 @@ export function UserClientListView() {
     [table]
   );
 
-  if (loadingRewardPoints) {
+  if (loadingClients) {
     return (
       <DashboardContent>
         <Box
@@ -531,12 +569,12 @@ export function UserClientListView() {
                       <UserClientTableRow
                         key={row.id}
                         row={row}
-                        refetchRewardPoints={refetchRewardPoints}
+                        refetchClients={refetchClients}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={handleSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
-                        onApprovalRow={() => handleChangeApprovalRow(row.id)}
+                        onApprovalRow={(modalBoolean) => handleChangeApprovalRow(row.id, modalBoolean)}
                         onVerifyRow={() => handleChangeVerifyRow(row.id)}
                         onActiveRow={() => handleChangeActiveRow(row.id)}
                         onProfileRow={() => handleProfileRow(row.id)}

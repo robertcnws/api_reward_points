@@ -166,3 +166,61 @@ def event_reward_points(
 
         }
     }
+
+def event_reward_clients(
+    type, 
+    document, 
+    full_selection_user_role,
+    full_selection_invoices,
+    full_selection_sales_orders
+):
+    return {
+        'type': 'reward_clients_update',
+        'message': {
+            'type': type,
+            "item": {
+                "id": str(document.id),
+                "username": document.username,
+                "firstName": document.first_name,
+                "lastName": document.last_name,
+                "companyName": document.company_name,
+                "email": document.email,
+                "isStaff": document.is_staff,
+                "isActive": document.is_active,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+                "phoneNumber": document.phone_number,
+                "password": document.password,
+                "lastLogin": document.last_login,
+                "dateJoined": document.date_joined,
+                "token": document.token,
+                "userRole": full_selection_user_role if document.user_role else None,
+                "keyAvatar": document.key_avatar,
+                "avatarUrl": document.avatar_url,
+                "isVerified": document.is_verified,
+                "isApproved": document.is_approved,
+                "approvedTime": document.approved_time,
+                "disapprovalCount": document.disapproval_count,
+                "showTourGuideModal": document.show_tour_guide_modal,
+                "tookTourGuide": document.took_tour_guide,
+                "showIntroGuideModal": document.show_intro_guide_modal,
+                "tookIntroGuide": document.took_intro_guide,
+                "country": document.country,
+                "address": document.address,
+                "zipCode": document.zip_code,
+                "state": document.state,
+                "city": document.city,
+                "school": document.school,
+                "about": document.about,
+                "facebookLink": document.facebook_link,
+                "instagramLink": document.instagram_link,
+                "linkedinLink": document.linkedin_link,
+                "twitterLink": document.twitter_link,
+                "totalAvailablePoints": document.total_available_points,
+                "invoices": full_selection_invoices if document.invoices else [],
+                "salesOrders": full_selection_sales_orders if document.sales_orders else [],
+                "rewardPointsId": document.reward_points_id,
+                "isSyncWithZoho": document.is_sync_with_zoho,
+            }
+        }
+    }

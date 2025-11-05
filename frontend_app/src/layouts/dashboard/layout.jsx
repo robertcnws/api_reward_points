@@ -73,7 +73,7 @@ export function DashboardLayout({ sx, children, header, data }) {
   const [operators, setOperators] = useState([]);
 
   const {
-    loadedPendingUsers,
+    loadedPendingClients,
     loadedOfficeStaffUsers,
     refetchUsers,
     refetchRewardPoints,
@@ -109,13 +109,13 @@ export function DashboardLayout({ sx, children, header, data }) {
   const loadedPurchases = roleName === 'client' ? clientData : otherData;
   const refetchPurchases = roleName === 'client' ? clientRefetch : otherRefetch;
 
-  const [pendingUsers, setPendingUsers] = useState(loadedPendingUsers);
+  const [pendingUsers, setPendingUsers] = useState(loadedPendingClients);
 
   const [purchases, setPurchases] = useState(loadedPurchases);
 
   useEffect(() => {
     refetchUsers?.();
-    setPendingUsers(loadedPendingUsers);
+    setPendingUsers(loadedPendingClients);
     setOperators(
       loadedOfficeStaffUsers?.filter((user) => user?.isActive).map((user) => ({
         id: user?.id,
@@ -124,7 +124,7 @@ export function DashboardLayout({ sx, children, header, data }) {
       }))
     );
     refetchRewardPoints?.();
-  }, [refetchUsers, loadedPendingUsers, refetchRewardPoints, loadedOfficeStaffUsers]);
+  }, [refetchUsers, loadedPendingClients, refetchRewardPoints, loadedOfficeStaffUsers]);
 
   useEffect(() => {
     if (loadedPurchases && Array.isArray(loadedPurchases) && loadedPurchases.length > 0) {
