@@ -177,11 +177,11 @@ def mark_as_read_notifications(request):
     return repository_notifications.mark_as_read_notifications(request)
 
 
-# ======================
-# Tareas programadas (no vistas)
-# ======================
-def delete_old_notifications():
-    return repository_notifications.delete_old_notifications()
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def delete_old_trackings(request):
+    return repository_trackings.delete_old_trackings(request)
 
-def delete_old_trackings():
-    return repository_trackings.delete_old_trackings()
+
+

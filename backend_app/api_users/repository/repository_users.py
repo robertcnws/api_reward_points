@@ -1,3 +1,4 @@
+from api_users.repository import repository_notifications, repository_trackings
 from rest_framework.response import Response
 from django.conf import settings
 from django.utils import timezone
@@ -7,8 +8,11 @@ from utils.data_util import (
     create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole
-from api_authorization.repo_util import authorization_utils
-
+from api_users.tasks import (
+    task_send_approved_email,
+    task_create_tracking_async,
+    task_create_notification_async
+)
 from api_reward_points.models import RewardAttachment, RewardPoints, RewardPointsHistory
 
 from utils.s3_utils import (
@@ -393,91 +397,101 @@ def delete_users(request):
 #############################################
 
 def change_approval_user(request, id):
-    data = request.data
+    data = request.data or {}
     user_reporter = data.get('userReporter')
+    user = LoginUser.objects.only(
+        "id","username","first_name","last_name","email","company_name",
+        "is_approved","disapproval_count","user_role"
+    ).filter(id=id).first()
+    if not user:
+        return Response({"error": "User not found"}, status=404)
+
+    # rol client (cachea este id en settings o en un módulo si lo usas mucho)
+    role_client = UserRole.objects.only("id").filter(name="client").first()
+    if not role_client:
+        return Response({"error": "Client role not found"}, status=400)
+
+    # Si vamos a APROBAR ahora, valida unicidad de company activa
+    going_to_approve = not user.is_approved
+    if going_to_approve and user.company_name:
+        exists_active_same_company = LoginUser.objects.only("id").filter(
+            user_role=role_client,
+            company_name=user.company_name,
+            is_approved=True,
+            id__ne=user.id
+        ).limit(1).first()
+        if exists_active_same_company:
+            return Response({
+                "error": "User cannot be approved because company already exists and is active",
+                "description": "User cannot be approved because company already exists and is active",
+                "error_name": "company_exists",
+                "error_mail": None,
+            }, status=400)
+
+    # Construye update atómico
+    updates = {}
+    if going_to_approve:
+        updates["set__is_approved"] = True
+        # sólo seteamos approved_time si es el primer approval
+        if (user.disapproval_count or 0) == 0:
+            updates["set__approved_time"] = timezone.now()
+    else:
+        updates["set__is_approved"] = False
+        updates["inc__disapproval_count"] = 1
+
+    # Ejecuta update atómico
+    LoginUser.objects(id=user.id).update_one(**updates)
+
+    # Recarga campos mínimos para respuesta
+    user.reload("is_approved", "approved_time", "disapproval_count")
+
+    # Dispara efectos colaterales ASÍNCRONOS (no bloquean el request)
     try:
-        user = LoginUser.objects(id=id).first()
-        if not user:
-            return Response({'error': 'User not found'}, status=404)
-
-        approval_status = user.is_approved
-        disapproval_count = user.disapproval_count
-
-        company_name = user.company_name
-        role_client = UserRole.objects(name='client').first() 
-        if company_name:
-            if not user.is_approved:
-                user_exists_company = LoginUser.objects(
-                    user_role=role_client,
-                    company_name=company_name, 
-                    is_approved=True
-                ).first()
-                if user_exists_company:
-                    return Response({
-                            'error': 'User cannot be approved because company already exists and is active', 
-                            'description': 'User cannot be approved because company already exists and is active', 
-                            'error_name': 'company_exists',
-                            'error_mail': None
-                    }, status=400)
-            else:
-                users_exists_company = LoginUser.objects(
-                    user_role=role_client,
-                    company_name=company_name, 
-                    is_approved=False,
-                    id__ne=user.id
-                ).first()
-                if users_exists_company:
-                    inherit_from_unapproved_user(user_exists_company, user)
-        
-        user.is_approved = not user.is_approved
-        if not approval_status and disapproval_count == 0:
-            user.approved_time = timezone.now()
-            authorization_utils.send_email_approved_user(
+        # email sólo cuando se aprueba por primera vez
+        if going_to_approve and (user.disapproval_count or 0) == 0:
+            task_send_approved_email.delay(
                 username=user.username,
                 first_name=user.first_name,
                 last_name=user.last_name,
                 email=user.email,
-                login_url=f"{settings.FRONTEND_URL}"
+                login_url=f"{settings.FRONTEND_URL}",
             )
-        if approval_status:
-            disapproval_count += 1
-            user.disapproval_count = disapproval_count
-        user.save()
-        # points = RewardPoints.objects(user=user).first()
-        # if points:
-        #     points.user = user
-        #     points.save()
 
-        tracking_info = transform_data_to_mongo(
-            user, 
-            include_fields=['is_approved', 'username', 'id']
-        )
-        
-        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
-        
+        # tracking + notificación en background
         if user_reporter:
-            
-            create_tracking(
-                user_reporter=user_reporter,
-                action=f'change to {"approved" if user.is_approved else "NOT approved"}',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
-            )
-                
-            module='users'
-            info=f'has change approval user ({user.username}) to {"approved" if user.is_approved else "not approved"}'
-            info_id=user.id
-            type='change_approval_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
-            
-            return Response({'message': 'User approval change successfully'}, status=200)
-        
-        return Response({'error': 'User reporter not found'}, status=404)
-    
-    except LoginUser.DoesNotExist:
-            return Response({'error': 'User not found'}, status=404)
+            reporter = LoginUser.objects.only("id","username").filter(
+                username=user_reporter.get("username")
+            ).first()
+            if reporter:
+                task_create_tracking_async.delay(
+                    user_reporter=user_reporter,
+                    action=f'change to {"approved" if user.is_approved else "NOT approved"}',
+                    object_id=str(user.id),
+                    object_type='LoginUser',
+                    object_name=user.username,
+                    managed_data={"is_approved": user.is_approved, "username": user.username, "id": str(user.id)},
+                )
+                task_create_notification_async.delay(
+                    module="users",
+                    info_id=str(user.id),
+                    info=f'has change approval user ({user.username}) to {"approved" if user.is_approved else "not approved"}',
+                    type="change_approval_user",
+                    username=user_reporter.get("username"),
+                )
+    except Exception:
+        # loggear, pero nunca bloquear respuesta al cliente
+        pass
+
+    # Respuesta mínima para UI (optimistic update)
+    return Response({
+        "message": "User approval change successfully",
+        "data": {
+            "id": str(user.id),
+            "isApproved": bool(user.is_approved),
+            "approvedTime": user.approved_time.isoformat() if getattr(user, "approved_time", None) else None,
+            "disapprovalCount": int(user.disapproval_count or 0),
+        }
+    }, status=200)
         
         
 #############################################
