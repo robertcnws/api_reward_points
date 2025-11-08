@@ -13,7 +13,7 @@ import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
-import { TextField, Autocomplete, LinearProgress } from '@mui/material';
+import { TextField, Autocomplete, LinearProgress, Icon, SvgIcon } from '@mui/material';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -449,6 +449,43 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
     </>
   );
 
+  const renderAddCart = (
+    <Button
+      variant="contained"
+      startIcon={<Iconify icon="mingcute:add-line" />}
+      sx={{
+        bgcolor: 'primary.dark',
+        '&:hover': {
+          bgcolor: 'primary.main',
+        },
+        height: 40,
+        mt: 1
+      }}
+    >
+      <SvgIcon sx={{ width: 20, height: 20 }}>
+        <Iconify icon="solar:cart-check-bold-duotone" width={20} height={20} />
+      </SvgIcon>
+      Add cart
+    </Button>
+  );
+
+  const renderAddOrder = (
+    <Button
+      variant="contained"
+      startIcon={<Iconify icon="mingcute:add-line" />}
+      sx={{
+        bgcolor: 'primary.dark',
+        '&:hover': {
+          bgcolor: 'primary.main',
+        },
+        height: 40,
+        mt: 1
+      }}
+    >
+      New order
+    </Button>
+  );
+
   if (errorPurchases) {
     return (
       <DashboardContent>
@@ -512,7 +549,11 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
             // }
 
             />
-            {!isClient(roleName) && renderFilterClient}
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 3 }}>
+              {!isClient(roleName) && renderFilterClient}
+              {!isClient(roleName) && renderAddCart}
+              {!isClient(roleName) && renderAddOrder}
+            </Box>
           </Box>
         )}
 

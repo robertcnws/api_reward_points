@@ -87,5 +87,10 @@ class RewardPointsType(MongoengineObjectType):
         total_assigned_points = self.total_assigned_points or 0.0
         total_gained_points = self.total_gained_points or 0.0
         total_substracted_points = self.total_substracted_points or 0.0
+        total_spent_points = self.total_spent_points or 0.0
         
-        return int(total_assigned_points + total_gained_points - total_substracted_points)
+        total_available_points = int(
+            total_assigned_points + total_gained_points - total_substracted_points - total_spent_points
+        )
+
+        return total_available_points if total_available_points > 0 else 0

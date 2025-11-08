@@ -241,6 +241,8 @@ def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sa
 
     real_total_gained_points = total_gained_points_new + difference_new_existing_amount if difference_new_existing_amount > 0 else total_gained_points_new
 
+    spent_points = rp.total_spent_points or 0
+    
     rp.total_gained_points = real_total_gained_points + rp.total_gained_points
     rp.total_amount_invoices = metrics["total_amount_invoices"] + rp.total_amount_invoices
     rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"] + rp.total_paid_amount_invoices
@@ -254,8 +256,8 @@ def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sa
     history = None
     if total_gained_points_new > 0:
         history = _make_history(now, rp, "gained", total_gained_points_new, description, sorted_invoices)
-    if difference_new_existing_amount > 0:
-        extra_history = _make_history(now, rp, "gained", difference_new_existing_amount, description, sorted_invoices)
+    if difference_new_existing_amount - spent_points > 0:
+        extra_history = _make_history(now, rp, "gained", difference_new_existing_amount - spent_points, description, sorted_invoices)
         if history:
             # Combinar info de ambos historiales
             history.gained_points += extra_history.gained_points
