@@ -66,13 +66,19 @@ class RewardClientsType(MongoengineObjectType):
         rp = get_rp_for_user(
             self,
             info.context,
-            only_fields=["total_assigned_points", "total_gained_points", "total_substracted_points"],
+            only_fields=[
+                "total_assigned_points", 
+                "total_gained_points", 
+                "total_substracted_points",
+                "total_spent_points"
+            ],
         )
         if not rp:
             return 0
         return int((rp.total_assigned_points or 0)
                    + (rp.total_gained_points or 0)
-                   - (rp.total_substracted_points or 0))
+                   - (rp.total_substracted_points or 0)
+                   - (rp.total_spent_points or 0))
 
     def resolve_reward_points_id(self, info):
         rp = get_rp_for_user(self, info.context, only_fields=["id"])
@@ -117,7 +123,10 @@ class Query(graphene.ObjectType):
             only_fields=[
                 "id",
                 "user",
-                "total_assigned_points", "total_gained_points", "total_substracted_points",
+                "total_assigned_points", 
+                "total_gained_points", 
+                "total_substracted_points",
+                "total_spent_points",
                 "is_sync_with_zoho",
                 # NO traemos invoices/sales_orders aquí si rara vez se piden en el listado
             ],
