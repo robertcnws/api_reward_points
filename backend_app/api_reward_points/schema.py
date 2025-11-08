@@ -325,6 +325,7 @@ class Query(graphene.ObjectType):
                 "total_assigned_points",
                 "total_gained_points",
                 "total_substracted_points",
+                "total_spent_points",
                 "is_sync_with_zoho",
                 "invoices",
                 "sales_orders",           
