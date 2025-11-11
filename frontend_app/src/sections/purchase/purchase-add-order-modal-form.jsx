@@ -1,6 +1,6 @@
 import { LoadingButton } from "@mui/lab";
 import { Autocomplete, Box, Button, Chip, ListItem, Stack, TextField, Typography } from "@mui/material";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDataContext } from "src/auth/context/data/data-context";
 import { axiosInstanceBackend, endpoints } from "src/utils/axios";
 import { ConfirmDialog } from "src/components/custom-dialog";
@@ -64,8 +64,15 @@ export const PurchaseAddOrderModalForm = ({
 
     const {
         loadedClients,
+        refetchClients,
         loadedStoreProducts,
     } = useDataContext();
+
+    useEffect(() => {
+        if (openAddOrder.value) {
+            refetchClients();
+        }
+    }, [openAddOrder.value, refetchClients]);
 
     const handleReset = () => {
         setSelectedClient(null);
@@ -109,7 +116,7 @@ export const PurchaseAddOrderModalForm = ({
                 });
 
                 toast.promise(promise, {
-                    loading: 'Loading...',
+                    loading: 'Order is being processed...',
                     success: `Store product purchased successfully!`,
                     error: `Store product purchase error!`,
                 });

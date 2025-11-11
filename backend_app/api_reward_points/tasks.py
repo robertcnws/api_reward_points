@@ -64,7 +64,7 @@ def task_create_tracking_async(user_reporter_id, action, id, type, name, trackin
     create_tracking(
         user_reporter=user_reporter,
         action=action,
-        object_id=id,
+        object_id=id if id else 'list',
         object_type=type,
         object_name=name,
         managed_data={
