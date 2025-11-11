@@ -339,6 +339,7 @@ def build_fetch_payload(user, has_local_data: bool):
         'lastName': user.last_name,
         'phone': get_national_phone_number(user.phone_number) if user.phone_number else None,
         'email': user.email,
+        'customerId': user.customer_id,
         # 'status': 'paid',
     }
     if has_local_data:

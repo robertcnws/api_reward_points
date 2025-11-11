@@ -148,5 +148,6 @@ def create_reward_invoice_instance(json_data, user):
     inv.salesorder = existing_order
     inv.last_modified_time = to_dt(json_data.get('last_modified_time'))
     inv.user = user
+    inv.customer_id = json_data.get('customer_id')
 
     return safe_save_or_refetch(inv, query)

@@ -50,6 +50,7 @@ import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/fie
 import { PurchaseTableRow } from '../purchase-table-row';
 import { PurchaseTableToolbar } from '../purchase-table-toolbar';
 import { PurchaseTableFiltersResult } from '../purchase-table-filters-result';
+import { PurchaseAddOrderModalForm } from '../purchase-add-order-modal-form';
 
 // ----------------------------------------------------------------------
 
@@ -67,6 +68,8 @@ const getValidTabValue = (options, currentValue) => options.some(
 export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
 
   const { isMobile } = useContext(LoadingContext);
+
+  const openAddOrder = useBoolean();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -481,6 +484,7 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
         height: 40,
         mt: 1
       }}
+      onClick={openAddOrder.onTrue}
     >
       New order
     </Button>
@@ -759,6 +763,10 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
           </Box>
         </Card>
       </DashboardContent >
+
+      <PurchaseAddOrderModalForm
+        openAddOrder={openAddOrder}
+      />
 
       <ConfirmDialog
         open={confirm.value}

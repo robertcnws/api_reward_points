@@ -12,7 +12,10 @@ from api_reward_points.models import (
      RewardPoints,
      RewardPointsHistory,
 )
-from api_reward_points.repository.repo_util.store_product_selection_util import calculate_purchase_fraction
+from api_reward_points.repository.repo_util.store_product_selection_util import (
+    bulk_save, 
+    calculate_purchase_fraction
+)
 from utils.data_util import (
     transform_data_to_mongo,
     create_notification,
@@ -23,6 +26,11 @@ from utils.data_util import (
     generate_pin_number,
 )
 from utils.s3_utils import generate_default_file_url
+from api_reward_points.tasks import (
+    task_create_notification_async, 
+    task_create_tracking_async, 
+    task_send_email_confirmation_buy_async
+)
 import json
 import logging
 
@@ -452,16 +460,22 @@ def create_store_product_selection_cart_buy(request, id):
             if settings.ENVIRONMENT == 'prod':
                 if user_reporter.email and user_reporter.email not in list_receivers:
                     list_receivers.append(user_reporter.email)
-
-            send_email_confirmation(
+                    
+            task_send_email_confirmation_buy_async.delay(
                 type='purchase',
                 points=purchased_points,
-                user=user_reporter,
-                purchases=[buy],
-                # list_receivers=[user_reporter.email]
-                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                user_id=str(user_reporter.id),
+                purchase_ids=[str(buy.id)],
                 list_receivers=list_receivers
             )
+
+            # send_email_confirmation(
+            #     type='purchase',
+            #     points=purchased_points,
+            #     user=user_reporter,
+            #     purchases=[buy],
+            #     list_receivers=list_receivers
+            # )
                         
             return Response({
                 'message': 'Store product selection buy created successfully',
@@ -596,16 +610,22 @@ def create_all_store_product_selection_cart_buy(request):
             if settings.ENVIRONMENT == 'prod':
                 if user_reporter.email and user_reporter.email not in list_receivers:
                     list_receivers.append(user_reporter.email)
-
-            send_email_confirmation(
+                    
+            task_send_email_confirmation_buy_async.delay(
                 type='purchase',
                 points=total_purchased_points,
-                user=user_reporter,
-                purchases=list_buys,
-                # list_receivers=[user_reporter.email]
-                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                user_id=str(user_reporter.id),
+                purchase_ids=[str(b.id) for b in list_buys],
                 list_receivers=list_receivers
             )
+
+            # send_email_confirmation(
+            #     type='purchase',
+            #     points=total_purchased_points,
+            #     user=user_reporter,
+            #     purchases=list_buys,
+            #     list_receivers=list_receivers
+            # )
                         
             return Response({
                 'message': 'Store products selection buy created successfully',
@@ -626,19 +646,25 @@ def create_all_store_product_selection_cart_buy(request):
 def create_store_product_selection_buy(request, id):         
     data = request.data
     
+    client_id = data.get('clientId', None)
+    
     user_reporter = json.loads(data.get('userReporter', None))
+
+    user_reporter = LoginUser.objects(username=user_reporter.get('username')).first() if user_reporter else None
+
+    client = LoginUser.objects(id=client_id).first() if client_id else None
     
-    user_reporter = LoginUser.objects(username=user_reporter['username']).first() if user_reporter else None
+    user_buyer = client if client else user_reporter if user_reporter else None
     
-    if user_reporter:
-        
-        if not user_reporter.is_approved:
-            logger.error("User reporter is not approved")
+    if user_buyer:
+
+        if not user_buyer.is_approved:
+            logger.error("User buyer is not approved")
             return Response({'error': f'You are not currently as APPROVED USER anymore'}, status=403)
         
         try:
             
-            reward_points = RewardPoints.objects(user=user_reporter).first()
+            reward_points = RewardPoints.objects(user=user_buyer).first()
             
             if not reward_points:
                 logger.error("Reward points not found for the user")
@@ -658,35 +684,30 @@ def create_store_product_selection_buy(request, id):
             total_buys_points = 0
             default_qty = 1
             
-            for _ in range(quantity):
+            selections = []
             
+            for _ in range(quantity):
+                now = to_aware(timezone.now())
+                selections.append(RewardStoreProductSelection(
+                    store_product=store_product,
+                    user=user_buyer,
+                    quantity=default_qty,
+                    created_time=now,
+                    last_modified_time=now,
+                ))
+            RewardStoreProductSelection.objects.insert(selections, load_bulk=False)
+            
+            list_buys = []
+            list_history = []
+            selection_ids = [s.id for s in selections]
+            
+            for selection in selections:
+                now = to_aware(timezone.now())
+                    
                 purchased_points = store_product.assigned_points * default_qty
                 gained_points = reward_points.total_gained_points
                 assigned_points = reward_points.total_assigned_points
-
-                if gained_points + assigned_points < purchased_points:
-                    logger.error(f"Not enough points to redeem this store product: {store_product.name}")
-                    return Response({'error': 'Not enough points to redeem this store product'}, status=400)
-
-                selection = RewardStoreProductSelection(
-                    store_product=store_product,
-                    user=user_reporter,
-                    quantity=default_qty,
-                    created_time=to_aware(timezone.now()),
-                    last_modified_time=to_aware(timezone.now()),
-                )
-                selection.save()
-            
-                cart = RewardStoreProductSelectionCart.objects(
-                    store_product_selection=selection,
-                    is_bought=False
-                ).first()
-            
-                if cart:
-                    cart.is_bought = True
-                    cart.last_modified_time = to_aware(timezone.now())
-                    cart.save()
-                
+                    
                 purchase_type, purchase_fraction = calculate_purchase_fraction(
                     logger,
                     reward_points,
@@ -694,16 +715,15 @@ def create_store_product_selection_buy(request, id):
                     assigned_points, 
                     purchased_points
                 )
-            
+                
                 if not isinstance(purchase_type, str):
                     logger.error("Error calculating redeemed order fraction")
                     return purchase_type
-            
-            
+                
                 buy = RewardStoreProductSelectionBuy(
                     store_product_selection=selection,
-                    created_time=to_aware(timezone.now()),
-                    last_modified_time=to_aware(timezone.now()),
+                    created_time=now,
+                    last_modified_time=now,
                     has_been_used=False,
                     order_number=generate_order_number(),
                     confirmation_number=generate_confirmation_number(),
@@ -711,14 +731,13 @@ def create_store_product_selection_buy(request, id):
                     purchase_type=purchase_type,
                     purchase_fraction=purchase_fraction,
                 )
-                buy.save()
-            
+                
+                list_buys.append(buy)
+                
                 spent_points = reward_points.total_spent_points + purchased_points
                 reward_points.total_spent_points = spent_points
-                reward_points.last_modified = timezone.now()
-            
-                reward_points.save()
-
+                reward_points.last_modified_time = now
+                
                 tracking_info = transform_data_to_mongo(
                     buy,
                     exclude_fields=[
@@ -736,7 +755,7 @@ def create_store_product_selection_buy(request, id):
                 description = f'You have used {purchased_points} points to redeem {default_qty} {store_product.name}'
 
                 history = RewardPointsHistory(
-                    created_time=timezone.now(),
+                    created_time=now,
                     reward_points=reward_points,
                     action='spent',
                     gained_points=0,
@@ -745,21 +764,20 @@ def create_store_product_selection_buy(request, id):
                     info=tracking_info,
                 )
                 
-                history.save()
-            
-                create_tracking(
-                    user_reporter=user_reporter,
+                list_history.append(history)
+                
+                task_create_tracking_async.delay(
+                    user_reporter_id=str(user_reporter.id) if user_reporter else None,
                     action=f'create store product selection buy',
-                    object_id=buy.id,
-                    object_type='RewardStoreProductSelectionBuy',
-                    object_name=buy.store_product_selection.store_product.name,
-                    managed_data={
-                        'data': tracking_info
-                    }
+                    id=str(buy.id),
+                    type='RewardStoreProductSelectionBuy',
+                    name=buy.store_product_selection.store_product.name,
+                    tracking_info=tracking_info
                 )
                 
-                list_buys.append(buy)
                 total_buys_points += purchased_points
+
+            reward_points.save()
 
             info = f'has redeemed {len(list_buys)} orders of \
                 {list_buys[0].store_product_selection.store_product.name.upper()} \
@@ -767,31 +785,42 @@ def create_store_product_selection_buy(request, id):
                 {total_buys_points}'
 
             module='store_product_selection_buys'
-            info_id=buy.id
+            info_id=list_buys[0].id
             type='create_store_product_selection_buy'
-            create_notification(module, info_id, info, type, user_reporter.username)
+            task_create_notification_async.delay(
+                module=module,
+                info_id=str(info_id), 
+                info=info,
+                type=type,
+                username=user_reporter.username
+            )
             
-            # SENDING EMAIL
+            now = to_aware(timezone.now())
             
-            for buy in list_buys:
+            list_carts = RewardStoreProductSelectionCart.objects(
+                store_product_selection__in=selection_ids,
+                is_bought=False
+            ).all()
             
-                file = buy.store_product_selection.store_product.attachments[0].file if \
-                    len(buy.store_product_selection.store_product.attachments) > 0 else 'store_products/nws_reward_points_preview.png'
-                buy.default_url = generate_default_file_url(file)
-
+            for cart in list_carts:
+                cart.is_bought = True
+                cart.last_modified_time = now
+                
+            bulk_save(list_carts)
+            bulk_save(list_buys)
+            bulk_save(list_history)
+            
             list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
 
             if settings.ENVIRONMENT == 'prod':
                 if user_reporter.email and user_reporter.email not in list_receivers:
                     list_receivers.append(user_reporter.email)
-
-            send_email_confirmation(
+                    
+            task_send_email_confirmation_buy_async.delay(
                 type='purchase',
                 points=total_buys_points,
-                user=user_reporter,
-                purchases=list_buys,
-                # list_receivers=[user_reporter.email]
-                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                user_id=str(user_buyer.id),
+                purchase_ids=[str(b.id) for b in list_buys],
                 list_receivers=list_receivers
             )
                         
@@ -869,22 +898,22 @@ def delete_store_product_selection_buy(request, id):
             refund_gained_points = int(buy.purchase_fraction[0])
             refund_spent_points = int(buy.purchase_fraction[1])
             
-            gained_points = reward_points.total_gained_points + refund_gained_points
-            if gained_points < 0:
-                logger.error("Earned points cannot be negative")
-                return Response({'error': 'Earned points cannot be negative'}, status=400)
-            assigned_points = reward_points.total_assigned_points + refund_spent_points
-            if assigned_points < 0:
-                logger.error("Assigned points cannot be negative")
-                return Response({'error': 'Assigned points cannot be negative'}, status=400)
+            # gained_points = reward_points.total_gained_points + refund_gained_points
+            # if gained_points < 0:
+            #     logger.error("Earned points cannot be negative")
+            #     return Response({'error': 'Earned points cannot be negative'}, status=400)
+            # assigned_points = reward_points.total_assigned_points + refund_spent_points
+            # if assigned_points < 0:
+            #     logger.error("Assigned points cannot be negative")
+            #     return Response({'error': 'Assigned points cannot be negative'}, status=400)
             
             spent_points = reward_points.total_spent_points - purchased_points
             if spent_points < 0:
                 logger.error("Spent points cannot be negative")
                 return Response({'error': 'Spent points cannot be negative'}, status=400)
             
-            reward_points.total_gained_points = gained_points
-            reward_points.total_assigned_points = assigned_points
+            # reward_points.total_gained_points = gained_points
+            # reward_points.total_assigned_points = assigned_points
             reward_points.total_spent_points = spent_points
             reward_points.last_modified = timezone.now()
             reward_points.save()
@@ -952,16 +981,22 @@ def delete_store_product_selection_buy(request, id):
                 if buy.store_product_selection.user.email and \
                     buy.store_product_selection.user.email not in list_receivers:
                     list_receivers.append(buy.store_product_selection.user.email)
-
-            send_email_confirmation(
+                    
+            task_send_email_confirmation_buy_async.delay(
                 type='refund',
                 points=purchased_points,
-                user=buy.store_product_selection.user,
-                purchases=[buy],
-                # list_receivers=[user_reporter.email]
-                # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                user_id=str(buy.store_product_selection.user.id),
+                purchase_ids=[str(buy.id)],
                 list_receivers=list_receivers
             )
+
+            # send_email_confirmation(
+            #     type='refund',
+            #     points=purchased_points,
+            #     user=buy.store_product_selection.user,
+            #     purchases=[buy],
+            #     list_receivers=list_receivers
+            # )
             
             # DELETING THE BUY
             buy.delete()
@@ -1056,22 +1091,22 @@ def delete_list_store_product_selection_buys(request):
                 refund_gained_points = int(buy.purchase_fraction[0])
                 refund_spent_points = int(buy.purchase_fraction[1])
                 
-                gained_points = reward_points.total_gained_points + refund_gained_points
-                if gained_points < 0:
-                    logger.error("Earned points cannot be negative")
-                    return Response({'error': 'Earned points cannot be negative'}, status=400)
-                assigned_points = reward_points.total_assigned_points + refund_spent_points
-                if assigned_points < 0:
-                    logger.error("Assigned points cannot be negative")
-                    return Response({'error': 'Assigned points cannot be negative'}, status=400)
+                # gained_points = reward_points.total_gained_points + refund_gained_points
+                # if gained_points < 0:
+                #     logger.error("Earned points cannot be negative")
+                #     return Response({'error': 'Earned points cannot be negative'}, status=400)
+                # assigned_points = reward_points.total_assigned_points + refund_spent_points
+                # if assigned_points < 0:
+                #     logger.error("Assigned points cannot be negative")
+                #     return Response({'error': 'Assigned points cannot be negative'}, status=400)
                 
                 spent_points = reward_points.total_spent_points - purchased_points
                 if spent_points < 0:
                     logger.error("Spent points cannot be negative")
                     return Response({'error': 'Spent points cannot be negative'}, status=400)
                 
-                reward_points.total_gained_points = gained_points
-                reward_points.total_assigned_points = assigned_points
+                # reward_points.total_gained_points = gained_points
+                # reward_points.total_assigned_points = assigned_points
                 reward_points.total_spent_points = spent_points
                 reward_points.last_modified = timezone.now()
                 reward_points.save()
@@ -1169,15 +1204,20 @@ def delete_list_store_product_selection_buys(request):
                 if settings.ENVIRONMENT == 'prod':
                     if user.email and user.email not in list_receivers:
                         list_receivers.append(user.email)
-                send_email_confirmation(
+                task_send_email_confirmation_buy_async.delay(
                     type='refund',
                     points=refunded_points,
-                    user=user,
-                    purchases=user_buys,
-                    # list_receivers=[user_reporter.email]
-                    # list_receivers=['nnws15815@gmail.com', 'admin@newwindowsystem.com']
+                    user_id=str(user.id),
+                    purchase_ids=[str(b.id) for b in user_buys],
                     list_receivers=list_receivers 
                 )
+                # send_email_confirmation(
+                #     type='refund',
+                #     points=refunded_points,
+                #     user=user,
+                #     purchases=user_buys,
+                #     list_receivers=list_receivers 
+                # )
 
             return Response({
                 'message': 'Store product selection buy created successfully',

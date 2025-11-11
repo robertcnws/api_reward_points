@@ -70,7 +70,7 @@ def _check_email_is_sync_with_zoho(email):
     payload = {'email': email}
     response = fetch_customer_by_email(payload)
     if response and 'results' in response and len(response['results']) > 0:
-        return True
+        return True, response['results'][0]
     return ApiError(400, {
         'error': constants.EMAIL_NOT_REGISTERED_IN_ZOHO['error'],
         'description': constants.EMAIL_NOT_REGISTERED_IN_ZOHO['description'],
@@ -89,7 +89,7 @@ def _get_or_create_user_role(role_name: str):
     logger.info('User role %s created successfully', role_name)
     return role
 
-def _build_and_save_user(data, username, password, user_role):
+def _build_and_save_user(data, username, password, user_role, customer=None):
     now = timezone.now()
     user = LoginUser(
         username=username,
@@ -109,6 +109,7 @@ def _build_and_save_user(data, username, password, user_role):
         disapproval_count=0,
         show_tour_guide_modal=True,
         show_intro_guide_modal=True,
+        customer_id=customer.get('contact_id') if customer else None,
     )
     user.set_password(password)
     user.save()
@@ -185,12 +186,12 @@ def register(request):
         username, password = _require_username_password(data)
         _check_username_not_taken(username)
         _check_company_name_available(data.get('companyName', ''))
-        _check_email_is_sync_with_zoho(data.get('email', ''))
+        _, customer = _check_email_is_sync_with_zoho(data.get('email', ''))
         
         user_role_name = settings.DJANGO_REGISTER_USER_ROLE
         user_role = _get_or_create_user_role(user_role_name)
         
-        user = _build_and_save_user(data, username, password, user_role)
+        user = _build_and_save_user(data, username, password, user_role, customer=customer)
         
         _init_reward_points_for_user(user)
         

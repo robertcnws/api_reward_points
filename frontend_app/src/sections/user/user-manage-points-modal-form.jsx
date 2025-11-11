@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
+import { LoadingButton } from '@mui/lab';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -21,6 +22,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { IncrementerText } from '../items/components/incrementer-text';
 
+
 // ----------------------------------------------------------------------
 
 export function UserManagePointsModalForm({
@@ -30,6 +32,8 @@ export function UserManagePointsModalForm({
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const [loading, setLoading] = useState(false);
 
   const { isMobile } = useContext(LoadingContext);
 
@@ -53,6 +57,7 @@ export function UserManagePointsModalForm({
 
   const handleManagePoints = useCallback(
     async () => {
+      setLoading(true);
       try {
         await axiosInstanceBackend.post(endpoints.rewardPoints.managePoints.user(currentUser?.id), {
           userReporter: JSON.stringify(userLogged?.data),
@@ -63,6 +68,8 @@ export function UserManagePointsModalForm({
       } catch (error) {
         console.error(error);
         toast.error(error.response.data.error);
+      } finally {
+        setLoading(false);
       }
     },
     [newAssignedPoints, newSpentPoints, currentUser, userLogged]
@@ -160,8 +167,9 @@ export function UserManagePointsModalForm({
         </DialogContent>
 
         <DialogActions>
-          <Button
+          <LoadingButton
             variant="contained"
+            loading={loading}
             disabled={
               (newAssignedPoints <= 0 && newSpentPoints <= 0) ||
               newAssignedPoints > 1000000 ||
@@ -171,7 +179,7 @@ export function UserManagePointsModalForm({
             onClick={() => confirmUse.onTrue()}
           >
             Manage Points
-          </Button>
+          </LoadingButton>
           <Button variant="outlined" onClick={() => {
             setNewAssignedPoints(0);
             setNewSpentPoints(0);
@@ -197,7 +205,8 @@ export function UserManagePointsModalForm({
           </>
         }
         action={
-          <Button
+          <LoadingButton
+            loading={loading}
             variant="contained"
             color="warning"
             onClick={async () => {
@@ -210,7 +219,7 @@ export function UserManagePointsModalForm({
             }}
           >
             Update
-          </Button>
+          </LoadingButton>
         }
       />
     </>

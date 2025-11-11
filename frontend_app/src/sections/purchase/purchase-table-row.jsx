@@ -1,4 +1,4 @@
-import React, { useMemo, useContext } from 'react';
+import React, { useMemo, useContext, useCallback } from 'react';
 
 import Button from '@mui/material/Button';
 import MenuList from '@mui/material/MenuList';
@@ -15,6 +15,7 @@ import { fDateTime } from 'src/utils/format-time';
 import { fNumber } from 'src/utils/format-number';
 import { isClient } from 'src/utils/check-permissions';
 import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
+import { LoadingButton } from '@mui/lab';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -26,6 +27,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 import { PurchaseDetailsModal } from './purchase-details-modal';
 import { PurchaseUseModalForm } from './purchase-use-modal-form';
 import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
+
 
 
 
@@ -45,6 +47,8 @@ export function PurchaseTableRow({
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
+
+  const [loading, setLoading] = React.useState(false);
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
@@ -72,6 +76,29 @@ export function PurchaseTableRow({
 
   const isSetExpired = useMemo(() => !!(row?.expirationTime && statusValue !== 'used'), [row, statusValue]);
 
+  const handleDeleteRow = useCallback(async () => {
+    setLoading(true);
+    try {
+      await onDeleteRow(row.id);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [onDeleteRow, row.id]);
+
+
+  const handleRemoveRow = useCallback(async () => {
+    setLoading(true);
+    try {
+      await onRemoveRow(row.id);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [onRemoveRow, row.id]);
+
   return (
     <>
       <TableRow
@@ -79,9 +106,9 @@ export function PurchaseTableRow({
         selected={selected}
         aria-checked={selected}
         tabIndex={-1}
-        sx={{ 
+        sx={{
           cursor: 'pointer',
-          bgcolor: isSetExpired ? 'rgba(243, 240, 240, 1)' : 'background.paper', 
+          bgcolor: isSetExpired ? 'rgba(243, 240, 240, 1)' : 'background.paper',
         }}
       >
 
@@ -490,24 +517,25 @@ export function PurchaseTableRow({
 
       <ConfirmDialog
         open={confirm.value}
-        onClose={confirm.onFalse}
+        onClose={!loading ? confirm.onFalse : undefined}
         title={row.hasBeenUsed ? "Remove" : "Delete"}
         content={`Are you sure want to ${row.hasBeenUsed ? "remove" : "delete"} order: (${row.storeProductSelection?.storeProduct?.name})?`}
         action={
-          <Button
+          <LoadingButton
+            loading={loading}
             variant="contained"
             color="error"
             onClick={
               async () => {
                 if (row.hasBeenUsed) {
-                  await onRemoveRow(row?.id);
+                  await handleRemoveRow();
                 } else {
-                  await onDeleteRow(row?.id);
+                  await handleDeleteRow();
                 }
                 confirm.onFalse();
               }}>
             {row.hasBeenUsed ? "Remove Order" : "Delete Order"}
-          </Button>
+          </LoadingButton>
         } />
 
       <ConfirmDialog

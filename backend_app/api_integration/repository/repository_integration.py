@@ -132,7 +132,8 @@ def fetch_client_invoices(data):
         # "firstName": "first_name",
         # "lastName": "last_name",
         # "phone": "phone",
-        "email": "email",
+        # "email": "email",
+        "customerId": "customer_id",
         "status": "status",
         # "lastModifiedTime": "last_modified_time",
     }

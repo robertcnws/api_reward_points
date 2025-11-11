@@ -67,10 +67,11 @@ class LoginUser(Document):
     instagram_link = StringField(required=False)
     linkedin_link = StringField(required=False)
     twitter_link = StringField(required=False)
+    customer_id = StringField(required=False)
 
     meta = {
         'collection': 'login_users',
-        'indexes': ['username', 'email', 'phone_number'],
+        'indexes': ['username', 'email', 'phone_number', 'customer_id'],
     }
 
     def set_password(self, raw_password):

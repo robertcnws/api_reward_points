@@ -116,11 +116,12 @@ class RewardInvoice(Document):
     salesorder = ReferenceField(RewardSalesOrder, null=True, blank=True, reverse_delete_rule=2)  # CASCADE
     last_modified_time = DateTimeField(default=timezone.now, null=True)
     user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    customer_id = StringField(null=True, blank=True)
 
     meta = {
         'collection': 'reward_invoices',
         'indexes': [
-            'invoice_id', 'invoice_number', 'date', 'salesorder'
+            'invoice_id', 'invoice_number', 'date', 'salesorder', 'customer_id'
         ],
         'verbose_name': 'Reward Invoice',
         'verbose_name_plural': 'Reward Invoices'

@@ -1,5 +1,7 @@
 from django.utils import timezone
+from django.test import RequestFactory
 from django.conf import settings
+from api_integration.repository.repository_integration import fetch_customer_by_email
 from bson import ObjectId
 from bson.dbref import DBRef
 from mongoengine.errors import DoesNotExist, ValidationError
@@ -16,7 +18,6 @@ from api_integration.repository.repository_integration import (
 )
 from utils.data_util import (
     transform_data_to_mongo, 
-    get_national_phone_number, 
     calculate_reward_points,
     to_dt,
     build_fetch_payload,
@@ -244,10 +245,10 @@ def _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sa
     spent_points = rp.total_spent_points or 0
     
     rp.total_gained_points = real_total_gained_points + rp.total_gained_points
-    rp.total_amount_invoices = metrics["total_amount_invoices"] + rp.total_amount_invoices
-    rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"] + rp.total_paid_amount_invoices
-    rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"] + rp.total_opened_balance_invoices
-    rp.total_tax_amount_invoices = metrics["total_tax_amount_invoices"] + rp.total_tax_amount_invoices
+    rp.total_amount_invoices = metrics["total_amount_invoices"]
+    rp.total_paid_amount_invoices = metrics["total_paid_amount_invoices"]
+    rp.total_opened_balance_invoices = metrics["total_opened_balance_invoices"]
+    rp.total_tax_amount_invoices = metrics["total_tax_amount_invoices"]
     rp.qty_pending_orders = len(pendings)
     rp.invoices = sorted_invoices
     rp.sales_orders = sorted_sales_orders
@@ -294,67 +295,93 @@ def _fetch_doc(ref, Model):
 
 
 # =========================
+# API de integración (complejidad media)
+# =========================
+
+def _update_customer_id_for_user(user):
+    customer_id = getattr(user, "customer_id", None)
+    email = getattr(user, "email", None)
+    if customer_id:
+        return True
+    payload = {'email': email}
+    response = fetch_customer_by_email(payload)
+    if response and 'results' in response and len(response['results']) > 0:
+        customer = response['results'][0]
+        customer_id = customer.get('contact_id', None)
+        if customer_id:
+            user.customer_id = customer_id
+            user.save()
+            return True
+    return False
+
+
+# =========================
 # API principal (complejidad baja)
 # =========================
 
 def get_rewards_points(user, description=None):
     _validate_user(user)
-    
-    local_invoices = list(RewardInvoice.objects(user=user).all())
-    local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
-    
-    payload_inv, payload_so = _fetch_remote_payloads(user, local_invoices, local_sales_orders)
-    response_inv, response_so = _fetch_remote_data(payload_inv, payload_so)
-    if response_inv is None:
-        return None
-    
-    if 'results' in response_so:
-        logger.info("Fetched %d sales orders to process.", len(response_so.get('results', [])))
-        _upsert_sales_orders_from_response(response_so, user)
 
-    new_invoices = _build_invoices_from_remote(response_inv, user)
-    all_invoices = _merge_invoices(local_invoices, new_invoices)
-    sorted_invoices, sorted_sales_orders = _load_sorted_local_collections(user, all_invoices)
+    _update_customer_id_for_user(user)
     
-    rp = RewardPoints.objects(user=user).first()
-    existing_invoice_ids = []
-    
-    if rp and rp.invoices:
+    if user.customer_id:
+        logger.info(f"User {user.username} has customer_id {user.customer_id} for rewards points sync.")
+
+        local_invoices = list(RewardInvoice.objects(customer_id=user.customer_id).all())
+        local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
+        
+        payload_inv, payload_so = _fetch_remote_payloads(user, local_invoices, local_sales_orders)
+        response_inv, response_so = _fetch_remote_data(payload_inv, payload_so)
+        if response_inv is None:
+            return None
+        
+        if 'results' in response_so:
+            logger.info("Fetched %d sales orders to process.", len(response_so.get('results', [])))
+            _upsert_sales_orders_from_response(response_so, user)
+
+        new_invoices = _build_invoices_from_remote(response_inv, user)
+        all_invoices = _merge_invoices(local_invoices, new_invoices)
+        sorted_invoices, sorted_sales_orders = _load_sorted_local_collections(user, all_invoices)
+        
+        rp = RewardPoints.objects(user=user).first()
         existing_invoice_ids = []
-        for inv_ref in rp.invoices:
-            inv_doc = _fetch_doc(inv_ref, RewardInvoice)
-            if inv_doc is not None:
-                existing_invoice_ids.append(str(inv_doc.invoice_id))
+        
+        if rp and rp.invoices:
+            existing_invoice_ids = []
+            for inv_ref in rp.invoices:
+                inv_doc = _fetch_doc(inv_ref, RewardInvoice)
+                if inv_doc is not None:
+                    existing_invoice_ids.append(str(inv_doc.invoice_id))
 
-    cutoff = _build_cutoff_dt(user)
-    pendings, metrics, total_gained_points_new, difference_new_existing_amount = _compute_metrics_and_points(
-        sorted_invoices, 
-        sorted_sales_orders, 
-        cutoff,
-        existing_invoice_ids,
-        existing_invoices=rp.invoices if rp else None,
-        existing_assigned_points=rp.total_gained_points if rp else 0,
-    )
+        cutoff = _build_cutoff_dt(user)
+        pendings, metrics, total_gained_points_new, difference_new_existing_amount = _compute_metrics_and_points(
+            sorted_invoices, 
+            sorted_sales_orders, 
+            cutoff,
+            existing_invoice_ids,
+            existing_invoices=rp.invoices if rp else None,
+            existing_assigned_points=rp.total_gained_points if rp else 0,
+        )
 
-    now = timezone.now()
-    
-    if not rp:
-        rp, history = _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_sales_orders,
-                                            total_gained_points_new, difference_new_existing_amount,description)
-    else:
-        rp, history = _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders,
-                                            total_gained_points_new, difference_new_existing_amount, description)
-    is_sync_with_zoho = False
-    payload_sync = build_fetch_payload(user, has_local_data=False)
-    response_sync = fetch_client_sync_with_zoho(payload_sync)
-    
-    if response_sync and 'results' in response_sync and len(response_sync['results']) > 0:
-        is_sync_with_zoho = True
-    
-    rp.is_sync_with_zoho = is_sync_with_zoho
+        now = timezone.now()
+        
+        if not rp:
+            rp, history = _create_reward_points(now, user, metrics, pendings, sorted_invoices, sorted_sales_orders,
+                                                total_gained_points_new, difference_new_existing_amount,description)
+        else:
+            rp, history = _update_reward_points(now, rp, metrics, pendings, sorted_invoices, sorted_sales_orders,
+                                                total_gained_points_new, difference_new_existing_amount, description)
+        is_sync_with_zoho = False
+        payload_sync = build_fetch_payload(user, has_local_data=False)
+        response_sync = fetch_client_sync_with_zoho(payload_sync)
+        
+        if response_sync and 'results' in response_sync and len(response_sync['results']) > 0:
+            is_sync_with_zoho = True
+        
+        rp.is_sync_with_zoho = is_sync_with_zoho
 
-    rp.save()
-    if history:
-        history.save()
+        rp.save()
+        if history:
+            history.save()
 
-    return rp
+        return rp

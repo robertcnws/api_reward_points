@@ -1,3 +1,4 @@
+import React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -104,11 +105,10 @@ export function PurchaseAvailableRewardsModalForm({
                   const statusEl = renderStatus(product);
 
                   return (
-                    <Box component="li" key={product?.id || idx} sx={{ listStyle: 'none' }}>
+                    <React.Fragment key={product?.id || idx}>
                       <ListItem
                         disableGutters
                         secondaryAction={
-                          // Zona derecha: dos columnas fijas → simetría entre filas
                           <Stack
                             direction="row"
                             alignItems="center"
@@ -118,20 +118,10 @@ export function PurchaseAvailableRewardsModalForm({
                               justifyContent: 'flex-end',
                             }}
                           >
-                            <Box
-                              sx={{
-                                minWidth: { xs: 84, sm: 96 },
-                                textAlign: 'center',
-                              }}
-                            >
+                            <Box sx={{ minWidth: { xs: 84, sm: 96 }, textAlign: 'center' }}>
                               {pointsEl}
                             </Box>
-                            <Box
-                              sx={{
-                                minWidth: { xs: 120, sm: 160 },
-                                textAlign: 'right',
-                              }}
-                            >
+                            <Box sx={{ minWidth: { xs: 120, sm: 160 }, textAlign: 'right' }}>
                               {statusEl}
                             </Box>
                           </Stack>
@@ -139,35 +129,37 @@ export function PurchaseAvailableRewardsModalForm({
                       >
                         <ListItemText
                           primary={
-                            <Box display='flex' flexDirection='row' alignItems='center'>
-                              <StoreProductFolderItemCarousel 
-                              images={product?.attachments}
-                              maxHeight={50}
-                              maxWidth={50} 
+                            <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
+                              <StoreProductFolderItemCarousel
+                                images={product?.attachments}
+                                maxHeight={50}
+                                maxWidth={50}
                               />
                               <Typography
                                 variant="body2"
                                 sx={{ fontWeight: 600, pr: { xs: 14, sm: 18 } }}
                                 color={
-                                  !product?.isActive ?
-                                    'text.disabled' : product?.assignedPoints > totalAvailablePoints ?
-                                      'text.disabled' : 'text.primary'
+                                  !product?.isActive
+                                    ? 'text.disabled'
+                                    : product?.assignedPoints > totalAvailablePoints
+                                      ? 'text.disabled'
+                                      : 'text.primary'
                                 }
                               >
                                 {product?.name}
                               </Typography>
-                              
                             </Box>
                           }
                         />
                       </ListItem>
 
-                      {/* Separador entre filas */}
-                      <Divider sx={{ my: 0.25 }} />
-                    </Box>
+                      {/* Separador como <li> válido dentro del <ul> */}
+                      <Divider component="li" sx={{ my: 0.25 }} />
+                    </React.Fragment>
                   );
                 })}
               </List>
+
             )}
           </Box>
         ) : null}

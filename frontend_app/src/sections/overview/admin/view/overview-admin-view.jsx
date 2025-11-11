@@ -350,6 +350,18 @@ export function OverviewAdminView({
     [approvedRewardPoints]
   );
 
+  const last12 = useMemo(() => (invoicesSeriesByMonth ?? []).slice(-12), [invoicesSeriesByMonth]);
+
+  const incomesChart = useMemo(() => ({
+    categories: last12.map((it) => it.period),
+    series: [
+      {
+        name: 'Invoices',
+        data: last12.map((it) => Number.isFinite(it.total) ? it.total : 0),
+      },
+    ],
+  }), [last12]);
+
   const usersSeriesByMonth = useMemo(
     () => accumulateByMonth(loadedUsers || [], null, null, 'createdTime'),
     [loadedUsers]
@@ -675,16 +687,17 @@ export function OverviewAdminView({
                           title="Total Invoices Amount"
                           total={invoicesAmount}
                           percent={avgStepTrendPercent(invoicesSeriesByMonth?.map((item) => item.total))}
-                          chart={{
-                            categories: invoicesSeriesByMonth?.slice(
-                              invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                            )?.map((item) => item.period),
-                            series: [{
-                              data: invoicesSeriesByMonth?.slice(
-                                invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                              )?.map((item) => item.total)
-                            }],
-                          }}
+                          chart={incomesChart}
+                          // chart={{
+                          //   categories: invoicesSeriesByMonth?.slice(
+                          //     invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                          //   )?.map((item) => item.period),
+                          //   series: [{
+                          //     data: invoicesSeriesByMonth?.slice(
+                          //       invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                          //     )?.map((item) => item.total)
+                          //   }],
+                          // }}
                         />
                       </Box>
 
@@ -831,9 +844,9 @@ export function OverviewAdminView({
       <ConfirmDialog
         open={
           isOfficeStaff(roleName) &&
-          showModalTour.value && 
-          !loadingRewardPoints && 
-          !loadingRewardPointsHistory && 
+          showModalTour.value &&
+          !loadingRewardPoints &&
+          !loadingRewardPointsHistory &&
           !tookTourGuide
         }
         onClose={async () => {
@@ -864,22 +877,43 @@ export function OverviewAdminView({
 
 function accumulateByMonth(
   data,
-  attribute = null,
-  cumulateAttribute = null,
-  joinAttribute = null
+  attribute = null,          // p.ej. "invoices"
+  cumulateAttribute = null,  // p.ej. "paymentMade"
+  joinAttribute = null       // p.ej. "date"
 ) {
+  const allData = attribute ? (data ?? []).flatMap((entry) => entry?.[attribute] ?? []) : (data ?? []);
 
-  const allData = attribute ? data?.flatMap(entry => entry[attribute]) : data;
+  const byMonth = allData.reduce((acc, inv) => {
+    if (!inv) return acc;
 
-  const byMonth = allData?.reduce((acc, inv) => {
-    const d = dayjs(inv[joinAttribute]);
+    const raw = joinAttribute ? inv[joinAttribute] : inv;
+    if (raw == null) return acc;
+
+    let d = null;
+    if (typeof raw === 'number') {
+      d = dayjs(raw); // epoch ms
+    } else if (typeof raw === 'string') {
+      d = dayjs(raw);
+      if (!d.isValid() && /^\d+$/.test(raw)) d = dayjs(Number(raw));
+    } else if (raw instanceof Date) {
+      d = dayjs(raw);
+    }
+
+    if (!d || !d.isValid()) return acc; // ignora fechas inválidas/undefined
+
     const key = `${d.year()}-${String(d.month() + 1).padStart(2, '0')}`;
-    acc[key] = (acc[key] || 0) + (cumulateAttribute ? inv[cumulateAttribute] : 1);
+
+    const amount = (cumulateAttribute ? Number(inv[cumulateAttribute] ?? 0) : 1);
+    acc[key] = (acc[key] ?? 0) + (Number.isFinite(amount) ? amount : 0);
+
     return acc;
   }, {});
 
-  return Object.entries(byMonth)?.map(([period, total]) => ({ period, total }))
+  const rows = Object.entries(byMonth)
+    .map(([period, total]) => ({ period, total }))
     .sort((a, b) => a.period.localeCompare(b.period));
+
+  return rows.slice(Math.max(0, rows.length - 12));
 }
 
 function avgStepTrendPercent(arr) {
