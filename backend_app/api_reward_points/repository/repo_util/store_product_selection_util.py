@@ -2,6 +2,17 @@ from rest_framework.response import Response
 
 from concurrent.futures import ThreadPoolExecutor
 
+from utils.data_util import (
+    generate_order_number,
+    generate_confirmation_number,
+    generate_pin_number,
+)
+
+from api_reward_points.models import (
+     RewardStoreProductSelectionCart,
+     RewardStoreProductSelectionBuy,
+)
+
 def calculate_purchase_fraction(
     logger,
     reward_points,
@@ -44,3 +55,47 @@ def calculate_purchase_fraction(
 def bulk_save(docs, workers=4):
     with ThreadPoolExecutor(max_workers=workers) as ex:
         list(ex.map(lambda d: d.save(), docs))
+        
+        
+# HELPER
+
+def buy_single(selection, reward_points, store_product, logger, now):
+    default_qty = selection.quantity or 1
+    purchased_points = (store_product.assigned_points or 0) * default_qty
+
+    gained_points = reward_points.total_gained_points or 0
+    assigned_points = reward_points.total_assigned_points or 0
+
+    purchase_type, purchase_fraction = calculate_purchase_fraction(
+        logger, reward_points, gained_points, assigned_points, purchased_points
+    )
+    if not isinstance(purchase_type, str):
+        return purchase_type, None  # retorna Response en tu flujo
+
+    # BUY (save → signals)
+    buy = RewardStoreProductSelectionBuy(
+        store_product_selection=selection,
+        created_time=now,
+        last_modified_time=now,
+        has_been_used=False,
+        order_number=generate_order_number(),
+        confirmation_number=generate_confirmation_number(),
+        pin_number=generate_pin_number(),
+        purchase_type=purchase_type,
+        purchase_fraction=purchase_fraction,
+    )
+    buy.save()
+    
+    reward_points.total_spent_points = (reward_points.total_spent_points or 0) + purchased_points
+    reward_points.last_modified_time = now
+    reward_points.save()
+    
+    cart = RewardStoreProductSelectionCart.objects(
+        store_product_selection=selection, is_bought=False
+    ).first()
+    if cart:
+        cart.is_bought = True
+        cart.last_modified_time = now
+        cart.save()
+
+    return buy, purchased_points

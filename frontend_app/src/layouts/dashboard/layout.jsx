@@ -111,7 +111,10 @@ export function DashboardLayout({ sx, children, header, data }) {
 
   const [pendingUsers, setPendingUsers] = useState(loadedPendingClients);
 
-  const [purchases, setPurchases] = useState(loadedPurchases);
+  const purchases = useMemo(
+    () => (Array.isArray(loadedPurchases) ? loadedPurchases : []),
+    [loadedPurchases]
+  );
 
   useEffect(() => {
     refetchUsers?.();
@@ -127,32 +130,48 @@ export function DashboardLayout({ sx, children, header, data }) {
   }, [refetchUsers, loadedPendingClients, refetchRewardPoints, loadedOfficeStaffUsers]);
 
   useEffect(() => {
-    if (loadedPurchases && Array.isArray(loadedPurchases) && loadedPurchases.length > 0) {
-      setPurchases(loadedPurchases);
+    if (roleName === 'client') {
+      refetchPurchases();
     }
-  }, [loadedPurchases]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roleName]);
 
   useEffect(() => {
-    const url = !isClient(roleName) ?
-      wsEndpoints.rewardPoints.storeProductSelectionBuy.all :
-      wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
-    const socket = new WebSocket(url);
-    socket.onerror = (errorEvent) => {
-      console.dir(errorEvent);
-      console.error('WebSocket error (toString):', errorEvent.toString());
-    };
-    socket.onmessage = (event) => {
+  const url = !isClient(roleName)
+    ? wsEndpoints.rewardPoints.storeProductSelectionBuy.all
+    : wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
+
+  const socket = new WebSocket(url);
+
+  let refetchTimer = null;
+  const safeRefetch = () => {
+    if (refetchTimer) return;
+    refetchTimer = setTimeout(() => {
+      refetchTimer = null;
+      refetchPurchases?.().catch((err) => console.error('Error fetching purchases data:', err));
+    }, 250); // throttle 250ms
+  };
+
+  socket.onerror = (e) => {
+    console.error('WebSocket error:', e);
+  };
+
+  socket.onmessage = (event) => {
+    try {
       const message = JSON.parse(event.data);
-      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
-        refetchPurchases().catch((err) => console.error('Error fetching purchases data:', err));
+      if (['created', 'updated', 'deleted'].includes(message?.type)) {
+        safeRefetch();
       }
-    };
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, [userLogged?.data?.username, roleName, refetchPurchases]);
+    } catch (e) {
+      console.error('Invalid WS payload:', e);
+    }
+  };
+
+  return () => {
+    try { socket.close(); } catch (e) { console.error('Error closing WebSocket:', e); }
+    if (refetchTimer) { clearTimeout(refetchTimer); refetchTimer = null; }
+  };
+}, [userLogged?.data?.username, roleName, refetchPurchases]);
 
   const newPurchases = useMemo(
     () => {

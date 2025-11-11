@@ -1,9 +1,8 @@
 from rest_framework.response import Response
 from django.utils import timezone
 from django.conf import settings
-from django.template.loader import render_to_string
+from django.db import transaction
 from api_authorization.models import LoginUser
-from api_authorization.repo_util.authorization_utils import send_generic_email
 from api_reward_points.models import (
      RewardStoreProduct,
      RewardStoreProductSelection,
@@ -14,71 +13,26 @@ from api_reward_points.models import (
 )
 from api_reward_points.repository.repo_util.store_product_selection_util import (
     bulk_save, 
-    calculate_purchase_fraction
+    buy_single,
 )
 from utils.data_util import (
-    transform_data_to_mongo,
-    create_notification,
-    create_tracking,
     to_aware,
-    generate_order_number,
-    generate_confirmation_number,
-    generate_pin_number,
 )
-from utils.s3_utils import generate_default_file_url
 from api_reward_points.tasks import (
     task_create_notification_async, 
     task_create_tracking_async, 
-    task_send_email_confirmation_buy_async
+    task_send_email_confirmation_buy_async,
+    task_process_store_product_selection_buy,
+    task_delete_store_product_selection_buy,
+    task_delete_list_store_product_selection_buys
 )
 import json
 import logging
+import uuid
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-# HELPER
-
-def buy_single(selection, reward_points, store_product, logger, now):
-    default_qty = selection.quantity or 1
-    purchased_points = (store_product.assigned_points or 0) * default_qty
-
-    gained_points = reward_points.total_gained_points or 0
-    assigned_points = reward_points.total_assigned_points or 0
-
-    purchase_type, purchase_fraction = calculate_purchase_fraction(
-        logger, reward_points, gained_points, assigned_points, purchased_points
-    )
-    if not isinstance(purchase_type, str):
-        return purchase_type, None  # retorna Response en tu flujo
-
-    # BUY (save → signals)
-    buy = RewardStoreProductSelectionBuy(
-        store_product_selection=selection,
-        created_time=now,
-        last_modified_time=now,
-        has_been_used=False,
-        order_number=generate_order_number(),
-        confirmation_number=generate_confirmation_number(),
-        pin_number=generate_pin_number(),
-        purchase_type=purchase_type,
-        purchase_fraction=purchase_fraction,
-    )
-    buy.save()
-    
-    reward_points.total_spent_points = (reward_points.total_spent_points or 0) + purchased_points
-    reward_points.last_modified_time = now
-    reward_points.save()
-    
-    cart = RewardStoreProductSelectionCart.objects(
-        store_product_selection=selection, is_bought=False
-    ).first()
-    if cart:
-        cart.is_bought = True
-        cart.last_modified_time = now
-        cart.save()
-
-    return buy, purchased_points
 
 ##################################################
 # CREATE STORE PRODUCT SELECTION CART
@@ -460,14 +414,24 @@ def create_store_product_selection_buy(request, id):
     client_id = data.get('clientId')
     user_reporter_payload = data.get('userReporter')
 
+    # --- Resuelve el usuario comprador ---
     user_reporter = None
     if user_reporter_payload:
-        payload = json.loads(user_reporter_payload)
-        user_reporter = LoginUser.objects(
-            username=payload.get('username')
-        ).only('id','username','email','is_approved').first()
+        try:
+            payload = json.loads(user_reporter_payload)
+        except Exception:
+            payload = {}
+        if payload:
+            user_reporter = LoginUser.objects(
+                username=payload.get('username')
+            ).only('id', 'username', 'email', 'is_approved').first()
 
-    client = LoginUser.objects(id=client_id).only('id','username','email','is_approved').first() if client_id else None
+    client = (
+        LoginUser.objects(id=client_id)
+        .only('id', 'username', 'email', 'is_approved')
+        .first()
+        if client_id else None
+    )
     user_buyer = client or user_reporter
 
     if not user_buyer:
@@ -477,15 +441,17 @@ def create_store_product_selection_buy(request, id):
         return Response({'error': 'You are not currently as APPROVED USER anymore'}, status=403)
 
     try:
-        # Siempre con user
+        # --- Validaciones ligeras ---
         reward_points = RewardPoints.objects(user=user_buyer).only(
-            'id','user','total_gained_points','total_assigned_points','total_spent_points'
+            'id', 'user', 'total_gained_points', 'total_assigned_points', 'total_spent_points'
         ).first()
         if not reward_points:
             logger.error("Reward points not found for the user")
             return Response({'error': 'Reward points not found for the user'}, status=404)
 
-        store_product = RewardStoreProduct.objects(id=id).only('id','name','assigned_points').first()
+        store_product = RewardStoreProduct.objects(id=id).only(
+            'id', 'name', 'assigned_points'
+        ).first()
         if not store_product:
             logger.error("Store product not found")
             return Response({'error': 'Store product not found'}, status=404)
@@ -495,106 +461,193 @@ def create_store_product_selection_buy(request, id):
             logger.error(f"Quantity is required for store product: {store_product.name}")
             return Response({'error': 'Quantity is required'}, status=400)
 
-        now_naive = timezone.now()
-        now = to_aware(now_naive)
+        now = to_aware(timezone.now())
 
-        # Verifica puntos una vez con costo total
         unit_points = store_product.assigned_points or 0
-        total_cost_points = unit_points * quantity
-        gained_points = reward_points.total_gained_points or 0
-        assigned_points = reward_points.total_assigned_points or 0
-        if gained_points + assigned_points < total_cost_points:
+        total_cost_points = int(unit_points * quantity)
+        gained_points = int(reward_points.total_gained_points or 0)
+        assigned_points = int(reward_points.total_assigned_points or 0)
+
+        if (gained_points + assigned_points) < total_cost_points:
             logger.error(f"Not enough points to redeem this store product: {store_product.name}")
             return Response({'error': 'Not enough points to redeem this store product'}, status=400)
 
-        # Crea las selections (insert no dispara signals; ok)
-        selections = [
-            RewardStoreProductSelection(
-                store_product=store_product,
-                user=user_buyer,
-                quantity=1,
-                created_time=now,
-                last_modified_time=now,
-            )
-            for _ in range(quantity)
-        ]
-        RewardStoreProductSelection.objects.insert(selections, load_bulk=False)
+        # --- Encola task y responde YA ---
+        job_id = str(uuid.uuid4())
+        payload_task = {
+            "user_id": str(user_buyer.id),
+            "store_product_id": str(store_product.id),
+            "quantity": int(quantity),
+            "job_id": job_id,
+            "now_iso": now.isoformat(),
+            "reserved_points": total_cost_points,
+            "user_reporter_username": user_reporter.username if user_reporter else "",
+            "expected_totals": {
+                "gained": gained_points,
+                "assigned": assigned_points,
+                "cost": total_cost_points,
+            },
+        }
 
-        # Usa buy_single por cada selection (buy.save + cart.save + rp.save)
-        list_buys = []
-        list_history = []
-        total_effective_points = 0
-
-        for sel in selections:
-            result, purchased_points = buy_single(sel, reward_points, store_product, logger, now)
-            if not isinstance(result, RewardStoreProductSelectionBuy):
-                # Error de calculate_purchase_fraction (Response)
-                return result
-
-            buy = result
-            list_buys.append(buy)
-            total_effective_points += purchased_points
-
-            # history ligero por cada buy (save para signals)
-            list_history.append(RewardPointsHistory(
-                created_time=now,
-                reward_points=reward_points,   # incluye user
-                action='spent',
-                gained_points=0,
-                spent_points=purchased_points,
-                description=f'You have used {purchased_points} points to redeem 1 {store_product.name}',
-                info={'buyId': str(buy.id), 'selectionId': str(sel.id)}
-            ))
-
-        # Guarda histories con .save() (para signals). Si prefieres, en bucle:
-        bulk_save(list_history)
-
-        # Notificación global async
-        info = f'has redeemed {len(list_buys)} orders of {store_product.name.upper()} and total points {total_effective_points}'
-        task_create_notification_async.delay(
-            module='store_product_selection_buys',
-            info_id=str(list_buys[0].id),
-            info=info,
-            type='create_store_product_selection_buy',
-            username=user_reporter.username if user_reporter else '',
-        )
-
-        # Email async
-        list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
-        if settings.ENVIRONMENT == 'prod':
-            if user_reporter and user_reporter.email and user_reporter.email not in list_receivers:
-                list_receivers.append(user_reporter.email)
-
-        task_send_email_confirmation_buy_async.delay(
-            type='purchase',
-            points=total_effective_points,
-            user_id=str(user_buyer.id),
-            purchase_ids=[str(b.id) for b in list_buys],
-            list_receivers=list_receivers
-        )
-
-        # Tracking async por buy (mínimo)
-        for buy in list_buys:
-            task_create_tracking_async.delay(
-                user_reporter_id=str(user_buyer.id) if user_buyer else None,
-                action='create store product selection buy',
-                id=str(buy.id),
-                type='RewardStoreProductSelectionBuy',
-                name=user_buyer.username,
-                tracking_info={
-                    'buyId': str(buy.id), 
-                    'storeProductId': str(store_product.id)
-                }
-            )
+        def _enqueue():
+            task_process_store_product_selection_buy.delay(**payload_task)
+        
+        transaction.on_commit(_enqueue)
 
         return Response({
-            'message': 'Store product selection buy created successfully',
-            'data': json.loads(list_buys[-1].to_json()),
-        }, status=201)
+            "message": "Purchase is being processed",
+            "status": "pending",
+            "jobId": job_id,
+            "product": {"id": str(store_product.id), "name": store_product.name},
+            "quantity": int(quantity),
+            "estimatedPoints": total_cost_points,
+        }, status=202)
 
     except Exception as e:
-        logger.error(f"Error creating store product selection buy: {str(e)}")
-        return Response({'error': str(e)}, status=500)
+        logger.exception("Error creating store product selection buy")
+        return Response({'error': 'Internal error processing purchase'}, status=500)
+
+# def create_store_product_selection_buy(request, id):
+#     data = request.data
+
+#     client_id = data.get('clientId')
+#     user_reporter_payload = data.get('userReporter')
+
+#     user_reporter = None
+#     if user_reporter_payload:
+#         payload = json.loads(user_reporter_payload)
+#         user_reporter = LoginUser.objects(
+#             username=payload.get('username')
+#         ).only('id','username','email','is_approved').first()
+
+#     client = LoginUser.objects(id=client_id).only('id','username','email','is_approved').first() if client_id else None
+#     user_buyer = client or user_reporter
+
+#     if not user_buyer:
+#         return Response({'error': 'User reporter not found'}, status=404)
+#     if not user_buyer.is_approved:
+#         logger.error("User buyer is not approved")
+#         return Response({'error': 'You are not currently as APPROVED USER anymore'}, status=403)
+
+#     try:
+#         # Siempre con user
+#         reward_points = RewardPoints.objects(user=user_buyer).only(
+#             'id','user','total_gained_points','total_assigned_points','total_spent_points'
+#         ).first()
+#         if not reward_points:
+#             logger.error("Reward points not found for the user")
+#             return Response({'error': 'Reward points not found for the user'}, status=404)
+
+#         store_product = RewardStoreProduct.objects(id=id).only('id','name','assigned_points').first()
+#         if not store_product:
+#             logger.error("Store product not found")
+#             return Response({'error': 'Store product not found'}, status=404)
+
+#         quantity = data.get('quantity')
+#         if not quantity or quantity <= 0:
+#             logger.error(f"Quantity is required for store product: {store_product.name}")
+#             return Response({'error': 'Quantity is required'}, status=400)
+
+#         now_naive = timezone.now()
+#         now = to_aware(now_naive)
+
+#         # Verifica puntos una vez con costo total
+#         unit_points = store_product.assigned_points or 0
+#         total_cost_points = unit_points * quantity
+#         gained_points = reward_points.total_gained_points or 0
+#         assigned_points = reward_points.total_assigned_points or 0
+#         if gained_points + assigned_points < total_cost_points:
+#             logger.error(f"Not enough points to redeem this store product: {store_product.name}")
+#             return Response({'error': 'Not enough points to redeem this store product'}, status=400)
+
+#         # Crea las selections (insert no dispara signals; ok)
+#         selections = [
+#             RewardStoreProductSelection(
+#                 store_product=store_product,
+#                 user=user_buyer,
+#                 quantity=1,
+#                 created_time=now,
+#                 last_modified_time=now,
+#             )
+#             for _ in range(quantity)
+#         ]
+#         RewardStoreProductSelection.objects.insert(selections, load_bulk=False)
+
+#         # Usa buy_single por cada selection (buy.save + cart.save + rp.save)
+#         list_buys = []
+#         list_history = []
+#         total_effective_points = 0
+
+#         for sel in selections:
+#             result, purchased_points = buy_single(sel, reward_points, store_product, logger, now)
+#             if not isinstance(result, RewardStoreProductSelectionBuy):
+#                 # Error de calculate_purchase_fraction (Response)
+#                 return result
+
+#             buy = result
+#             list_buys.append(buy)
+#             total_effective_points += purchased_points
+
+#             # history ligero por cada buy (save para signals)
+#             list_history.append(RewardPointsHistory(
+#                 created_time=now,
+#                 reward_points=reward_points,   # incluye user
+#                 action='spent',
+#                 gained_points=0,
+#                 spent_points=purchased_points,
+#                 description=f'You have used {purchased_points} points to redeem 1 {store_product.name}',
+#                 info={'buyId': str(buy.id), 'selectionId': str(sel.id)}
+#             ))
+
+#         # Guarda histories con .save() (para signals). Si prefieres, en bucle:
+#         bulk_save(list_history)
+
+#         # Notificación global async
+#         info = f'has redeemed {len(list_buys)} orders of {store_product.name.upper()} and total points {total_effective_points}'
+#         task_create_notification_async.delay(
+#             module='store_product_selection_buys',
+#             info_id=str(list_buys[0].id),
+#             info=info,
+#             type='create_store_product_selection_buy',
+#             username=user_reporter.username if user_reporter else '',
+#         )
+
+#         # Email async
+#         list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
+#         if settings.ENVIRONMENT == 'prod':
+#             if user_reporter and user_reporter.email and user_reporter.email not in list_receivers:
+#                 list_receivers.append(user_reporter.email)
+
+#         task_send_email_confirmation_buy_async.delay(
+#             type='purchase',
+#             points=total_effective_points,
+#             user_id=str(user_buyer.id),
+#             purchase_ids=[str(b.id) for b in list_buys],
+#             list_receivers=list_receivers
+#         )
+
+#         # Tracking async por buy (mínimo)
+#         for buy in list_buys:
+#             task_create_tracking_async.delay(
+#                 user_reporter_id=str(user_buyer.id) if user_buyer else None,
+#                 action='create store product selection buy',
+#                 id=str(buy.id),
+#                 type='RewardStoreProductSelectionBuy',
+#                 name=user_buyer.username,
+#                 tracking_info={
+#                     'buyId': str(buy.id), 
+#                     'storeProductId': str(store_product.id)
+#                 }
+#             )
+
+#         return Response({
+#             'message': 'Store product selection buy created successfully',
+#             'data': json.loads(list_buys[-1].to_json()),
+#         }, status=201)
+
+#     except Exception as e:
+#         logger.error(f"Error creating store product selection buy: {str(e)}")
+#         return Response({'error': str(e)}, status=500)
 
 
 ########################################################
@@ -604,95 +657,52 @@ def create_store_product_selection_buy(request, id):
 def delete_store_product_selection_buy(request, id):
     data = request.data
     payload = data.get('userReporter')
+
+    # Valida reportador mínimo (sin tocar puntos aún)
     user_reporter = None
     if payload:
-        u = json.loads(payload)
-        user_reporter = LoginUser.objects(username=u.get('username')).only('id','username','is_approved').first()
+        try:
+            u = json.loads(payload)
+        except Exception:
+            u = {}
+        if u:
+            user_reporter = LoginUser.objects(
+                username=u.get('username')
+            ).only('id','username','is_approved','email').first()
+
     if not user_reporter:
         return Response({'error': 'User reporter not found'}, status=404)
     if not user_reporter.is_approved:
         return Response({'error': 'You are not currently as APPROVED USER anymore'}, status=403)
 
-    try:
-        buy = RewardStoreProductSelectionBuy.objects(id=id).first()
-        if not buy:
-            return Response({'error': 'Order not found'}, status=404)
-        if buy.has_been_used:
-            return Response({'error': 'Cannot delete a used redeemed order'}, status=400)
+    # Verificación ligera de existencia y estado (sin mutar nada)
+    buy = RewardStoreProductSelectionBuy.objects(id=id).only('id','has_been_used','order_number').first()
+    if not buy:
+        return Response({'error': 'Order not found'}, status=404)
+    if buy.has_been_used:
+        return Response({'error': 'Cannot delete a used redeemed order'}, status=400)
 
-        sel = RewardStoreProductSelection.objects(id=buy.store_product_selection.id).first()
-        if not sel:
-            return Response({'error': 'Selection not found'}, status=404)
+    job_id = str(uuid.uuid4())
+    task_payload = {
+        "job_id": job_id,
+        "buy_id": str(buy.id),
+        "user_reporter_id": str(user_reporter.id),
+        "user_reporter_username": user_reporter.username,
+        "send_email_to_user": True,  # tu lógica interna decidirá si agrega el email del user
+    }
 
-        user = sel.user
-        if not user:
-            return Response({'error': 'User not found for the store product selection'}, status=404)
+    def _enqueue():
+        task_delete_store_product_selection_buy.delay(**task_payload)
 
-        rp = RewardPoints.objects(user=user).only('id','user','total_spent_points').first()
-        if not rp:
-            return Response({'error': 'User reward points not found'}, status=404)
+    transaction.on_commit(_enqueue)
 
-        sp = RewardStoreProduct.objects(id=sel.store_product.id).only('id','name','assigned_points').first()
-        purchased_points = (sp.assigned_points or 0) * (sel.quantity or 1)
-
-        # ajusta puntos con save() (mantén tus signals)
-        rp.total_spent_points = max((rp.total_spent_points or 0) - purchased_points, 0)
-        rp.last_modified_time = to_aware(timezone.now())
-        rp.save()
-
-        # history
-        RewardPointsHistory(
-            created_time=timezone.now(),
-            reward_points=rp,
-            action='refunded',
-            gained_points=purchased_points,
-            spent_points=0,
-            description=f'Refunded {purchased_points} points from redeem {sel.quantity} of {sp.name}',
-            info={'buyId': str(buy.id)}
-        ).save()
-
-        # tracking + notif async
-        task_create_tracking_async.delay(
-            user_reporter_id=str(user_reporter.id),
-            action='delete store product selection buy',
-            id=str(buy.id), 
-            type='RewardStoreProductSelectionBuy',
-            name=user_reporter.username,
-            tracking_info={
-                'buyId': str(buy.id),
-                'selectionId': str(sel.id),
-                'storeProductId': str(sp.id)
-            }
-        )
-        task_create_notification_async.delay(
-            module='store_product_selection_buys',
-            info_id=str(buy.id),
-            info=f'has deleted a redeemed order # {buy.order_number} of {sp.name.upper()} with quantity {sel.quantity} and refunded {purchased_points} points to user {user.username}',
-            type='delete_store_product_selection_buy',
-            username=user_reporter.username,
-        )
-
-        # email async
-        list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
-        if settings.ENVIRONMENT == 'prod' and user.email and user.email not in list_receivers:
-            list_receivers.append(user.email)
-        task_send_email_confirmation_buy_async.delay(
-            type='refund',
-            points=purchased_points,
-            user_id=str(user.id),
-            purchase_ids=[str(buy.id)],
-            list_receivers=list_receivers
-        )
-
-        buy.delete()  # signals
-        sel.delete()  # signals
-
-        return Response({'message': 'Store product selection buy deleted successfully',
-                         'data': json.loads(buy.to_json())}, status=201)
-
-    except Exception as e:
-        logger.error(f"Error deleting store product selection buy: {str(e)}")
-        return Response({'error': str(e)}, status=500)
+    return Response({
+        "message": "Delete is being processed",
+        "status": "pending",
+        "jobId": job_id,
+        "buyId": str(buy.id),
+        "orderNumber": getattr(buy, "order_number", None),
+    }, status=202)
 
 ##########################################################
 # DELETE LIST OF STORE PRODUCT SELECTION BUYS
@@ -701,115 +711,56 @@ def delete_store_product_selection_buy(request, id):
 def delete_list_store_product_selection_buys(request):
     data = request.data
     payload = data.get('userReporter')
+
     user_reporter = None
     if payload:
-        u = json.loads(payload)
-        user_reporter = LoginUser.objects(username=u.get('username')).only('id','username','is_approved').first()
+        try:
+            u = json.loads(payload)
+        except Exception:
+            u = {}
+        if u:
+            user_reporter = LoginUser.objects(
+                username=u.get('username')
+            ).only('id','username','is_approved','email').first()
+
     if not user_reporter:
         return Response({'error': 'User reporter not found'}, status=404)
     if not user_reporter.is_approved:
         return Response({'error': 'You are not currently as APPROVED USER anymore'}, status=403)
 
-    try:
-        ids = data.get('ids')
-        if not ids or not isinstance(ids, list):
-            return Response({'error': 'IDs list is required'}, status=400)
+    ids = data.get('ids')
+    if not ids or not isinstance(ids, list):
+        return Response({'error': 'IDs list is required'}, status=400)
 
-        buys = list(RewardStoreProductSelectionBuy.objects(id__in=ids))
-        if not buys:
-            return Response({'error': 'No store product selection buys found'}, status=404)
+    # Chequeo ligero: existen y no usados (si alguno está usado, corta)
+    qs = RewardStoreProductSelectionBuy.objects(id__in=ids).only('id','has_been_used')
+    found = list(qs)
+    if not found:
+        return Response({'error': 'No store product selection buys found'}, status=404)
+    if any(b.has_been_used for b in found):
+        return Response({'error': 'Cannot delete a used store product selection buy'}, status=400)
 
-        total_purchased_points = 0
-        tracking_infos = []
-        by_user_buys = {}
+    job_id = str(uuid.uuid4())
+    task_payload = {
+        "job_id": job_id,
+        "buy_ids": [str(b.id) for b in found],
+        "user_reporter_id": str(user_reporter.id),
+        "user_reporter_username": user_reporter.username,
+        "send_email_to_user": True,
+    }
 
-        for buy in buys:
-            if not buy: 
-                continue
-            sel = RewardStoreProductSelection.objects(id=buy.store_product_selection.id).first()
-            if not sel:
-                return Response({'error': 'Store product selection not found'}, status=404)
-            if buy.has_been_used:
-                return Response({'error': 'Cannot delete a used store product selection buy'}, status=400)
+    def _enqueue():
+        task_delete_list_store_product_selection_buys.delay(**task_payload)
 
-            user = sel.user
-            rp = RewardPoints.objects(user=user).only('id','user','total_spent_points').first()
-            sp = RewardStoreProduct.objects(id=sel.store_product.id).only('id','name','assigned_points').first()
+    transaction.on_commit(_enqueue)
 
-            purchased_points = (sp.assigned_points or 0) * (sel.quantity or 1)
-            total_purchased_points += purchased_points
-
-            rp.total_spent_points = max((rp.total_spent_points or 0) - purchased_points, 0)
-            rp.last_modified_time = to_aware(timezone.now())
-            rp.save()
-
-            RewardPointsHistory(
-                created_time=timezone.now(),
-                reward_points=rp,
-                action='refunded',
-                gained_points=purchased_points,
-                spent_points=0,
-                description=f'Refunded {purchased_points} points from redeemed of {sel.quantity} {sp.name}',
-                info={'buyId': str(buy.id)}
-            ).save()
-
-            tracking_infos.append({
-                'buyId': str(buy.id), 
-                'selectionId': str(sel.id),
-                'storeProductId': str(sp.id)
-            })
-            by_user_buys.setdefault(str(user.id), {'user': user, 'buys': [], 'total_refunded': 0})['buys'].append(buy)
-            by_user_buys[str(user.id)]['total_refunded'] += purchased_points
-
-            # signals de borrado
-            buy.delete()
-            sel.delete()
-
-        task_create_tracking_async.delay(
-            user_reporter_id=str(user_reporter.id),
-            action=f'delete list of {len(buys)} store product selection buys',
-            id=','.join(str(b.id) for b in buys),
-            type='RewardStoreProductSelectionBuy',
-            name=user_reporter.username,
-            tracking_info={'data': tracking_infos}
-        )
-        task_create_notification_async.delay(
-            module='store_product_selection_buys',
-            info_id='list',
-            info=f'has deleted a list of {len(buys)} redeemed orders and refunded {total_purchased_points} points',
-            type='delete_list_store_product_selection_buy',
-            username=user_reporter.username,
-        )
-
-        # emails por usuario
-        for _, entry in by_user_buys.items():
-            user = entry['user']
-            user_buys = entry['buys']
-            refunded_points = 0
-            for b in user_buys:
-                s = RewardStoreProductSelection.objects(id=b.store_product_selection.id).first()
-                # si ya se borró selection arriba, calcula antes: alternativa simple:
-                # mejor calculado arriba, pero aquí dejamos 0 adicional
-                pass
-            # Si quieres exacto, acumúlalo antes de borrar:
-            # (ya lo acumulamos en total_purchased_points global)
-            list_receivers = settings.DJANGO_LIST_SUPPORT_EMAIL_RECEIPTS
-            if settings.ENVIRONMENT == 'prod' and user.email and user.email not in list_receivers:
-                list_receivers.append(user.email)
-            task_send_email_confirmation_buy_async.delay(
-                type='refund',
-                points=entry['total_refunded'],
-                user_id=str(user.id),
-                purchase_ids=[str(b.id) for b in user_buys],
-                list_receivers=list_receivers
-            )
-
-        return Response({'message': 'Store product selection buys deleted successfully',
-                         'data': {}}, status=201)
-
-    except Exception as e:
-        logger.error(f"Error creating store product selection buy: {str(e)}")
-        return Response({'error': str(e)}, status=500)
+    return Response({
+        "message": "Bulk delete is being processed",
+        "status": "pending",
+        "jobId": job_id,
+        "count": len(found),
+        "ids": [str(b.id) for b in found],
+    }, status=202)
     
     
 ##########################################################
