@@ -52,6 +52,8 @@ export function PurchaseTableRow({
 
   const roleName = useMemo(() => userLogged?.data?.user_role?.name, [userLogged]);
 
+  // console.log('ROLE NAME IN PURCHASE TABLE ROW:', roleName);
+
   const { isMobile } = useContext(LoadingContext);
 
   const confirm = useBoolean();
@@ -489,7 +491,7 @@ export function PurchaseTableRow({
               Delete Order
             </MenuItem>
           ]}
-          {(isAdministrator(roleName) && !row.hasBeenUsed) && [
+          {(isAdministrator(roleName) && row.hasBeenUsed) && [
             <MenuItem
               key='edit-purchase'
               onClick={() => {

@@ -342,7 +342,7 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                     >
                       Reward Orders
                     </Typography>
-                    {([...oldPurchases, ...newPurchases]?.length > 0 && !isNavMini) && (
+                    {([...newPurchases]?.length > 0 && !isNavMini) && (
                       <Box
                         key='purchase-all-orders-count'
                         sx={{
@@ -357,7 +357,7 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                           color="info"
                           sx={{ ml: 1, gap: 0 }}
                         >
-                          {[...oldPurchases, ...newPurchases]?.length}
+                          {[...newPurchases]?.length}
                           <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
                         </Label>
                       </Box>
