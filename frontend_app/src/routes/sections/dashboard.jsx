@@ -285,7 +285,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <PurchaseListPage /> : <Page403 />,
                 index: true
               },
@@ -294,7 +294,7 @@ export const dashboardRoutes = (user) => [
                 element: listRolesAndSubroles(
                   user?.user_role?.name
                 ).includes(
-                  CONFIG.roles.administrator
+                  CONFIG.roles.officeStaff
                 ) ? <PurchaseListPage /> : <Page403 />
               },
               {

@@ -36,7 +36,7 @@ import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { TableCustomPaginationZohoStyleRow } from 'src/components/table/table-pagination-custom-zoho-style-row';
-import { isAdministrator } from 'src/utils/check-permissions';
+import { isAdministrator, isClient } from 'src/utils/check-permissions';
 import {
   useTable,
   rowInPage,
@@ -48,10 +48,12 @@ import {
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { PurchaseAddOrderModalForm } from 'src/sections/purchase/purchase-add-order-modal-form';
 
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserClientTableRow } from '../user-client-table-row';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+
 
 
 // ----------------------------------------------------------------------
@@ -412,6 +414,26 @@ export function UserClientListView() {
     [table]
   );
 
+  const openAddOrder = useBoolean();
+
+  const renderAddOrder = (
+    <Button
+      variant="contained"
+      startIcon={<Iconify icon="mingcute:add-line" />}
+      sx={{
+        bgcolor: 'primary.dark',
+        '&:hover': {
+          bgcolor: 'primary.main',
+        },
+        height: 40,
+        mt: 1
+      }}
+      onClick={openAddOrder.onTrue}
+    >
+      New order
+    </Button>
+  );
+
   if (loadingClients) {
     return (
       <DashboardContent>
@@ -445,14 +467,19 @@ export function UserClientListView() {
   return (
     <>
       <DashboardContent>
-        <CustomBreadcrumbs
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.general.analytics },
-            { name: 'Client', href: paths.dashboard.client.list },
-            { name: 'Client List' },
-          ]}
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <CustomBreadcrumbs
+            links={[
+              { name: 'Dashboard', href: paths.dashboard.general.analytics },
+              { name: 'Client', href: paths.dashboard.client.list },
+              { name: 'Client List' },
+            ]}
+            sx={{ mb: { xs: 3, md: 5 } }}
+          />
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 3 }}>
+            {!isClient(userLogged?.data?.user_role?.name) && renderAddOrder}
+          </Box>
+        </Box>
 
         <Card>
           <Tabs
@@ -608,6 +635,10 @@ export function UserClientListView() {
           </Box>
         </Card>
       </DashboardContent>
+
+      <PurchaseAddOrderModalForm
+        openAddOrder={openAddOrder}
+      />
 
       <ConfirmDialog
         open={confirm.value}

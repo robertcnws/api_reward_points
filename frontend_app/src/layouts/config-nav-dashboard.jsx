@@ -314,7 +314,7 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
             },
             
           ] : []),
-          ...(userLogged && isAdministrator(userRole) ? [
+          ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
             {
               key: `${paths.dashboard.purchase.root}-9`,
               title: (

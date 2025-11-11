@@ -13,7 +13,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { fDateTime } from 'src/utils/format-time';
 import { fNumber } from 'src/utils/format-number';
-import { isClient } from 'src/utils/check-permissions';
+import { isAdministrator, isClient, isOfficeStaff } from 'src/utils/check-permissions';
 import { generateRedeemedReport } from 'src/utils/generate-redeemed-report-pdf';
 import { LoadingButton } from '@mui/lab';
 
@@ -444,7 +444,7 @@ export function PurchaseTableRow({
               Print Report
             </MenuItem>
           )}
-          {(!row?.hasBeenUsed && !isClient(roleName)) && (
+          {(!row?.hasBeenUsed && isAdministrator(roleName)) && (
             <MenuItem
               onClick={() => {
                 confirmRefund.onTrue();
@@ -459,7 +459,7 @@ export function PurchaseTableRow({
               {row.hasRequestedRefund ? 'Cancel Refund Request' : 'Request Refund'}
             </MenuItem>
           )}
-          {(roleName !== 'client' && !row.hasRequestedRefund) && [
+          {(isAdministrator(roleName) || isOfficeStaff(roleName)) && (!row.hasRequestedRefund && !row.hasBeenUsed) && [
             <MenuItem
               key="use-purchase"
               onClick={() => {
@@ -476,7 +476,7 @@ export function PurchaseTableRow({
               Use Order
             </MenuItem>
           ]}
-          {(roleName !== 'client' && !row.hasBeenUsed) && [
+          {(isAdministrator(roleName) && !row.hasBeenUsed) && [
             <MenuItem
               key='edit-purchase'
               onClick={() => {
@@ -489,7 +489,7 @@ export function PurchaseTableRow({
               Delete Order
             </MenuItem>
           ]}
-          {(roleName !== 'client' && row.hasBeenUsed) && [
+          {(isAdministrator(roleName) && !row.hasBeenUsed) && [
             <MenuItem
               key='edit-purchase'
               onClick={() => {
