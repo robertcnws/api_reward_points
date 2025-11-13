@@ -172,7 +172,8 @@ def event_reward_clients(
     document, 
     full_selection_user_role,
     full_selection_invoices,
-    full_selection_sales_orders
+    full_selection_sales_orders,
+    full_selection_customerportal_permissions
 ):
     return {
         'type': 'reward_clients_update',
@@ -221,6 +222,7 @@ def event_reward_clients(
                 "salesOrders": full_selection_sales_orders if document.sales_orders else [],
                 "rewardPointsId": document.reward_points_id,
                 "isSyncWithZoho": document.is_sync_with_zoho,
+                "customerportalPermissions": full_selection_customerportal_permissions if document.customerportal_permissions else [],
             }
         }
     }

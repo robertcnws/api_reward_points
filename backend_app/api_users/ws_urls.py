@@ -5,6 +5,7 @@ from .consumers import (
     UserConsumer,
     NotificationUserConsumer,
     ExternalUserConsumer,
+    SystemPermissionConsumer,
 )
 
 websocket_urlpatterns = [
@@ -12,4 +13,5 @@ websocket_urlpatterns = [
     path('api/users/ws/users/', UserConsumer.as_asgi(), name='ws_users'),
     path('api/users/ws/external-users/', ExternalUserConsumer.as_asgi(), name='ws_external_users'),
     path('api/users/ws/notification-users/', NotificationUserConsumer.as_asgi(), name='ws_notification_users'),
+    path('api/users/ws/permissions/', SystemPermissionConsumer.as_asgi(), name='ws_system_permissions'),
 ]

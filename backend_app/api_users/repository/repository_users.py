@@ -1,5 +1,6 @@
 from api_users.repository import repository_notifications, repository_trackings
 from rest_framework.response import Response
+from bson import ObjectId
 from django.conf import settings
 from django.utils import timezone
 from utils.data_util import (
@@ -7,7 +8,7 @@ from utils.data_util import (
     create_notification,
     create_tracking,
 )
-from api_authorization.models import LoginUser, UserRole
+from api_authorization.models import LoginUser, UserRole, SystemPermission
 from api_users.tasks import (
     task_send_approved_email,
     task_create_tracking_async,
@@ -979,3 +980,64 @@ def change_active_user(request, id):
     
     except LoginUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
+        
+        
+#############################################
+# SET PERMISSIONS TO USER
+#############################################
+
+def set_permissions_to_user(request, id):
+    data = request.data
+    user_reporter = data.get('userReporter')
+    try:
+        user = LoginUser.objects(id=id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+        
+        raw_ids = data.get('permissions') or []
+        perm_ids = []
+        for x in raw_ids:
+            try:
+                perm_ids.append(ObjectId(str(x)))
+            except Exception:
+                continue
+
+        permissions = list(
+            SystemPermission.objects(id__in=perm_ids).only(
+                'id', 'name', 'key', 'description', 'created_time', 'last_modified_time'
+            )
+        )
+        user.customerportal_permissions = []
+        user.customerportal_permissions = permissions
+        user.save()
+
+        tracking_info = transform_data_to_mongo(
+            user,
+            include_fields=['customerportal_permissions', 'username', 'id']
+        )
+
+        user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
+
+        if user_reporter:
+
+            create_tracking(
+                user_reporter=user_reporter,
+                action=f'set permissions to {user.customerportal_permissions}',
+                object_id=user.id,
+                object_type='LoginUser',
+                object_name=user.username,
+                managed_data=tracking_info
+            )
+
+            module = 'users'
+            info = f'has set permissions to user ({user.username})'
+            info_id = user.id
+            type = 'set_permissions_user'
+            create_notification(module, info_id, info, type, user_reporter['username'])
+
+            return Response({'message': 'User permissions set successfully'}, status=200)
+
+        return Response({'error': 'User reporter not found'}, status=404)
+
+    except LoginUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)

@@ -25,6 +25,11 @@ export const CONFIG = {
     client: import.meta.env.VITE_ROLE_CLIENT ?? '',
     officeStaff: import.meta.env.VITE_ROLE_OFFICE_STAFF ?? '',
   },
+  permissions: {
+    customerportal: {
+      canSeeItemsInStock: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_STOCK ?? '',
+    }
+  },
   /**
    * Auth
    * @method jwt | amplify | firebase | supabase | auth0

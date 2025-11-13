@@ -3,12 +3,12 @@ import { gql, useQuery } from '@apollo/client';
 
 import { buildSelection } from 'src/utils/graphql-client';
 
-export function useRewardClientById(id, fieldsDescriptor) {
+export function useRewardCustomerportalPermissionByKey(key, fieldsDescriptor) {
   const QUERY = useMemo(() => {
     const selection = buildSelection(fieldsDescriptor).join('\n      ');
     return gql`
-      query RewardClientById($id: String!) {
-        rewardClientById(id: $id) {
+      query RewardCustomerportalPermissionByKey($key: String!) {
+        customerportalPermissionByKey(key: $key) {
           ${selection}
         }
       }
@@ -17,24 +17,24 @@ export function useRewardClientById(id, fieldsDescriptor) {
 
   const { loading, error, data, refetch } = useQuery(QUERY, {
     context: {
-      clientName: 'RewardPoints',
+      clientName: 'RewardAuthorization',
     },
-    variables: { id },
-    skip: !id,
+    variables: { key },
+    skip: !key,
   });
 
-  const value = data?.rewardClientById || {};
+  const value = data?.customerportalPermissionByKey || {};
 
   return { loading, error, data: value, refetch };
 }
 
 
-export function useAllRewardClients(fieldsDescriptor) {
+export function useAllRewardCustomerportalPermissions(fieldsDescriptor) {
   const QUERY = useMemo(() => {
     const selection = buildSelection(fieldsDescriptor).join('\n      ');
     return gql`
-      query AllRewardClients {
-        allRewardClients {
+      query AllRewardCustomerportalPermissions {
+        allCustomerportalPermissions {
           ${selection}
         }
       }
@@ -43,11 +43,11 @@ export function useAllRewardClients(fieldsDescriptor) {
 
   const { loading, error, data, refetch } = useQuery(QUERY, {
     context: {
-      clientName: 'RewardPoints',
+      clientName: 'RewardAuthorization',
     },
   });
 
-  const value = data?.allRewardClients || [];
+  const value = data?.allCustomerportalPermissions || [];
 
   return { loading, error, data: value, refetch };
 }

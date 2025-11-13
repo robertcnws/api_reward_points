@@ -1,9 +1,10 @@
 # reward_clients_type.py
+from api_authorization.schema import SystemPermissionType
 import graphene
 from graphene_mongo import MongoengineObjectType
 from bson import ObjectId, DBRef
 
-from api_authorization.models import LoginUser, UserRole
+from api_authorization.models import LoginUser, SystemPermission, UserRole
 from api_reward_points.models import RewardPoints
 from utils.json_datetime import datetime_to_timezone
 
@@ -18,6 +19,25 @@ from api_reward_points.helper_batch import (
     batch_load_sales_orders,
 )
 
+def _extract_perm_ids(items):
+    ids = []
+    for x in items or []:
+        if hasattr(x, 'id'):
+            ids.append(x.id)
+            continue
+        if isinstance(x, DBRef):
+            ids.append(x.id)
+            continue
+        if isinstance(x, ObjectId):
+            ids.append(x)
+            continue
+        if isinstance(x, str):
+            try:
+                ids.append(ObjectId(x))
+            except Exception:
+                pass
+    return ids
+
 class RewardClientsType(MongoengineObjectType):
     invoices = graphene.List(RewardInvoiceType)
     sales_orders = graphene.List(RewardSalesOrderType)
@@ -26,6 +46,7 @@ class RewardClientsType(MongoengineObjectType):
     total_available_points = graphene.Int()
     reward_points_id = graphene.String()
     is_sync_with_zoho = graphene.Boolean()
+    customerportal_permissions = graphene.List(SystemPermissionType)
 
     class Meta:
         model = LoginUser
@@ -87,6 +108,19 @@ class RewardClientsType(MongoengineObjectType):
     def resolve_is_sync_with_zoho(self, info):
         rp = get_rp_for_user(self, info.context, only_fields=["is_sync_with_zoho"])
         return bool(rp and rp.is_sync_with_zoho)
+    
+    def resolve_customerportal_permissions(self, info):
+        items = self.customerportal_permissions or []
+        ids = _extract_perm_ids(items)
+        if not ids:
+            return []
+        docs = list(
+            SystemPermission.objects(id__in=ids)
+            .only('id', 'name', 'key', 'description', 'created_time', 'last_modified_time')
+        )
+        by_id = {str(d.id): d for d in docs}
+        ordered = [by_id.get(str(_id)) for _id in ids if str(_id) in by_id]
+        return [d for d in ordered if d is not None]
 
 
 # ======= Query con warmup + .only() =======
@@ -109,7 +143,8 @@ class Query(graphene.ObjectType):
                 "key_avatar", "avatar_url", "is_verified", "is_approved",
                 "approved_time", "disapproval_count", "country", "address",
                 "zip_code", "state", "city", "school", "about",
-                "facebook_link", "instagram_link", "linkedin_link", "twitter_link",
+                "facebook_link", "instagram_link", "linkedin_link", "twitter_link", 
+                "customerportal_permissions",
             )
             .no_dereference()   # evita dereferenciar user_role si es ReferenceField
         )

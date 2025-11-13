@@ -19,6 +19,9 @@ const ItemPage = lazy(() => import('src/pages/dashboard/items'));
 // User Roles
 const UserRoleDefaultListPage = lazy(() => import('src/pages/dashboard/user-role/list'));
 const UserRoleDefaultCreatePage = lazy(() => import('src/pages/dashboard/user-role/new'));
+// Permissions
+const PermissionListPage = lazy(() => import('src/pages/dashboard/permission/list'));
+const PermissionCreatePage = lazy(() => import('src/pages/dashboard/permission/new'));
 // User
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -136,6 +139,43 @@ export const dashboardRoutes = (user) => [
                 ).includes(
                   CONFIG.roles.superadmin
                 ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+              },
+            ],
+          },
+          {
+            path: 'config/permission',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PermissionListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PermissionListPage /> : <Page403 />
+              },
+              {
+                path: 'new',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PermissionCreatePage /> : <Page403 />
+              },
+              {
+                path: ':id/edit',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.administrator
+                ) ? <PermissionCreatePage /> : <Page403 />
               },
             ],
           },

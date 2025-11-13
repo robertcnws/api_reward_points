@@ -373,6 +373,7 @@ CELERY_ENABLE_UTC = False
 # Celery Beat Schedule
 CELERY_TASK_REVIEW_USER_POINTS_TO_SECONDS = env.int('CELERY_TASK_REVIEW_USER_POINTS_TO_SECONDS', default=600)  # 10 minutes
 CELERY_TASK_REVIEW_USER_POINTS_MIN = env('CELERY_TASK_REVIEW_USER_POINTS_MIN', default='*/30')  # Every 5 minute
+CELERY_TASK_PROCESS_ITEMS_MIN = env('CELERY_TASK_PROCESS_ITEMS_MIN', default='*/5')  # Every 5 minute
 CELERY_TASK_DOWNLOAD_BACKUP_MONGODB_MIN = env('CELERY_TASK_DOWNLOAD_BACKUP_MONGODB_MIN', default='*/59')  # Every 59 minute
 CELERY_TASK_REVIEW_USER_POINTS_HOUR = env('CELERY_TASK_REVIEW_USER_POINTS_HOUR', default='7-17')
 CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK = env('CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK', default='*')
@@ -398,6 +399,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_daily',
         'schedule': crontab(minute=0, hour=8, day_of_week='*'),
         # 'schedule': crontab(minute='*/2', hour='7-17', day_of_week='*'),
+    },
+    'run-task-sequence-process-items-min': {
+        'task': 'api_reward_points_async_task_sequence.tasks.task_sequence_process_items_min',
+        'schedule': crontab(
+            minute=CELERY_TASK_PROCESS_ITEMS_MIN,
+            hour=CELERY_TASK_REVIEW_USER_POINTS_HOUR,
+            day_of_week=CELERY_TASK_REVIEW_USER_POINTS_DAY_OF_WEEK
+        ),
     },
 }
 

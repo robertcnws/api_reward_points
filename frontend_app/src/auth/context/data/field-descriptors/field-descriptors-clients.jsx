@@ -40,6 +40,10 @@ export const fieldsClients = [
     name: 'userRole',
     fields: ['id', 'name'],
   },
+  {
+    name: 'customerportalPermissions',
+    fields: ['id', 'name', 'description', 'key', 'createdTime', 'lastModifiedTime'],
+  }
   // {
   //   name: 'invoices',
   //   fields: [

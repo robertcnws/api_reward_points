@@ -3,11 +3,13 @@ from graphene_mongo import MongoengineObjectType
 from graphene_mongo.converter import convert_mongoengine_field
 from mongoengine.fields import DynamicField
 from bson import ObjectId
+from bson.dbref import DBRef
 from api_authorization.models import (
     UserRole,
     LoginUser,
     ExternalUsers,
     LoginUserRecoverPasswordCode,
+    SystemPermission
 )
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
 
@@ -18,6 +20,20 @@ def convert_dynamic_field(field, registry=None, executor=None):
         description=getattr(field, 'help_text', ''),
         required=field.required
     )
+    
+    
+class SystemPermissionType(MongoengineObjectType):
+    created_time = graphene.String()
+    last_modified_time = graphene.String()
+    
+    class Meta:
+        model = SystemPermission
+    
+    def resolve_created_time(self, info):
+        return datetime_to_timezone(self.created_time) if self.created_time else None
+    
+    def resolve_last_modified_time(self, info):
+        return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
     
 class UserRoleType(MongoengineObjectType):
     created_time = graphene.String()
@@ -39,7 +55,7 @@ class LoginUserType(MongoengineObjectType):
     last_login = graphene.String()
     date_joined = graphene.String()
     approved_time = graphene.String()
-    is_sync_with_zoho = graphene.Boolean()
+    customerportal_permissions = graphene.List(SystemPermissionType)
 
     class Meta:
         model = LoginUser
@@ -62,6 +78,21 @@ class LoginUserType(MongoengineObjectType):
 
     def resolve_approved_time(self, info):
         return datetime_to_timezone(self.approved_time) if self.approved_time else None
+
+    def resolve_customerportal_permissions(self, info):
+        items = self.customerportal_permissions or []
+        docs = []
+        for x in items:
+            if hasattr(x, 'fetch'):          
+                docs.append(x.fetch())
+            elif isinstance(x, DBRef):       
+                docs.append(SystemPermission.objects.with_id(x.id))
+            elif isinstance(x, ObjectId):    
+                docs.append(SystemPermission.objects.with_id(x))
+            else:                            
+                docs.append(x)
+        return [d for d in docs if d is not None]
+
 
 
 class LoginUserRecoverPasswordCodeRoleType(MongoengineObjectType):
@@ -111,6 +142,7 @@ class ExternalUserType(MongoengineObjectType):
 class Query(graphene.ObjectType):
     all_user_roles = graphene.List(UserRoleType)
     all_login_users = graphene.List(LoginUserType)
+    all_customerportal_permissions = graphene.List(SystemPermissionType)
     user_role_by_id = graphene.Field(UserRoleType, id=graphene.String(required=True))
     login_user_by_id = graphene.Field(LoginUserType, id=graphene.String(required=True))
     login_user_by_username = graphene.Field(LoginUserType, username=graphene.String(required=True))
@@ -118,13 +150,17 @@ class Query(graphene.ObjectType):
     external_user_by_username = graphene.Field(ExternalUserType, username=graphene.String(required=True))
     last_logged_external_users = graphene.List(ExternalUserType)
     recovery_code_by_email = graphene.Field(LoginUserRecoverPasswordCodeRoleType, email=graphene.String(required=True))
+    customerportal_permission_by_key = graphene.Field(SystemPermissionType, key=graphene.String(required=True))
 
     def resolve_all_user_roles(self, info):
         return UserRole.objects.all()
     
     def resolve_all_login_users(self, info):
         return LoginUser.objects.all()
-    
+
+    def resolve_all_customerportal_permissions(self, info):
+        return SystemPermission.objects.all()
+
     def resolve_user_role_by_id(self, info, id):
         try:
             return UserRole.objects(id=ObjectId(id)).first()
@@ -172,4 +208,10 @@ class Query(graphene.ObjectType):
                 return LoginUserRecoverPasswordCode.objects(user=user).first()
             return None
         except LoginUserRecoverPasswordCode.DoesNotExist:
+            return None
+        
+    def resolve_customerportal_permission_by_key(self, info, key):
+        try:
+            return SystemPermission.objects(key=key).first()
+        except SystemPermission.DoesNotExist:
             return None

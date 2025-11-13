@@ -26,10 +26,13 @@ import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { LoadingButton } from '@mui/lab';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { useRewardClientById } from 'src/_mock/__reward-clients';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
 import { UserManagePointsModalForm } from './user-manage-points-modal-form';
+import { UserClientSetPermissionsModal } from './user-client-set-permissions-modal';
+
 
 
 
@@ -60,6 +63,7 @@ function RowComponent({
   const confirmActive = useBoolean();
   const confirmManagePoints = useBoolean();
   const loading = useBoolean();
+  const userClientPermissionsModalOpen = useBoolean();
 
   // userLogged solo si lo necesitas realmente en esta fila
   const userLogged = useMemo(() => {
@@ -74,6 +78,28 @@ function RowComponent({
 
   // ---------- Avatar: cache + abort ----------
   const [currentUrl, setCurrentUrl] = useState(row?.avatarUrl || null);
+
+  const fields = [
+    'id',
+    {
+      name: 'customerportalPermissions',
+      fields: ['id'],
+    }
+  ];
+
+  const { data: clientById, refetch: refetchClientById } = useRewardClientById(row?.id, fields);
+
+  const [qtyPermissions, setQtyPermissions] = useState(
+    Array.isArray(clientById?.customerportalPermissions) ? clientById.customerportalPermissions.length : 0
+  );
+
+  const suppressExternalSyncRef = React.useRef(false);
+
+  // useEffect(() => {
+  //   if (refetchClientById){
+  //     refetchClientById();
+  //   }
+  // }, [refetchClientById]);
 
   useEffect(() => {
     const key = row?.keyAvatar;
@@ -111,6 +137,12 @@ function RowComponent({
 
     return () => controller.abort();
   }, [row?.keyAvatar, row?.avatarUrl]);
+
+  useEffect(() => {
+    if (suppressExternalSyncRef.current) return;
+    const newQty = Array.isArray(clientById?.customerportalPermissions) ? clientById.customerportalPermissions.length : 0;
+    setQtyPermissions(newQty);
+  }, [clientById?.customerportalPermissions]);
 
   return (
     <>
@@ -208,8 +240,8 @@ function RowComponent({
                 columnGap={0}
                 display="grid"
                 gridTemplateColumns={{
-                  xs: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)',
-                  sm: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)',
+                  xs: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(4, 1fr)' : 'repeat(1, 1fr)',
+                  sm: isAdministrator(userLogged?.data?.user_role?.name) ? 'repeat(4, 1fr)' : 'repeat(1, 1fr)',
                 }}
               >
                 <Tooltip title={row.isApproved ? 'Unapprove' : 'Approve'} placement="top" arrow>
@@ -219,6 +251,17 @@ function RowComponent({
                   >
                     <Iconify
                       icon={row.isApproved ? 'line-md:close-circle-twotone' : 'mdi:approve'}
+                    />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={qtyPermissions > 0 ? 'Edit Permissions' : 'Set new permissions'} placement="top" arrow>
+                  <IconButton
+                    color={userClientPermissionsModalOpen.value ? 'inherit' : 'default'}
+                    onClick={userClientPermissionsModalOpen.onTrue}
+                    sx={{ width: 35 }}
+                  >
+                    <Iconify
+                      icon={qtyPermissions > 0 ? 'fluent:person-key-32-regular' : 'fluent-mdl2:permissions-solid'}
                     />
                   </IconButton>
                 </Tooltip>
@@ -346,6 +389,11 @@ function RowComponent({
           <MenuItem onClick={() => onProfileRow(row.id)}>
             <Iconify icon="carbon:user-profile" sx={{ fontWeight: 'bold' }} />
             View rewards profile
+          </MenuItem>
+
+          <MenuItem onClick={() => userClientPermissionsModalOpen.onTrue()}>
+            <Iconify icon="fluent-mdl2:permissions-solid" sx={{ fontWeight: 'bold' }} />
+            Set permissions
           </MenuItem>
 
           <MenuItem
@@ -517,6 +565,22 @@ function RowComponent({
             {row.isActive ? 'Set Inactive' : 'Set Active'}
           </Button>
         }
+      />
+
+      <UserClientSetPermissionsModal
+        open={userClientPermissionsModalOpen}
+        client={row}
+        onAfterSave={async (selectedIds) => {
+          suppressExternalSyncRef.current = true;
+          setQtyPermissions(Array.isArray(selectedIds) ? selectedIds.length : 0);
+          const res = await refetchClientById?.();
+          const fresh = res?.data?.rewardClientById ?? res;
+          const freshQty = Array.isArray(fresh?.customerportalPermissions)
+            ? fresh.customerportalPermissions.length
+            : 0;
+          setQtyPermissions(freshQty);
+          suppressExternalSyncRef.current = false;
+        }}
       />
     </>
   );

@@ -2,6 +2,8 @@
 from api_authorization.models import LoginUser
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from bson import ObjectId, DBRef
+from api_authorization.models import SystemPermission
 
 def _emit_reward_client_event_for_user(user: LoginUser, event_type: str):
     
@@ -50,6 +52,25 @@ def _emit_reward_client_event_for_user(user: LoginUser, event_type: str):
         sales_orders_cs = camelize(
             transform_data_to_mongo(rp.sales_orders, exclude_fields=["password"])
         )
+        
+    customerportal_permissions_cs = []
+    if getattr(user, "customerportal_permissions", []):
+        items = user.customerportal_permissions or []
+        ids = []
+        for x in items:
+            if hasattr(x, "id"):
+                ids.append(x.id)
+            elif isinstance(x, DBRef):
+                ids.append(x.id)
+            elif isinstance(x, ObjectId):
+                ids.append(x)
+            elif isinstance(x, str):
+                try:
+                    ids.append(ObjectId(x))
+                except Exception:
+                    pass
+        perms = list(SystemPermission.objects(id__in=ids).only("id", "name", "key", "description", "created_time", "last_modified_time"))
+        customerportal_permissions_cs = camelize(transform_data_to_mongo(perms, exclude_fields=["password"]))
     
     class _ClientProjection:
         def __init__(self, u, rp_doc):
@@ -90,6 +111,7 @@ def _emit_reward_client_event_for_user(user: LoginUser, event_type: str):
             self.instagram_link = getattr(u, "instagram_link", None)
             self.linkedin_link = getattr(u, "linkedin_link", None)
             self.twitter_link = getattr(u, "twitter_link", None)
+            self.customerportal_permissions = getattr(u, "customerportal_permissions", [])
             
             self.total_available_points = _total_available_points(rp_doc)
             
@@ -106,6 +128,7 @@ def _emit_reward_client_event_for_user(user: LoginUser, event_type: str):
         full_selection_user_role=user_role_cs,
         full_selection_invoices=invoices_cs,
         full_selection_sales_orders=sales_orders_cs,
+        full_selection_customerportal_permissions=customerportal_permissions_cs
     )
 
     async_to_sync(channel_layer.group_send)("reward_clients", serialize_datetime(event))

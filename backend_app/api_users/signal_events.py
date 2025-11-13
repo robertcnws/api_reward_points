@@ -16,7 +16,25 @@ def event_user_role(type, document):
     }
     
 
-def event_user(type, document, full_selection):
+def event_system_permission(type, document):
+    return {
+        'type': 'system_permission_update',
+        'message': {
+            'type': type,
+            "item": {
+                "id": str(document.id),
+                "name": document.name,
+                "key": document.key,
+                "description": document.description,
+                "createdTime": document.created_time,
+                "lastModifiedTime": document.last_modified_time,
+            }
+
+        }
+    }
+    
+
+def event_user(type, document, full_selection, full_selection_list_permissions):
     return {
         'type': 'user_update',
         'message': {
@@ -58,7 +76,8 @@ def event_user(type, document, full_selection):
                 "facebookLink": document.facebook_link,
                 "instagramLink": document.instagram_link,
                 "linkedinLink": document.linkedin_link,
-                "twitterLink": document.twitter_link
+                "twitterLink": document.twitter_link,
+                "customerportalPermissions": full_selection_list_permissions if document.customerportal_permissions else []
             }
         }
     }

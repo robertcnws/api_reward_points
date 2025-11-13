@@ -17,7 +17,13 @@ def _ensure_ctx_maps(ctx):
 
 def warmup_rewardpoints_for_users(users, ctx, only_fields=None):
     rp_map, _, _ = _ensure_ctx_maps(ctx)
-    missing_users = [u for u in users if str(u.id) not in rp_map]
+    final_users = []
+    if isinstance(users, list):
+        final_users = users
+    else:
+        final_users = list(users)
+
+    missing_users = [u for u in final_users if str(u.id) not in rp_map]
     if not missing_users:
         return rp_map
     qs = RewardPoints.objects(user__in=missing_users)
@@ -26,7 +32,7 @@ def warmup_rewardpoints_for_users(users, ctx, only_fields=None):
     qs = qs.no_dereference()
     for rp in qs:
         rp_map[str(rp.user.id)] = rp
-    for u in users:
+    for u in final_users:
         rp_map.setdefault(str(u.id), None)
     return rp_map
 

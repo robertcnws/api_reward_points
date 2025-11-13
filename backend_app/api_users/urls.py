@@ -11,10 +11,17 @@ urlpatterns = [
         csrf_exempt(GraphQLView.as_view(schema=graphene.Schema(query=schema.Query), graphiql=True)), 
         name="graphql"
     ),
+    # ROLES
     path('create/user-role/', views.create_user_role, name='create_user_role'),
     path('edit/user-role/<str:id>/', views.edit_user_role, name='edit_user_role'),
     path('delete/user-role/<str:id>/', views.delete_user_role, name='delete_user_role'),
     path('delete/user-roles/', views.delete_user_roles, name='delete_user_roles'),
+    # PERMISSIONS
+    path('create/permission/', views.create_permission, name='create_permission'),
+    path('edit/permission/<str:id>/', views.edit_permission, name='edit_permission'),
+    path('delete/permission/<str:id>/', views.delete_permission, name='delete_permission'),
+    path('delete/permissions/', views.delete_permissions, name='delete_permissions'),
+    # USERS
     path('create/user/', views.create_user, name='create_user'),
     path('edit/user/<str:id>/', views.edit_user, name='edit_user'),
     path('delete/user/<str:id>/', views.delete_user, name='delete_user'),
@@ -30,6 +37,7 @@ urlpatterns = [
     path('change-address/<str:id>/', views.change_address_user, name='change_address_user'),
     path('change-social/<str:id>/', views.change_social_user, name='change_social_user'),
     path('upload-avatar/<str:id>/', views.upload_avatar_user, name='upload_avatar_user'),
+    path('set-permissions/<str:id>/', views.set_permissions_to_user, name='set_permissions_to_user'),
     # NOTIFICATIONS
     path('delete/old-notifications/', views.remove_old_notifications, name='remove_old_notifications'),
     path('mark-read/notifications/', views.mark_as_read_notifications, name='mark_as_read_notifications'),

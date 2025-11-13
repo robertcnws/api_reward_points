@@ -177,6 +177,50 @@ def list_items(request):
 
 
 #############################################
+# FETCH ITEMGROUPS TO REWARDS
+#############################################
+    
+def fetch_itemgroups(data=None):
+    print(f"Fetching item groups: {data}")
+    headers = config_headers()
+    
+    url = f'{settings.API_MAIN_DATA_URL}/zoho/itemgroups/?'
+    
+    page = data.get('page', 1) if data else 1
+    page_size = data.get('page_size', 100) if data else 100
+    start_last_modified_time = data.get('start_last_modified_time', None) if data else None
+    end_last_modified_time = data.get('end_last_modified_time', None) if data else None
+    
+    params = {
+        'page': int(page) if page else 1,
+        'page_size': int(page_size) if page_size else 100
+    }
+    
+    if start_last_modified_time:
+        params['start_last_modified_time'] = start_last_modified_time
+    if end_last_modified_time:
+        params['end_last_modified_time'] = end_last_modified_time
+    
+    items_to_get = []
+    session = requests.Session()
+    while True:
+        try:
+            response = session.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            items = response.json()
+            # print(f"Items fetched: {items}")
+            items_confirmed = list(items.get('results', []))
+            items_to_get.extend(items_confirmed)
+            if not items.get('next', None):
+                break
+            params['page'] += 1
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching item groups: {e}")
+            return {'error': 'Failed to fetch item groups to reward points'}
+    return {'count': len(items_to_get), 'results': items_to_get}
+
+
+#############################################
 # FETCH ITEMS TO REWARDS
 #############################################
     
@@ -188,11 +232,18 @@ def fetch_items(data=None):
     
     page = data.get('page', 1) if data else 1
     page_size = data.get('page_size', 100) if data else 100
+    start_last_modified_time = data.get('start_last_modified_time', None) if data else None
+    end_last_modified_time = data.get('end_last_modified_time', None) if data else None
     
     params = {
         'page': int(page) if page else 1,
         'page_size': int(page_size) if page_size else 100
     }
+    
+    if start_last_modified_time:
+        params['start_last_modified_time'] = start_last_modified_time
+    if end_last_modified_time:
+        params['end_last_modified_time'] = end_last_modified_time
     
     items_to_get = []
     session = requests.Session()

@@ -7,6 +7,7 @@ from mongoengine import (
     DynamicField,
     ReferenceField,
     IntField,
+    ListField
 )
 from django.contrib.auth.hashers import (
     make_password, 
@@ -24,6 +25,22 @@ class UserRole(Document):
     meta = {
         'collection': 'user_role',
         'indexes': ['name'],
+    }
+
+    def __str__(self):
+        return self.name
+    
+    
+class SystemPermission(Document):
+    name = StringField(max_length=100, unique=True, required=True)
+    key = StringField(max_length=100, unique=True, required=True)
+    description = StringField(required=False)
+    created_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+    last_modified_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+
+    meta = {
+        'collection': 'system_permission',
+        'indexes': ['name', 'key'],
     }
 
     def __str__(self):
@@ -68,10 +85,17 @@ class LoginUser(Document):
     linkedin_link = StringField(required=False)
     twitter_link = StringField(required=False)
     customer_id = StringField(required=False)
+    customerportal_permissions = ListField(ReferenceField(SystemPermission, reverse_delete_rule=2), null=True, blank=True, default=list)
 
     meta = {
         'collection': 'login_users',
-        'indexes': ['username', 'email', 'phone_number', 'customer_id'],
+        'indexes': [
+            'username', 
+            'email', 
+            'phone_number', 
+            'customer_id',
+            {'fields': ['customerportal_permissions']}
+        ],
     }
 
     def set_password(self, raw_password):

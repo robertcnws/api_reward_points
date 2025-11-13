@@ -168,14 +168,18 @@ export const endpoints = {
       userRoles: '/users/delete/user-roles/',
       user: (id) => `/users/delete/user/${id}/`,
       users: '/users/delete/users/',
+      customerportalPermission: (id) => `/users/delete/permission/${id}/`,
+      customerportalPermissions: '/users/delete/permissions/',
     },
     create: {
       user: '/users/create/user/',
       userRole: '/users/create/user-role/',
+      customerportalPermission: '/users/create/permission/',
     },
     edit: {
       user: (id) => `/users/edit/user/${id}/`,
       userRole: (id) => `/users/edit/user-role/${id}/`,
+      customerportalPermission: (id) => `/users/edit/permission/${id}/`,
     },
     changePassword: {
       user: (id) => `/users/change-password/${id}/`,
@@ -211,6 +215,7 @@ export const endpoints = {
       user: (id) => `/authorization/get_refetch_rewards_points/${id}/`,
     },
     uploadAvatar: (id) => `/users/upload-avatar/${id}/`,
+    setPermissions: (id) => `/users/set-permissions/${id}/`,
   },
   item: {
     list: '/product/list',
@@ -265,5 +270,8 @@ export const wsEndpoints = {
   },
   userRoles: {
     all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/user-roles/`
+  },
+  customerportalPermissions: {
+    all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/permissions/`
   }
 };

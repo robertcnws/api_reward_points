@@ -139,7 +139,7 @@ class Query(graphene.ObjectType):
 
     reward_client_by_id = graphene.Field(
         RewardClientsType,
-        client_id=graphene.String(required=True)
+        id=graphene.String(required=True)
     )
 
     def resolve_all_reward_points(self, info):
@@ -313,7 +313,8 @@ class Query(graphene.ObjectType):
                 "facebook_link",
                 "instagram_link",
                 "linkedin_link",
-                "twitter_link"
+                "twitter_link",
+                "customerportal_permissions",
             ).no_dereference()
         )
         
@@ -334,5 +335,54 @@ class Query(graphene.ObjectType):
         return users
 
 
-    def resolve_reward_client_by_id(self, info, client_id):
-        return LoginUser.objects(id=client_id).first()
+    def resolve_reward_client_by_id(self, info, id):
+        role = UserRole.objects(name="client").first()
+        if not role:
+            return []
+        user = LoginUser.objects(user_role=role, id=id).only(
+                "id",
+                "username",
+                "first_name",
+                "last_name",
+                "company_name",
+                "email",
+                "phone_number",
+                "is_staff",
+                "is_active",
+                "created_time",
+                "last_modified_time",
+                "user_role",
+                "key_avatar",
+                "avatar_url",
+                "is_verified",
+                "is_approved",
+                "approved_time",
+                "disapproval_count",
+                "country",
+                "address",
+                "zip_code",
+                "state",
+                "city",
+                "school",
+                "about",
+                "facebook_link",
+                "instagram_link",
+                "linkedin_link",
+                "twitter_link",
+                "customerportal_permissions",
+            ).no_dereference()
+        warmup_rewardpoints_for_users(
+            user, info.context,
+            only_fields=[
+                "id",
+                "user",
+                "total_assigned_points",
+                "total_gained_points",
+                "total_substracted_points",
+                "total_spent_points",
+                "is_sync_with_zoho",
+                "invoices",
+                "sales_orders",           
+            ],
+        )
+        return user[0] if user else None

@@ -129,6 +129,13 @@ export const paths = {
       details: (id) => `${ROOTS.DASHBOARD_CONFIG}/role/${id}`,
       edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/role/${id}/edit`,
     },
+    permission: {
+      root: `${ROOTS.DASHBOARD_CONFIG}/permission`,
+      list: `${ROOTS.DASHBOARD_CONFIG}/permission/list`,
+      new: `${ROOTS.DASHBOARD_CONFIG}/permission/new`,
+      details: (id) => `${ROOTS.DASHBOARD_CONFIG}/permission/${id}`,
+      edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/permission/${id}/edit`,
+    },
     pointsSettings: {
       root: `${ROOTS.DASHBOARD_CONFIG}/points-settings`,
       list: `${ROOTS.DASHBOARD_CONFIG}/points-settings/list`,

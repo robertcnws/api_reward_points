@@ -13,6 +13,10 @@ import {
   RewardUserRolesProvider
 } from './contexts/reward-user-roles-context';
 import {
+  useRewardCustomerportalPermissions,
+  RewardCustomerportalPermissionsProvider
+} from './contexts/reward-customerportal-permissions-context';
+import {
   useRewardLoginUsers,
   RewardLoginUsersProvider
 } from './contexts/reward-login-users-context';
@@ -45,9 +49,9 @@ import {
   RewardStoreProductSelectionCartProvider
 } from './contexts/reward-store-product-selection-cart-context';
 
-import { 
-  RewardClientsProvider, 
-  useRewardClients 
+import {
+  RewardClientsProvider,
+  useRewardClients
 } from './contexts/reward-clients-context';
 
 const DataContext = createContext();
@@ -62,17 +66,19 @@ export function DataProvider({ children }) {
             <RewardStoreProductSelectionBuyProvider>
               <RewardPointsSettingsProvider>
                 <RewardUserRolesProvider>
-                  <RewardExternalUsersProvider>
-                    <RewardLoginUsersProvider>
-                      <RewardClientsProvider>
-                        <RewardStoreProductsProvider>
-                          <RewardPointsProvider>
-                            <CombineProviders>{children}</CombineProviders>
-                          </RewardPointsProvider>
-                        </RewardStoreProductsProvider>
-                      </RewardClientsProvider>
-                    </RewardLoginUsersProvider>
-                  </RewardExternalUsersProvider>
+                  <RewardCustomerportalPermissionsProvider>
+                    <RewardExternalUsersProvider>
+                      <RewardLoginUsersProvider>
+                        <RewardClientsProvider>
+                          <RewardStoreProductsProvider>
+                            <RewardPointsProvider>
+                              <CombineProviders>{children}</CombineProviders>
+                            </RewardPointsProvider>
+                          </RewardStoreProductsProvider>
+                        </RewardClientsProvider>
+                      </RewardLoginUsersProvider>
+                    </RewardExternalUsersProvider>
+                  </RewardCustomerportalPermissionsProvider>
                 </RewardUserRolesProvider>
               </RewardPointsSettingsProvider>
             </RewardStoreProductSelectionBuyProvider>
@@ -117,6 +123,13 @@ function CombineProviders({ children }) {
     loadingAllRewardUserRoles: loadingUserRoles,
     errorRewardUserRoles: errorUserRoles,
   } = useRewardUserRoles();
+
+  const {
+    loadedAllRewardCustomerportalPermissions: loadedCustomerportalPermissions,
+    refetchAllRewardCustomerportalPermissions: refetchCustomerportalPermissions,
+    loadingAllRewardCustomerportalPermissions: loadingCustomerportalPermissions,
+    errorRewardCustomerportalPermissions: errorCustomerportalPermissions,
+  } = useRewardCustomerportalPermissions();
 
   const {
     loadedNotifications,
@@ -293,6 +306,10 @@ function CombineProviders({ children }) {
     refetchClients,
     loadingClients,
     errorClients,
+    loadedCustomerportalPermissions,
+    refetchCustomerportalPermissions,
+    loadingCustomerportalPermissions,
+    errorCustomerportalPermissions,
     runDashboard,
     setRunDashboard,
     finishDashboard,
@@ -376,6 +393,10 @@ function CombineProviders({ children }) {
     refetchClients,
     loadingClients,
     errorClients,
+    loadedCustomerportalPermissions,
+    refetchCustomerportalPermissions,
+    loadingCustomerportalPermissions,
+    errorCustomerportalPermissions,
     runDashboard,
     setRunDashboard,
     finishDashboard,

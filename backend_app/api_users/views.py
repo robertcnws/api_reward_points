@@ -11,6 +11,7 @@ from api_users.repository import (
     repository_trackings,
     repository_user_role,
     repository_users,
+    repository_permissions,
 )
 
 import logging
@@ -55,6 +56,35 @@ def delete_user_role(request, id):
 @throttle_classes([AuthWriteThrottle])
 def delete_user_roles(request):
     return repository_user_role.delete_user_roles(request)
+
+
+# ============================================
+# PERMISSIONS
+# ============================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def create_permission(request):
+    return repository_permissions.create_permission(request)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def edit_permission(request, id):
+    return repository_permissions.edit_permission(request, id)
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def delete_permission(request, id):
+    return repository_permissions.delete_permission(request, id)
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def delete_permissions(request):
+    return repository_permissions.delete_permissions(request)
 
 
 # ======================
@@ -152,6 +182,13 @@ def change_social_user(request, id):
 @throttle_classes([AuthWriteThrottle])
 def upload_avatar_user(request, id):
     return repository_users.upload_avatar_user(request, id)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthWriteThrottle])
+def set_permissions_to_user(request, id):
+    return repository_users.set_permissions_to_user(request, id)
 
 
 # ======================
