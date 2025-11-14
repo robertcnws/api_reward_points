@@ -54,6 +54,11 @@ import {
   useRewardClients
 } from './contexts/reward-clients-context';
 
+import {
+  useRewardItemgroups,
+  RewardItemgroupsProvider
+} from './contexts/reward-itemgroups-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
@@ -70,11 +75,13 @@ export function DataProvider({ children }) {
                     <RewardExternalUsersProvider>
                       <RewardLoginUsersProvider>
                         <RewardClientsProvider>
-                          <RewardStoreProductsProvider>
-                            <RewardPointsProvider>
-                              <CombineProviders>{children}</CombineProviders>
-                            </RewardPointsProvider>
-                          </RewardStoreProductsProvider>
+                          <RewardItemgroupsProvider>
+                            <RewardStoreProductsProvider>
+                              <RewardPointsProvider>
+                                <CombineProviders>{children}</CombineProviders>
+                              </RewardPointsProvider>
+                            </RewardStoreProductsProvider>
+                          </RewardItemgroupsProvider>
                         </RewardClientsProvider>
                       </RewardLoginUsersProvider>
                     </RewardExternalUsersProvider>
@@ -202,6 +209,13 @@ function CombineProviders({ children }) {
     errorAllRewardIntroSteps,
   } = useRewardIntroSteps();
 
+  const {
+    loadedAllRewardItemgroups: loadedItemgroups,
+    refetchAllRewardItemgroups: refetchItemgroups,
+    loadingAllRewardItemgroups: loadingItemgroups,
+    errorRewardItemgroups: errorItemgroups,
+  } = useRewardItemgroups();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -310,6 +324,10 @@ function CombineProviders({ children }) {
     refetchCustomerportalPermissions,
     loadingCustomerportalPermissions,
     errorCustomerportalPermissions,
+    loadedItemgroups,
+    refetchItemgroups,
+    loadingItemgroups,
+    errorItemgroups,
     runDashboard,
     setRunDashboard,
     finishDashboard,
@@ -397,6 +415,10 @@ function CombineProviders({ children }) {
     refetchCustomerportalPermissions,
     loadingCustomerportalPermissions,
     errorCustomerportalPermissions,
+    loadedItemgroups,
+    refetchItemgroups,
+    loadingItemgroups,
+    errorItemgroups,
     runDashboard,
     setRunDashboard,
     finishDashboard,

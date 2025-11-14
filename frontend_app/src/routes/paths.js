@@ -111,6 +111,10 @@ export const paths = {
       edit: (id) => `${ROOTS.DASHBOARD}/item/${id}/edit`,
       details: (id) => `${ROOTS.DASHBOARD}/item/${id}/details`,
     },
+    itemgroup: {
+      root: `${ROOTS.DASHBOARD}/stock`,
+      list: `${ROOTS.DASHBOARD}/stock/list`,
+    },
     config: {
       root: `${ROOTS.DASHBOARD_CONFIG}`,
     },

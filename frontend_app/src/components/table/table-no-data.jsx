@@ -18,3 +18,15 @@ export function TableNoData({ notFound, sx, colSpan = 12 }) {
     </TableRow>
   );
 }
+
+export function BoxNoData({ notFound, sx }) {
+  return (
+    <>
+      {notFound ? (
+        <EmptyContent filled sx={{ py: 10, ...sx }} />
+      ) : (
+        <></>
+      )}
+    </>
+  );
+}

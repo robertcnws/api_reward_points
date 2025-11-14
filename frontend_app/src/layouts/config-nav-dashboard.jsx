@@ -79,8 +79,9 @@ const userRole = userLogged?.data?.user_role?.name;
 
 const customerportalPermissions = userLogged?.data?.customerportal_permissions || [];
 
-const canSeeItemsInStock = customerportalPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInStock);
+const keyPermissions = customerportalPermissions?.map(permission => permission.key) || [];
 
+const canSeeItemsInStock = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInStock);
 
 
 // const { countLostItems } = useDataContext();
@@ -247,7 +248,7 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
               </Typography>
             </Box>
           ),
-          path: paths.dashboard.general.analytics,
+          path: paths.dashboard.itemgroup.root,
           icon: ICONS.stock
         },
       ],

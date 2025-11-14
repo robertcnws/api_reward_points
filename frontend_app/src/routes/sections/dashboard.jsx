@@ -22,6 +22,8 @@ const UserRoleDefaultCreatePage = lazy(() => import('src/pages/dashboard/user-ro
 // Permissions
 const PermissionListPage = lazy(() => import('src/pages/dashboard/permission/list'));
 const PermissionCreatePage = lazy(() => import('src/pages/dashboard/permission/new'));
+// Itemgroups
+const ItemgroupPage = lazy(() => import('src/pages/dashboard/itemgroups'));
 // User
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -352,6 +354,33 @@ export const dashboardRoutes = (user) => [
                 ).includes(
                   CONFIG.roles.officeStaff
                 ) ? <PurchaseOverviewClientView /> : <Page403 />
+              },
+            ],
+          },
+        ] : [],
+      ...(user && (
+        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+        user?.customerportal_permissions?.map(permission => permission.key).includes(
+          CONFIG.permissions.customerportal.canSeeItemsInStock
+        )
+      )) ?
+        [
+          {
+            path: 'stock',
+            children: [
+              {
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInStock
+                  )) ? <ItemgroupPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInStock
+                  )) ? <ItemgroupPage /> : <Page403 />,
               },
             ],
           },

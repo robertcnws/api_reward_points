@@ -30,6 +30,19 @@ export const CONFIG = {
       canSeeItemsInStock: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_STOCK ?? '',
     }
   },
+  dealerportal: {
+    awsAccessKeyId: import.meta.env.VITE_DEALERPORTAL_AWS_ACCESS_KEY_ID ?? '',
+    awsSecretAccessKey: import.meta.env.VITE_DEALERPORTAL_AWS_SECRET_ACCESS_KEY ?? '',
+    awsStorageBucketName: import.meta.env.VITE_DEALERPORTAL_AWS_STORAGE_BUCKET_NAME ?? '',
+    awsS3CustomDomain: import.meta.env.VITE_DEALERPORTAL_AWS_S3_CUSTOM_DOMAIN ?? '',
+    defaultFileStorage: import.meta.env.VITE_DEALERPORTAL_DEFAULT_FILE_STORAGE ?? '',
+    staticfilesStorage: import.meta.env.VITE_DEALERPORTAL_STATICFILES_STORAGE ?? '',
+    staticUrl: import.meta.env.VITE_DEALERPORTAL_STATIC_URL ?? '',
+  },
+  zohoOrgIds: {
+    nws: import.meta.env.VITE_ZOHO_ORG_ID_NWS ?? '',
+    nwshome: import.meta.env.VITE_ZOHO_ORG_ID_NWSHOME ?? '',
+  },
   /**
    * Auth
    * @method jwt | amplify | firebase | supabase | auth0
