@@ -65,7 +65,8 @@ export function SalesOrdersListFilters({ filters, allSalespersons, allStatuses, 
 
             <Button
                 variant="outlined"
-                sx={{ height: 50 }}
+                color='error'
+                sx={{ height: 40 }}
                 onClick={() => {
                     Object.keys(filters.state).forEach(key => {
                         filters.setState({ [key]: null });
@@ -73,7 +74,7 @@ export function SalesOrdersListFilters({ filters, allSalespersons, allStatuses, 
                 }}
             >
                 <Iconify icon="ic:round-clear" />
-                Clear All
+                Clear
             </Button>
         </Box>
     )

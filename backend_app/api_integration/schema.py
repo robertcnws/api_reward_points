@@ -73,7 +73,7 @@ class RewardFullItemgroupType(MongoengineObjectType):
         return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
     
     def resolve_list_items(self, info):
-        items = RewardFullItem.objects(group_id=self.group_id)
+        items = RewardFullItem.objects(group_id=self.group_id, status="active")
         docs = []
         for x in items:
             if hasattr(x, 'fetch'):          

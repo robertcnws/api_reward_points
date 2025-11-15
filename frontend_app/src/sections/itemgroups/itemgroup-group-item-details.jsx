@@ -7,7 +7,7 @@ import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/config-global';
 import { StoreProductDetailsCarousel } from '../store-product/store-product-details-carousel';
 
-export const ItemgroupItemDetails = ({ selectedItem }) => {
+export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable=false }) => {
 
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -58,12 +58,29 @@ export const ItemgroupItemDetails = ({ selectedItem }) => {
         return aspectRatio === 1 ? baseStyle : {};
     };
 
-
-
-
     return (
-        <Box sx={{ mt: 2, width: '100%', ml: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Box sx={{
+            mt: 1,
+            width: 'auto',
+            height: { xs: 'auto', md: 620 },
+            ml: {
+                xs: !isFromTable ? -4 : 0,
+                md: 3
+            },
+            border: '1px solid #e0e0e0',
+            borderRadius: 2,
+            p: 3,
+            bgcolor: '#fafafa'
+        }}>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: {
+                    xs: 'column',
+                    md: 'row'
+                },
+                justifyContent: 'space-between'
+            }}
+            >
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="h5" gutterBottom>
                         {selectedItem?.groupName || 'Item Details'}
@@ -71,9 +88,9 @@ export const ItemgroupItemDetails = ({ selectedItem }) => {
                     <Typography variant="h6">
                         {selectedItem?.name}
                     </Typography><br />
-                    <Typography variant="body2">
+                    {/* <Typography variant="body2">
                         Selling price:<strong> {fCurrency(selectedItem?.rate) || 'N/A'}</strong>
-                    </Typography>
+                    </Typography> */}
                     <Typography variant="body2">
                         Available stock:<strong> {fNumber(selectedItem?.stockOnHand) || 'N/A'}</strong>
                     </Typography>
@@ -99,7 +116,16 @@ export const ItemgroupItemDetails = ({ selectedItem }) => {
                     </Box>
                 </Box>
                 {/* <StoreProductDetailsCarousel images={[imageUrl]} /> */}
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box sx={{
+                    mb: {
+                        xs: 5,
+                        md: 1
+                    },
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+                >
                     {aspectRatio > 0 ? (
                         <img
                             src={imageUrl}
