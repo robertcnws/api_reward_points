@@ -54,12 +54,13 @@ export function ItemgroupTableRow({
         )}
 
         <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>
-          {row?.actualAvailableStock > 0 ?
+          {/* {row?.actualAvailableStock > 0 ?
             fNumber(row?.actualAvailableStock) :
             <Label variant="soft" color="error">
               Out of Stock
             </Label>
-          }
+          } */}
+          {fNumber(row?.actualAvailableStock)}
         </TableCell>
 
         <TableCell align="right">

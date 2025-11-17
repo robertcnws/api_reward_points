@@ -32,6 +32,7 @@ export function ItemgroupGroupRow({
   row,
   selectedItem,
   setSelectedItem,
+  handleCloseSelectedItem,
 }) {
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);

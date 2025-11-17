@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -14,14 +14,33 @@ import { Iconify } from 'src/components/iconify';
 export function ItemgroupTableFilters({
     filters,
     options,
-    onResetPage,
+    onResetPage=null,
 }) {
+
     const handleFilterName = useCallback(
         (event) => {
-            onResetPage();
+            onResetPage?.();
             filters.setState({ name: event.target.value });
         },
         [filters, onResetPage]
+    );
+
+    const handleChangeConfigurations = useCallback(
+        (series) => {
+            // const optionSeries = options.series.filter((s) => series.includes(s.value));
+            onResetPage?.();
+            const allConfigurations = options.state.series.map((s) => {
+                if (series.includes(s.value)) {
+                    return s.configurations || [];
+                }
+                return [];
+            }).flat();
+            const uniqueConfigurations = Array.from(
+                new Set(allConfigurations.map(
+                    (config) => config.value))).map((value) =>
+                        allConfigurations.find((config) => config.value === value));
+            options.setState({ configurations: uniqueConfigurations });
+        }, [onResetPage, options]
     );
 
     return (
@@ -52,7 +71,7 @@ export function ItemgroupTableFilters({
                                             icon="eva:close-circle-fill"
                                             sx={{ color: 'text.disabled', cursor: 'pointer' }}
                                             onClick={() => {
-                                                onResetPage();
+                                                onResetPage?.();
                                                 filters.setState({ name: '' });
                                             }}
                                         />
@@ -65,10 +84,10 @@ export function ItemgroupTableFilters({
                 {/* Type */}
                 <MultiFilterAutocomplete
                     label="Type"
-                    options={options.types}
+                    options={options.state.types}
                     values={filters.state.type}
                     onChange={(newValues) => {
-                        onResetPage();
+                        onResetPage?.();
                         filters.setState({ type: newValues });
                     }}
                 />
@@ -76,46 +95,51 @@ export function ItemgroupTableFilters({
                 {/* Color */}
                 <MultiFilterAutocomplete
                     label="Color"
-                    options={options.colors}
+                    options={options.state.colors}
                     values={filters.state.color}
                     onChange={(newValues) => {
-                        onResetPage();
+                        onResetPage?.();
                         filters.setState({ color: newValues });
-                    }}
-                />
-
-                {/* Series */}
-                <MultiFilterAutocomplete
-                    label="Series"
-                    options={options.series}
-                    values={filters.state.series}
-                    onChange={(newValues) => {
-                        onResetPage();
-                        filters.setState({ series: newValues });
                     }}
                 />
 
                 {/* Class */}
                 <MultiFilterAutocomplete
                     label="Class"
-                    options={options.classes}
+                    options={options.state.classes}
                     values={filters.state.class}
                     onChange={(newValues) => {
-                        onResetPage();
+                        onResetPage?.();
                         filters.setState({ class: newValues });
                     }}
                 />
 
-                {/* Configuration */}
+                {/* Series */}
                 <MultiFilterAutocomplete
-                    label="Configuration"
-                    options={options.configurations}
-                    values={filters.state.configuration}
+                    label="Series"
+                    options={options.state.series}
+                    values={filters.state.series}
                     onChange={(newValues) => {
-                        onResetPage();
-                        filters.setState({ configuration: newValues });
+                        onResetPage?.();
+                        filters.setState({ series: newValues });
+                        // Actualizar configuraciones disponibles según la serie seleccionada
+                        filters.setState({ configuration: [] }); // Reset configurations filter
+                        handleChangeConfigurations(newValues);
                     }}
                 />
+
+                {/* Configuration */}
+                {options.state.configurations && options.state.configurations.length > 0 && (
+                    <MultiFilterAutocomplete
+                        label="Configuration"
+                        options={options.state.configurations || []}
+                        values={filters.state.configuration || []}
+                        onChange={(newValues) => {
+                            onResetPage?.();
+                            filters.setState({ configuration: newValues });
+                        }}
+                    />
+                )}
             </Stack>
         </>
     );

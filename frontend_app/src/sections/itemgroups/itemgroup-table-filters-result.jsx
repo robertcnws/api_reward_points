@@ -8,25 +8,54 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 
 export function ItemgroupTableFiltersResult({
   filters,
-  options = {},
-  onResetPage,
+  options,
+  onResetPage=null,
   totalResults,
   sx
 }) {
   const handleRemoveKeyword = useCallback(() => {
-    onResetPage();
+    onResetPage?.();
     filters.setState({ name: '' });
   }, [filters, onResetPage]);
 
-  const handleRemoveLists = useCallback(
+  const handleRemoveCommonLists = useCallback(
     (filterName, inputValue) => {
       const newValue = filters.state[filterName].filter((item) => item !== inputValue);
 
-      onResetPage();
-      filters.setState({ [filterName]: newValue });
+      onResetPage?.();
+      filters.setState({ [filterName]: options?.[filterName] ? newValue : [] });
     },
-    [filters, onResetPage]
+    [filters, onResetPage, options]
   );
+
+  // const handleRemoveDependentLists = useCallback(
+  //   (filterName, inputValue) => {
+  //     const newValue = filters.state[filterName].filter((item) => item !== inputValue);
+
+  //     onResetPage();
+  //     filters.setState({ [filterName]: options?.[filterName] ? newValue : [] });
+
+  //     console.log('handleRemoveDependentLists', filterName, inputValue, newValue);
+
+  //     // If series is changed, update configurations accordingly
+  //     if (filterName === 'series' && options?.state?.series) {
+  //       const allConfigurations = options.state.series.map((s) => {
+  //         if (newValue.includes(s.value)) {
+  //           return s.configurations || [];
+  //         }
+  //         return [];
+  //       }).flat();
+  //       console.log('allConfigurations', allConfigurations);
+  //       const uniqueConfigurations = Array.from(
+  //         new Set(allConfigurations.map(
+  //           (config) => config.value))).map((value) =>
+  //               allConfigurations.find((config) => config.value === value));
+  //       filters.setState({ configuration: filters.state.configuration.filter((config) =>
+  //         uniqueConfigurations.some((uc) => uc.value === config)) });
+  //     }
+  //   },
+  //   [filters, onResetPage, options]
+  // );
 
   const handleShowName = useCallback(
     (filterName, value) => {
@@ -39,12 +68,12 @@ export function ItemgroupTableFiltersResult({
   );
 
   const handleReset = useCallback(() => {
-    onResetPage();
+    onResetPage?.();
     filters.onResetState();
   }, [filters, onResetPage]);
 
   return (
-    <FiltersResult totalResults={totalResults} onReset={handleReset} sx={sx}>
+    <FiltersResult totalResults={totalResults} onReset={handleReset} sx={{ ...sx }}>
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
@@ -57,7 +86,7 @@ export function ItemgroupTableFiltersResult({
               {...chipProps}
               key={item}
               label={handleShowName('types', item)}
-              onDelete={() => handleRemoveLists('type', item)}
+              onDelete={() => handleRemoveCommonLists('type', item)}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}
@@ -71,7 +100,7 @@ export function ItemgroupTableFiltersResult({
               {...chipProps}
               key={item}
               label={handleShowName('colors', item)}
-              onDelete={() => handleRemoveLists('color', item)}
+              onDelete={() => handleRemoveCommonLists('color', item)}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}
@@ -85,7 +114,7 @@ export function ItemgroupTableFiltersResult({
               {...chipProps}
               key={item}
               label={handleShowName('series', item)}
-              onDelete={() => handleRemoveLists('series', item)}
+              onDelete={() => handleRemoveCommonLists('series', item)}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}
@@ -99,7 +128,7 @@ export function ItemgroupTableFiltersResult({
               {...chipProps}
               key={item}
               label={handleShowName('classes', item)}
-              onDelete={() => handleRemoveLists('class', item)}
+              onDelete={() => handleRemoveCommonLists('class', item)}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}
@@ -113,7 +142,7 @@ export function ItemgroupTableFiltersResult({
               {...chipProps}
               key={item}
               label={handleShowName('configurations', item)}
-              onDelete={() => handleRemoveLists('configuration', item)}
+              onDelete={() => handleRemoveCommonLists('configuration', item)}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}

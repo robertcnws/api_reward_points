@@ -17,6 +17,9 @@ import { useSetState } from 'src/hooks/use-set-state';
 import { CustomPopover, usePopover } from 'src/components/custom-popover';
 import { ItemgroupGroupRow } from '../itemgroup-group-row';
 import { ItemgroupGroupItemDetails } from '../itemgroup-group-item-details';
+import { itemClasses, itemColors, itemSeries, itemTypes, matchesClass, matchesColor, matchesComun, matchesType } from './itemgroup-table-view';
+import { ItemgroupTableFilters } from '../itemgroup-table-filters';
+import { ItemgroupTableFiltersResult } from '../itemgroup-table-filters-result';
 
 
 // ----------------------------------------------------------------------
@@ -39,7 +42,24 @@ export function ItemgroupGroupView({
 
     const [tableData, setTableData] = useState([]);
 
-    const filters = useSetState({ name: '', option: 'allItems' });
+    const filters = useSetState({
+        name: '',
+        // option: 'allItems',
+        type: [],
+        color: [],
+        series: [],
+        class: [],
+        configuration: [],
+    });
+
+    const options = useSetState({
+        types: itemTypes,
+        colors: itemColors,
+        series: itemSeries,
+        classes: itemClasses,
+        configurations: [],
+        // configurations: itemConfigurations,
+    });
 
     const [title, setTitle] = useState(titleOptions[0].label);
 
@@ -60,7 +80,12 @@ export function ItemgroupGroupView({
 
     const canReset = useMemo(() => (
         !!filters.state.name ||
-        filters.state.option !== 'allItems'
+        // filters.state.option !== 'allItems' ||
+        filters.state.type.length > 0 ||
+        filters.state.color.length > 0 ||
+        filters.state.series.length > 0 ||
+        filters.state.class.length > 0 ||
+        filters.state.configuration.length > 0
     ), [filters.state]);
 
     const notFound = useMemo(() => (!dataFiltered.length && canReset) || !dataFiltered.length, [dataFiltered.length, canReset]);
@@ -84,20 +109,17 @@ export function ItemgroupGroupView({
                 display='flex'
                 flexDirection='row'
                 alignItems='center'
-                justifyContent='space-between'
+                justifyContent='flex-start'
             >
 
                 <Box sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: { xs: 'flex-start', md: 'center' },
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
                     justifyContent: 'flex-start',
-                    width: {
-                        xs: '100%',
-                        md: selectedItem ? '51%' : '100%',
-                    }
+                    width: '100%'
                 }}>
-                    <Box sx={{
+                    {/* <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'flex-start',
@@ -177,16 +199,16 @@ export function ItemgroupGroupView({
                                 </Box>
                             </Stack>
                         </CustomPopover>
-                    </Box>
-                    <Box sx={{
+                    </Box> */}
+                    {/* <Box sx={{
                         display: 'flex',
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                         p: 0,
                         width: '100%',
                         minWidth: 0,
-                    }}>
-                        <Tooltip title="Search item(s) by NAME, SKU or description..." arrow>
+                    }}> */}
+                    {/* <Tooltip title="Search item(s) by NAME, SKU or description..." arrow>
                             <TextField
                                 value={filters.state.name}
                                 onChange={handleFilterName}
@@ -212,25 +234,26 @@ export function ItemgroupGroupView({
                                 }}
                                 sx={{ width: '100%', minWidth: 0 }}
                             />
-                        </Tooltip>
+                        </Tooltip> */}
+                    <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'row' }}>
+                        <ItemgroupTableFilters
+                            filters={filters}
+                            options={options}
+                        />
                     </Box>
+
+                    {canReset && (
+                        <ItemgroupTableFiltersResult
+                            filters={filters}
+                            options={options}
+                            totalResults={dataFiltered.length}
+                            sx={{ p: 2.5, pt: 0 }}
+                        />
+                    )}
+                    {/* </Box> */}
                 </Box>
 
-                {selectedItem && (
 
-                    <Box>
-                        <Tooltip title={`Close selected item ${selectedItem?.name || ''}`} arrow>
-                            <IconButton
-                                variant="contained"
-                                color="default"
-                                onClick={handleCloseSelectedItem}
-                            >
-                                <Iconify icon="vaadin:close" width={20} height={20} />
-                            </IconButton>
-                        </Tooltip>
-                    </Box>
-
-                )}
             </Stack>
 
             <Box sx={{
@@ -240,7 +263,7 @@ export function ItemgroupGroupView({
                 gap: 4,
                 pb: 4,
                 pl: isMobile ? 2 : 4,
-                height: 540
+                height: 400
             }}
             >
 
@@ -256,7 +279,7 @@ export function ItemgroupGroupView({
                             <BoxNoData notFound={notFound} />
                         </Box>
                     ) : (
-                        <Scrollbar sx={{ height: 620 }}>
+                        <Scrollbar sx={{ height: !canReset ? 560 : 450 }}>
                             <MenuList sx={{ p: 0 }}>
                                 {dataFiltered?.filter((ig) => ig?.listItems?.length > 0).map((itemgroup) => (
                                     <ItemgroupGroupRow
@@ -264,6 +287,7 @@ export function ItemgroupGroupView({
                                         row={itemgroup}
                                         selectedItem={selectedItem}
                                         setSelectedItem={setSelectedItem}
+                                        handleCloseSelectedItem={handleCloseSelectedItem}
                                     />
                                 ))}
                             </MenuList>
@@ -271,7 +295,11 @@ export function ItemgroupGroupView({
                     )}
                 </Box>
                 {selectedItem && (
-                    <ItemgroupGroupItemDetails selectedItem={selectedItem} />
+                    <ItemgroupGroupItemDetails
+                        selectedItem={selectedItem}
+                        setSelectedItem={setSelectedItem}
+                        handleCloseSelectedItem={handleCloseSelectedItem}
+                    />
                 )}
             </Box>
         </Box>
@@ -280,48 +308,105 @@ export function ItemgroupGroupView({
 }
 
 function applyFilter({ inputData, filters }) {
-    const { name, option } = filters;
+    const {
+        name,
+        type,
+        color,
+        series,
+        class: classes,
+        configuration
+    } = filters;
 
     const searchText = name ? name.trim().toLowerCase() : '';
-    const optionText =
-        option && option !== 'allItems' ? option.trim().toLowerCase() : '';
+    let result = inputData;
 
-    const result = inputData
-        .map((item) => {
-            const listItems = Array.isArray(item.listItems) ? item.listItems : [];
-
-            const filteredListItems = listItems.filter((listItem) => {
-                let matchesName = true;
-                if (searchText) {
-                    const n = (listItem.name || '').toLowerCase();
-                    const sku = (listItem.sku || '').toLowerCase();
-                    const desc = (listItem.description || '').toLowerCase();
-                    matchesName =
-                        n.includes(searchText) ||
-                        sku.includes(searchText) ||
-                        desc.includes(searchText);
+    if (searchText) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = listItems.filter((listItem) => {
+                    let matchesName = true;
+                    if (searchText) {
+                        const n = (listItem.name || '').toLowerCase();
+                        const sku = (listItem.sku || '').toLowerCase();
+                        const desc = (listItem.description || '').toLowerCase();
+                        matchesName =
+                            n.includes(searchText) ||
+                            sku.includes(searchText) ||
+                            desc.includes(searchText);
+                    }
+                    if (!matchesName) return false;
+                    return true;
+                });
+                if (!filteredListItems.length) {
+                    return null;
                 }
-
-                if (!matchesName) return false;
-
-                if (optionText) {
-                    const sku = (listItem.sku || '').toLowerCase();
-                    return sku.includes(optionText);
-                }
-
-                return true;
-            });
-
-            if (!filteredListItems.length) {
-                return null;
-            }
-
-            return {
-                ...item,
-                listItems: filteredListItems,
-            };
-        })
-        .filter(Boolean);
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
+    if (type.length) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = matchesType(listItems, type);
+                if (!filteredListItems.length) return null;
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
+    if (color.length) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = listItems.filter((listItem) => matchesColor(listItem, color));
+                if (!filteredListItems.length) return null;
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
+    if (classes.length) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = listItems.filter((listItem) => matchesClass(listItem, classes));
+                if (!filteredListItems.length) return null;
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
+    if (series.length) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = listItems.filter((listItem) => matchesComun(listItem, series));
+                if (!filteredListItems.length) return null;
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
+    if (configuration.length) {
+        result = result
+            .map((item) => {
+                const listItems = Array.isArray(item.listItems) ? item.listItems : [];
+                const filteredListItems = listItems.filter((listItem) => matchesComun(listItem, configuration));
+                if (!filteredListItems.length) return null;
+                return {
+                    ...item,
+                    listItems: filteredListItems,
+                };
+            }).filter(Boolean);
+    }
 
     return result;
 }

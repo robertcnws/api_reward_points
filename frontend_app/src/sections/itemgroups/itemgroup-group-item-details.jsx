@@ -8,7 +8,12 @@ import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/config-global';
 
 
-export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable = false }) => {
+export const ItemgroupGroupItemDetails = ({ 
+    selectedItem, 
+    setSeectedItem, 
+    handleCloseSelectedItem,
+    isFromTable = false 
+}) => {
 
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -61,18 +66,35 @@ export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable = false })
 
     return (
         <Box sx={{
-            mt: 1,
+            // mt: 1,
             width: 'auto',
-            height: { xs: 'auto', md: 620 },
+            height: { xs: 'auto', md: 500 },
             ml: {
                 xs: !isFromTable ? -4 : 0,
                 md: 3
+            },
+            mt: {
+                xs: 0,
+                md: !isFromTable ? -3 : 0,
             },
             border: '1px solid #e0e0e0',
             borderRadius: 2,
             p: 3,
             bgcolor: '#fafafa'
         }}>
+            {selectedItem && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 0, mt: -1, mr: -1 }}>
+                    <Tooltip title={`Close selected item ${selectedItem?.name || ''}`} arrow>
+                        <IconButton
+                            variant="contained"
+                            color="default"
+                            onClick={handleCloseSelectedItem}
+                        >
+                            <Iconify icon="vaadin:close" width={15} height={15} />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            )}
             <Box sx={{
                 display: 'flex',
                 flexDirection: {

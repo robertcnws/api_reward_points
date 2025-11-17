@@ -16,15 +16,32 @@ import { ItemgroupTableFilters } from "../itemgroup-table-filters";
 import { ItemgroupTableFiltersResult } from "../itemgroup-table-filters-result";
 import { ItemgroupTableRow } from "../itemgroup-table-row";
 
+export const itemOthers = {
+    series: [
+        { value: 'mg400', label: 'MG 400' },
+        { value: 'mg450', label: 'MG 450' },
+        { value: 'mg500', label: 'MG 500' },
+        { value: 'mg1000', label: 'MG 1000' },
+        { value: 'mg1100', label: 'MG 1100' },
+        { value: 'mg5000', label: 'MG 5000' },
+        { value: 'sgd', label: 'MG SGD' },
+        { value: 'eco60', label: 'ECO 60' },
+        { value: 'eco200', label: 'ECO 200' },
+        { value: 'eco700', label: 'ECO 700' },
+        { value: 'mx3000', label: 'MX 3000' },
+        { value: 'mx4000', label: 'MX 4000' },
+    ]
+}
 
-const itemTypes = [
+
+export const itemTypes = [
     { value: 'windows', label: 'Windows' },
     { value: 'doors', label: 'Doors' },
     { value: 'storeFronts', label: 'Store Fronts' },
     { value: 'accessories', label: 'Parts' },
 ]
 
-const itemColors = [
+export const itemColors = [
     { value: 'bronze', label: 'Bronze' },
     { value: 'gray', label: 'Gray' },
     { value: 'white', label: 'White' },
@@ -32,28 +49,83 @@ const itemColors = [
     { value: 'white_gray', label: 'White / Gray' },
 ]
 
-const itemSeries = [
-    { value: 'mg200', label: 'MG 200' },
-    { value: 'mg300', label: 'MG 300' },
-    { value: 'mg350', label: 'MG 350' },
-    { value: 'mg400', label: 'MG 400' },
-    { value: 'mg450', label: 'MG 450' },
-    { value: 'mg500', label: 'MG 500' },
-    { value: 'mg600', label: 'MG 600' },
-    { value: 'mg1000', label: 'MG 1000' },
-    { value: 'mg1100', label: 'MG 1100' },
-    { value: 'mg1500', label: 'MG 1500' },
-    { value: 'mg3000', label: 'MG 3000' },
-    { value: 'mg5000', label: 'MG 5000' },
-    { value: 'sgd', label: 'MG SGD' },
-    { value: 'eco60', label: 'ECO 60' },
-    { value: 'eco200', label: 'ECO 200' },
-    { value: 'eco700', label: 'ECO 700' },
-    { value: 'mx3000', label: 'MX 3000' },
-    { value: 'mx4000', label: 'MX 4000' },
+export const itemSeries = [
+    {
+        value: 'mg200',
+        label: 'MG 200',
+        configurations: []
+    },
+    {
+        value: 'mg300',
+        label: 'MG 300',
+        configurations: [
+            { value: 'xx', label: 'XX' },
+            { value: 'xo', label: 'XO' },
+            { value: 'ox', label: 'OX' },
+            { value: 'xox', label: 'XOX' },
+            { value: 'oxo', label: 'OXO' },
+        ]
+    },
+    {
+        value: 'mg350',
+        label: 'MG 350',
+        configurations: [
+            { value: 'xx', label: 'XX' },
+            { value: 'xo', label: 'XO' },
+            { value: 'ox', label: 'OX' },
+            { value: 'xox', label: 'XOX' },
+            { value: 'oxo', label: 'OXO' },
+        ]
+    },
+    {
+        value: 'mg350 sh',
+        label: 'MG 350 SH',
+        configurations: []
+    },
+    {
+        value: 'mg350 pw',
+        label: 'MG 350 PW',
+        configurations: [
+            { value: 'arc', label: 'ARC' },
+            { value: 'sqr', label: 'SQR' },
+        ]
+    },
+    {
+        value: 'mg600',
+        label: 'MG 600',
+        configurations: []
+    },
+    {
+        value: 'mg1500',
+        label: 'MG 1500',
+        configurations: [
+            { value: 'xx', label: 'XX' },
+            { value: 'xo', label: 'XO' },
+            { value: 'ox', label: 'OX' },
+            { value: 'xox', label: 'XOX' },
+            { value: 'oxo', label: 'OXO' },
+        ]
+    },
+    {
+        value: 'mg3000',
+        label: 'MG 3000',
+        configurations: [
+            { value: 'xr', label: 'XR' },
+            { value: 'xl', label: 'XL' },
+            { value: 'xxr', label: 'XXR' },
+            { value: 'xxl', label: 'XXL' },
+        ]
+    },
+    {
+        value: 'others',
+        label: 'Others',
+        configurations: [],
+        references: itemOthers.series
+    },
 ]
 
-const itemClasses = [
+
+export const itemClasses = [
     { value: 'hr', label: 'Horizontal Rolling' },
     { value: 'sh', label: 'Single Hung' },
     { value: 'pw', label: 'Picture Window' },
@@ -62,7 +134,7 @@ const itemClasses = [
     { value: 'sgd', label: 'Sliding Glass Door' },
 ]
 
-const itemConfigurations = [
+export const itemConfigurations = [
     { value: 'xx', label: 'XX' },
     { value: 'xo', label: 'XO' },
     { value: 'ox', label: 'OX' },
@@ -87,7 +159,7 @@ export function ItemgroupTableView({
         ...!isMobile ? [
             { id: 'name', label: 'Product' },
         ] : [],
-        { id: 'stockOnHand', label: 'Stock On Hand' },
+        { id: 'actualAvailableStock', label: 'Actual Available Stock' },
         { id: '' },
     ];
 
@@ -101,13 +173,14 @@ export function ItemgroupTableView({
 
     });
 
-    const options = useMemo(() => ({
+    const options = useSetState({
         types: itemTypes,
         colors: itemColors,
         series: itemSeries,
         classes: itemClasses,
-        configurations: itemConfigurations,
-    }), []);
+        configurations: [],
+        // configurations: itemConfigurations,
+    });
 
     const table = useTable({ defaultDense: true });
 
@@ -265,55 +338,7 @@ function applyFilter({ inputData, comparator, filters }) {
     }
 
     if (type.length) {
-        let accesoriesData = [];
-        let windowsData = [];
-        let doorsData = [];
-        let storeFrontsData = [];
-        if (type.includes('accessories')) {
-            accesoriesData = inputData.filter((item) => item?.sku?.toLowerCase().indexOf('mull') !== -1);
-        }
-        if (type.includes('windows')) {
-            windowsData = inputData.filter(
-                (item) => item?.sku?.toLowerCase().indexOf('mg3000') === -1
-            )
-            windowsData = windowsData.filter(
-                (item) => item?.sku?.toLowerCase().indexOf('mg200') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg300') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg350') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg400') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg450') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg600') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('eco60') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('eco200') !== -1
-            );
-        }
-        if (type.includes('doors')) {
-            doorsData = inputData.filter(
-                (item) => item?.sku?.toLowerCase().indexOf('mg1500') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg1000') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg1100') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg3000') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('eco700') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('sgd') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mx3000') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mx4000') !== -1
-            );
-        }
-        if (type.includes('storeFronts')) {
-            storeFrontsData = inputData.filter(
-                (item) => item?.sku?.toLowerCase().indexOf('mg500') !== -1 ||
-                    item?.sku?.toLowerCase().indexOf('mg5000') !== -1
-            );
-        }
-        inputData = [...accesoriesData, ...windowsData, ...doorsData, ...storeFrontsData];
-        const uniqueIds = new Set();
-        inputData = inputData.filter((item) => {
-            if (!uniqueIds.has(item.itemId)) {
-                uniqueIds.add(item.itemId);
-                return true;
-            }
-            return false;
-        });
+        inputData = matchesType(inputData, type);
     }
 
     if (color.length) {
@@ -335,7 +360,60 @@ function applyFilter({ inputData, comparator, filters }) {
     return inputData;
 }
 
-function matchesColor(item, colorSelections) {
+export function matchesType(inputData, typeSelections) {
+    if (!typeSelections.length) return true;
+    let accesoriesData = [];
+    let windowsData = [];
+    let doorsData = [];
+    let storeFrontsData = [];
+    if (typeSelections.includes('accessories')) {
+        accesoriesData = inputData.filter((item) => item?.sku?.toLowerCase().indexOf('mull') !== -1);
+    }
+    if (typeSelections.includes('windows')) {
+        windowsData = inputData.filter(
+            (item) => item?.sku?.toLowerCase().indexOf('mg3000') === -1
+        )
+        windowsData = windowsData.filter(
+            (item) => item?.sku?.toLowerCase().indexOf('mg200') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg300') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg350') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg400') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg450') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg600') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('eco60') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('eco200') !== -1
+        );
+    }
+    if (typeSelections.includes('doors')) {
+        doorsData = inputData.filter(
+            (item) => item?.sku?.toLowerCase().indexOf('mg1500') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg1000') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg1100') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg3000') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('eco700') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('sgd') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mx3000') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mx4000') !== -1
+        );
+    }
+    if (typeSelections.includes('storeFronts')) {
+        storeFrontsData = inputData.filter(
+            (item) => item?.sku?.toLowerCase().indexOf('mg500') !== -1 ||
+                item?.sku?.toLowerCase().indexOf('mg5000') !== -1
+        );
+    }
+    const finalData = [...accesoriesData, ...windowsData, ...doorsData, ...storeFrontsData];
+    const uniqueIds = new Set();
+    return finalData.filter((item) => {
+        if (!uniqueIds.has(item.itemId)) {
+            uniqueIds.add(item.itemId);
+            return true;
+        }
+        return false;
+    });
+}
+
+export function matchesColor(item, colorSelections) {
     if (!colorSelections.length) return true;
 
     const name = (item?.name || '').toLowerCase();
@@ -396,7 +474,7 @@ function matchesColor(item, colorSelections) {
     });
 }
 
-function matchesComun(item, selections) {
+export function matchesComun(item, selections) {
     const n = item?.name?.toLowerCase() || "";
     const sku = item?.sku?.toLowerCase() || "";
     const desc = item?.description?.toLowerCase() || "";
@@ -404,14 +482,29 @@ function matchesComun(item, selections) {
     return selections.some((c) => {
         const keyword = c.toLowerCase();
 
-        // Regex: match exacto evitando MG3000 etc.
-        const exactRegex = new RegExp(`\\b${keyword}\\b`);
+        if (keyword !== 'others') {
 
-        return (
-            exactRegex.test(n) ||
-            exactRegex.test(sku) ||
-            exactRegex.test(desc)
-        );
+            // Regex: match exacto evitando MG3000 etc.
+            const exactRegex = new RegExp(`\\b${keyword}\\b`);
+
+            return (
+                exactRegex.test(n) ||
+                exactRegex.test(sku) ||
+                exactRegex.test(desc)
+            );
+
+        }
+        const itemOtherSeries = itemOthers.series;
+        return itemOtherSeries.some((otherSeries) => {
+            const otherKeyword = otherSeries.value.toLowerCase();
+            const exactOtherRegex = new RegExp(`\\b${otherKeyword}\\b`);
+
+            return (
+                exactOtherRegex.test(n) ||
+                exactOtherRegex.test(sku) ||
+                exactOtherRegex.test(desc)
+            );
+        });
     });
 }
 
@@ -424,7 +517,7 @@ function matchesComun(item, selections) {
 //     { value: 'sgd', label: 'Sliding Glass Door' },
 // ]
 
-function matchesClass(item, classSelections) {
+export function matchesClass(item, classSelections) {
     if (!classSelections.length) return true;
 
     const n = item?.name?.toLowerCase() || "";
