@@ -14,7 +14,7 @@ import { Iconify } from 'src/components/iconify';
 export function ItemgroupTableFilters({
     filters,
     options,
-    onResetPage=null,
+    onResetPage = null,
 }) {
 
     const handleFilterName = useCallback(
@@ -129,17 +129,21 @@ export function ItemgroupTableFilters({
                 />
 
                 {/* Configuration */}
-                {options.state.configurations && options.state.configurations.length > 0 && (
-                    <MultiFilterAutocomplete
-                        label="Configuration"
-                        options={options.state.configurations || []}
-                        values={filters.state.configuration || []}
-                        onChange={(newValues) => {
-                            onResetPage?.();
-                            filters.setState({ configuration: newValues });
-                        }}
-                    />
-                )}
+                {
+                    (options.state.series &&
+                        options.state.series.length > 0 &&
+                        options.state.configurations &&
+                        options.state.configurations.length > 0) && (
+                        <MultiFilterAutocomplete
+                            label="Configuration"
+                            options={options.state.configurations || []}
+                            values={filters.state.configuration || []}
+                            onChange={(newValues) => {
+                                onResetPage?.();
+                                filters.setState({ configuration: newValues });
+                            }}
+                        />
+                    )}
             </Stack>
         </>
     );

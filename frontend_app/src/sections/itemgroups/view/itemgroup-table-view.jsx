@@ -87,7 +87,7 @@ export const itemSeries = [
         label: 'MG 350 PW',
         configurations: [
             { value: 'arc', label: 'ARC' },
-            { value: 'sqr', label: 'SQR' },
+            { value: 'sqr', label: 'SQUARE' },
         ]
     },
     {

@@ -59,9 +59,9 @@ export function ItemgroupTableFiltersResult({
 
   const handleShowName = useCallback(
     (filterName, value) => {
-      const list = options?.[filterName];
-      if (!list) return value;
-      const optionElem = list.find((item) => item.value === value);
+      const listAll = options?.state?.[filterName];
+      if (!listAll) return value;
+      const optionElem = listAll.find((item) => item.value === value);
       return optionElem?.label || value;
     },
     [options]
