@@ -11,10 +11,12 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { fNumber } from 'src/utils/format-number';
 import { useContext } from 'react';
 import { LoadingContext } from 'src/auth/context/loading-context';
+import { Label } from 'src/components/label';
 
 import { Iconify } from 'src/components/iconify';
 import { Button, Dialog, DialogActions, DialogContent, Typography } from '@mui/material';
 import { ItemgroupGroupItemDetails } from './itemgroup-group-item-details';
+
 
 
 // ----------------------------------------------------------------------
@@ -28,7 +30,9 @@ export function ItemgroupTableRow({
 
   return (
     <>
-      <TableRow hover>
+      <TableRow hover sx={{
+        bgcolor: row?.actualAvailableStock > 0 ? 'inherit' : 'error.lighter',
+      }}>
 
         <TableCell sx={{ cursor: 'pointer' }}>
           <Stack spacing={2} direction="row" alignItems="center">
@@ -49,7 +53,14 @@ export function ItemgroupTableRow({
 
         )}
 
-        <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>{fNumber(row?.stockOnHand)}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>
+          {row?.actualAvailableStock > 0 ?
+            fNumber(row?.actualAvailableStock) :
+            <Label variant="soft" color="error">
+              Out of Stock
+            </Label>
+          }
+        </TableCell>
 
         <TableCell align="right">
           <Stack direction="row" alignItems="right" sx={{ justifyContent: 'flex-end' }}>
@@ -70,7 +81,7 @@ export function ItemgroupTableRow({
       >
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <ItemgroupGroupItemDetails selectedItem={row} isFromTable/>
+            <ItemgroupGroupItemDetails selectedItem={row} isFromTable />
           </Box>
         </DialogContent>
         <DialogActions>

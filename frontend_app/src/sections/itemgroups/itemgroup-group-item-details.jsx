@@ -1,13 +1,14 @@
 
 import { Alert, Box, IconButton, Tooltip, Typography } from '@mui/material';
 // import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { fCurrency, fNumber } from 'src/utils/format-number';
+import { fNumber } from 'src/utils/format-number';
 import { useEffect, useMemo, useState } from 'react';
+import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { CONFIG } from 'src/config-global';
-import { StoreProductDetailsCarousel } from '../store-product/store-product-details-carousel';
 
-export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable=false }) => {
+
+export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable = false }) => {
 
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -92,7 +93,13 @@ export const ItemgroupGroupItemDetails = ({ selectedItem, isFromTable=false }) =
                         Selling price:<strong> {fCurrency(selectedItem?.rate) || 'N/A'}</strong>
                     </Typography> */}
                     <Typography variant="body2">
-                        Available stock:<strong> {fNumber(selectedItem?.stockOnHand) || 'N/A'}</strong>
+                        Available stock:
+                        {selectedItem?.actualAvailableStock > 0 ?
+                            <strong> {fNumber(selectedItem?.actualAvailableStock) || 'N/A'}</strong> :
+                            <Label variant="soft" color="error">
+                                Out of Stock
+                            </Label>
+                        }
                     </Typography>
                     <Typography variant="body1">
                         <strong>SKU :</strong> <code style={{ color: 'red' }}>{selectedItem?.sku}</code>
