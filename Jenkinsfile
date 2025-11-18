@@ -34,37 +34,40 @@ pipeline {
           credentialsId: 'aws-ecr-creds'
         ]]) {
           script {
+            
             def ssmGet = { String paramName ->
-              return sh(
-                script: '''#!/bin/sh
-                  docker run --rm \
-                    -e AWS_ACCESS_KEY_ID \
-                    -e AWS_SECRET_ACCESS_KEY \
-                    -e AWS_SESSION_TOKEN \
-                    -e AWS_DEFAULT_REGION \
-                    amazon/aws-cli ssm get-parameter \
-                      --name "$1" \
-                      --query "Parameter.Value" \
-                      --output text
-                ''',
-                returnStdout: true,
-              ).trim()
+              return withEnv(["PARAM_NAME=${paramName}"]) {
+                sh(
+                  script: '''
+                    docker run --rm \
+                      -e AWS_ACCESS_KEY_ID \
+                      -e AWS_SECRET_ACCESS_KEY \
+                      -e AWS_SESSION_TOKEN \
+                      -e AWS_DEFAULT_REGION \
+                      -e PARAM_NAME \
+                      amazon/aws-cli ssm get-parameter \
+                        --name "$PARAM_NAME" \
+                        --query "Parameter.Value" \
+                        --output text
+                  ''',
+                  returnStdout: true
+                ).trim()
+              }
             }
 
-            env.AWS_ECR_REGISTRY   = ssmGet('/reward-points/ecr/registry')
-            env.AWS_CLUSTER        = ssmGet('/reward-points/ecs/cluster_name')
-            env.AWS_BACKEND_SERVICE  = ssmGet('/reward-points/ecs/backend_service')
-            env.AWS_FRONTEND_SERVICE = ssmGet('/reward-points/ecs/frontend_service')
+            env.AWS_ECR_REGISTRY      = ssmGet('/reward-points/ecr/registry')
+            env.AWS_CLUSTER           = ssmGet('/reward-points/ecs/cluster_name')
+            env.AWS_BACKEND_SERVICE   = ssmGet('/reward-points/ecs/backend_service')
+            env.AWS_FRONTEND_SERVICE  = ssmGet('/reward-points/ecs/frontend_service')
 
-            echo "AWS_ECR_REGISTRY   = ${env.AWS_ECR_REGISTRY}"
-            echo "AWS_CLUSTER        = ${env.AWS_CLUSTER}"
+            echo "AWS_ECR_REGISTRY     = ${env.AWS_ECR_REGISTRY}"
+            echo "AWS_CLUSTER          = ${env.AWS_CLUSTER}"
             echo "AWS_BACKEND_SERVICE  = ${env.AWS_BACKEND_SERVICE}"
             echo "AWS_FRONTEND_SERVICE = ${env.AWS_FRONTEND_SERVICE}"
           }
         }
       }
     }
-
 
     stage('1. Checkout & Stash') {
       agent any
