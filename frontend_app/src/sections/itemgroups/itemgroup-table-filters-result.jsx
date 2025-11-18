@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import Chip from '@mui/material/Chip';
 
 import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
+import { reconfigureOptionsConfigurations } from './itemgroup-table-filters';
 
 // ----------------------------------------------------------------------
 
@@ -19,11 +20,18 @@ export function ItemgroupTableFiltersResult({
   }, [filters, onResetPage]);
 
   const handleRemoveCommonLists = useCallback(
-    (filterName, inputValue) => {
-      const newValue = filters.state[filterName].filter((item) => item !== inputValue);
-
+    (filterName, inputValue, dependentFilterName=null, dependentOptionName=null) => {
+      const newValue = filters.state?.[filterName].filter((item) => item !== inputValue);
       onResetPage?.();
-      filters.setState({ [filterName]: options?.[filterName] ? newValue : [] });
+      filters.setState({ [filterName]: options?.state?.[filterName] ? newValue : [] });
+      if (dependentFilterName) {
+        const uniqueConfigurations = reconfigureOptionsConfigurations(
+          filters.state?.[filterName] || [],
+          options.state?.[filterName] || []
+        );
+        filters.setState({ [dependentFilterName]: [] });
+        options.setState({ [dependentOptionName]: uniqueConfigurations });
+      }
     },
     [filters, onResetPage, options]
   );
@@ -70,7 +78,8 @@ export function ItemgroupTableFiltersResult({
   const handleReset = useCallback(() => {
     onResetPage?.();
     filters.onResetState();
-  }, [filters, onResetPage]);
+    options?.onResetState();
+  }, [filters, onResetPage, options]);
 
   return (
     <FiltersResult totalResults={totalResults} onReset={handleReset} sx={{ ...sx }}>
@@ -107,20 +116,6 @@ export function ItemgroupTableFiltersResult({
         </FiltersBlock>
       )}
 
-      {filters.state?.series?.length > 0 && (
-        <FiltersBlock label="Series:" isShow={!!filters.state.series.length}>
-          {filters.state.series.map((item) => (
-            <Chip
-              {...chipProps}
-              key={item}
-              label={handleShowName('series', item)}
-              onDelete={() => handleRemoveCommonLists('series', item)}
-              sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
-            />
-          ))}
-        </FiltersBlock>
-      )}
-
       {filters.state?.class?.length > 0 && (
         <FiltersBlock label="Class:" isShow={!!filters.state.class.length}>
           {filters.state.class.map((item) => (
@@ -129,6 +124,20 @@ export function ItemgroupTableFiltersResult({
               key={item}
               label={handleShowName('classes', item)}
               onDelete={() => handleRemoveCommonLists('class', item)}
+              sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
+            />
+          ))}
+        </FiltersBlock>
+      )}
+
+      {filters.state?.series?.length > 0 && (
+        <FiltersBlock label="Series:" isShow={!!filters.state.series.length}>
+          {filters.state.series.map((item) => (
+            <Chip
+              {...chipProps}
+              key={item}
+              label={handleShowName('series', item)}
+              onDelete={() => handleRemoveCommonLists('series', item, 'configuration', 'configurations')}
               sx={{ textTransform: 'uppercase', color: 'text.disabled' }}
             />
           ))}
