@@ -14,11 +14,11 @@ pipeline {
     BACKEND_IMAGE            = "${AWS_ECR_REGISTRY}/reward-points-backend"
     FRONTEND_IMAGE           = "${AWS_ECR_REGISTRY}/reward-points-frontend"
     AWS_FRONTEND_ENV_CRED_ID = "AWS_FRONTEND_REWARD_POINTS_ENV_CRED_ID"
-    // AWS_ECR_REGISTRY         = "324037323031.dkr.ecr.us-east-2.amazonaws.com/nws"
-    // AWS_DEFAULT_REGION       = "us-east-2"
-    // AWS_CLUSTER              = "api-dealerportal-cluster"
-    // AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
-    // AWS_BACKEND_SERVICE      = "reward-points-backend-service"
+    AWS_ECR_REGISTRY         = "324037323031.dkr.ecr.us-east-2.amazonaws.com/nws"
+    AWS_DEFAULT_REGION       = "us-east-2"
+    AWS_CLUSTER              = "api-dealerportal-cluster"
+    AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
+    AWS_BACKEND_SERVICE      = "reward-points-backend-service"
     JENKINS_HOOK             = "reward-points-repository-hook"
     SONARCLOUD_TOKEN         = "SONARCLOUD_TOKEN"
     SONARCLOUD_HOST          = "https://sonarcloud.io"
@@ -26,85 +26,85 @@ pipeline {
 
   stages {
 
-    stage('0. Terraform Infra') {
-      when { changeset "infra/**" }
-      agent { label 'docker' }
-      steps {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: 'aws-ecr-creds'
-        ]]) {
-          dir('infra') {
-            sh '''
-              # Terraform INIT
-              docker run --rm \
-                -v "$PWD":/workspace \
-                -w /workspace \
-                -e AWS_ACCESS_KEY_ID \
-                -e AWS_SECRET_ACCESS_KEY \
-                -e AWS_SESSION_TOKEN \
-                -e AWS_DEFAULT_REGION \
-                hashicorp/terraform:1.9.5 \
-                init -input=false
+    // stage('0. Terraform Infra') {
+    //   when { changeset "infra/**" }
+    //   agent { label 'docker' }
+    //   steps {
+    //     withCredentials([[
+    //       $class: 'AmazonWebServicesCredentialsBinding',
+    //       credentialsId: 'aws-ecr-creds'
+    //     ]]) {
+    //       dir('infra') {
+    //         sh '''
+    //           # Terraform INIT
+    //           docker run --rm \
+    //             -v "$PWD":/workspace \
+    //             -w /workspace \
+    //             -e AWS_ACCESS_KEY_ID \
+    //             -e AWS_SECRET_ACCESS_KEY \
+    //             -e AWS_SESSION_TOKEN \
+    //             -e AWS_DEFAULT_REGION \
+    //             hashicorp/terraform:1.9.5 \
+    //             init -input=false
 
-              # Terraform APPLY
-              docker run --rm \
-                -v "$PWD":/workspace \
-                -w /workspace \
-                -e AWS_ACCESS_KEY_ID \
-                -e AWS_SECRET_ACCESS_KEY \
-                -e AWS_SESSION_TOKEN \
-                -e AWS_DEFAULT_REGION \
-                hashicorp/terraform:1.9.5 \
-                apply -input=false -auto-approve
-            '''
-          }
-        }
-      }
-    }
+    //           # Terraform APPLY
+    //           docker run --rm \
+    //             -v "$PWD":/workspace \
+    //             -w /workspace \
+    //             -e AWS_ACCESS_KEY_ID \
+    //             -e AWS_SECRET_ACCESS_KEY \
+    //             -e AWS_SESSION_TOKEN \
+    //             -e AWS_DEFAULT_REGION \
+    //             hashicorp/terraform:1.9.5 \
+    //             apply -input=false -auto-approve
+    //         '''
+    //       }
+    //     }
+    //   }
+    // }
 
-    stage('1. Load Infra Vars (SSM)') {
-      agent { label 'docker' }
-      steps {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: 'aws-ecr-creds'
-        ]]) {
-          script {
+    // stage('1. Load Infra Vars (SSM)') {
+    //   agent { label 'docker' }
+    //   steps {
+    //     withCredentials([[
+    //       $class: 'AmazonWebServicesCredentialsBinding',
+    //       credentialsId: 'aws-ecr-creds'
+    //     ]]) {
+    //       script {
             
-            def ssmGet = { String paramName ->
-              return withEnv(["PARAM_NAME=${paramName}"]) {
-                sh(
-                  script: '''
-                    docker run --rm \
-                      -e AWS_ACCESS_KEY_ID \
-                      -e AWS_SECRET_ACCESS_KEY \
-                      -e AWS_SESSION_TOKEN \
-                      -e AWS_DEFAULT_REGION \
-                      -e PARAM_NAME \
-                      amazon/aws-cli ssm get-parameter \
-                        --name "$PARAM_NAME" \
-                        --query "Parameter.Value" \
-                        --output text
-                  ''',
-                  returnStdout: true
-                ).trim()
-              }
-            }
+    //         def ssmGet = { String paramName ->
+    //           return withEnv(["PARAM_NAME=${paramName}"]) {
+    //             sh(
+    //               script: '''
+    //                 docker run --rm \
+    //                   -e AWS_ACCESS_KEY_ID \
+    //                   -e AWS_SECRET_ACCESS_KEY \
+    //                   -e AWS_SESSION_TOKEN \
+    //                   -e AWS_DEFAULT_REGION \
+    //                   -e PARAM_NAME \
+    //                   amazon/aws-cli ssm get-parameter \
+    //                     --name "$PARAM_NAME" \
+    //                     --query "Parameter.Value" \
+    //                     --output text
+    //               ''',
+    //               returnStdout: true
+    //             ).trim()
+    //           }
+    //         }
 
-            env.AWS_ECR_REGISTRY      = ssmGet('/reward-points/ecr/registry')
-            env.AWS_CLUSTER           = ssmGet('/reward-points/ecs/cluster_name')
-            env.AWS_BACKEND_SERVICE   = ssmGet('/reward-points/ecs/backend_service')
-            env.AWS_FRONTEND_SERVICE  = ssmGet('/reward-points/ecs/frontend_service')
+    //         env.AWS_ECR_REGISTRY      = ssmGet('/reward-points/ecr/registry')
+    //         env.AWS_CLUSTER           = ssmGet('/reward-points/ecs/cluster_name')
+    //         env.AWS_BACKEND_SERVICE   = ssmGet('/reward-points/ecs/backend_service')
+    //         env.AWS_FRONTEND_SERVICE  = ssmGet('/reward-points/ecs/frontend_service')
 
-            echo "AWS_ECR_REGISTRY     = ${env.AWS_ECR_REGISTRY}"
-            echo "AWS_CLUSTER          = ${env.AWS_CLUSTER}"
-            echo "AWS_BACKEND_SERVICE  = ${env.AWS_BACKEND_SERVICE}"
-            echo "AWS_FRONTEND_SERVICE = ${env.AWS_FRONTEND_SERVICE}"
-          }
-        }
-      }
-    }
+    //         echo "AWS_ECR_REGISTRY     = ${env.AWS_ECR_REGISTRY}"
+    //         echo "AWS_CLUSTER          = ${env.AWS_CLUSTER}"
+    //         echo "AWS_BACKEND_SERVICE  = ${env.AWS_BACKEND_SERVICE}"
+    //         echo "AWS_FRONTEND_SERVICE = ${env.AWS_FRONTEND_SERVICE}"
+    //       }
+    //     }
+    //   }
+    // }
 
     stage('2. Checkout & Stash') {
       agent any

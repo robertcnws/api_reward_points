@@ -10,7 +10,7 @@ import { reconfigureOptionsConfigurations } from './itemgroup-table-filters';
 export function ItemgroupTableFiltersResult({
   filters,
   options,
-  onResetPage=null,
+  onResetPage = null,
   totalResults,
   sx
 }) {
@@ -20,21 +20,31 @@ export function ItemgroupTableFiltersResult({
   }, [filters, onResetPage]);
 
   const handleRemoveCommonLists = useCallback(
-    (filterName, inputValue, dependentFilterName=null, dependentOptionName=null) => {
-      const newValue = filters.state?.[filterName].filter((item) => item !== inputValue);
+    (filterName, inputValue, dependentFilterName = null, dependentOptionName = null) => {
       onResetPage?.();
-      filters.setState({ [filterName]: options?.state?.[filterName] ? newValue : [] });
-      if (dependentFilterName) {
+
+      const prevValues = filters.state?.[filterName] || [];
+      const newValue = prevValues.filter((item) => item !== inputValue);
+
+      filters.setState({
+        [filterName]: options?.state?.[filterName] ? newValue : [],
+        ...(dependentFilterName ? { [dependentFilterName]: [] } : {}),
+      });
+
+      if (dependentFilterName && dependentOptionName) {
         const uniqueConfigurations = reconfigureOptionsConfigurations(
-          filters.state?.[filterName] || [],
+          newValue,
           options.state?.[filterName] || []
         );
-        filters.setState({ [dependentFilterName]: [] });
-        options.setState({ [dependentOptionName]: uniqueConfigurations });
+
+        options.setState({
+          [dependentOptionName]: uniqueConfigurations,
+        });
       }
     },
-    [filters, onResetPage, options]
+    [filters, options, onResetPage]
   );
+
 
   // const handleRemoveDependentLists = useCallback(
   //   (filterName, inputValue) => {
