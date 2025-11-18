@@ -36,14 +36,32 @@ pipeline {
         ]]) {
           dir('infra') {
             sh '''
-              terraform init -input=false
-              terraform apply -input=false -auto-approve
+              # Terraform INIT
+              docker run --rm \
+                -v "$PWD":/workspace \
+                -w /workspace \
+                -e AWS_ACCESS_KEY_ID \
+                -e AWS_SECRET_ACCESS_KEY \
+                -e AWS_SESSION_TOKEN \
+                -e AWS_DEFAULT_REGION \
+                hashicorp/terraform:1.9.5 \
+                init -input=false
+
+              # Terraform APPLY
+              docker run --rm \
+                -v "$PWD":/workspace \
+                -w /workspace \
+                -e AWS_ACCESS_KEY_ID \
+                -e AWS_SECRET_ACCESS_KEY \
+                -e AWS_SESSION_TOKEN \
+                -e AWS_DEFAULT_REGION \
+                hashicorp/terraform:1.9.5 \
+                apply -input=false -auto-approve
             '''
           }
         }
       }
     }
-
 
     stage('1. Load Infra Vars (SSM)') {
       agent { label 'docker' }
