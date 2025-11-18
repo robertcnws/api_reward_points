@@ -14,7 +14,7 @@ export function ItemgroupTableFiltersResult({
   totalResults,
   sx
 }) {
-  
+
   const handleRemoveKeyword = useCallback(() => {
     onResetPage?.();
     filters.setState({ name: '' });
@@ -45,7 +45,6 @@ export function ItemgroupTableFiltersResult({
     },
     [filters, options, onResetPage]
   );
-
 
   // const handleRemoveDependentLists = useCallback(
   //   (filterName, inputValue) => {
