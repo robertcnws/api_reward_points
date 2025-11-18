@@ -11,20 +11,72 @@ pipeline {
   }
 
   environment {
-    AWS_ECR_REGISTRY         = "324037323031.dkr.ecr.us-east-2.amazonaws.com/nws"
     BACKEND_IMAGE            = "${AWS_ECR_REGISTRY}/reward-points-backend"
     FRONTEND_IMAGE           = "${AWS_ECR_REGISTRY}/reward-points-frontend"
-    AWS_DEFAULT_REGION       = "us-east-2"
     AWS_FRONTEND_ENV_CRED_ID = "AWS_FRONTEND_REWARD_POINTS_ENV_CRED_ID"
-    AWS_CLUSTER              = "api-dealerportal-cluster"
-    AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
-    AWS_BACKEND_SERVICE      = "reward-points-backend-service"
+    // AWS_ECR_REGISTRY         = "324037323031.dkr.ecr.us-east-2.amazonaws.com/nws"
+    // AWS_DEFAULT_REGION       = "us-east-2"
+    // AWS_CLUSTER              = "api-dealerportal-cluster"
+    // AWS_FRONTEND_SERVICE     = "reward-points-frontend-service"
+    // AWS_BACKEND_SERVICE      = "reward-points-backend-service"
     JENKINS_HOOK             = "reward-points-repository-hook"
     SONARCLOUD_TOKEN         = "SONARCLOUD_TOKEN"
     SONARCLOUD_HOST          = "https://sonarcloud.io"
   }
 
   stages {
+
+    stage('0. Load Infra Vars (SSM)') {
+      agent { label 'docker' }
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-ecr-creds'
+        ]]) {
+          script {
+            env.AWS_ECR_REGISTRY = sh(
+              script: '''
+                aws ssm get-parameter \
+                  --name "/reward-points/ecr/registry" \
+                  --query "Parameter.Value" \
+                  --output text
+              ''',
+              returnStdout: true
+            ).trim()
+
+            env.AWS_CLUSTER = sh(
+              script: '''
+                aws ssm get-parameter \
+                  --name "/reward-points/ecs/cluster_name" \
+                  --query "Parameter.Value" \
+                  --output text
+              ''',
+              returnStdout: true
+            ).trim()
+
+            env.AWS_BACKEND_SERVICE = sh(
+              script: '''
+                aws ssm get-parameter \
+                  --name "/reward-points/ecs/backend_service" \
+                  --query "Parameter.Value" \
+                  --output text
+              ''',
+              returnStdout: true
+            ).trim()
+
+            env.AWS_FRONTEND_SERVICE = sh(
+              script: '''
+                aws ssm get-parameter \
+                  --name "/reward-points/ecs/frontend_service" \
+                  --query "Parameter.Value" \
+                  --output text
+              ''',
+              returnStdout: true
+            ).trim()
+          }
+        }
+      }
+    }
 
     stage('1. Checkout & Stash') {
       agent any
