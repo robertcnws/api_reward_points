@@ -36,17 +36,18 @@ pipeline {
           script {
             def ssmGet = { String paramName ->
               return sh(
-                script: """
-                  docker run --rm \\
-                    -e AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID} \\
-                    -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} \\
-                    -e AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION} \\
-                    amazon/aws-cli ssm get-parameter \\
-                      --name "${paramName}" \\
-                      --query "Parameter.Value" \\
+                script: '''#!/bin/sh
+                  docker run --rm \
+                    -e AWS_ACCESS_KEY_ID \
+                    -e AWS_SECRET_ACCESS_KEY \
+                    -e AWS_SESSION_TOKEN \
+                    -e AWS_DEFAULT_REGION \
+                    amazon/aws-cli ssm get-parameter \
+                      --name "$1" \
+                      --query "Parameter.Value" \
                       --output text
-                """,
-                returnStdout: true
+                ''',
+                returnStdout: true,
               ).trim()
             }
 
