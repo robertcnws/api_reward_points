@@ -14,6 +14,7 @@ export function ItemgroupTableFiltersResult({
   totalResults,
   sx
 }) {
+  
   const handleRemoveKeyword = useCallback(() => {
     onResetPage?.();
     filters.setState({ name: '' });
