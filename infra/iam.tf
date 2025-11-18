@@ -4,9 +4,7 @@ variable "jenkins_iam_user_name" {
   default     = "dealerportal_ecs" 
 }
 
-data "aws_iam_user" "jenkins" {
-  user_name = var.jenkins_iam_user_name
-}
+data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "reward_points_ssm_read" {
   statement {
@@ -25,8 +23,6 @@ data "aws_iam_policy_document" "reward_points_ssm_read" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_iam_policy" "reward_points_ssm_read" {
   name        = "reward-points-ssm-read"
   description = "Allow Jenkins to read reward-points parameters from SSM"
@@ -34,6 +30,6 @@ resource "aws_iam_policy" "reward_points_ssm_read" {
 }
 
 resource "aws_iam_user_policy_attachment" "jenkins_ssm_read" {
-  user       = data.aws_iam_user.jenkins.user_name
+  user       = var.jenkins_iam_user_name
   policy_arn = aws_iam_policy.reward_points_ssm_read.arn
 }
