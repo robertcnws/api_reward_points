@@ -34,49 +34,36 @@ pipeline {
           credentialsId: 'aws-ecr-creds'
         ]]) {
           script {
-            env.AWS_ECR_REGISTRY = sh(
-              script: '''
-                aws ssm get-parameter \
-                  --name "/reward-points/ecr/registry" \
-                  --query "Parameter.Value" \
-                  --output text
-              ''',
-              returnStdout: true
-            ).trim()
+            def ssmGet = { String paramName ->
+              return sh(
+                script: """
+                  docker run --rm \\
+                    -e AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID} \\
+                    -e AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY} \\
+                    -e AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION} \\
+                    amazon/aws-cli ssm get-parameter \\
+                      --name "${paramName}" \\
+                      --query "Parameter.Value" \\
+                      --output text
+                """,
+                returnStdout: true
+              ).trim()
+            }
 
-            env.AWS_CLUSTER = sh(
-              script: '''
-                aws ssm get-parameter \
-                  --name "/reward-points/ecs/cluster_name" \
-                  --query "Parameter.Value" \
-                  --output text
-              ''',
-              returnStdout: true
-            ).trim()
+            env.AWS_ECR_REGISTRY   = ssmGet('/reward-points/ecr/registry')
+            env.AWS_CLUSTER        = ssmGet('/reward-points/ecs/cluster_name')
+            env.AWS_BACKEND_SERVICE  = ssmGet('/reward-points/ecs/backend_service')
+            env.AWS_FRONTEND_SERVICE = ssmGet('/reward-points/ecs/frontend_service')
 
-            env.AWS_BACKEND_SERVICE = sh(
-              script: '''
-                aws ssm get-parameter \
-                  --name "/reward-points/ecs/backend_service" \
-                  --query "Parameter.Value" \
-                  --output text
-              ''',
-              returnStdout: true
-            ).trim()
-
-            env.AWS_FRONTEND_SERVICE = sh(
-              script: '''
-                aws ssm get-parameter \
-                  --name "/reward-points/ecs/frontend_service" \
-                  --query "Parameter.Value" \
-                  --output text
-              ''',
-              returnStdout: true
-            ).trim()
+            echo "AWS_ECR_REGISTRY   = ${env.AWS_ECR_REGISTRY}"
+            echo "AWS_CLUSTER        = ${env.AWS_CLUSTER}"
+            echo "AWS_BACKEND_SERVICE  = ${env.AWS_BACKEND_SERVICE}"
+            echo "AWS_FRONTEND_SERVICE = ${env.AWS_FRONTEND_SERVICE}"
           }
         }
       }
     }
+
 
     stage('1. Checkout & Stash') {
       agent any
