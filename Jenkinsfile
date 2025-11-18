@@ -26,7 +26,26 @@ pipeline {
 
   stages {
 
-    stage('0. Load Infra Vars (SSM)') {
+    stage('0. Terraform Infra') {
+      when { changeset "infra/**" }
+      agent { label 'docker' }
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-ecr-creds'
+        ]]) {
+          dir('infra') {
+            sh '''
+              terraform init -input=false
+              terraform apply -input=false -auto-approve
+            '''
+          }
+        }
+      }
+    }
+
+
+    stage('1. Load Infra Vars (SSM)') {
       agent { label 'docker' }
       steps {
         withCredentials([[
@@ -69,7 +88,7 @@ pipeline {
       }
     }
 
-    stage('1. Checkout & Stash') {
+    stage('2. Checkout & Stash') {
       agent any
       steps {
         checkout scm
@@ -114,7 +133,7 @@ pipeline {
     //   }
     // }
 
-    stage('2. Verify Docker') {
+    stage('3. Verify Docker') {
       agent { label 'docker' }
       steps {
         sh 'echo "Docker version: $(docker --version)"'
@@ -124,7 +143,7 @@ pipeline {
     }
 
 
-    stage('3. Verify agent groups') {
+    stage('4. Verify agent groups') {
       agent { label 'docker' }
       steps {
         sh 'echo "Users: $(id -un)"'
@@ -132,7 +151,7 @@ pipeline {
       }
     }
 
-    stage('4. Smoke Test Docker') {
+    stage('5. Smoke Test Docker') {
       agent { label 'docker' }
       steps {
         echo "🔍 Testing Docker from this agent in EC2..."
@@ -142,7 +161,7 @@ pipeline {
       }
     }
 
-    stage('5. Login to ECR') {
+    stage('6. Login to ECR') {
       agent { label 'docker' }
       steps {
         withCredentials([[
@@ -160,14 +179,14 @@ pipeline {
       }
     }
 
-    stage('6. Prune Docker') {
+    stage('7. Prune Docker') {
       agent { label 'docker' }
       steps {
         sh 'docker system prune -af || true'
       }
     }
 
-    stage('7. Build & Push Backend') {
+    stage('8. Build & Push Backend') {
       when { changeset "**/backend_app/**" }
       agent { label 'docker' }
       steps {
@@ -183,7 +202,7 @@ pipeline {
       }
     }
 
-    stage('8. Build & Push Frontend') {
+    stage('9. Build & Push Frontend') {
       when { changeset "**/frontend_app/**" }
       agent { label 'docker' }
       steps {
@@ -207,7 +226,7 @@ pipeline {
       }
     }
 
-    stage('9. Deploy Backend') {
+    stage('10. Deploy Backend') {
       when { changeset "**/backend_app/**" }
       agent { label 'docker' }
       steps {
@@ -230,7 +249,7 @@ pipeline {
       }
     }
 
-    stage('10. Deploy Frontend') {
+    stage('11. Deploy Frontend') {
       when { changeset "**/frontend_app/**" }
       agent { label 'docker' }
       steps {
@@ -253,7 +272,7 @@ pipeline {
       }
     }
 
-    stage('11. Verify Deployments') {
+    stage('12. Verify Deployments') {
       agent { label 'docker' }
       steps {
         withCredentials([[
@@ -293,7 +312,7 @@ pipeline {
       }
     }
 
-    stage('12. Notify') {
+    stage('13. Notify') {
       when { expression { currentBuild.currentResult == 'SUCCESS' } }
       steps {
         emailext(
