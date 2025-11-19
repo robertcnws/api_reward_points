@@ -39,7 +39,7 @@ export function FunctionalityLabelView({
 
     const hasPermissionToSeeLink = useMemo(() => {
         if (!functionality?.rolesAllowed || functionality.rolesAllowed.length === 0) {
-            return true; 
+            return true;
         }
         const userRoleId = userLogged?.data?.user_role._id;
         return functionality.rolesAllowed.map((f) => f.id).includes(userRoleId);
@@ -53,7 +53,7 @@ export function FunctionalityLabelView({
                     flexDirection: 'column',
                     gap: 0.75,
                     bgcolor: 'info.lighter',
-                    p: 1.5,
+                    p: 1,
                     borderRadius: 1,
                     border: (theme) => `1px solid ${theme.palette.info.light}`,
                     width: '100%',
@@ -76,7 +76,7 @@ export function FunctionalityLabelView({
                             color="info.darker"
                             sx={{ fontWeight: 700 }}
                         >
-                            {functionality?.name || ''} 
+                            {functionality?.name || ''}
                         </Typography>
                         <Label color='info'>
                             {fDurationFromNow(functionality?.lastModifiedTime)} ago
@@ -104,7 +104,7 @@ export function FunctionalityLabelView({
                     {hasMoreText && (
                         <Typography
                             component="span"
-                            variant="body2"
+                            variant="subtitle2"
                             sx={{
                                 ml: 0.5,
                                 textDecoration: 'underline',
@@ -120,18 +120,18 @@ export function FunctionalityLabelView({
 
                 {/* Botón de link (sólo si tiene link) */}
                 {(functionality?.link && hasPermissionToSeeLink) && (
-                    <Box sx={{ mt: 0.5 }}>
-                        <Button
-                            size="small"
-                            variant="contained"
+                    <Box sx={{ mt: 0 }}>
+                        <Label
+                            variant="outlined"
                             color="info"
-                            endIcon={<Iconify icon="solar:external-link-linear" width={16} height={16} />}
+                            sx={{ mb: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
                             onClick={() =>
                                 router.push(functionality.link)
                             }
                         >
-                            Go to feature
-                        </Button>
+                            This feature is available for your user role.
+                            <Iconify icon="akar-icons:link-out" width={16} height={16} style={{ marginLeft: 4 }} />
+                        </Label>
                     </Box>
                 )}
             </Box>
