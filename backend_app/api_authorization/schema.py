@@ -9,7 +9,8 @@ from api_authorization.models import (
     LoginUser,
     ExternalUsers,
     LoginUserRecoverPasswordCode,
-    SystemPermission
+    SystemPermission,
+    Functionality,
 )
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
 
@@ -137,6 +138,35 @@ class ExternalUserType(MongoengineObjectType):
     
     def resolve_last_login(self, info):
         return datetime_to_timezone(self.last_login) if self.last_login else None
+    
+    
+class FunctionalityType(MongoengineObjectType):
+    created_time = graphene.String()
+    last_modified_time = graphene.String()
+    roles_allowed = graphene.List(UserRoleType)
+    
+    class Meta:
+        model = Functionality
+    
+    def resolve_created_time(self, info):
+        return datetime_to_timezone(self.created_time) if self.created_time else None
+    
+    def resolve_last_modified_time(self, info):
+        return datetime_to_timezone(self.last_modified_time) if self.last_modified_time else None
+    
+    def resolve_roles_allowed(self, info):
+        items = self.roles_allowed or []
+        docs = []
+        for x in items:
+            if hasattr(x, 'fetch'):          
+                docs.append(x.fetch())
+            elif isinstance(x, DBRef):       
+                docs.append(UserRole.objects.with_id(x.id))
+            elif isinstance(x, ObjectId):    
+                docs.append(UserRole.objects.with_id(x))
+            else:                            
+                docs.append(x)
+        return [d for d in docs if d is not None]
         
         
 class Query(graphene.ObjectType):
@@ -151,6 +181,8 @@ class Query(graphene.ObjectType):
     last_logged_external_users = graphene.List(ExternalUserType)
     recovery_code_by_email = graphene.Field(LoginUserRecoverPasswordCodeRoleType, email=graphene.String(required=True))
     customerportal_permission_by_key = graphene.Field(SystemPermissionType, key=graphene.String(required=True))
+    all_functionalities = graphene.List(FunctionalityType)
+    last_month_functionalities = graphene.List(FunctionalityType)
 
     def resolve_all_user_roles(self, info):
         return UserRole.objects.all()
@@ -215,3 +247,11 @@ class Query(graphene.ObjectType):
             return SystemPermission.objects(key=key).first()
         except SystemPermission.DoesNotExist:
             return None
+        
+    def resolve_all_functionalities(self, info):
+        return Functionality.objects(is_active=True).order_by('-last_modified_time')
+    
+    def resolve_last_month_functionalities(self, info):
+        from datetime import datetime, timezone, timedelta
+        one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+        return Functionality.objects(is_active=True, last_modified_time__gte=one_month_ago).order_by('-last_modified_time')

@@ -34,6 +34,7 @@ import { AdminWidgetSummary } from '../admin-widget-summary';
 import { AdminCheckInWidgets } from '../admin-check-in-widgets';
 import { AdminCustomerReviews } from '../admin-customer-reviews';
 import { WelcomeTypography } from '../../analytics/welcome-typography';
+import { FunctionalityLabelView } from '../../functionality/functionality-label-view';
 
 // ----------------------------------------------------------------------
 
@@ -67,7 +68,9 @@ export function OverviewAdminView({
   tookTourGuide,
   showModalTour,
   tookIntroGuide,
-  showModalIntro
+  showModalIntro,
+  loadedFunctionalities,
+  refetchFunctionalities,
 }) {
 
   const {
@@ -226,6 +229,29 @@ export function OverviewAdminView({
       }
     };
   }, [refetchUsers]);
+
+
+  useEffect(() => {
+    const socket = new WebSocket(wsEndpoints.functionalities.all);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchFunctionalities?.().catch((error) => {
+          console.error('Error refetching functionalities:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [refetchFunctionalities]);
+
 
 
   const approvedRewardPoints = useMemo(
@@ -570,7 +596,18 @@ export function OverviewAdminView({
     });
   }, [loadedSeriesHistory, oldest]);
 
-  // console.log('series', series);
+  const [managedFunctionalities, setManagedFunctionalities] = useState([]);
+
+  useEffect(() => {
+    if (loadedFunctionalities) {
+      setManagedFunctionalities(
+        loadedFunctionalities.map((func) => ({
+          ...func,
+          read: localStorage.getItem(`functionality_read_${userLogged?.data?.username}_${func.id}`) === 'true',
+        }))
+      );
+    }
+  }, [loadedFunctionalities, userLogged?.data?.username]);
 
   return (
     <>
@@ -606,6 +643,21 @@ export function OverviewAdminView({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 2 }}>
+            {managedFunctionalities && managedFunctionalities.length > 0 &&  (
+              managedFunctionalities.filter(f => !f.read).map((functionality) => (
+                <FunctionalityLabelView
+                  functionality={functionality}
+                  onClose={() => {
+                    setManagedFunctionalities((prev) =>
+                      prev.map((f) =>
+                        f.id === functionality.id ? { ...f, read: true } : f
+                      )
+                    );
+                    localStorage.setItem(`functionality_read_${userLogged?.data?.username}_${functionality.id}`, 'true');
+                  }}
+                />
+              ))
+            )}
             <WelcomeTypography
               userLogged={userLogged}
             />

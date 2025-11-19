@@ -216,6 +216,7 @@ export const endpoints = {
     },
     uploadAvatar: (id) => `/users/upload-avatar/${id}/`,
     setPermissions: (id) => `/users/set-permissions/${id}/`,
+    
   },
   item: {
     list: '/product/list',
@@ -224,12 +225,22 @@ export const endpoints = {
       list: '/items/delete/items/'
     },
   },
+  functionality: {
+    create: '/authorization/create/functionality/',
+    delete: {
+      functionality: (id) => `/authorization/delete/functionality/${id}/`,
+      functionalities: '/authorization/delete/functionalities/',
+    },
+    edit: {
+      functionality: (id) => `/authorization/edit/functionality/${id}/`,
+    },
+  },
   graphql: {
     rewardPoints: `${CONFIG.apiUrl}/reward-points/graphql/`,
     users: `${CONFIG.apiUrl}/users/graphql/`,
     rewardIntegration: `${CONFIG.apiUrl}/integration/graphql/`,
     rewardAuthorization: `${CONFIG.apiUrl}/authorization/graphql/`
-  }
+  },
 };
 
 export const wsEndpoints = {
@@ -273,5 +284,8 @@ export const wsEndpoints = {
   },
   customerportalPermissions: {
     all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/permissions/`
+  },
+  functionalities: {
+    all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/authorization/ws/functionalities/`
   }
 };

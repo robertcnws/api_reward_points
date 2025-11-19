@@ -147,5 +147,12 @@ export const paths = {
       details: (id) => `${ROOTS.DASHBOARD_CONFIG}/points-settings/${id}`,
       edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/points-settings/${id}/edit`,
     },
+    functionality: {
+      root: `${ROOTS.DASHBOARD_CONFIG}/functionality`,
+      list: `${ROOTS.DASHBOARD_CONFIG}/functionality/list`,
+      new: `${ROOTS.DASHBOARD_CONFIG}/functionality/new`,
+      details: (id) => `${ROOTS.DASHBOARD_CONFIG}/functionality/${id}`,
+      edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/functionality/${id}/edit`,
+    },
   },
 };

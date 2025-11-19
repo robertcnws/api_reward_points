@@ -24,4 +24,11 @@ urlpatterns = [
     path('token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/transfer/', views.MyTokenObtainTransferPairView.as_view(), name='token_obtain_transfer_pair'),
     path('token/refresh/', views.MyTokenRefreshView.as_view(), name='token_refresh'),
+    # ======================
+    #  Functionalities
+    # ======================
+    path('create/functionality/', views.create_functionality, name='create_functionality'),
+    path('delete/functionalities/', views.delete_functionalities, name='delete_functionalities'),
+    path('edit/functionality/<str:id>/', views.edit_functionality, name='edit_functionality'),
+    path('delete/functionality/<str:id>/', views.delete_functionality, name='delete_functionality'),
 ]

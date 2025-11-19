@@ -48,12 +48,14 @@ export function OverviewAnalyticsView({
     refetchStoreProducts,
     loadingStoreProducts,
     errorStoreProducts,
+    loadedFunctionalities,
+    refetchFunctionalities,
     loadedAllRewardIntroSteps,
     userByUsername,
     refetchUserByUsername
   } = useDataContext();
 
-
+  
 
   return (
     <>
@@ -89,6 +91,8 @@ export function OverviewAnalyticsView({
           showModalTour={showModalTour}
           tookIntroGuide={tookIntroGuide}
           showModalIntro={showModalIntro}
+          loadedFunctionalities={loadedFunctionalities}
+          refetchFunctionalities={refetchFunctionalities}
         />
       ) : (
         <OverviewEcommerceView
@@ -101,6 +105,8 @@ export function OverviewAnalyticsView({
           showModalTour={showModalTour}
           tookIntroGuide={tookIntroGuide}
           showModalIntro={showModalIntro}
+          loadedFunctionalities={loadedFunctionalities}
+          refetchFunctionalities={refetchFunctionalities}
         />
       )}
     </>

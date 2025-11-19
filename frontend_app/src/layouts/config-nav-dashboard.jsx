@@ -71,6 +71,7 @@ const ICONS = {
   client: icon('ic-client'),
   key: icon('ic-key'),
   stock: icon('ic-stock'),
+  functionality: icon('ic-functionality'),
 };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -618,6 +619,38 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                   key: `${paths.dashboard.permission.new}-19`,
                   title: 'Create',
                   path: paths.dashboard.permission.new,
+                },
+              ],
+            },
+            {
+              key: `${paths.dashboard.functionality.root}-171`,
+              title: (
+                <Box component="span" id='functionality-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Functionalities
+                  </Typography>
+                </Box>
+              ),
+              path: paths.dashboard.functionality.root,
+              icon: ICONS.functionality,
+              children: [
+                {
+                  key: `${paths.dashboard.functionality.list}-18`,
+                  title: 'List',
+                  path: paths.dashboard.functionality.list,
+                },
+                {
+                  key: `${paths.dashboard.functionality.new}-19`,
+                  title: 'Create',
+                  path: paths.dashboard.functionality.new,
                 },
               ],
             },

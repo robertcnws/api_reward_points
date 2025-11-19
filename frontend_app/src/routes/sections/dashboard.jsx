@@ -40,6 +40,9 @@ const StoreProductDetailsPage = lazy(() => import('src/pages/dashboard/store-pro
 // Points Settings
 const PointsSettingsListPage = lazy(() => import('src/pages/dashboard/points-settings/list'));
 const PointsSettingsCreatePage = lazy(() => import('src/pages/dashboard/points-settings/new'));
+// Functionalities
+const FunctionalityListPage = lazy(() => import('src/pages/dashboard/functionality/list'));
+const FunctionalityCreatePage = lazy(() => import('src/pages/dashboard/functionality/new'));
 // Purchases
 const PurchaseListPage = lazy(() => import('src/pages/dashboard/purchase/list'));
 const PurchaseCheckoutPage = lazy(() => import('src/pages/dashboard/purchase/checkout'));
@@ -141,6 +144,43 @@ export const dashboardRoutes = (user) => [
                 ).includes(
                   CONFIG.roles.superadmin
                 ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+              },
+            ],
+          },
+          {
+            path: 'config/functionality',
+            children: [
+              {
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <FunctionalityListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <FunctionalityListPage /> : <Page403 />
+              },
+              {
+                path: 'new',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <FunctionalityCreatePage /> : <Page403 />
+              },
+              {
+                path: ':id/edit',
+                element: listRolesAndSubroles(
+                  user?.user_role?.name
+                ).includes(
+                  CONFIG.roles.superadmin
+                ) ? <FunctionalityCreatePage /> : <Page403 />
               },
             ],
           },

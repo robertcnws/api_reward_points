@@ -59,6 +59,11 @@ import {
   RewardItemgroupsProvider
 } from './contexts/reward-itemgroups-context';
 
+import {
+  useRewardFunctionalities,
+  RewardFunctionalitiesProvider
+} from './contexts/reward-functionalities-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
@@ -66,31 +71,33 @@ export function DataProvider({ children }) {
     // <RewardItemsProvider>
     <RewardIntroStepsProvider>
       <RewardJoyRidesProvider>
-        <RewardNotificationUsersProvider>
-          <RewardStoreProductSelectionCartProvider>
-            <RewardStoreProductSelectionBuyProvider>
-              <RewardPointsSettingsProvider>
-                <RewardUserRolesProvider>
-                  <RewardCustomerportalPermissionsProvider>
-                    <RewardExternalUsersProvider>
-                      <RewardLoginUsersProvider>
-                        <RewardClientsProvider>
-                          <RewardItemgroupsProvider>
-                            <RewardStoreProductsProvider>
-                              <RewardPointsProvider>
-                                <CombineProviders>{children}</CombineProviders>
-                              </RewardPointsProvider>
-                            </RewardStoreProductsProvider>
-                          </RewardItemgroupsProvider>
-                        </RewardClientsProvider>
-                      </RewardLoginUsersProvider>
-                    </RewardExternalUsersProvider>
-                  </RewardCustomerportalPermissionsProvider>
-                </RewardUserRolesProvider>
-              </RewardPointsSettingsProvider>
-            </RewardStoreProductSelectionBuyProvider>
-          </RewardStoreProductSelectionCartProvider>
-        </RewardNotificationUsersProvider>
+        <RewardFunctionalitiesProvider>
+          <RewardNotificationUsersProvider>
+            <RewardStoreProductSelectionCartProvider>
+              <RewardStoreProductSelectionBuyProvider>
+                <RewardPointsSettingsProvider>
+                  <RewardUserRolesProvider>
+                    <RewardCustomerportalPermissionsProvider>
+                      <RewardExternalUsersProvider>
+                        <RewardLoginUsersProvider>
+                          <RewardClientsProvider>
+                            <RewardItemgroupsProvider>
+                              <RewardStoreProductsProvider>
+                                <RewardPointsProvider>
+                                  <CombineProviders>{children}</CombineProviders>
+                                </RewardPointsProvider>
+                              </RewardStoreProductsProvider>
+                            </RewardItemgroupsProvider>
+                          </RewardClientsProvider>
+                        </RewardLoginUsersProvider>
+                      </RewardExternalUsersProvider>
+                    </RewardCustomerportalPermissionsProvider>
+                  </RewardUserRolesProvider>
+                </RewardPointsSettingsProvider>
+              </RewardStoreProductSelectionBuyProvider>
+            </RewardStoreProductSelectionCartProvider>
+          </RewardNotificationUsersProvider>
+        </RewardFunctionalitiesProvider>
       </RewardJoyRidesProvider>
     </RewardIntroStepsProvider>
     // </RewardItemsProvider>
@@ -216,6 +223,13 @@ function CombineProviders({ children }) {
     errorRewardItemgroups: errorItemgroups,
   } = useRewardItemgroups();
 
+  const {
+    loadedAllRewardFunctionalities: loadedFunctionalities,
+    refetchAllRewardFunctionalities: refetchFunctionalities,
+    loadingAllRewardFunctionalities: loadingFunctionalities,
+    errorRewardFunctionalities: errorFunctionalities,
+  } = useRewardFunctionalities();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -328,6 +342,10 @@ function CombineProviders({ children }) {
     refetchItemgroups,
     loadingItemgroups,
     errorItemgroups,
+    loadedFunctionalities,
+    refetchFunctionalities,
+    loadingFunctionalities,
+    errorFunctionalities,
     runDashboard,
     setRunDashboard,
     finishDashboard,
@@ -419,6 +437,10 @@ function CombineProviders({ children }) {
     refetchItemgroups,
     loadingItemgroups,
     errorItemgroups,
+    loadedFunctionalities,
+    refetchFunctionalities,
+    loadingFunctionalities,
+    errorFunctionalities,
     runDashboard,
     setRunDashboard,
     finishDashboard,

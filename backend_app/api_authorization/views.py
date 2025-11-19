@@ -14,7 +14,7 @@ from .serializers import (
     MyTokenObtainTransferPairSerializer,
     RevocationCheckTokenRefreshSerializer,
 )
-from api_authorization.repository import repository_authorization
+from api_authorization.repository import repository_authorization, repository_functionality
 
 import logging
 logging.basicConfig(level=logging.WARNING)
@@ -135,3 +135,34 @@ def update_password(request):
 @throttle_classes([PublicThrottle])
 def get_refetch_rewards_points(request, id):
     return repository_authorization.get_refetch_rewards_points(id)
+
+# ======================
+#  Functionalities
+# ======================
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def create_functionality(request):
+    return repository_functionality.create_functionality(request)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def edit_functionality(request, id):
+    return repository_functionality.edit_functionality(request, id)
+
+
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def delete_functionalities(request):
+    return repository_functionality.delete_functionalities(request)
+
+
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def delete_functionality(request, id):
+    return repository_functionality.delete_functionality(request, id)

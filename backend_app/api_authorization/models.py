@@ -168,3 +168,22 @@ class ExternalUsers(Document):
     
     def __str__(self):
         return f"ExternalUser({self.user.username})"
+    
+    
+class Functionality(Document):
+    name = StringField(max_length=100, unique=True, required=True)
+    key = StringField(max_length=100, unique=True, required=True)
+    description = StringField(required=False)
+    link = StringField(required=False)
+    roles_allowed = ListField(ReferenceField(UserRole, reverse_delete_rule=2), null=True, blank=True, default=list)
+    is_active = BooleanField(default=True, required=False)
+    created_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+    last_modified_time = DateTimeField(default=lambda: datetime.now(timezone.utc), required=False)
+
+    meta = {
+        'collection': 'functionality',
+        'indexes': ['name', 'key', 'last_modified_time', 'is_active'],
+    }
+
+    def __str__(self):
+        return self.name

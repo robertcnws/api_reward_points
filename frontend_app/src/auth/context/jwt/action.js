@@ -208,8 +208,13 @@ export const signUp = async ({
  * Sign out
  *************************************** */
 export const signOut = async () => {
+
   try {
+    const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
     await setSession(null, null);
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(`functionality_read_${userLogged.data.username}`))
+      .forEach((k) => localStorage.removeItem(k));
   } catch (error) {
     console.error('Error during sign out:', error);
     throw error;

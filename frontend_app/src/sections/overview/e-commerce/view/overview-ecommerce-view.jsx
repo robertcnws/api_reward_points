@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo, useContext, useCallback } from 'react';
+import { useMemo, useContext, useCallback, useEffect, useState } from 'react';
 
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
@@ -11,6 +11,7 @@ import { useRouter } from 'src/routes/hooks';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
 import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
+import { wsEndpoints } from 'src/utils/axios';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
@@ -27,6 +28,8 @@ import { EcommerceWebsiteVisits } from '../ecommerce-website-visits';
 import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
+import { FunctionalityLabelView } from '../../functionality/functionality-label-view';
+
 
 // ----------------------------------------------------------------------
 
@@ -39,7 +42,9 @@ export function OverviewEcommerceView({
   tookTourGuide,
   showModalTour,
   tookIntroGuide,
-  showModalIntro
+  showModalIntro,
+  loadedFunctionalities,
+  refetchFunctionalities,
 }) {
 
   const {
@@ -147,11 +152,11 @@ export function OverviewEcommerceView({
 
   const barChartInvoicesSeries = useMemo(
     () => buildInvoicesChart(
-      loadedRewardPoints?.invoices, { 
-        year: 2025, 
-        by: 'amount',
-        top: isMobile ? 6 : 0
-      }
+      loadedRewardPoints?.invoices, {
+      year: 2025,
+      by: 'amount',
+      top: isMobile ? 6 : 0
+    }
     ), // o by: 'amount'
     [loadedRewardPoints?.invoices, isMobile]
   );
@@ -250,6 +255,40 @@ export function OverviewEcommerceView({
     [currentAssignedPointsArray]
   );
 
+  useEffect(() => {
+    const socket = new WebSocket(wsEndpoints.functionalities.all);
+    socket.onerror = (errorEvent) => {
+      console.dir(errorEvent);
+      console.error('WebSocket error (toString):', errorEvent.toString());
+    };
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'created' || message.type === 'updated' || message.type === 'deleted') {
+        refetchFunctionalities?.().catch((error) => {
+          console.error('Error refetching functionalities:', error);
+        });
+      }
+    };
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [refetchFunctionalities]);
+
+  const [managedFunctionalities, setManagedFunctionalities] = useState([]);
+
+  useEffect(() => {
+    if (loadedFunctionalities) {
+      setManagedFunctionalities(
+        loadedFunctionalities.map((func) => ({
+          ...func,
+          read: localStorage.getItem(`functionality_read_${userLogged?.data?.username}_${func.id}`) === 'true',
+        }))
+      );
+    }
+  }, [loadedFunctionalities, userLogged?.data?.username]);
+
   return (
     <>
       {!showModalIntro.value && (
@@ -285,6 +324,21 @@ export function OverviewEcommerceView({
             <Grid container spacing={3} sx={{
               display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
             }}>
+              {managedFunctionalities && managedFunctionalities.length > 0 && (
+                  managedFunctionalities.filter(f => !f.read).map((functionality) => (
+                    <FunctionalityLabelView
+                      functionality={functionality}
+                      onClose={() => {
+                        setManagedFunctionalities((prev) =>
+                          prev.map((f) =>
+                            f.id === functionality.id ? { ...f, read: true } : f
+                          )
+                        );
+                        localStorage.setItem(`functionality_read_${userLogged?.data?.username}_${functionality.id}`, 'true');
+                      }}
+                    />
+                  ))
+                )}
               <Grid xs={12} md={images.length > 0 ? 8 : 12}>
                 <Box id='dashboard-overview'>
                   <EcommerceWelcome
@@ -305,8 +359,8 @@ export function OverviewEcommerceView({
                           </Typography>
                           {!isMobile && (
                             <Typography variant="h6">
-                                Company: <b>{displayCompanyName}</b>
-                              </Typography>
+                              Company: <b>{displayCompanyName}</b>
+                            </Typography>
                           )}
                         </Box>
                         {!isMobile && (
@@ -514,7 +568,7 @@ export function OverviewEcommerceView({
           disableBeacon
         />
       )}
-      
+
       <ConfirmDialog
         open={!showModalIntro.value && showModalTour.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookTourGuide}
         onClose={async () => {
