@@ -51,6 +51,7 @@ import { PurchaseTableRow } from '../purchase-table-row';
 import { PurchaseTableToolbar } from '../purchase-table-toolbar';
 import { PurchaseTableFiltersResult } from '../purchase-table-filters-result';
 import { PurchaseAddOrderModalForm } from '../purchase-add-order-modal-form';
+import { PurchaseAddCartModalForm } from '../purchase-add-cart-modal-form';
 
 // ----------------------------------------------------------------------
 
@@ -70,6 +71,8 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   const { isMobile } = useContext(LoadingContext);
 
   const openAddOrder = useBoolean();
+
+  const openAddCart = useBoolean();
 
   const userLogged = useMemo(() => JSON.parse(sessionStorage.getItem('userLogged')), []);
 
@@ -464,6 +467,7 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
         height: 40,
         mt: 1
       }}
+      onClick={openAddCart.onTrue}
     >
       <SvgIcon sx={{ width: 20, height: 20 }}>
         <Iconify icon="solar:cart-check-bold-duotone" width={20} height={20} />
@@ -766,6 +770,10 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
 
       <PurchaseAddOrderModalForm
         openAddOrder={openAddOrder}
+      />
+
+      <PurchaseAddCartModalForm
+        openAddCart={openAddCart}
       />
 
       <ConfirmDialog

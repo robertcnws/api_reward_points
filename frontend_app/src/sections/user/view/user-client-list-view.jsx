@@ -15,7 +15,7 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import { LinearProgress, TableContainer, Typography } from '@mui/material';
+import { LinearProgress, SvgIcon, TableContainer, Typography } from '@mui/material';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 
@@ -49,12 +49,11 @@ import {
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { PurchaseAddOrderModalForm } from 'src/sections/purchase/purchase-add-order-modal-form';
+import { PurchaseAddCartModalForm } from 'src/sections/purchase/purchase-add-cart-modal-form';
 
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserClientTableRow } from '../user-client-table-row';
 import { UserTableFiltersResult } from '../user-table-filters-result';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -416,6 +415,8 @@ export function UserClientListView() {
 
   const openAddOrder = useBoolean();
 
+  const openAddCart = useBoolean();
+
   const renderAddOrder = (
     <Button
       variant="contained"
@@ -431,6 +432,27 @@ export function UserClientListView() {
       onClick={openAddOrder.onTrue}
     >
       New order
+    </Button>
+  );
+
+  const renderAddCart = (
+    <Button
+      variant="contained"
+      startIcon={<Iconify icon="mingcute:add-line" />}
+      sx={{
+        bgcolor: 'primary.dark',
+        '&:hover': {
+          bgcolor: 'primary.main',
+        },
+        height: 40,
+        mt: 1
+      }}
+      onClick={openAddCart.onTrue}
+    >
+      <SvgIcon sx={{ width: 20, height: 20 }}>
+        <Iconify icon="solar:cart-check-bold-duotone" width={20} height={20} />
+      </SvgIcon>
+      Add cart
     </Button>
   );
 
@@ -477,6 +499,7 @@ export function UserClientListView() {
             sx={{ mb: { xs: 3, md: 5 } }}
           />
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', gap: 3 }}>
+            {!isClient(userLogged?.data?.user_role?.name) && renderAddCart}
             {!isClient(userLogged?.data?.user_role?.name) && renderAddOrder}
           </Box>
         </Box>
@@ -638,6 +661,10 @@ export function UserClientListView() {
 
       <PurchaseAddOrderModalForm
         openAddOrder={openAddOrder}
+      />
+
+      <PurchaseAddCartModalForm
+        openAddCart={openAddCart}
       />
 
       <ConfirmDialog

@@ -40,14 +40,32 @@ logger = logging.getLogger(__name__)
 
 def create_store_product_selection_cart(request, id):
     data = request.data
-    payload = data.get('userReporter')
+    client_id = data.get('clientId')
+    user_reporter_payload = data.get('userReporter')
+    
     user_reporter = None
-    if payload:
-        u = json.loads(payload)
-        user_reporter = LoginUser.objects(username=u.get('username')).only('id','username','email','is_approved').first()
-    if not user_reporter:
+    if user_reporter_payload:
+        try:
+            payload = json.loads(user_reporter_payload)
+        except Exception:
+            payload = {}
+        if payload:
+            user_reporter = LoginUser.objects(
+                username=payload.get('username')
+            ).only('id', 'username', 'email', 'is_approved').first()
+
+    client = (
+        LoginUser.objects(id=client_id)
+        .only('id', 'username', 'email', 'is_approved')
+        .first()
+        if client_id else None
+    )
+    user_buyer = client or user_reporter
+
+    if not user_buyer:
         return Response({'error': 'User reporter not found'}, status=404)
-    if not user_reporter.is_approved:
+    if not user_buyer.is_approved:
+        logger.error("User buyer is not approved")
         return Response({'error': 'You are not currently as APPROVED USER anymore'}, status=403)
 
     try:
@@ -67,7 +85,7 @@ def create_store_product_selection_cart(request, id):
         for _ in range(quantity):
             sel = RewardStoreProductSelection(
                 store_product=store_product,
-                user=user_reporter,
+                user=user_buyer,
                 quantity=default_qty,
                 created_time=now,
                 last_modified_time=now,

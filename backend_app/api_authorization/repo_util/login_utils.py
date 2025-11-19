@@ -15,6 +15,10 @@ from utils.data_util import (
     transform_data_to_mongo, 
     create_tracking
 )
+from api_reward_points_async_task_sequence.tasks import (
+    task_create_notification_async, 
+    task_create_tracking_async
+)
 import json
 import logging
 import api_authorization.repo_util.constant_utils as constants
@@ -86,13 +90,21 @@ def _post_login_side_effects(current_user):
     current_user.last_login = timezone.now()
     set_initial_tour_and_intro(current_user) 
     current_user.save()
-    create_tracking(
-        current_user,
-        'login',
-        object_id=str(current_user.id),
-        object_type='LoginUser',
-        object_name=current_user.username,
-        managed_data='User logged in successfully'
+    # create_tracking(
+    #     current_user,
+    #     'login',
+    #     object_id=str(current_user.id),
+    #     object_type='LoginUser',
+    #     object_name=current_user.username,
+    #     managed_data='User logged in successfully'
+    # )
+    task_create_tracking_async.delay(
+        user_reporter_id=str(current_user.id),
+        action=f'login',
+        id=str(current_user.id),
+        type='LoginUser',
+        name=current_user.username,
+        tracking_info='User logged in successfully',
     )
 
 # ------------------ Endpoint ------------------

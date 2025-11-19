@@ -22,6 +22,10 @@ from api_authorization.repo_util.authorization_utils import (
     get_rewards_points,
     set_initial_tour_and_intro,
 )
+from api_reward_points_async_task_sequence.tasks import (
+    task_create_tracking_async,
+    task_create_notification_async
+)
 import json
 import logging
 import jwt
@@ -221,13 +225,21 @@ def logout(request):
                 external_user.last_login = timezone.now()
                 external_user.last_modified_time = timezone.now()
                 external_user.save()
-            create_tracking(
-                current_user, 
-                'logout', 
-                object_id=str(current_user.id), 
-                object_type='LoginUser', 
-                object_name=current_user.username, 
-                managed_data='User logged out successfully'
+            # create_tracking(
+            #     current_user, 
+            #     'logout', 
+            #     object_id=str(current_user.id), 
+            #     object_type='LoginUser', 
+            #     object_name=current_user.username, 
+            #     managed_data='User logged out successfully'
+            # )
+            task_create_tracking_async.delay(
+                user_reporter_id=str(current_user.id),
+                action=f'logout',
+                id=str(current_user.id),
+                type='LoginUser',
+                name=current_user.username,
+                tracking_info='User logged out successfully',
             )
             return JsonResponse({'data': 'User logged out'}, status=200)
         return JsonResponse(constants.USER_NOT_FOUND, status=404)

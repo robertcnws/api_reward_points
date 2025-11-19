@@ -9,8 +9,8 @@ from utils.data_util import (
     create_tracking,
 )
 from api_authorization.models import LoginUser, UserRole, SystemPermission
-from api_users.tasks import (
-    task_send_approved_email,
+from api_users.tasks import task_send_approved_email
+from api_reward_points_async_task_sequence.tasks import (
     task_create_tracking_async,
     task_create_notification_async
 )
@@ -465,19 +465,19 @@ def change_approval_user(request, id):
             ).first()
             if reporter:
                 task_create_tracking_async.delay(
-                    user_reporter=user_reporter,
+                    user_reporter_id=str(user_reporter.id),
                     action=f'change to {"approved" if user.is_approved else "NOT approved"}',
-                    object_id=str(user.id),
-                    object_type='LoginUser',
-                    object_name=user.username,
-                    managed_data={"is_approved": user.is_approved, "username": user.username, "id": str(user.id)},
+                    id=str(user.id),
+                    type='LoginUser',
+                    name=user.username,
+                    tracking_info={"is_approved": user.is_approved, "username": user.username, "id": str(user.id)}
                 )
                 task_create_notification_async.delay(
                     module="users",
                     info_id=str(user.id),
                     info=f'has change approval user ({user.username}) to {"approved" if user.is_approved else "not approved"}',
                     type="change_approval_user",
-                    username=user_reporter.get("username"),
+                    username=user_reporter.username,
                 )
     except Exception:
         # loggear, pero nunca bloquear respuesta al cliente
@@ -557,30 +557,26 @@ def change_show_tour_guide_user(request, id):
         user.show_tour_guide_modal = not user.show_tour_guide_modal
         user.took_tour_guide = not user.took_tour_guide
         user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user,
-            include_fields=['show_tour_guide_modal', 'username', 'id']
-        )
 
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
 
         if user_reporter:
             
-            create_tracking(
-                user_reporter=user_reporter,
+            task_create_tracking_async.delay(
+                user_reporter_id=str(user_reporter.id),
                 action=f'change to {"show" if user.show_tour_guide_modal else "NOT show"}',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
+                id=str(user.id),
+                type='LoginUser',
+                name=user.username,
+                tracking_info={"show_tour_guide_modal": user.show_tour_guide_modal, "username": user.username, "id": str(user.id)},
             )
-                
-            module='users'
-            info=f'has change show tour guide user ({user.username}) to {"show" if user.show_tour_guide_modal else "not show"}'
-            info_id=user.id
-            type='change_show_tour_guide_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
+            task_create_notification_async.delay(
+                module="users",
+                info_id=str(user.id),
+                info=f'has change show tour guide user ({user.username}) to {"show" if user.show_tour_guide_modal else "not show"}',
+                type="change_show_tour_guide_user",
+                username=user_reporter.username,
+            )
 
             return Response({'message': 'User show tour guide change successfully'}, status=200)
         
@@ -605,30 +601,26 @@ def change_show_intro_guide_user(request, id):
         user.show_intro_guide_modal = not user.show_intro_guide_modal
         user.took_intro_guide = not user.took_intro_guide
         user.save()
-        
-        tracking_info = transform_data_to_mongo(
-            user,
-            include_fields=['show_intro_guide_modal', 'username', 'id']
-        )
 
         user_reporter = LoginUser.objects.filter(username=user_reporter['username']).first() if user_reporter else None
 
         if user_reporter:
             
-            create_tracking(
-                user_reporter=user_reporter,
+            task_create_tracking_async.delay(
+                user_reporter_id=str(user_reporter.id),
                 action=f'change to {"show" if user.show_intro_guide_modal else "NOT show"}',
-                object_id=user.id,
-                object_type='LoginUser',
-                object_name=user.username,
-                managed_data=tracking_info
+                id=str(user.id),
+                type='LoginUser',
+                name=user.username,
+                tracking_info={"show_intro_guide_modal": user.show_intro_guide_modal, "username": user.username, "id": str(user.id)},
             )
-                
-            module='users'
-            info=f'has change show intro guide user ({user.username}) to {"show" if user.show_intro_guide_modal else "not show"}'
-            info_id=user.id
-            type='change_show_intro_guide_user'
-            create_notification(module, info_id, info, type, user_reporter['username'])
+            task_create_notification_async.delay(
+                module="users",
+                info_id=str(user.id),
+                info=f'has change show intro guide user ({user.username}) to {"show" if user.show_intro_guide_modal else "not show"}',
+                type="change_show_intro_guide_user",
+                username=user_reporter.username,
+            )
 
             return Response({'message': 'User show intro guide change successfully'}, status=200)
         
