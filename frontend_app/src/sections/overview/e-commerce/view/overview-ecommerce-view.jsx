@@ -325,20 +325,21 @@ export function OverviewEcommerceView({
               display: showModalIntro.value && !loadingRewardPoints && !loadingRewardPointsHistory && !tookIntroGuide ? 'none' : ''
             }}>
               {managedFunctionalities && managedFunctionalities.length > 0 && (
-                  managedFunctionalities.filter(f => !f.read).map((functionality) => (
-                    <FunctionalityLabelView
-                      functionality={functionality}
-                      onClose={() => {
-                        setManagedFunctionalities((prev) =>
-                          prev.map((f) =>
-                            f.id === functionality.id ? { ...f, read: true } : f
-                          )
-                        );
-                        localStorage.setItem(`functionality_read_${userLogged?.data?.username}_${functionality.id}`, 'true');
-                      }}
-                    />
-                  ))
-                )}
+                managedFunctionalities.filter(f => !f.read).map((functionality) => (
+                  <FunctionalityLabelView
+                    key={functionality.id}
+                    functionality={functionality}
+                    onClose={() => {
+                      setManagedFunctionalities((prev) =>
+                        prev.map((f) =>
+                          f.id === functionality.id ? { ...f, read: true } : f
+                        )
+                      );
+                      localStorage.setItem(`functionality_read_${userLogged?.data?.username}_${functionality.id}`, 'true');
+                    }}
+                  />
+                ))
+              )}
               <Grid xs={12} md={images.length > 0 ? 8 : 12}>
                 <Box id='dashboard-overview'>
                   <EcommerceWelcome

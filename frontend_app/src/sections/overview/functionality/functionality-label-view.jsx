@@ -8,6 +8,8 @@ import { stripHtmlUsingDOM } from 'src/utils/helper';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useRouter } from 'src/routes/hooks';
+import { Label } from 'src/components/label';
+import { fDurationFromNow } from 'src/utils/format-time';
 // import { stripHtmlUsingDOM } from 'src/utils/helper'; // solo si tu descripción viene en HTML
 
 export function FunctionalityLabelView({
@@ -69,16 +71,16 @@ export function FunctionalityLabelView({
                     }}
                 >
                     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
-                        <Typography variant="subtitle2" color="info.darker">
-                            Feature:
-                        </Typography>
                         <Typography
                             variant="subtitle2"
                             color="info.darker"
                             sx={{ fontWeight: 700 }}
                         >
-                            {functionality?.name || 'Unnamed feature'}
+                            {functionality?.name || ''} 
                         </Typography>
+                        <Label color='info'>
+                            {fDurationFromNow(functionality?.lastModifiedTime)} ago
+                        </Label>
                     </Box>
 
                     <IconButton

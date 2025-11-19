@@ -34,12 +34,17 @@ export function ItemgroupTableRow({
         bgcolor: row?.actualAvailableStock > 0 ? 'inherit' : 'error.lighter',
       }}>
 
-        <TableCell sx={{ cursor: 'pointer' }}>
+        <TableCell sx={{ cursor: 'pointer' }} onClick={rowDetails.onTrue}>
           <Stack spacing={2} direction="row" alignItems="center">
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
               <Link color="inherit" onClick={rowDetails.onTrue} sx={{ cursor: 'pointer' }}>
                 {row?.sku}
               </Link>
+              {isMobile && (
+                <Box component="span" sx={{ color: 'text.secondary' }}>
+                  {row?.name}
+                </Box>
+              )}
               <Box component="span" sx={{ color: 'text.disabled' }}>
                 Group: {row?.groupName}
               </Box>
@@ -49,11 +54,11 @@ export function ItemgroupTableRow({
 
         {!isMobile && (
 
-          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>{row.name}</TableCell>
+          <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={rowDetails.onTrue}>{row.name}</TableCell>
 
         )}
 
-        <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>
+        <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={rowDetails.onTrue}>
           {/* {row?.actualAvailableStock > 0 ?
             fNumber(row?.actualAvailableStock) :
             <Label variant="soft" color="error">

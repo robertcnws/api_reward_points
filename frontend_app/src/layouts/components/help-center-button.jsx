@@ -9,10 +9,10 @@ import { Iconify } from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings/context';
 import { Scrollbar } from 'src/components/scrollbar';
 import { ExpandMoreOutlined } from '@mui/icons-material';
-
+import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { FAQS } from './faqs';
 import { VTutorials } from './vtutorials';
 import { MiniVideoView } from './mini-video-view';
@@ -26,6 +26,8 @@ export function HelpCenterButton({ width, sx, ...other }) {
   const router = useRouter();
 
   const openDrawer = useBoolean();
+
+  const { isMobile } = useContext(LoadingContext);
 
   const getYouTubeThumbnail = (url) => {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
@@ -45,7 +47,7 @@ export function HelpCenterButton({ width, sx, ...other }) {
           onClick={() => openDrawer.onTrue()}
           sx={{
             p: 0,
-            width: 120,
+            width: { xs: 30, sm: 120 },
             height: width,
             color: 'primary.dark',
             fontWeight: 'bold',
@@ -55,9 +57,11 @@ export function HelpCenterButton({ width, sx, ...other }) {
         >
           <Box display="flex" alignItems="center" flexDirection="row" justifyContent="flex-start" sx={{ width: '100%' }}>
             <Iconify icon='icon-park-twotone:help' sx={{ width, height: width }} />
+            {!isMobile && (
             <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
               Help Center
             </Typography>
+            )}
           </Box>
         </IconButton>
       </Tooltip>
@@ -66,7 +70,7 @@ export function HelpCenterButton({ width, sx, ...other }) {
         onClose={openDrawer.onFalse}
         anchor="right"
         slotProps={{ backdrop: { invisible: true } }}
-        PaperProps={{ sx: { width: 520 } }}
+        PaperProps={{ sx: { width: { xs: '100%', sm: 520 } } }}
       >
         <IconButton
           onClick={openDrawer.onFalse}

@@ -8,6 +8,8 @@ import { Iconify } from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings/context';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
+import { LoadingContext } from 'src/auth/context/loading-context';
+import { useContext } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -17,6 +19,8 @@ export function GuideTourButton({ width, sx, ...other }) {
   const router = useRouter();
 
   const isAnalyticsUrl = router.currentUrl().includes('/analytics');
+
+  const { isMobile } = useContext(LoadingContext);
 
   const {
     runDashboard,
@@ -43,9 +47,11 @@ export function GuideTourButton({ width, sx, ...other }) {
         >
           <Box display="flex" alignItems="center" flexDirection="row" justifyContent="flex-start">
             <Iconify icon='line-md:compass-twotone-loop' sx={{ width, height: width }} />
+            {!isMobile && (
             <Typography variant="caption" sx={{ ml: 0.3, width: '100%' }}>
               Guide Tour
             </Typography>
+            )}
           </Box>
         </IconButton>
       </Tooltip>

@@ -643,9 +643,10 @@ export function OverviewAdminView({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 2 }}>
-            {managedFunctionalities && managedFunctionalities.length > 0 &&  (
+            {managedFunctionalities && managedFunctionalities.length > 0 && (
               managedFunctionalities.filter(f => !f.read).map((functionality) => (
                 <FunctionalityLabelView
+                  key={functionality.id}
                   functionality={functionality}
                   onClose={() => {
                     setManagedFunctionalities((prev) =>
@@ -740,16 +741,16 @@ export function OverviewAdminView({
                           total={invoicesAmount}
                           percent={avgStepTrendPercent(invoicesSeriesByMonth?.map((item) => item.total))}
                           chart={incomesChart}
-                          // chart={{
-                          //   categories: invoicesSeriesByMonth?.slice(
-                          //     invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                          //   )?.map((item) => item.period),
-                          //   series: [{
-                          //     data: invoicesSeriesByMonth?.slice(
-                          //       invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
-                          //     )?.map((item) => item.total)
-                          //   }],
-                          // }}
+                        // chart={{
+                        //   categories: invoicesSeriesByMonth?.slice(
+                        //     invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                        //   )?.map((item) => item.period),
+                        //   series: [{
+                        //     data: invoicesSeriesByMonth?.slice(
+                        //       invoicesSeriesByMonth.length - 12, invoicesSeriesByMonth.length
+                        //     )?.map((item) => item.total)
+                        //   }],
+                        // }}
                         />
                       </Box>
 

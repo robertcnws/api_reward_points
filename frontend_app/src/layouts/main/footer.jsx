@@ -256,8 +256,8 @@ export const CustomFooter = ({roleName}) => {
           <Stack
             direction="row"
             spacing={1}
-            justifyContent="center"
-            alignItems="center"
+            justifyContent={{ xs: 'flex-end', sm: 'center' }}
+            alignItems={{ xs: 'flex-end', sm: 'center' }}
             sx={{ mt: { xs: -1.2, sm: -1.2 } }}
           >
             {/* {_socials.map((social) => (
@@ -269,7 +269,7 @@ export const CustomFooter = ({roleName}) => {
               </IconButton>
             ))} */}
             {/* {(isClient(roleName) || isOfficeStaff(roleName)) && <GuideTourButton width={25}/>} */}
-            <HelpCenterButton width={25}/>
+            <HelpCenterButton width={24}/>
             <GuideTourButton width={25}/>
           </Stack>
         </Box>

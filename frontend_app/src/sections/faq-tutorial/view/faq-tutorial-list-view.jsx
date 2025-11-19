@@ -150,7 +150,7 @@ export function FAQTutorialListView() {
             <Box sx={{ position: 'relative' }}>
               <Scrollbar sx={{ maxHeight: 620 }}>
                 {dataFiltered?.map((faq, index) => (
-                  <FAQView faq={faq} keyIndex={index} />
+                  <FAQView faq={faq} keyIndex={index} key={faq.id ?? `faq-${index}`} />
                 ))}
               </Scrollbar>
             </Box>

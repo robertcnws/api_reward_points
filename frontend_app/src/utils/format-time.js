@@ -51,6 +51,14 @@ export function fDuration(startDate, endDate) {
 
 // ----------------------------------------------------------------------
 
+export function fDurationFromNow(startDate) {
+  const endDate = dayjs();
+  const elapsed = dayjs(startDate).to(dayjs(endDate), true);
+  return elapsed
+}
+
+// ----------------------------------------------------------------------
+
 /** output: Apr 17 2022 12:00 am
  */
 export function fDateTime(date, format, timeZone = dayjs.tz.guess()) {
