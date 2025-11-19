@@ -53,7 +53,7 @@ export function FunctionalityNewEditForm({ currentFunctionalityId, onReturnList 
     rolesAllowed: zod.array(zod.object({
       name: zod.string(),
       id: zod.string(),
-    })).min(0),
+    })).min(1, { message: 'At least one role must be selected!' }),
     isActive: zod.boolean().optional(),
     description: schemaHelper.editor().optional().nullable(),
   });
@@ -63,7 +63,7 @@ export function FunctionalityNewEditForm({ currentFunctionalityId, onReturnList 
       name: currentFunctionality?.name || '',
       link: currentFunctionality?.link || '',
       rolesAllowed: currentFunctionality?.rolesAllowed || [],
-      isActive: currentFunctionality?.isActive || false,
+      isActive: currentFunctionality?.isActive || true,
       description: currentFunctionality?.description || '',
     }),
     [currentFunctionality]
