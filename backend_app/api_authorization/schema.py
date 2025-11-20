@@ -249,9 +249,9 @@ class Query(graphene.ObjectType):
             return None
         
     def resolve_all_functionalities(self, info):
-        return Functionality.objects(is_active=True).order_by('-last_modified_time')
+        return Functionality.objects().order_by('-last_modified_time')
     
     def resolve_last_month_functionalities(self, info):
         from datetime import datetime, timezone, timedelta
         one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
-        return Functionality.objects(is_active=True, last_modified_time__gte=one_month_ago).order_by('-last_modified_time')
+        return Functionality.objects(last_modified_time__gte=one_month_ago).order_by('-last_modified_time')

@@ -601,7 +601,7 @@ export function OverviewAdminView({
   useEffect(() => {
     if (loadedFunctionalities) {
       setManagedFunctionalities(
-        loadedFunctionalities.map((func) => ({
+        loadedFunctionalities.filter(f => f.isActive).map((func) => ({
           ...func,
           read: localStorage.getItem(`functionality_read_${userLogged?.data?.username}_${func.id}`) === 'true',
         }))

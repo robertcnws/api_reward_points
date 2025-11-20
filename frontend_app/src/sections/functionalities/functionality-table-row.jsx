@@ -95,26 +95,30 @@ export function FunctionalityTableRow({ row, selected, onEditRow, onSelectRow, o
               {fDateTime(row.lastModifiedTime)}
             </TableCell>
 
+            <TableCell onClick={() => onEditRow()}>
+              <Label
+                variant="soft"
+                color={
+                  (row.isActive && 'success') ||
+                  (!row.isActive && 'warning') ||
+                  'default'
+                }
+                sx={{ cursor: 'pointer' }}
+              >
+                {row.isActive ? 'Active' : 'Inactive'}
+              </Label>
+            </TableCell>
+
           </>
         ) : (
           <TableCell >
-            Name: <Label
+            <Label
               variant="soft"
               color='default'
               sx={{ cursor: 'pointer' }}
               onClick={() => onEditRow()}
             >
               <u>{row.name}</u>
-            </Label><br />
-            Description: <Label
-              sx={{ cursor: 'pointer' }}
-              variant="soft"
-              color='default'
-              onClick={() => onEditRow()}
-            >
-              {row.description
-                    ? `${stripHtmlUsingDOM(row.description).slice(0, 40)}${row.description.length > 20 ? '...' : ''}`
-                    : 'No description'}
             </Label><br />
             <Box sx={{ display: 'inline-flex' }}>
               <Label
@@ -126,7 +130,8 @@ export function FunctionalityTableRow({ row, selected, onEditRow, onSelectRow, o
                 See full description
               </Label>
             </Box><br />
-            Last Modified: {fDateTime(row.lastModifiedTime)}
+            Modified at: {fDateTime(row.lastModifiedTime)}
+
           </TableCell>
         )}
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
