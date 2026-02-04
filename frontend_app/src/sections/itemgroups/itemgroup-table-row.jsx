@@ -87,7 +87,11 @@ export function ItemgroupTableRow({
       >
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <ItemgroupGroupItemDetails selectedItem={row} isFromTable />
+            <ItemgroupGroupItemDetails
+              selectedItem={row}
+              handleCloseSelectedItem={rowDetails.onFalse}
+              isFromTable
+            />
           </Box>
         </DialogContent>
         <DialogActions>
