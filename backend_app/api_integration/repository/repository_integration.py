@@ -135,6 +135,7 @@ def fetch_client_invoices(data):
         # "email": "email",
         "customerId": "customer_id",
         "status": "status",
+        "salesordersIds": "salesorders_ids",
         # "lastModifiedTime": "last_modified_time",
     }
     base_params = {
@@ -162,7 +163,6 @@ def fetch_client_invoices(data):
         params = None 
 
     return {"count": len(items), "results": items}
-
 
 #############################################
 # LOAD ITEMS TO REWARDS

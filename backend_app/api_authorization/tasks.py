@@ -25,10 +25,21 @@ def _list_user_ids_for_window():
     qs = (LoginUser.objects(is_verified=True, user_role=role_client, is_active=True)
           .only('id').no_dereference())
     return [str(uid) for uid in qs.scalar('id')]
+
+def _flatten_once(xs):
+    out = []
+    for x in xs or []:
+        if isinstance(x, (list, tuple, set)):
+            out.extend(x)
+        else:
+            out.append(x)
+    return out
     
 @shared_task(soft_time_limit=60, time_limit=90)
 def task_get_rewards_points():
     user_ids = _list_user_ids_for_window()
+    user_ids = _flatten_once(user_ids)
+    user_ids = [str(x) for x in user_ids if x]
     total = len(user_ids)
     if total == 0:
         return 'no-users'
@@ -62,5 +73,10 @@ def task_get_rewards_points_batch(user_ids: list[str]):
                 .no_dereference().first())
         if not user or not user.is_verified or not user.is_active:
             continue
-        get_rewards_points(user)
+        try:
+            logger.info(f'Processing rewards points for user id={uid}, username={user.username}')
+            get_rewards_points(user)
+        except Exception as e:
+            logger.error(f'Error processing rewards points for user id={uid}, username={user.username}: {e}')
+            raise
     return {'processed': len(user_ids)}
