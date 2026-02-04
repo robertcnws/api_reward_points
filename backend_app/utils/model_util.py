@@ -110,6 +110,7 @@ def create_sales_order_instance(json_data, user):
     order.salesperson_name = json_data.get('salesperson_name')
     order.created_by_email = json_data.get('created_by_email')
     order.created_by_name = json_data.get('created_by_name')
+    order.checked_for_rewards = False  # Resetea para re-chequeo
     order.user = user
 
     return safe_save_or_refetch(order, query)

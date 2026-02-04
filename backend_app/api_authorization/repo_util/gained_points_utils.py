@@ -388,7 +388,7 @@ def get_rewards_points(user, description=None):
     if user.customer_id:
         logger.info(f"User {user.username} has customer_id {user.customer_id} for rewards points sync.")
         
-        local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
+        local_sales_orders = list(RewardSalesOrder.objects(user=user, checked_for_rewards=False).all())
         local_invoices_ini = list(RewardInvoice.objects(customer_id=user.customer_id).all())
         so_ids = [so.id for so in local_sales_orders]
         so_salesorder_ids = [str(so.salesorder_id) for so in local_sales_orders if so.salesorder_id]
@@ -413,14 +413,17 @@ def get_rewards_points(user, description=None):
                 response_inv_by_so_ids = {}
                 
         new_invoices_by_so_ids = []
-        old_invoices = []
+        old_invoices = local_invoices
         if response_inv_by_so_ids:
             logger.info("Response from salesorder_ids fetch has %d invoices.", response_inv_by_so_ids.get('count', 0))
             new_invoices_by_so_ids = _build_invoices_from_remote(response_inv_by_so_ids, user)
             logger.info("Built %d new invoices from salesorder_ids fetch.", len(new_invoices_by_so_ids))
         if new_invoices_by_so_ids:
             # Evitar duplicados entre new_invoices y new_invoices_by_so_ids
-            old_invoices = _merge_invoices(local_invoices, new_invoices_by_so_ids)        
+            old_invoices = _merge_invoices(local_invoices, new_invoices_by_so_ids)
+            for so in local_sales_orders:
+                so.checked_for_rewards = True
+                so.save()        
         
         response_inv, response_so = _fetch_remote_data(payload_inv, payload_sales_orders=payload_so)
         if response_inv is None:
