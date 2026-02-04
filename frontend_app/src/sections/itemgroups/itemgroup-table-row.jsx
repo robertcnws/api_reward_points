@@ -67,7 +67,6 @@ export function ItemgroupTableRow({
           } */}
           {fNumber(row?.actualAvailableStock)}
         </TableCell>
-
         <TableCell align="right">
           <Stack direction="row" alignItems="right" sx={{ justifyContent: 'flex-end' }}>
 
