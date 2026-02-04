@@ -50,10 +50,10 @@ import { FunctionalityTableFiltersResult } from '../functionality-table-filters-
 
 // ----------------------------------------------------------------------
 
-const headersCSV = [
-  { label: 'Name', key: 'name' },
-  { label: 'Description', key: 'description' },
-]
+const STATUS_OPTIONS = [{ value: 'all', label: 'All Functionalities' }].concat([
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+]);
 
 const getValidTabValue = (options, currentValue) => options.some(
   (tab) => tab.value === currentValue
@@ -83,6 +83,7 @@ export function FunctionalityListView() {
     { id: 'description', label: 'Description' },
     { id: 'rolesAllowed', label: 'Roles Allowed' },
     { id: 'lastModifiedTime', label: 'Last Modified Time' },
+    { id: 'status', label: 'Status' },
     { id: '' },
   ];
 
@@ -99,7 +100,16 @@ export function FunctionalityListView() {
 
   const [tableData, setTableData] = useState([]);
 
-  const filters = useSetState({ name: '' });
+  const filters = useSetState({
+    name: '',
+    status: localStorage.getItem('functionalityStatus') || 'all'
+  });
+
+  const collapse = useBoolean(
+    filters.state.status === 'active' || filters.state.status === 'inactive'
+  );
+
+  const statusValue = getValidTabValue(STATUS_OPTIONS, filters.state.status);
 
   useEffect(() => {
     localStorage.removeItem('currentFunctionalityId');
@@ -175,7 +185,8 @@ export function FunctionalityListView() {
 
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
-  const canReset = !!filters.state.name;
+  const canReset =
+    !!filters.state.name || filters.state.status !== 'all';
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -245,6 +256,23 @@ export function FunctionalityListView() {
     },
     [router]
   );
+
+  const handleFilterStatus = useCallback(
+      (event, newValue) => {
+        table.onResetPage();
+        localStorage.setItem('itemStatus', newValue);
+        filters.setState({ status: newValue });
+        if (newValue === 'not_synced' || newValue === 'not_assets' ||
+          newValue === 'active' || newValue === 'confirmation_pending' ||
+          newValue === 'inactive') {
+          collapse.onTrue();
+        }
+        else {
+          collapse.onFalse();
+        }
+      },
+      [filters, table, collapse]
+    );
 
   if (errorFunctionalities) {
     return (
@@ -323,6 +351,47 @@ export function FunctionalityListView() {
         />
 
         <Card>
+
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <Tabs
+              value={statusValue}
+              onChange={handleFilterStatus}
+              sx={{
+                px: 2.5,
+                width: '97%',
+              }}
+            >
+              {STATUS_OPTIONS.map((tab) => (
+                <Tab
+                  key={tab.value}
+                  iconPosition="end"
+                  value={tab.value}
+                  label={tab.label}
+                  icon={
+                    <Label
+                      variant={
+                        ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                        'soft'
+                      }
+                      color={
+                        (tab.value === 'active' && 'success') ||
+                        (tab.value === 'inactive' && 'warning') ||
+                        'default'
+                      }
+                    >
+                      {
+                        tab.value === 'active' ?
+                          tableData.filter((it) => it.isActive).length :
+                          tab.value === 'inactive' ?
+                            tableData.filter((it) => !it.isActive).length :
+                            tableData.length
+                      }
+                    </Label>
+                  }
+                />
+              ))}
+            </Tabs>
+          </Box>
 
           <FunctionalityTableToolbar
             filters={filters}
@@ -457,7 +526,7 @@ export function FunctionalityListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name } = filters;
+  const { name, status } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -475,6 +544,13 @@ function applyFilter({ inputData, comparator, filters }) {
         item.description.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
-  
+  if (status !== 'all') {
+    if (status === 'active') {
+      inputData = inputData.filter((item) => item.isActive === true);
+    } else if (status === 'inactive') {
+      inputData = inputData.filter(item => item.isActive === false);
+    }
+  }
+
   return inputData;
 }

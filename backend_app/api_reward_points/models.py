@@ -91,6 +91,7 @@ class RewardSalesOrder(Document):
     created_by_name = StringField(null=True, blank=True)
     last_modified_time = DateTimeField(default=timezone.now, null=True)
     user = ReferenceField(LoginUser, required=True, reverse_delete_rule=2)  # CASCADE
+    checked_for_rewards = BooleanField(default=False)
 
     meta = {
         'collection': 'reward_sales_orders',

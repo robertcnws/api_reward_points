@@ -346,3 +346,10 @@ def build_fetch_payload(user, has_local_data: bool):
         yesterday = timezone.now() - timezone.timedelta(days=1)
         data['lastModifiedTime'] = yesterday.strftime('%Y-%m-%dT00:00:00Z')
     return data
+
+def build_fetch_payload_by_list_ids_and_type_field(list_ids: str, type_field: str):
+    data = {
+        type_field: list_ids
+    }
+    print('build_fetch_payload_by_list_ids_and_type_field data:', data)
+    return data

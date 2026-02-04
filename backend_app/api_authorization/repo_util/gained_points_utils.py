@@ -21,6 +21,7 @@ from utils.data_util import (
     calculate_reward_points,
     to_dt,
     build_fetch_payload,
+    build_fetch_payload_by_list_ids_and_type_field,
 )
 from utils.model_util import (
     create_reward_invoice_instance,
@@ -107,13 +108,21 @@ def _fetch_remote_payloads(user, local_invoices, local_sales_orders):
     payload_sales_orders = build_fetch_payload(user, has_local_data=bool(local_sales_orders))
     return payload_invoices, payload_sales_orders
 
+def _fetch_remote_payloads_by_ids(salesorder_ids):
+    payload_invoices_by_salesorder_ids = build_fetch_payload_by_list_ids_and_type_field(
+        list_ids=salesorder_ids, type_field="salesordersIds"
+    )
+    logger.debug(f"Built payload for fetching invoices by salesorder_ids: {payload_invoices_by_salesorder_ids}")
+    return payload_invoices_by_salesorder_ids
 
-def _fetch_remote_data(payload_invoices, payload_sales_orders):
+
+def _fetch_remote_data(payload_invoices, payload_sales_orders=None):
     response_inv = fetch_client_invoices(payload_invoices) or {}
     if 'count' not in response_inv or 'results' not in response_inv:
         return None, None  # early return → baja complejidad
-
-    response_so = fetch_sales_orders(payload_sales_orders) or {}
+    response_so = {}
+    if payload_sales_orders:
+        response_so = fetch_sales_orders(payload_sales_orders) or {}
     return response_inv, response_so
 
 
@@ -136,7 +145,7 @@ def _build_invoices_from_remote(response_inv, user):
 def _merge_invoices(local_invoices, new_invoices):
     if local_invoices:
         return merge_unique_by(local_invoices, new_invoices, key="invoice_id")
-    return new_invoices
+    return new_invoices or []
 
 
 def _load_sorted_local_collections(user, all_invoices):
@@ -319,6 +328,58 @@ def _update_customer_id_for_user(user):
 # API principal (complejidad baja)
 # =========================
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def chunked(seq, size):
+    for i in range(0, len(seq), size):
+        yield seq[i:i+size]
+
+def _fetch_invoices_for_salesorders_ids_chunk(ids_chunk):
+    # ids_chunk: list[str]
+    payload = _fetch_remote_payloads_by_ids(",".join(map(str, ids_chunk)))
+    if not payload:
+        return []
+    logger.info(f"Fetching invoices for salesorder_ids chunk: {ids_chunk}")
+    try:
+        data, _meta = _fetch_remote_data(payload)
+        logger.info(f"Has Response data for salesorder_ids chunk {ids_chunk}? : {'results' in data}")
+        
+        if isinstance(data, dict):
+            return data.get("results") or []
+
+        # si ya viene lista, devuélvela
+        if isinstance(data, list):
+            return data
+
+        # return data or {}
+    except Exception as e:
+        logger.error(f"Error fetching invoices for salesorder_ids chunk {ids_chunk}: {e}")
+        return {}
+
+def fetch_invoices_by_salesorder_ids(
+    so_salesorder_ids,
+    chunk_size=20,       # 5 es seguro pero lento; 20-50 suele ir bien
+    max_workers=5,       # concurrencia real (no pases de 8-10)
+):
+    # normaliza: strings únicas
+    ids = [str(x).strip() for x in so_salesorder_ids if x]
+    ids = list(dict.fromkeys(ids))  # dedupe preservando orden
+
+    results = []
+    chunks = list(chunked(ids, chunk_size))
+    
+    logger.info(f"Fetching invoices for {len(ids)} salesorder_ids in {len(chunks)} chunks (chunk_size={chunk_size}, max_workers={max_workers})")
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = [ex.submit(_fetch_invoices_for_salesorders_ids_chunk, ch) for ch in chunks]
+        for fut in as_completed(futures):
+            results.extend(fut.result())
+            
+            
+    logger.info(f"Finished fetching invoices for salesorder_ids. Total invoices fetched: {len(results)}")
+
+    return {'count': len(results), 'results': results}
+
 def get_rewards_points(user, description=None):
     _validate_user(user)
 
@@ -326,12 +387,46 @@ def get_rewards_points(user, description=None):
     
     if user.customer_id:
         logger.info(f"User {user.username} has customer_id {user.customer_id} for rewards points sync.")
-
-        local_invoices = list(RewardInvoice.objects(customer_id=user.customer_id).all())
+        
+        # local_sales_orders = list(RewardSalesOrder.objects(user=user, checked_for_rewards=False).all())
         local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
+        local_invoices_ini = list(RewardInvoice.objects(customer_id=user.customer_id).all())
+        so_ids = [so.id for so in local_sales_orders]
+        so_salesorder_ids = [str(so.salesorder_id) for so in local_sales_orders if so.salesorder_id]
+        local_invoices_fin = list(RewardInvoice.objects(salesorder__in=so_ids).all())
+        local_invoices = merge_unique_by(local_invoices_ini, local_invoices_fin, key="invoice_id")
         
         payload_inv, payload_so = _fetch_remote_payloads(user, local_invoices, local_sales_orders)
-        response_inv, response_so = _fetch_remote_data(payload_inv, payload_so)
+        # payload_inv_by_so_ids = _fetch_remote_payloads_by_ids(",".join(so_salesorder_ids))
+        response_inv_by_so_ids = None
+        if so_salesorder_ids:
+            logger.info(f"Fetching invoices by salesorder_ids: {so_salesorder_ids}")
+            try:
+                response_inv_by_so_ids = fetch_invoices_by_salesorder_ids(
+                    so_salesorder_ids,
+                    chunk_size=10,
+                    max_workers=5
+                )
+                # logger.info(f"Payload for fetching invoices by salesorder_ids: {response_inv_by_so_ids}")
+                logger.info(f"Finished Fetched {len(response_inv_by_so_ids)} invoices by salesorder_ids.")
+            except Exception as e:
+                logger.error(f"Error finished fetching invoices by salesorder_ids: {e}")
+                response_inv_by_so_ids = {}
+                
+        new_invoices_by_so_ids = []
+        old_invoices = local_invoices
+        if response_inv_by_so_ids:
+            logger.info("Response from salesorder_ids fetch has %d invoices.", response_inv_by_so_ids.get('count', 0))
+            new_invoices_by_so_ids = _build_invoices_from_remote(response_inv_by_so_ids, user)
+            logger.info("Built %d new invoices from salesorder_ids fetch.", len(new_invoices_by_so_ids))
+        if new_invoices_by_so_ids:
+            # Evitar duplicados entre new_invoices y new_invoices_by_so_ids
+            old_invoices = _merge_invoices(local_invoices, new_invoices_by_so_ids)
+            # for so in local_sales_orders:
+            #     so.checked_for_rewards = True
+            #     so.save()        
+        
+        response_inv, response_so = _fetch_remote_data(payload_inv, payload_sales_orders=payload_so)
         if response_inv is None:
             return None
         
@@ -340,7 +435,9 @@ def get_rewards_points(user, description=None):
             _upsert_sales_orders_from_response(response_so, user)
 
         new_invoices = _build_invoices_from_remote(response_inv, user)
-        all_invoices = _merge_invoices(local_invoices, new_invoices)
+        logger.info("Built %d new invoices from remote.", len(new_invoices))
+        
+        all_invoices = _merge_invoices(old_invoices, new_invoices)
         sorted_invoices, sorted_sales_orders = _load_sorted_local_collections(user, all_invoices)
         
         rp = RewardPoints.objects(user=user).first()

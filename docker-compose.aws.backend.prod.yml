@@ -7,11 +7,11 @@ services:
     container_name: aws_backend_app
     restart: unless-stopped
     volumes:
-      - ./backend_app:/app
-      - ./backend_app/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py
+      # - ./backend_app:/app
+      # - ./backend_app/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py
       - ./backend_app/static:/app/staticfiles
     ports:
-      - "8001:8001"
+      - "8000:8000"
     networks:
       - net_installation
 

@@ -10,7 +10,7 @@ import { CONFIG } from 'src/config-global';
 
 export const ItemgroupGroupItemDetails = ({ 
     selectedItem, 
-    setSeectedItem, 
+    setSelectedItem, 
     handleCloseSelectedItem,
     isFromTable = false 
 }) => {

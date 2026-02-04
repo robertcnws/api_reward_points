@@ -63,7 +63,7 @@ export function FunctionalityNewEditForm({ currentFunctionalityId, onReturnList 
       name: currentFunctionality?.name || '',
       link: currentFunctionality?.link || '',
       rolesAllowed: currentFunctionality?.rolesAllowed || [],
-      isActive: currentFunctionality?.isActive || true,
+      isActive: currentFunctionality ? currentFunctionality?.isActive : true,
       description: currentFunctionality?.description || '',
     }),
     [currentFunctionality]
