@@ -56,6 +56,12 @@ const SalesOrderDetailsPage = lazy(() => import('src/pages/dashboard/sales-order
 const Page403 = lazy(() => import('src/pages/error/403'));
 // FAQ Tutorial
 const FAQTutorialListView = lazy(() => import('src/pages/dashboard/faq-tutorial/list'));
+// Quotes
+const QuotesListPage = lazy(() => import('src/pages/dashboard/dealerportal-quote/list'));
+const QuotesDetailsPage = lazy(() => import('src/pages/dashboard/dealerportal-quote/details'));
+// Orders
+const OrdersListPage = lazy(() => import('src/pages/dashboard/dealerportal-order/list'));
+const OrderDetailsPage = lazy(() => import('src/pages/dashboard/dealerportal-order/details'));
 
 // ----------------------------------------------------------------------
 
@@ -421,6 +427,74 @@ export const dashboardRoutes = (user) => [
                   user?.customerportal_permissions?.map(permission => permission.key).includes(
                     CONFIG.permissions.customerportal.canSeeItemsInStock
                   )) ? <ItemgroupPage /> : <Page403 />,
+              },
+            ],
+          },
+        ] : [],
+      ...(user && (
+        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+        user?.customerportal_permissions?.map(permission => permission.key).includes(
+          CONFIG.permissions.customerportal.canSeeItemsInQuote
+        )
+      )) ?
+        [
+          {
+            path: 'quote',
+            children: [
+              {
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInQuote
+                  )) ? <QuotesListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInQuote
+                  )) ? <QuotesListPage /> : <Page403 />,
+              },
+              {
+                path: ':id/details',
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInQuote
+                  )) ? <QuotesDetailsPage /> : <Page403 />,
+              },
+            ],
+          },
+        ] : [],
+        ...(user && (
+        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+        user?.customerportal_permissions?.map(permission => permission.key).includes(
+          CONFIG.permissions.customerportal.canSeeItemsInOrders
+        )
+      )) ?
+        [
+          {
+            path: 'order',
+            children: [
+              {
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInOrders
+                  )) ? <OrdersListPage /> : <Page403 />,
+                index: true
+              },
+              {
+                path: 'list',
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInOrders
+                  )) ? <OrdersListPage /> : <Page403 />,
+              },
+              {
+                path: ':id/details',
+                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                  user?.customerportal_permissions?.map(permission => permission.key).includes(
+                    CONFIG.permissions.customerportal.canSeeItemsInOrders
+                  )) ? <OrderDetailsPage /> : <Page403 />,
               },
             ],
           },

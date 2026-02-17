@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { fNumber } from 'src/utils/format-number';
 
 import { endpoints, axiosInstanceBackend } from 'src/utils/axios';
 import { LoadingButton } from '@mui/lab';
@@ -21,6 +22,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { IncrementerText } from '../items/components/incrementer-text';
+
 
 
 // ----------------------------------------------------------------------
@@ -98,7 +100,7 @@ export function UserManagePointsModalForm({
             Current Points: {currentAssignedPoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {currentAssignedPoints || 0}
+                {fNumber(currentAssignedPoints || 0)}
               </Label>
             ) : (
               <Label color="error">

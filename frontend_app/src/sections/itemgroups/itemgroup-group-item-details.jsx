@@ -12,7 +12,7 @@ export const ItemgroupGroupItemDetails = ({
     selectedItem, 
     setSelectedItem, 
     handleCloseSelectedItem,
-    isFromTable = false 
+    isFromTable = false,
 }) => {
 
     const [copySuccess, setCopySuccess] = useState(false);

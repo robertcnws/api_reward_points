@@ -34,15 +34,23 @@ export function fCurrency(inputValue, options) {
   const number = processInput(inputValue);
   if (number === null) return '';
 
-  const fm = new Intl.NumberFormat(locale.code, {
+  const formatter = new Intl.NumberFormat(locale.code, {
     style: 'currency',
     currency: locale.currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     ...options,
-  }).format(number);
+  });
 
-  return fm;
+  const parts = formatter.formatToParts(number);
+
+  const symbol = parts.find(p => p.type === 'currency')?.value || '';
+  const value = parts
+    .filter(p => p.type !== 'currency')
+    .map(p => p.value)
+    .join('');
+
+  return `${symbol} ${value}`; // 👈 espacio controlado
 }
 
 // ----------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useMemo, useContext, useCallback } from 'react';
+import { useMemo, useContext, useCallback, useState } from 'react';
 
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -9,6 +9,7 @@ import { useRouter } from 'src/routes/hooks';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
 import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
+import { fNumber } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { MotivationIllustration } from 'src/assets/illustrations';
@@ -30,6 +31,7 @@ import { useDataContext } from 'src/auth/context/data/data-context';
 import { SalesOrdersList } from 'src/sections/sales-order/view';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { PurchaseAvailableRewardsModalForm } from '../purchase-available-rewards-modal-form';
+
 
 // ----------------------------------------------------------------------
 
@@ -134,10 +136,22 @@ export function PurchaseOverviewClientView({
     });
   }, [loadedRewardPoints?.invoices]);
 
+  // const barChartInvoicesSeries = useMemo(
+  //   () => buildInvoicesChart(loadedRewardPoints?.invoices, { year: 2025, by: 'amount' }), // o by: 'amount'
+  //   [loadedRewardPoints?.invoices]
+  // );
+
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const barChartInvoicesSeries = useMemo(
-    () => buildInvoicesChart(loadedRewardPoints?.invoices, { year: 2025, by: 'amount' }), // o by: 'amount'
-    [loadedRewardPoints?.invoices]
+    () => buildInvoicesChart(loadedRewardPoints?.invoices, { year: selectedYear, by: 'amount' }), // o by: 'amount'
+    [loadedRewardPoints?.invoices, selectedYear]
   );
+
+  // const barChartInvoicesSeries = useCallback(
+  //   (year) => buildInvoicesChart(loadedRewardPoints?.invoices, { year: year, by: 'amount' }),
+  //   [loadedRewardPoints?.invoices]
+  // );
 
   const seriesFromInvoices = useCallback((attributeName, attributeData, sliceNumber = null, conditions = null) => {
     if (!sortedInvoices) return [];
@@ -354,7 +368,7 @@ export function PurchaseOverviewClientView({
                           }}
                         />
                         <Typography variant="h4" sx={{ fontWeight: 700, mb: 0 }}>
-                          {totalAvailablePoints || 0}
+                          {fNumber(totalAvailablePoints || 0)}
                         </Typography>
                         <Typography variant="body2" sx={{ opacity: 0.85 }}>
                           reward points
@@ -452,7 +466,9 @@ export function PurchaseOverviewClientView({
               <EcommerceWebsiteVisits
                 title='Invoice History'
                 metricUnit="USD"
-                subheader={`Year: ${new Date().getFullYear()}`}
+                subheader={`Year: ${selectedYear}`}
+                selectedYear={selectedYear}
+                setSelectedYear={setSelectedYear}
                 chart={{
                   categories: barChartInvoicesSeries.categories,
                   series: !isMobile ? barChartInvoicesSeries.series : barChartInvoicesSeries.series.slice(0, 2),

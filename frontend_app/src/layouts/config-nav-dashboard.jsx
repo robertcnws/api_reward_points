@@ -72,6 +72,8 @@ const ICONS = {
   key: icon('ic-key'),
   stock: icon('ic-stock'),
   functionality: icon('ic-functionality'),
+  quote: icon('ic-quote'),
+  salesorder: icon('ic-salesorder'),
 };
 
 const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
@@ -83,6 +85,10 @@ const customerportalPermissions = userLogged?.data?.customerportal_permissions |
 const keyPermissions = customerportalPermissions?.map(permission => permission.key) || [];
 
 const canSeeItemsInStock = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInStock);
+
+const canSeeItemsInQuote = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInQuote);
+
+const canSeeItemsInOrders = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInOrders);
 
 
 // const { countLostItems } = useDataContext();
@@ -226,32 +232,81 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
   },
 
   ...(userLogged && (
-    listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInStock
+    listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) ||
+    canSeeItemsInStock ||
+    canSeeItemsInQuote ||
+    canSeeItemsInOrders
   ) ? [
 
     {
       subheader: 'Dealerportal',
       items: [
-        {
-          key: `${paths.dashboard.general.analytics}-1234`,
-          title: (
-            <Box component="span" id='stock-link'>
-              <Typography
-                variant={isNavMini ? 'caption' : 'subtitle2'}
-                sx={{
-                  mr: 1,
-                  color: 'text.secondary',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                Stock
-              </Typography>
-            </Box>
-          ),
-          path: paths.dashboard.itemgroup.root,
-          icon: ICONS.stock
-        },
+        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInStock ? [
+          {
+            key: `${paths.dashboard.general.analytics}-1234`,
+            title: (
+              <Box component="span" id='stock-link'>
+                <Typography
+                  variant={isNavMini ? 'caption' : 'subtitle2'}
+                  sx={{
+                    mr: 1,
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  Stock
+                </Typography>
+              </Box>
+            ),
+            path: paths.dashboard.itemgroup.root,
+            icon: ICONS.stock
+          },
+        ] : []),
+        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInQuote ? [
+          {
+            key: `${paths.dashboard.general.analytics}-12356`,
+            title: (
+              <Box component="span" id='stock-link'>
+                <Typography
+                  variant={isNavMini ? 'caption' : 'subtitle2'}
+                  sx={{
+                    mr: 1,
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  Quotes
+                </Typography>
+              </Box>
+            ),
+            path: paths.dashboard.quote.root,
+            icon: ICONS.quote
+          },
+        ] : []),
+        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInOrders ? [
+          {
+            key: `${paths.dashboard.general.analytics}-12367`,
+            title: (
+              <Box component="span" id='stock-link'>
+                <Typography
+                  variant={isNavMini ? 'caption' : 'subtitle2'}
+                  sx={{
+                    mr: 1,
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  Orders
+                </Typography>
+              </Box>
+            ),
+            path: paths.dashboard.order.root,
+            icon: ICONS.salesorder
+          },
+        ] : []),
       ],
     },
   ] : []),

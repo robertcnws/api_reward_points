@@ -11,7 +11,6 @@ from api_integration.models import (
 )
 from utils.json_datetime import JSONDateTime, datetime_to_timezone
 
-
 @convert_mongoengine_field.register(DynamicField)
 def convert_dynamic_field(field, registry=None, executor=None):
     return graphene.JSONString(

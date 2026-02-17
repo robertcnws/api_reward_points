@@ -392,6 +392,7 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
   //   [filters, table, dataFiltered]
   // );
 
+
   const renderFilterClient = (
     <>
       <Button
@@ -572,8 +573,6 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
               onChange={handleFilterStatus}
               sx={{
                 px: 2.5,
-                // boxShadow: (theme) =>
-                //   `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
                 width: '97%',
               }}
             >
@@ -622,15 +621,6 @@ export function PurchaseListView({ lengthLimit = null, order = 'asc' }) {
                 />
               ))}
             </Tabs>
-            {/* <Box sx={{ display: 'flex', alignItems: 'right' }}>
-              <IconButton
-                color={collapse.value ? 'inherit' : 'default'}
-                onClick={collapse.onToggle}
-                sx={{ ...(collapse.value && { bgcolor: 'action.hover' }) }}
-              >
-                <Iconify icon={collapse.value ? "eva:arrow-ios-upward-fill" : "eva:arrow-ios-downward-fill"} />
-              </IconButton>
-            </Box> */}
           </Box>
 
           {!lengthLimit && (

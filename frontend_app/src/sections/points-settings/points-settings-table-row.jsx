@@ -51,7 +51,7 @@ export function PointsSettingsTableRow({ row, selected, onEditRow, onSelectRow, 
             <TableCell sx={{ whiteSpace: 'nowrap' }} onClick={() => onEditRow()}>
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {fNumber(row?.points) || 0}
+                {fNumber(row?.points || 0)}
               </Label>
             </TableCell>
 
@@ -72,7 +72,7 @@ export function PointsSettingsTableRow({ row, selected, onEditRow, onSelectRow, 
             </Label><br />
             Points: <Label color="success" sx={{ alignItems: 'center' }}>
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-              {fNumber(row?.points) || 0}
+              {fNumber(row?.points || 0)}
             </Label><br />
             Description: <Label
               sx={{ cursor: 'pointer' }}

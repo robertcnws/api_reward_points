@@ -215,7 +215,7 @@ export function PurchaseTableRow({
             }} onClick={openDetails.onTrue}>
               <Label color={isSetExpired ? "default" : "success"} sx={{ alignItems: 'center', fontSize: 14 }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {fNumber(assignedPoints) || 0}
+                {fNumber(assignedPoints || 0)}
               </Label>
             </TableCell>
 
@@ -370,7 +370,7 @@ export function PurchaseTableRow({
                   Points:
                   <Label color="success" sx={{ alignItems: 'center', fontSize: 14 }}>
                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                    {fNumber(assignedPoints) || 0}
+                    {fNumber(assignedPoints || 0)}
                   </Label>
                   {/* Qty:
                   <Typography><b>x{fNumber(quantity) || 0}</b></Typography>

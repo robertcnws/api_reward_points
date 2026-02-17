@@ -25,5 +25,6 @@ urlpatterns = [
     path('api/authorization/', include('api_authorization.urls'), name='authorization'),
     path('api/reward-points/', include('api_reward_points.urls'), name='reward_points'),
     path('api/users/', include('api_users.urls'), name='users'),
+    path('api/dealerportal/', include('api_dealerportal.urls'), name='dealerportal'),
     path('api/health-check/', views.health_check, name='health_check'),
 ]

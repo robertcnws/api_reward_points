@@ -46,7 +46,7 @@ export function GuideTourButton({ width, sx, ...other }) {
           {...other}
         >
           <Box display="flex" alignItems="center" flexDirection="row" justifyContent="flex-start">
-            <Iconify icon='line-md:compass-twotone-loop' sx={{ width, height: width }} />
+            <Iconify icon='fluent:compass-true-north-20-filled' sx={{ width, height: width }} />
             {!isMobile && (
             <Typography variant="caption" sx={{ ml: 0.3, width: '100%' }}>
               Guide Tour

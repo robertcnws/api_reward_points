@@ -1,3 +1,4 @@
+import { fNumber } from "src/utils/format-number";
 import { LoadingButton } from "@mui/lab";
 import { Autocomplete, Box, Button, Chip, ListItem, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import { Iconify } from "src/components/iconify";
 import { Label } from "src/components/label";
 import { StoreProductFolderItemCarousel } from "../store-product/store-product-folder-item-carousel";
 import { IncrementerButton } from "../items/components/incrementer-button";
+
 
 
 export const PurchaseAddCartModalForm = ({
@@ -137,7 +139,7 @@ export const PurchaseAddCartModalForm = ({
                             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
                                 <Label color="success" sx={{ alignItems: 'center' }}>
                                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                    {option?.totalAvailablePoints || 0}
+                                    {fNumber(option?.totalAvailablePoints || 0)}
                                 </Label>
                                 <Box sx={{ fontWeight: 500 }}>
                                     {option.firstName} {option.lastName}
@@ -213,7 +215,7 @@ export const PurchaseAddCartModalForm = ({
                                     </Typography>
                                     <Label color="success" sx={{ alignItems: 'center' }}>
                                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                        {option?.assignedPoints || 0}
+                                        {fNumber(option?.assignedPoints || 0)}
                                     </Label>
                                 </Box>
                             </Box>

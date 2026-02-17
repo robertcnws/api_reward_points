@@ -23,6 +23,7 @@ import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { fNumber } from 'src/utils/format-number';
 
 
 // ----------------------------------------------------------------------
@@ -143,7 +144,7 @@ export function StoreProductTableRow({
           {row?.assignedPoints > 0 ? (
             <Label color="success" sx={{ alignItems: 'center' }}>
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-              {row?.assignedPoints || 0}
+              {fNumber(row?.assignedPoints || 0)}
             </Label>
           ) : (
             <Label color="error">

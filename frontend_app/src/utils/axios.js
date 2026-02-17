@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { all } from 'axios';
 
 import { CONFIG } from 'src/config-global';
 
@@ -235,11 +235,31 @@ export const endpoints = {
       functionality: (id) => `/authorization/edit/functionality/${id}/`,
     },
   },
+  dealerportal: {
+    quote: {
+      create: '/dealerportal/create/quote/',
+      manageProduct: (quoteId) => `/dealerportal/manage/quote/${quoteId}/product/`,
+      manageAllProducts: (quoteId) => `/dealerportal/manage/quote/${quoteId}/products/`,
+      edit: (quoteId) => `/dealerportal/edit/quote/${quoteId}/`,
+      delete: (quoteId) => `/dealerportal/delete/quote/${quoteId}/`,
+      clone: (quoteId) => `/dealerportal/clone/quote/${quoteId}/`,
+      placeOrder: (quoteId) => `/dealerportal/place-order/quote/${quoteId}/`,
+      renderPdf: (quoteId) => `/dealerportal/quote/${quoteId}/pdf/`,
+      renderPdfCost: (quoteId) => `/dealerportal/quote/${quoteId}/pdf_cost_sell/`,
+      renderPdfTotal: (quoteId) => `/dealerportal/quote/${quoteId}/pdf_total/`,
+    },
+    order: {
+      manageStatus: (orderId) => `/dealerportal/manage/order/${orderId}/status/`,
+      delete: (orderId) => `/dealerportal/delete/order/${orderId}/`,
+      deleteAll: '/dealerportal/delete/orders/',
+    }
+  },
   graphql: {
     rewardPoints: `${CONFIG.apiUrl}/reward-points/graphql/`,
     users: `${CONFIG.apiUrl}/users/graphql/`,
     rewardIntegration: `${CONFIG.apiUrl}/integration/graphql/`,
-    rewardAuthorization: `${CONFIG.apiUrl}/authorization/graphql/`
+    rewardAuthorization: `${CONFIG.apiUrl}/authorization/graphql/`,
+    dealerportal: `${CONFIG.apiUrl}/dealerportal/graphql/`
   },
 };
 
@@ -287,5 +307,18 @@ export const wsEndpoints = {
   },
   functionalities: {
     all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/authorization/ws/functionalities/`
+  },
+  dealerportal: {
+    quotes: {
+      all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/quotes/`,
+      byId: (id) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/quotes/${id}/`,
+      byQuoteOwnerId: (ownerId) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/quotes-owner/${ownerId}/`,
+    },
+    orders: {
+      all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/orders/`,
+      byId: (id) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/orders/${id}/`,
+      byOwnerId: (ownerId) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/orders-owner/${ownerId}/`,
+      byQuoteId: (quoteId) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/dealerportal/ws/orders-quote/${quoteId}/`,
+    }
   }
 };

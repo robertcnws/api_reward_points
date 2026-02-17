@@ -80,48 +80,45 @@ export function ItemgroupView() {
                         />
                     </Box>
                 ) : (
-                    <>
-                        <DashboardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Typography variant="h4" gutterBottom>
-                                    {title}
-                                </Typography>
-                                <Box sx={{ mb: -2, display: 'flex', justifyContent: 'flex-end' }}>
-                                    <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-                                        <ToggleButton value="table" color={view === 'table' ? 'primary' : 'standard'}>
-                                            <Iconify icon="material-symbols:table-chart-outline" />
-                                        </ToggleButton>
+                    <DashboardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Typography variant="h4" gutterBottom>
+                                {title}
+                            </Typography>
+                            <Box sx={{ mb: -2, display: 'flex', justifyContent: 'flex-end' }}>
+                                <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
+                                    <ToggleButton value="table" color={view === 'table' ? 'primary' : 'standard'}>
+                                        <Iconify icon="material-symbols:table-chart-outline" />
+                                    </ToggleButton>
 
-                                        <ToggleButton value="group" color={view === 'group' ? 'primary' : 'standard'}>
-                                            <Iconify icon="formkit:group" />
-                                        </ToggleButton>
+                                    <ToggleButton value="group" color={view === 'group' ? 'primary' : 'standard'}>
+                                        <Iconify icon="formkit:group" />
+                                    </ToggleButton>
 
-                                        <ToggleButton value="list" color={view === 'list' ? 'primary' : 'standard'}>
+                                    {/* <ToggleButton value="list" color={view === 'list' ? 'primary' : 'standard'}>
                                             <Iconify icon="material-symbols:list-alt-outline-rounded" />
-                                        </ToggleButton>
+                                        </ToggleButton> */}
 
-                                    </ToggleButtonGroup>
-                                </Box>
+                                </ToggleButtonGroup>
                             </Box>
-                            {view === 'group' && (
-                                <ItemgroupGroupView
+                        </Box>
+                        {view === 'group' && (
+                            <ItemgroupGroupView
+                                loadedItemgroups={loadedItemgroups}
+                                refetchItemgroups={refetchItemgroups}
+                                loadingItemgroups={loadingItemgroups}
+                            />
+                        )}
+                        {view === 'table' && (
+                            <Box sx={{ width: '100%', overflowX: isMobile ? 'scroll' : 'hidden' }}>
+                                <ItemgroupTableView
                                     loadedItemgroups={loadedItemgroups}
                                     refetchItemgroups={refetchItemgroups}
                                     loadingItemgroups={loadingItemgroups}
                                 />
-                            )}
-                            {view === 'table' && (
-                                <Box sx={{ width: '100%', overflowX: isMobile ? 'scroll' : 'hidden' }}>
-                                    <ItemgroupTableView
-                                        loadedItemgroups={loadedItemgroups}
-                                        refetchItemgroups={refetchItemgroups}
-                                        loadingItemgroups={loadingItemgroups}
-                                    />
-                                </Box>
-                            )}
-
-                        </DashboardContent>
-                    </>
+                            </Box>
+                        )}
+                    </DashboardContent>
                 )}
         </>
     );

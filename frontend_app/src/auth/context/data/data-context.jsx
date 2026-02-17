@@ -64,6 +64,16 @@ import {
   RewardFunctionalitiesProvider
 } from './contexts/reward-functionalities-context';
 
+import {
+  useDealerportalQuotes,
+  DealerportalQuotesProvider
+} from './contexts/dealerportal-quotes-context';
+
+import {
+  useDealerportalOrders,
+  DealerportalOrdersProvider
+} from './contexts/dealerportal-orders-context';
+
 const DataContext = createContext();
 export const useDataContext = () => useContext(DataContext);
 export function DataProvider({ children }) {
@@ -83,9 +93,13 @@ export function DataProvider({ children }) {
                           <RewardClientsProvider>
                             <RewardItemgroupsProvider>
                               <RewardStoreProductsProvider>
-                                <RewardPointsProvider>
-                                  <CombineProviders>{children}</CombineProviders>
-                                </RewardPointsProvider>
+                                <DealerportalQuotesProvider>
+                                  <DealerportalOrdersProvider>
+                                    <RewardPointsProvider>
+                                      <CombineProviders>{children}</CombineProviders>
+                                    </RewardPointsProvider>
+                                  </DealerportalOrdersProvider>
+                                </DealerportalQuotesProvider>
                               </RewardStoreProductsProvider>
                             </RewardItemgroupsProvider>
                           </RewardClientsProvider>
@@ -230,6 +244,20 @@ function CombineProviders({ children }) {
     errorRewardFunctionalities: errorFunctionalities,
   } = useRewardFunctionalities();
 
+  const {
+    loadedAllDealerportalQuotes: loadedQuotes,
+    refetchAllDealerportalQuotes: refetchQuotes,
+    loadingAllDealerportalQuotes: loadingQuotes,
+    errorDealerportalQuotes: errorQuotes,
+  } = useDealerportalQuotes();
+
+  const {
+    loadedAllDealerportalOrders: loadedOrders,
+    refetchAllDealerportalOrders: refetchOrders,
+    loadingAllDealerportalOrders: loadingOrders,
+    errorDealerportalOrders: errorOrders,
+  } = useDealerportalOrders();
+
   // const {
   //   loadedAllRewardItems,
   //   loadedFilteredRewardItems,
@@ -346,6 +374,14 @@ function CombineProviders({ children }) {
     refetchFunctionalities,
     loadingFunctionalities,
     errorFunctionalities,
+    loadedQuotes,
+    refetchQuotes,
+    loadingQuotes,
+    errorQuotes,
+    loadedOrders,
+    refetchOrders,
+    loadingOrders,
+    errorOrders,
     runDashboard,
     setRunDashboard,
     finishDashboard,
@@ -441,6 +477,14 @@ function CombineProviders({ children }) {
     refetchFunctionalities,
     loadingFunctionalities,
     errorFunctionalities,
+    loadedQuotes,
+    refetchQuotes,
+    loadingQuotes,
+    errorQuotes,
+    loadedOrders,
+    refetchOrders,
+    loadingOrders,
+    errorOrders,
     runDashboard,
     setRunDashboard,
     finishDashboard,

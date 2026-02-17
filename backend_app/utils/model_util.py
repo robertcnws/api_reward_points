@@ -110,7 +110,7 @@ def create_sales_order_instance(json_data, user):
     order.salesperson_name = json_data.get('salesperson_name')
     order.created_by_email = json_data.get('created_by_email')
     order.created_by_name = json_data.get('created_by_name')
-    order.checked_for_rewards = False  # Resetea para re-chequeo
+    # order.checked_for_rewards = False  # Resetea para re-chequeo
     order.user = user
 
     return safe_save_or_refetch(order, query)
@@ -152,3 +152,20 @@ def create_reward_invoice_instance(json_data, user):
     inv.customer_id = json_data.get('customer_id')
 
     return safe_save_or_refetch(inv, query)
+
+
+from datetime import date, datetime
+from decimal import Decimal
+
+def to_msgpack_safe(obj):
+    if obj is None or isinstance(obj, (str, int, float, bool)):
+        return obj
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return float(obj)  # o str(obj)
+    if isinstance(obj, dict):
+        return {str(k): to_msgpack_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [to_msgpack_safe(x) for x in obj]
+    return str(obj)

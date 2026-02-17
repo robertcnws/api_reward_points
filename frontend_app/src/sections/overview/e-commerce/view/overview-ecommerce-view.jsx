@@ -10,6 +10,7 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
 import { fDate, fDateTime } from 'src/utils/format-time';
+import { fNumber } from 'src/utils/format-number';
 import { reduceList, buildInvoicesChart } from 'src/utils/invoice-utils';
 import { wsEndpoints } from 'src/utils/axios';
 
@@ -29,6 +30,7 @@ import { EcommerceRewardPointsAttribute } from '../ecommerce-amount-spent';
 import { EcommerceNewrewardStoreProducts } from '../ecommerce-new-reward-store-products';
 import { EcommerceRewardPointsHistoryList } from '../ecommerce-reward-points-history-list';
 import { FunctionalityLabelView } from '../../functionality/functionality-label-view';
+
 
 
 // ----------------------------------------------------------------------
@@ -150,15 +152,17 @@ export function OverviewEcommerceView({
     });
   }, [loadedRewardPoints?.invoices]);
 
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const barChartInvoicesSeries = useMemo(
     () => buildInvoicesChart(
       loadedRewardPoints?.invoices, {
-      year: 2025,
+      year: selectedYear,
       by: 'amount',
       top: isMobile ? 6 : 0
     }
     ), // o by: 'amount'
-    [loadedRewardPoints?.invoices, isMobile]
+    [loadedRewardPoints?.invoices, isMobile, selectedYear]
   );
 
   const seriesFromInvoices = useCallback((attributeName, attributeData, sliceNumber = null, conditions = null) => {
@@ -411,7 +415,7 @@ export function OverviewEcommerceView({
                             }}
                           />
                           <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                            {totalAvailablePoints || 0}
+                            {fNumber(totalAvailablePoints || 0)}
                           </Typography>
                           <Typography variant="body2" sx={{ opacity: 0.85 }}>
                             reward points
@@ -536,6 +540,8 @@ export function OverviewEcommerceView({
                     title='Invoice History'
                     metricUnit="USD"
                     subheader={`${isMobile ? 'Last 6 months: ' : 'Year: '}${new Date().getFullYear()}`}
+                    selectedYear={selectedYear}
+                    setSelectedYear={setSelectedYear}
                     chart={{
                       categories: barChartInvoicesSeries.categories,
                       series: !isMobile ? barChartInvoicesSeries.series : barChartInvoicesSeries.series.slice(0, 2),
