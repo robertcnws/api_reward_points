@@ -159,6 +159,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'channels',
     'graphene_django',
     'api_integration',
@@ -166,6 +167,7 @@ INSTALLED_APPS = [
     # 'api_projects',
     'api_reward_points.apps.ApiRewardPointsConfig',
     'api_users.apps.ApiUsersConfig',
+    'api_dealerportal.apps.ApiDealerportalConfig',
     'api_reward_points_async_task_sequence',
 ]
 

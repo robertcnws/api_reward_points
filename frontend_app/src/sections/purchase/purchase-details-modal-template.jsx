@@ -308,7 +308,7 @@ export function PurchaseDetailsModalTemplate({
                             justifyContent: 'flex-start',
                         }}>
                             <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                            {fNumber(assignedPoints) || 0}
+                            {fNumber(assignedPoints || 0)}
                         </Label>
                     </Box>
                     {currentBuy?.notes && currentBuy?.notes !== '' && (

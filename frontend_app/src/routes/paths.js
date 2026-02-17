@@ -154,5 +154,16 @@ export const paths = {
       details: (id) => `${ROOTS.DASHBOARD_CONFIG}/functionality/${id}`,
       edit: (id) => `${ROOTS.DASHBOARD_CONFIG}/functionality/${id}/edit`,
     },
+    quote: {
+      root: `${ROOTS.DASHBOARD}/quote`,
+      list: `${ROOTS.DASHBOARD}/quote/list`,
+      details: (id) => `${ROOTS.DASHBOARD}/quote/${id}/details`,
+      edit: (id) => `${ROOTS.DASHBOARD}/quote/${id}/edit`,
+    },
+    order: {
+      root: `${ROOTS.DASHBOARD}/order`,
+      list: `${ROOTS.DASHBOARD}/order/list`,
+      details: (id) => `${ROOTS.DASHBOARD}/order/${id}/details`,
+    },
   },
 };

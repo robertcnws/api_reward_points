@@ -506,7 +506,7 @@ export function StoreProductFolderItem({
                   bgcolor: 'currentColor',
                 }}
               />
-              <b>{currentProduct?.assignedPoints} </b>{'  '} point(s)
+              <b>{fNumber(currentProduct?.assignedPoints)} </b>{'  '} point(s)
             </Box>
           </Box>
       }

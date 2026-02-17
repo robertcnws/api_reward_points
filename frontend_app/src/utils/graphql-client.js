@@ -18,6 +18,10 @@ const httpLinkRewardAuthorization = new HttpLink({
   uri: endpoints.graphql.rewardAuthorization,
 });
 
+const httpLinkDealerPortal = new HttpLink({
+  uri: endpoints.graphql.dealerportal,
+});
+
 const splitLink = split(
   (operation) => operation.getContext().clientName === 'RewardPoints',
   httpLinkRewardPoints,
@@ -27,7 +31,11 @@ const splitLink = split(
     split(
       (operation) => operation.getContext().clientName === 'RewardAuthorization',
       httpLinkRewardAuthorization,
-      httpLinkUsers
+      split(
+        (operation) => operation.getContext().clientName === 'RewardUsers',
+        httpLinkUsers,
+        httpLinkDealerPortal
+      )
     )
   )
 );

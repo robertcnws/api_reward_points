@@ -68,7 +68,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                                     <TableCell sx={{ p: 0 }}>
                                         <Label color="success" sx={{ alignItems: 'center', mt: -2 }}>
                                             <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                            {fNumber(p?.assignedPoints) || 0}
+                                            {fNumber(p?.assignedPoints || 0)}
                                         </Label>
                                     </TableCell>
                                     <TableCell sx={{ p: 0 }}>
@@ -79,7 +79,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                                     <TableCell sx={{ p: 0 }}>
                                         <Label color="info" sx={{ alignItems: 'center', mt: -2 }}>
                                             <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                            {fNumber(p.assignedPoints * p.quantity) || 0}
+                                            {fNumber((p.assignedPoints * p.quantity) || 0)}
                                         </Label>
                                     </TableCell>
                                 </TableRow>
@@ -112,7 +112,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                                                 <Box sx={{ mt: -3 }}>
                                                     <Label color="success" sx={{ alignItems: 'center' }}>
                                                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                                        {fNumber(p?.assignedPoints) || 0}
+                                                        {fNumber(p?.assignedPoints || 0)}
                                                     </Label>
                                                 </Box>
                                                 <Typography variant="subtitle2" sx={{ ml: 1, mt: -3 }}>
@@ -129,7 +129,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                                                 <Box sx={{ mt: -3 }}>
                                                     <Label color="info" sx={{ alignItems: 'center' }}>
                                                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                                        {fNumber(p.assignedPoints * p.quantity) || 0}
+                                                        {fNumber((p.assignedPoints * p.quantity) || 0)}
                                                     </Label>
                                                 </Box>
                                             </Box>
@@ -151,7 +151,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                             <TableCell align="left" sx={{ p: 0 }}>
                                 <Label color="info" sx={{ alignItems: 'center', mt: -1 }}>
                                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                    {fNumber(totalPoints) || 0}
+                                    {fNumber(totalPoints || 0)}
                                 </Label>
                             </TableCell>
                         </TableRow>
@@ -165,7 +165,7 @@ export function StoreProductConfirmCheckoutTable({ listMappedProducts }) {
                                 </Typography>
                                 <Label color="info" sx={{ alignItems: 'center', mt: 0 }}>
                                     <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                                    <p>{fNumber(totalPoints) || 0}</p>
+                                    <p>{fNumber(totalPoints || 0)}</p>
                                 </Label>
                             </TableCell>
                         </TableRow>

@@ -26,12 +26,14 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 
 import { StoreProductConfirmCheckoutTable } from 'src/sections/store-product/store-product-confirm-checkout-table';
+import { ShowRewardPointsLabel } from 'src/sections/user/view/show-reward-points-label';
 
 import { LoadingContext } from 'src/auth/context/loading-context';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fieldsRewardStoreProductSelectionCarts } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
 
 import { CartItem } from './cart-item';
+
 
 // ----------------------------------------------------------------------
 
@@ -285,7 +287,8 @@ export function CartsDrawer({ sx, ...other }) {
           <Typography variant="subtitle2" sx={{ color: 'text.secondary', mr: 1 }}>
             Available Points:
           </Typography>
-          {totalAvailablePoints > 0 ? (
+          <ShowRewardPointsLabel totalAvailablePoints={totalAvailablePoints} />
+          {/* {totalAvailablePoints > 0 ? (
             <Label color="success" sx={{ alignItems: 'center' }}>
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
               {totalAvailablePoints}
@@ -294,7 +297,7 @@ export function CartsDrawer({ sx, ...other }) {
             <Label color="error">
               0
             </Label>
-          )}
+          )} */}
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           <Typography
@@ -311,7 +314,7 @@ export function CartsDrawer({ sx, ...other }) {
               sx={{ alignItems: 'center' }}
             >
               <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
-              {totalCartPoints}
+              {fNumber(totalCartPoints || 0)}
             </Label>
           ) : (
             <Label color="error">

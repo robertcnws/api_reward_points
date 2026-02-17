@@ -151,7 +151,7 @@ export function CartItem({
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {points}
+                {fNumber(points || 0)}
               </Label>
             </Box>
           )}
@@ -210,7 +210,7 @@ export function CartItem({
               {totalPoints > 0 ? (
                 <Label color="info" sx={{ alignItems: 'center' }}>
                   <Iconify icon="streamline-cyber-color:bookmark-favorite-star" />
-                  TOTAL: {totalPoints}
+                  TOTAL: {fNumber(totalPoints || 0)}
                 </Label>
               ) : (
                 <Label color="error">

@@ -149,7 +149,7 @@ export function StoreProductDetailsSummary({
 
       <Label color="success" sx={{ alignItems: 'center', fontSize: 20 }}>
         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-        {fNumber(price) || 0}
+        {fNumber(price || 0)}
       </Label>
     </Box>
   );

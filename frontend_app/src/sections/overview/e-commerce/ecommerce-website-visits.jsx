@@ -5,10 +5,19 @@ import CardHeader from '@mui/material/CardHeader';
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { Chart, useChart } from 'src/components/chart';
+import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-export function EcommerceWebsiteVisits({ title, metricUnit, subheader, chart, ...other }) {
+export function EcommerceWebsiteVisits({
+  title,
+  metricUnit,
+  subheader,
+  selectedYear,
+  setSelectedYear,
+  chart,
+  ...other
+}) {
   const theme = useTheme();
 
   const chartColors = chart.colors ?? [
@@ -56,9 +65,33 @@ export function EcommerceWebsiteVisits({ title, metricUnit, subheader, chart, ..
     ...chart.options,
   });
 
+  const currentYear = new Date().getFullYear();
+
+  const arrayYears = [currentYear, currentYear - 1, currentYear - 2];
+
   return (
     <Card {...other}>
-      <CardHeader title={title} subheader={subheader} />
+      <CardHeader
+        title={title}
+        subheader={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle2">Year:</Typography>
+
+            <FormControl size="small" sx={{ minWidth: 110 }}>
+              <Select
+                value={selectedYear ?? currentYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {arrayYears.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        }
+      />
       <Chart
         type="bar"
         series={chart.series}

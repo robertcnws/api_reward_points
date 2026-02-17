@@ -28,6 +28,8 @@ export const CONFIG = {
   permissions: {
     customerportal: {
       canSeeItemsInStock: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_STOCK ?? '',
+      canSeeItemsInQuote: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_QUOTE ?? '',
+      canSeeItemsInOrders: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_ORDERS ?? '',
     }
   },
   dealerportal: {

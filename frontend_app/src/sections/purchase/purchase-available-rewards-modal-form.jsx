@@ -18,6 +18,7 @@ import { Iconify } from 'src/components/iconify';
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fNumber } from 'src/utils/format-number';
 import { StoreProductFolderItemCarousel } from '../store-product/store-product-folder-item-carousel';
+import { ShowRewardPointsLabel } from '../user/view/show-reward-points-label';
 
 // ----------------------------------------------------------------------
 
@@ -34,7 +35,7 @@ export function PurchaseAvailableRewardsModalForm({
       return (
         <Label color="success" sx={{ alignItems: 'center' }}>
           <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-          {assignedPoints}
+          {fNumber(assignedPoints || 0)}
         </Label>
       );
     }
@@ -70,14 +71,15 @@ export function PurchaseAvailableRewardsModalForm({
             <Typography variant="subtitle2" sx={{ color: 'text.secondary', mr: 1 }}>
               Client Points:
             </Typography>
-            {totalAvailablePoints > 0 ? (
+            <ShowRewardPointsLabel totalAvailablePoints={totalAvailablePoints} />
+            {/* {totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {totalAvailablePoints}
               </Label>
             ) : (
               <Label color="error">0</Label>
-            )}
+            )} */}
           </Box>
         </Box>
       </DialogTitle>

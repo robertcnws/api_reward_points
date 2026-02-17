@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useContext } from 'react';
+import { fNumber } from 'src/utils/format-number';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -28,6 +29,7 @@ import { LoadingContext } from 'src/auth/context/loading-context';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
+
 
 
 // ----------------------------------------------------------------------
@@ -157,7 +159,7 @@ export function UserPendingTableRow({
             {totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                {totalAvailablePoints || 0}
+                {fNumber(totalAvailablePoints || 0)}
               </Label>
             ) : (
               <Label color="error">
@@ -236,7 +238,7 @@ export function UserPendingTableRow({
                     Reward Points: {totalAvailablePoints > 0 ? (
                       <Label color="success">
                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
-                        {totalAvailablePoints || 0}
+                        {fNumber(totalAvailablePoints || 0)}
                       </Label>
                     ) : (
                       <Label color="error">

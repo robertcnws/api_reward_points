@@ -388,7 +388,7 @@ def get_rewards_points(user, description=None):
     if user.customer_id:
         logger.info(f"User {user.username} has customer_id {user.customer_id} for rewards points sync.")
         
-        # local_sales_orders = list(RewardSalesOrder.objects(user=user, checked_for_rewards=False).all())
+        local_sales_orders = list(RewardSalesOrder.objects(user=user, checked_for_rewards=False).all())
         local_sales_orders = list(RewardSalesOrder.objects(user=user).all())
         local_invoices_ini = list(RewardInvoice.objects(customer_id=user.customer_id).all())
         so_ids = [so.id for so in local_sales_orders]
@@ -422,9 +422,9 @@ def get_rewards_points(user, description=None):
         if new_invoices_by_so_ids:
             # Evitar duplicados entre new_invoices y new_invoices_by_so_ids
             old_invoices = _merge_invoices(local_invoices, new_invoices_by_so_ids)
-            # for so in local_sales_orders:
-            #     so.checked_for_rewards = True
-            #     so.save()        
+            for so in local_sales_orders:
+                so.checked_for_rewards = True
+                so.save()        
         
         response_inv, response_so = _fetch_remote_data(payload_inv, payload_sales_orders=payload_so)
         if response_inv is None:

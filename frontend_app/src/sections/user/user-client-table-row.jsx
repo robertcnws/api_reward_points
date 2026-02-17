@@ -32,6 +32,7 @@ import { UserQuickEditForm } from './user-quick-edit-form';
 import { UserQuickChangePasswordForm } from './user-quick-change-password';
 import { UserManagePointsModalForm } from './user-manage-points-modal-form';
 import { UserClientSetPermissionsModal } from './user-client-set-permissions-modal';
+import { ShowRewardPointsLabel } from './view/show-reward-points-label';
 
 
 
@@ -189,14 +190,15 @@ function RowComponent({
             onClick={quickEdit.onTrue}
             align="center"
           >
-            {row.totalAvailablePoints > 0 ? (
+            {/* {row.totalAvailablePoints > 0 ? (
               <Label color="success" sx={{ alignItems: 'center' }}>
                 <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                 {row.totalAvailablePoints || 0}
               </Label>
             ) : (
               <Label color="error">0</Label>
-            )}
+            )} */}
+            <ShowRewardPointsLabel totalAvailablePoints={row.totalAvailablePoints} />
           </TableCell>
 
           <TableCell sx={{ whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={quickEdit.onTrue}>
@@ -326,14 +328,15 @@ function RowComponent({
                   </Typography>
                   <Typography variant="body2">
                     Reward Points:{' '}
-                    {row.totalAvailablePoints > 0 ? (
+                    <ShowRewardPointsLabel totalAvailablePoints={row.totalAvailablePoints} />
+                    {/* {row.totalAvailablePoints > 0 ? (
                       <Label color="success">
                         <Iconify icon="streamline-cyber-color:bookmark-favorite-star" sx={{ mr: 0.5 }} />
                         {row.totalAvailablePoints || 0}
                       </Label>
                     ) : (
                       <Label color="error">0</Label>
-                    )}
+                    )} */}
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                     <Typography variant="body2">

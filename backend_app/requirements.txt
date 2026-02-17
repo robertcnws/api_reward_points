@@ -49,4 +49,5 @@ vine
 wcwidth
 websockets
 whitenoise
+xhtml2pdf
 zipstream-new
