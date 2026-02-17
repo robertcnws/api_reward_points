@@ -46,7 +46,7 @@ export function useAllDealerportalOrders(fieldsDescriptor, ownerId=null) {
       clientName: 'Dealerportal',
     },
     variables: { ownerId },
-    // skip: !ownerId,
+    // skip: !ownerId, // We might want to fetch all orders if ownerId is not provided, so we won't skip the query based on ownerId
   });
 
   const value = data?.allDealerportalOrders || [];
