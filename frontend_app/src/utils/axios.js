@@ -297,7 +297,8 @@ export const wsEndpoints = {
   },
   users: {
     notificationUsers: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/notification-users/`,
-    all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`
+    all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/users/`,
+    byUsername: (username) => `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/user-by-username/${username}/`,
   },
   userRoles: {
     all: `${CONFIG.wsProtocol}://${CONFIG.apiHost}/api/users/ws/user-roles/`

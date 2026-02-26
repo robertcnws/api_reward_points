@@ -18,7 +18,17 @@ from api_authorization.models import LoginUser
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
+import re
 import api_users.signal_events as signal_events
+
+# ----------------------------
+# helpers
+# ----------------------------
+def _safe_group_username(username: str) -> str:
+    # Channels group name: letras/números/._- (y <= 100 chars)
+    u = (username or "").strip().lower()
+    u = re.sub(r"[^a-z0-9_\-\.]", "_", u)
+    return u[:80]
 
 ##########################################################################
 # SystemPermission
@@ -122,6 +132,77 @@ def user_deleted(sender, document, **kwargs):
     async_to_sync(channel_layer.group_send)('user', serialize_datetime(event))
     # _emit_reward_client_event_for_user(document, 'deleted')
     
+
+# ----------------------------
+# User by username (NEW)
+# ----------------------------
+def user_by_username_saved(sender, document, **kwargs):
+    created = kwargs.get("created", False)
+    channel_layer = get_channel_layer()
+
+    username = getattr(document, "username", None)
+    if not username:
+        return
+
+    # construye el mismo payload que ya usas para "user"
+    full_selection = transform_data_to_mongo(document.user_role, exclude_fields=["password"])
+    full_selection = camelize(full_selection)
+
+    full_selection_list_permissions = []
+    for perm in (document.customerportal_permissions or []):
+        perm_data = transform_data_to_mongo(perm, exclude_fields=["password"])
+        full_selection_list_permissions.append(camelize(perm_data))
+
+    event = signal_events.event_user(
+        type="created" if created else "updated",
+        document=document,
+        full_selection=full_selection,
+        full_selection_list_permissions=full_selection_list_permissions,
+    )
+
+    group_name = f"user_by_username.{_safe_group_username(username)}"
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            "type": "user_by_username_update",
+            "message": serialize_datetime(event),
+        },
+    )
+
+
+def user_by_username_deleted(sender, document, **kwargs):
+    channel_layer = get_channel_layer()
+
+    username = getattr(document, "username", None)
+    if not username:
+        return
+
+    full_selection = transform_data_to_mongo(document.user_role, exclude_fields=["password"])
+    full_selection = camelize(full_selection)
+
+    full_selection_list_permissions = []
+    for perm in (document.customerportal_permissions or []):
+        perm_data = transform_data_to_mongo(perm, exclude_fields=["password"])
+        full_selection_list_permissions.append(camelize(perm_data))
+
+    event = signal_events.event_user(
+        type="deleted",
+        document=document,
+        full_selection=full_selection,
+        full_selection_list_permissions=full_selection_list_permissions,
+    )
+
+    group_name = f"user_by_username.{_safe_group_username(username)}"
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            "type": "user_by_username_update",
+            "message": serialize_datetime(event),
+        },
+    )
+    
     
 ##########################################################################    
 # Notification User
@@ -217,3 +298,5 @@ signals.post_save.connect(notification_user_saved, sender=NotificationUser)
 signals.post_delete.connect(notification_user_deleted, sender=NotificationUser)
 signals.post_save.connect(system_permission_saved, sender=SystemPermission)
 signals.post_delete.connect(system_permission_deleted, sender=SystemPermission)
+signals.post_save.connect(user_by_username_saved, sender=LoginUser)
+signals.post_delete.connect(user_by_username_deleted, sender=LoginUser)

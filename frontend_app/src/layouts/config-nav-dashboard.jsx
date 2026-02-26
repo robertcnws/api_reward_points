@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Box, Typography } from '@mui/material';
 
@@ -76,58 +76,41 @@ const ICONS = {
   salesorder: icon('ic-salesorder'),
 };
 
-const userLogged = JSON.parse(sessionStorage.getItem('userLogged'));
-
-const userRole = userLogged?.data?.user_role?.name;
-
-const customerportalPermissions = userLogged?.data?.customerportal_permissions || [];
-
-const keyPermissions = customerportalPermissions?.map(permission => permission.key) || [];
-
-const canSeeItemsInStock = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInStock);
-
-const canSeeItemsInQuote = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInQuote);
-
-const canSeeItemsInOrders = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInOrders);
-
-
 // const { countLostItems } = useDataContext();
 
 // ----------------------------------------------------------------------
 
-export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavMini) => [
-  // export const navData = (countLostItems) => [
-  /**
-   * Overview
-   */
-  {
-    subheader: 'Overview',
-    items: [
-      {
-        key: `${paths.dashboard.general.analytics}-1`,
-        title: (
-          <Box component="span" id={isClient(userRole) ? '' : 'analytics-link'}>
-            <Typography
-              variant={isNavMini ? 'caption' : 'subtitle2'}
-              sx={{
-                mr: 1,
-                color: 'text.secondary',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              {isClient(userRole) ? 'Dashboard' : 'Analytics'}
-            </Typography>
-          </Box>
-        ),
-        path: paths.dashboard.general.analytics,
-        icon: ICONS.analytics
-      },
-      ...(userLogged && (isClient(userRole) || isOfficeStaff(userRole)) ? [
+export function navData({
+  userLogged,
+  customerportalPermissions, 
+  loadedPendingClients, 
+  newPurchases, 
+  oldPurchases, 
+  isNavMini
+}) {
+
+  const userRole = userLogged?.data?.user_role?.name;
+
+  const keyPermissions = customerportalPermissions?.map(permission => permission.key) || [];
+
+  const canSeeItemsInStock = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInStock);
+
+  const canSeeItemsInQuote = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInQuote);
+
+  const canSeeItemsInOrders = keyPermissions.includes(CONFIG.permissions.customerportal.canSeeItemsInOrders);
+
+  return [
+    // export const navData = (countLostItems) => [
+    /**
+     * Overview
+     */
+    {
+      subheader: 'Overview',
+      items: [
         {
-          key: `${paths.dashboard.storeProduct.root}-2`,
+          key: `${paths.dashboard.general.analytics}-1`,
           title: (
-            <Box component="span" id='reward-store-link'>
+            <Box component="span" id={isClient(userRole) ? '' : 'analytics-link'}>
               <Typography
                 variant={isNavMini ? 'caption' : 'subtitle2'}
                 sx={{
@@ -137,79 +120,18 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                   alignItems: 'center',
                 }}
               >
-                Rewards Store
+                {isClient(userRole) ? 'Dashboard' : 'Analytics'}
               </Typography>
             </Box>
           ),
-          path: paths.dashboard.storeProduct.root,
-          icon: ICONS.store,
+          path: paths.dashboard.general.analytics,
+          icon: ICONS.analytics
         },
-        ...(userLogged && (isClient(userRole)) ? [
+        ...(userLogged && (isClient(userRole) || isOfficeStaff(userRole)) ? [
           {
-            key: `${paths.dashboard.purchase.root}-3`,
+            key: `${paths.dashboard.storeProduct.root}-2`,
             title: (
-              <React.Fragment key='purchase-orders-fragment'>
-                <Box component="span" key='purchase-orders' id='my-rewards-orders-link'
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: isNavMini ? 'center' : 'flex-start',
-                  }}
-                >
-                  <Typography
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    My Reward Orders
-                  </Typography>
-                  {(newPurchases?.length > 0 && !isNavMini) && (
-                    <Box
-                      key='purchase-orders-count'
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'row'
-                      }}>
-                      {newPurchases.length > 0 && (
-                        <Label color="error" sx={{ ml: 1, gap: 0 }}>
-                          {newPurchases.length}
-                          <Typography variant="subtitle2" sx={{ ml: 1 }}>
-                            NEW
-                          </Typography>
-                        </Label>
-                      )}
-                      {oldPurchases.length > 0 && (
-                        <Label color="info" sx={{ ml: 1, gap: 0 }}>
-                          {oldPurchases.length}
-                          <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
-                        </Label>
-                      )}
-                    </Box>
-                  )}
-                </Box>
-              </React.Fragment>
-            ),
-            path: paths.dashboard.purchase.root,
-            icon: ICONS.purchase,
-          },
-
-          // {
-          //   key: `${paths.dashboard.invoice.root}-2`,
-          //   title: "My Invoices",
-          //   path: paths.dashboard.invoice.root,
-          //   icon: ICONS.invoice,
-          // },
-          {
-            key: `${paths.dashboard.salesOrder.root}-2`,
-            title: (
-              <Box component="span" id='my-sales-orders-link'>
+              <Box component="span" id='reward-store-link'>
                 <Typography
                   variant={isNavMini ? 'caption' : 'subtitle2'}
                   sx={{
@@ -219,112 +141,19 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                     alignItems: 'center',
                   }}
                 >
-                  My Orders
+                  Rewards Store
                 </Typography>
               </Box>
             ),
-            path: paths.dashboard.salesOrder.root,
-            icon: ICONS.salesOrder,
+            path: paths.dashboard.storeProduct.root,
+            icon: ICONS.store,
           },
-        ] : []),
-      ] : []),
-    ],
-  },
-
-  ...(userLogged && (
-    listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) ||
-    canSeeItemsInStock ||
-    canSeeItemsInQuote ||
-    canSeeItemsInOrders
-  ) ? [
-
-    {
-      subheader: 'Dealerportal',
-      items: [
-        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInStock ? [
-          {
-            key: `${paths.dashboard.general.analytics}-1234`,
-            title: (
-              <Box component="span" id='stock-link'>
-                <Typography
-                  variant={isNavMini ? 'caption' : 'subtitle2'}
-                  sx={{
-                    mr: 1,
-                    color: 'text.secondary',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  Stock
-                </Typography>
-              </Box>
-            ),
-            path: paths.dashboard.itemgroup.root,
-            icon: ICONS.stock
-          },
-        ] : []),
-        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInQuote ? [
-          {
-            key: `${paths.dashboard.general.analytics}-12356`,
-            title: (
-              <Box component="span" id='stock-link'>
-                <Typography
-                  variant={isNavMini ? 'caption' : 'subtitle2'}
-                  sx={{
-                    mr: 1,
-                    color: 'text.secondary',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  Quotes
-                </Typography>
-              </Box>
-            ),
-            path: paths.dashboard.quote.root,
-            icon: ICONS.quote
-          },
-        ] : []),
-        ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInOrders ? [
-          {
-            key: `${paths.dashboard.general.analytics}-12367`,
-            title: (
-              <Box component="span" id='stock-link'>
-                <Typography
-                  variant={isNavMini ? 'caption' : 'subtitle2'}
-                  sx={{
-                    mr: 1,
-                    color: 'text.secondary',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  Orders
-                </Typography>
-              </Box>
-            ),
-            path: paths.dashboard.order.root,
-            icon: ICONS.salesorder
-          },
-        ] : []),
-      ],
-    },
-  ] : []),
-
-  ...(userLogged && !isClient(userRole) ? [
-    {
-      subheader: 'Management',
-      items: [
-        ...(userLogged && !isClient(userRole) ? [
-          ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
+          ...(userLogged && (isClient(userRole)) ? [
             {
-              key: `${paths.dashboard.user.root}-4`,
+              key: `${paths.dashboard.purchase.root}-3`,
               title: (
-                <React.Fragment key='users-all-fragment'>
-                  <Box
-                    component="span"
-                    key='users'
-                    id='users-link'
+                <React.Fragment key='purchase-orders-fragment'>
+                  <Box component="span" key='purchase-orders' id='my-rewards-orders-link'
                     sx={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -333,130 +162,39 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                     }}
                   >
                     <Typography
-                      key='users-title'
                       variant={isNavMini ? 'caption' : 'subtitle2'}
                       sx={{
                         mr: 1,
-                        color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
+                        color: 'text.secondary',
                         display: 'flex',
                         alignItems: 'center',
                       }}
                     >
-                      Clients
+                      My Reward Orders
                     </Typography>
-                    {(loadedPendingClients?.length > 0 && !isNavMini) && (
+                    {(newPurchases?.length > 0 && !isNavMini) && (
                       <Box
-                        key='pending-users-count'
+                        key='purchase-orders-count'
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexDirection: 'row'
                         }}>
-                        <Label
-                          key='pending-users-label'
-                          color="error"
-                          sx={{ ml: 1, gap: 0 }}
-                        >
-                          {loadedPendingClients?.length}
-                          <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
-                          <Typography
-                            key='pending-users-label-text'
-                            variant="subtitle2"
-                            sx={{ ml: 1 }}
-                          >
-                            Pending
-                          </Typography>
-                        </Label>
-                      </Box>
-                    )}
-                  </Box>
-                </React.Fragment>
-              ),
-              path: paths.dashboard.client.list,
-              icon: ICONS.client,
-              children: [
-                // {
-                //   key: `${paths.dashboard.user.pending}-5`,
-                //   title: (
-                //     <React.Fragment key='pending-approval-users-fragment'>
-                //       <Box
-                //         key='pending-approval-users'
-                //         component="span"
-                //         sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                //         <Typography
-                //           variant="subtitle2"
-                //           sx={{
-                //             mr: 1,
-                //             color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
-                //           }}
-                //         >
-                //           Pending Approval
-                //         </Typography>
-                //         {loadedPendingClients?.length > 0 && (
-                //           <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
-                //             {loadedPendingClients?.length}
-                //           </Label>
-                //         )}
-                //       </Box>
-                //     </React.Fragment>
-                //   ),
-                //   path: paths.dashboard.user.pending,
-                // },
-                {
-                  key: `${paths.dashboard.user.client}-6`,
-                  title: 'All Clients',
-                  path: paths.dashboard.client.list,
-                }],
-            },
-
-          ] : []),
-          ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
-            {
-              key: `${paths.dashboard.purchase.root}-9`,
-              title: (
-                <React.Fragment key='purchases-all-fragment'>
-                  <Box
-                    key='purchases-all'
-                    component="span"
-                    id='reward-orders-link'
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: isNavMini ? 'center' : 'flex-start',
-                    }}
-                  >
-                    <Typography
-                      key='purchase-orders-title'
-                      variant={isNavMini ? 'caption' : 'subtitle2'}
-                      sx={{
-                        mr: 1,
-                        color: 'primary',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      Reward Orders
-                    </Typography>
-                    {([...newPurchases]?.length > 0 && !isNavMini) && (
-                      <Box
-                        key='purchase-all-orders-count'
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexDirection: 'row',
-                        }}
-                      >
-                        <Label
-                          key='purchase-all-orders-label'
-                          color="info"
-                          sx={{ ml: 1, gap: 0 }}
-                        >
-                          {[...newPurchases]?.length}
-                          <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
-                        </Label>
+                        {newPurchases.length > 0 && (
+                          <Label color="error" sx={{ ml: 1, gap: 0 }}>
+                            {newPurchases.length}
+                            <Typography variant="subtitle2" sx={{ ml: 1 }}>
+                              NEW
+                            </Typography>
+                          </Label>
+                        )}
+                        {oldPurchases.length > 0 && (
+                          <Label color="info" sx={{ ml: 1, gap: 0 }}>
+                            {oldPurchases.length}
+                            <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
+                          </Label>
+                        )}
                       </Box>
                     )}
                   </Box>
@@ -465,94 +203,322 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
               path: paths.dashboard.purchase.root,
               icon: ICONS.purchase,
             },
-          ] : []),
-          {
-            key: `${paths.dashboard.purchase.checkout}-9`,
-            title: (
-              <React.Fragment key='purchases-checkout-fragment'>
-                <Box
-                  key='purchases-checkout'
-                  id='checkout-link'
-                  component="span"
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: isNavMini ? 'center' : 'flex-start',
-                  }}
-                >
+
+            // {
+            //   key: `${paths.dashboard.invoice.root}-2`,
+            //   title: "My Invoices",
+            //   path: paths.dashboard.invoice.root,
+            //   icon: ICONS.invoice,
+            // },
+            {
+              key: `${paths.dashboard.salesOrder.root}-2`,
+              title: (
+                <Box component="span" id='my-sales-orders-link'>
                   <Typography
-                    key='purchase-checkout-title'
                     variant={isNavMini ? 'caption' : 'subtitle2'}
                     sx={{
                       mr: 1,
-                      color: 'primary',
+                      color: 'text.secondary',
                       display: 'flex',
                       alignItems: 'center',
                     }}
                   >
-                    Checkout
+                    My Orders
                   </Typography>
                 </Box>
-              </React.Fragment>
-            ),
-            path: paths.dashboard.purchase.checkout,
-            icon: ICONS.checkout,
-          },
+              ),
+              path: paths.dashboard.salesOrder.root,
+              icon: ICONS.salesOrder,
+            },
+          ] : []),
         ] : []),
-      ]
+      ],
     },
-  ] : []),
-  ...(userLogged && isAdministrator(userRole) ? [
-    {
-      subheader: 'Settings',
-      items: [
-        ...(userLogged && !isClient(userRole) ? [
-          {
-            key: `${paths.dashboard.storeProduct.root}-10`,
-            title: (
-              <Box
-                component="span"
-                id='rewards-link'
-              >
-                <Typography
-                  variant={isNavMini ? 'caption' : 'subtitle2'}
-                  sx={{
-                    mr: 1,
-                    color: 'text.secondary',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  Rewards
-                </Typography>
-              </Box>
-            ),
-            path: paths.dashboard.storeProduct.root,
-            icon: ICONS.item,
-            children: [
+
+    ...(userLogged && (
+      listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) ||
+      canSeeItemsInStock ||
+      canSeeItemsInQuote ||
+      canSeeItemsInOrders
+    ) ? [
+
+      {
+        subheader: 'Dealerportal',
+        items: [
+          ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInStock ? [
+            {
+              key: `${paths.dashboard.general.analytics}-1234`,
+              title: (
+                <Box component="span" id='stock-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Stock
+                  </Typography>
+                </Box>
+              ),
+              path: paths.dashboard.itemgroup.root,
+              icon: ICONS.stock
+            },
+          ] : []),
+          ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInQuote ? [
+            {
+              key: `${paths.dashboard.general.analytics}-12356`,
+              title: (
+                <Box component="span" id='stock-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Quotes
+                  </Typography>
+                </Box>
+              ),
+              path: paths.dashboard.quote.root,
+              icon: ICONS.quote
+            },
+          ] : []),
+          ...(listRolesAndSubroles(userRole).includes(CONFIG.roles.officeStaff) || canSeeItemsInOrders ? [
+            {
+              key: `${paths.dashboard.general.analytics}-12367`,
+              title: (
+                <Box component="span" id='stock-link'>
+                  <Typography
+                    variant={isNavMini ? 'caption' : 'subtitle2'}
+                    sx={{
+                      mr: 1,
+                      color: 'text.secondary',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    Orders
+                  </Typography>
+                </Box>
+              ),
+              path: paths.dashboard.order.root,
+              icon: ICONS.salesorder
+            },
+          ] : []),
+        ],
+      },
+    ] : []),
+
+    ...(userLogged && !isClient(userRole) ? [
+      {
+        subheader: 'Management',
+        items: [
+          ...(userLogged && !isClient(userRole) ? [
+            ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
               {
-                key: `${paths.dashboard.storeProduct.list}-11`,
-                title: 'List',
-                path: paths.dashboard.storeProduct.list,
+                key: `${paths.dashboard.user.root}-4`,
+                title: (
+                  <React.Fragment key='users-all-fragment'>
+                    <Box
+                      component="span"
+                      key='users'
+                      id='users-link'
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: isNavMini ? 'center' : 'flex-start',
+                      }}
+                    >
+                      <Typography
+                        key='users-title'
+                        variant={isNavMini ? 'caption' : 'subtitle2'}
+                        sx={{
+                          mr: 1,
+                          color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        Clients
+                      </Typography>
+                      {(loadedPendingClients?.length > 0 && !isNavMini) && (
+                        <Box
+                          key='pending-users-count'
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'row'
+                          }}>
+                          <Label
+                            key='pending-users-label'
+                            color="error"
+                            sx={{ ml: 1, gap: 0 }}
+                          >
+                            {loadedPendingClients?.length}
+                            <Iconify icon='mdi:account-pending' width={20} height={20} sx={{ ml: 1 }} />
+                            <Typography
+                              key='pending-users-label-text'
+                              variant="subtitle2"
+                              sx={{ ml: 1 }}
+                            >
+                              Pending
+                            </Typography>
+                          </Label>
+                        </Box>
+                      )}
+                    </Box>
+                  </React.Fragment>
+                ),
+                path: paths.dashboard.client.list,
+                icon: ICONS.client,
+                children: [
+                  // {
+                  //   key: `${paths.dashboard.user.pending}-5`,
+                  //   title: (
+                  //     <React.Fragment key='pending-approval-users-fragment'>
+                  //       <Box
+                  //         key='pending-approval-users'
+                  //         component="span"
+                  //         sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  //         <Typography
+                  //           variant="subtitle2"
+                  //           sx={{
+                  //             mr: 1,
+                  //             color: loadedPendingClients?.length > 0 ? 'error.main' : 'text.secondary',
+                  //           }}
+                  //         >
+                  //           Pending Approval
+                  //         </Typography>
+                  //         {loadedPendingClients?.length > 0 && (
+                  //           <Label color="error" sx={{ ml: 1 }} key='pending-approval-users-count'>
+                  //             {loadedPendingClients?.length}
+                  //           </Label>
+                  //         )}
+                  //       </Box>
+                  //     </React.Fragment>
+                  //   ),
+                  //   path: paths.dashboard.user.pending,
+                  // },
+                  {
+                    key: `${paths.dashboard.user.client}-6`,
+                    title: 'All Clients',
+                    path: paths.dashboard.client.list,
+                  }],
               },
-              // {
-              //   key: `${paths.dashboard.storeProduct.attachments}-12`,
-              //   title: 'Attachments',
-              //   path: paths.dashboard.storeProduct.attachments,
-              // },
+
+            ] : []),
+            ...(userLogged && (isAdministrator(userRole) || isOfficeStaff(userRole)) ? [
               {
-                key: `${paths.dashboard.storeProduct.new}-13`,
-                title: 'Create',
-                path: paths.dashboard.storeProduct.new,
+                key: `${paths.dashboard.purchase.root}-9`,
+                title: (
+                  <React.Fragment key='purchases-all-fragment'>
+                    <Box
+                      key='purchases-all'
+                      component="span"
+                      id='reward-orders-link'
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: isNavMini ? 'center' : 'flex-start',
+                      }}
+                    >
+                      <Typography
+                        key='purchase-orders-title'
+                        variant={isNavMini ? 'caption' : 'subtitle2'}
+                        sx={{
+                          mr: 1,
+                          color: 'primary',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        Reward Orders
+                      </Typography>
+                      {([...newPurchases]?.length > 0 && !isNavMini) && (
+                        <Box
+                          key='purchase-all-orders-count'
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'row',
+                          }}
+                        >
+                          <Label
+                            key='purchase-all-orders-label'
+                            color="info"
+                            sx={{ ml: 1, gap: 0 }}
+                          >
+                            {[...newPurchases]?.length}
+                            <Iconify icon='icon-park:shopping-cart-add' width={20} height={20} sx={{ ml: 1 }} />
+                          </Label>
+                        </Box>
+                      )}
+                    </Box>
+                  </React.Fragment>
+                ),
+                path: paths.dashboard.purchase.root,
+                icon: ICONS.purchase,
               },
-            ],
-          },
+            ] : []),
+            {
+              key: `${paths.dashboard.purchase.checkout}-9`,
+              title: (
+                <React.Fragment key='purchases-checkout-fragment'>
+                  <Box
+                    key='purchases-checkout'
+                    id='checkout-link'
+                    component="span"
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: isNavMini ? 'center' : 'flex-start',
+                    }}
+                  >
+                    <Typography
+                      key='purchase-checkout-title'
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'primary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Checkout
+                    </Typography>
+                  </Box>
+                </React.Fragment>
+              ),
+              path: paths.dashboard.purchase.checkout,
+              icon: ICONS.checkout,
+            },
+          ] : []),
+        ]
+      },
+    ] : []),
+    ...(userLogged && isAdministrator(userRole) ? [
+      {
+        subheader: 'Settings',
+        items: [
           ...(userLogged && !isClient(userRole) ? [
             {
-              key: `${paths.dashboard.pointsSettings.root}-14`,
+              key: `${paths.dashboard.storeProduct.root}-10`,
               title: (
-                <Box component="span" id='points-settings-link'>
+                <Box
+                  component="span"
+                  id='rewards-link'
+                >
                   <Typography
                     variant={isNavMini ? 'caption' : 'subtitle2'}
                     sx={{
@@ -562,156 +528,195 @@ export const navData = (loadedPendingClients, newPurchases, oldPurchases, isNavM
                       alignItems: 'center',
                     }}
                   >
-                    Points Settings
+                    Rewards
                   </Typography>
                 </Box>
               ),
-              path: paths.dashboard.pointsSettings.root,
-              icon: ICONS.pointsSettings,
+              path: paths.dashboard.storeProduct.root,
+              icon: ICONS.item,
               children: [
                 {
-                  key: `${paths.dashboard.pointsSettings.list}-15`,
+                  key: `${paths.dashboard.storeProduct.list}-11`,
                   title: 'List',
-                  path: paths.dashboard.pointsSettings.list,
+                  path: paths.dashboard.storeProduct.list,
                 },
+                // {
+                //   key: `${paths.dashboard.storeProduct.attachments}-12`,
+                //   title: 'Attachments',
+                //   path: paths.dashboard.storeProduct.attachments,
+                // },
                 {
-                  key: `${paths.dashboard.pointsSettings.new}-16`,
+                  key: `${paths.dashboard.storeProduct.new}-13`,
                   title: 'Create',
-                  path: paths.dashboard.pointsSettings.new,
+                  path: paths.dashboard.storeProduct.new,
                 },
               ],
             },
-            {
-              key: `${paths.dashboard.user.root}-2`,
-              title: (
-                <Box component="span" id='my-users-user-link'>
-                  <Typography
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Users
-                  </Typography>
-                </Box>
-              ),
-              path: paths.dashboard.user.root,
-              icon: ICONS.user,
-              children: [
-                {
-                  key: `${paths.dashboard.user.list}-7`,
-                  title: 'Approved Users',
-                  path: paths.dashboard.user.list,
-                },
-                {
-                  key: `${paths.dashboard.user.new}-8`,
-                  title: 'Create',
-                  path: paths.dashboard.user.new,
-                },
-              ],
-            },
-            {
-              key: `${paths.dashboard.role.root}-171`,
-              title: (
-                <Box component="span" id='roles-link'>
-                  <Typography
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Roles
-                  </Typography>
-                </Box>
-              ),
-              path: paths.dashboard.role.root,
-              icon: ICONS.access,
-              children: [
-                {
-                  key: `${paths.dashboard.role.list}-18`,
-                  title: 'List',
-                  path: paths.dashboard.role.list,
-                },
-                {
-                  key: `${paths.dashboard.role.new}-19`,
-                  title: 'Create',
-                  path: paths.dashboard.role.new,
-                },
-              ],
-            },
-            {
-              key: `${paths.dashboard.permission.root}-172`,
-              title: (
-                <Box component="span" id='roles-link'>
-                  <Typography
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Permissions
-                  </Typography>
-                </Box>
-              ),
-              path: paths.dashboard.permission.root,
-              icon: ICONS.key,
-              children: [
-                {
-                  key: `${paths.dashboard.permission.list}-18`,
-                  title: 'List',
-                  path: paths.dashboard.permission.list,
-                },
-                {
-                  key: `${paths.dashboard.permission.new}-19`,
-                  title: 'Create',
-                  path: paths.dashboard.permission.new,
-                },
-              ],
-            },
-            {
-              key: `${paths.dashboard.functionality.root}-171`,
-              title: (
-                <Box component="span" id='functionality-link'>
-                  <Typography
-                    variant={isNavMini ? 'caption' : 'subtitle2'}
-                    sx={{
-                      mr: 1,
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Functionalities
-                  </Typography>
-                </Box>
-              ),
-              path: paths.dashboard.functionality.root,
-              icon: ICONS.functionality,
-              children: [
-                {
-                  key: `${paths.dashboard.functionality.list}-18`,
-                  title: 'List',
-                  path: paths.dashboard.functionality.list,
-                },
-                {
-                  key: `${paths.dashboard.functionality.new}-19`,
-                  title: 'Create',
-                  path: paths.dashboard.functionality.new,
-                },
-              ],
-            },
+            ...(userLogged && !isClient(userRole) ? [
+              {
+                key: `${paths.dashboard.pointsSettings.root}-14`,
+                title: (
+                  <Box component="span" id='points-settings-link'>
+                    <Typography
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Points Settings
+                    </Typography>
+                  </Box>
+                ),
+                path: paths.dashboard.pointsSettings.root,
+                icon: ICONS.pointsSettings,
+                children: [
+                  {
+                    key: `${paths.dashboard.pointsSettings.list}-15`,
+                    title: 'List',
+                    path: paths.dashboard.pointsSettings.list,
+                  },
+                  {
+                    key: `${paths.dashboard.pointsSettings.new}-16`,
+                    title: 'Create',
+                    path: paths.dashboard.pointsSettings.new,
+                  },
+                ],
+              },
+              {
+                key: `${paths.dashboard.user.root}-2`,
+                title: (
+                  <Box component="span" id='my-users-user-link'>
+                    <Typography
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Users
+                    </Typography>
+                  </Box>
+                ),
+                path: paths.dashboard.user.root,
+                icon: ICONS.user,
+                children: [
+                  {
+                    key: `${paths.dashboard.user.list}-7`,
+                    title: 'Approved Users',
+                    path: paths.dashboard.user.list,
+                  },
+                  {
+                    key: `${paths.dashboard.user.new}-8`,
+                    title: 'Create',
+                    path: paths.dashboard.user.new,
+                  },
+                ],
+              },
+              {
+                key: `${paths.dashboard.role.root}-171`,
+                title: (
+                  <Box component="span" id='roles-link'>
+                    <Typography
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Roles
+                    </Typography>
+                  </Box>
+                ),
+                path: paths.dashboard.role.root,
+                icon: ICONS.access,
+                children: [
+                  {
+                    key: `${paths.dashboard.role.list}-18`,
+                    title: 'List',
+                    path: paths.dashboard.role.list,
+                  },
+                  {
+                    key: `${paths.dashboard.role.new}-19`,
+                    title: 'Create',
+                    path: paths.dashboard.role.new,
+                  },
+                ],
+              },
+              {
+                key: `${paths.dashboard.permission.root}-172`,
+                title: (
+                  <Box component="span" id='roles-link'>
+                    <Typography
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Permissions
+                    </Typography>
+                  </Box>
+                ),
+                path: paths.dashboard.permission.root,
+                icon: ICONS.key,
+                children: [
+                  {
+                    key: `${paths.dashboard.permission.list}-18`,
+                    title: 'List',
+                    path: paths.dashboard.permission.list,
+                  },
+                  {
+                    key: `${paths.dashboard.permission.new}-19`,
+                    title: 'Create',
+                    path: paths.dashboard.permission.new,
+                  },
+                ],
+              },
+              {
+                key: `${paths.dashboard.functionality.root}-171`,
+                title: (
+                  <Box component="span" id='functionality-link'>
+                    <Typography
+                      variant={isNavMini ? 'caption' : 'subtitle2'}
+                      sx={{
+                        mr: 1,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Functionalities
+                    </Typography>
+                  </Box>
+                ),
+                path: paths.dashboard.functionality.root,
+                icon: ICONS.functionality,
+                children: [
+                  {
+                    key: `${paths.dashboard.functionality.list}-18`,
+                    title: 'List',
+                    path: paths.dashboard.functionality.list,
+                  },
+                  {
+                    key: `${paths.dashboard.functionality.new}-19`,
+                    title: 'Create',
+                    path: paths.dashboard.functionality.new,
+                  },
+                ],
+              },
+            ] : []),
           ] : []),
-        ] : []),
-      ]
-    }
-  ] : []),
-];
+        ]
+      }
+    ] : []),
+  ];
+}

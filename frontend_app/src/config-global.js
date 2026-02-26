@@ -27,9 +27,9 @@ export const CONFIG = {
   },
   permissions: {
     customerportal: {
-      canSeeItemsInStock: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_STOCK ?? '',
-      canSeeItemsInQuote: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_QUOTE ?? '',
-      canSeeItemsInOrders: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_ORDERS ?? '',
+      canSeeItemsInStock: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_STOCK || 'can_see_items_in_stock',
+      canSeeItemsInQuote: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_QUOTE || 'can_manage_quotes',
+      canSeeItemsInOrders: import.meta.env.VITE_PERMISSION_CUSTOMERPORTAL_SEE_ITEMS_IN_ORDERS || 'can_manage_orders',
     }
   },
   dealerportal: {
