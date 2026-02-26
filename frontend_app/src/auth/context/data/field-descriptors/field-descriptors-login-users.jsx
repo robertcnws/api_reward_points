@@ -37,6 +37,10 @@ export const fieldsLoginUsers = [
     name: 'userRole',
     fields: ['id', 'name'],
   },
+  {
+    name: 'customerportalPermissions',
+    fields: ['id', 'name', 'description', 'key', 'createdTime', 'lastModifiedTime'],
+  }
 ];
 
 export const fieldsExternalUsers = [

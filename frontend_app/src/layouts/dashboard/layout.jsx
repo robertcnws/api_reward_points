@@ -20,7 +20,8 @@ import { useSettingsContext } from 'src/components/settings';
 
 import { useDataContext } from 'src/auth/context/data/data-context';
 import { fieldsRewardStoreProductSelectionBuys } from 'src/auth/context/data/field-descriptors/field-descriptors-reward-store-product-selection';
-
+import { fieldsLoginUsers } from 'src/auth/context/data/field-descriptors/field-descriptors-login-users';
+import { useRewardLoginUserByUsername } from 'src/_mock/__reward-login-users';
 import { Main } from './main';
 import { NavMobile } from './nav-mobile';
 import ChatLauncher from './chat-laucher';
@@ -39,6 +40,7 @@ import { StyledDivider, useNavColorVars } from './styles';
 import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
+
 
 // ----------------------------------------------------------------------
 
@@ -79,6 +81,17 @@ export function DashboardLayout({ sx, children, header, data }) {
     refetchRewardPoints,
   } = useDataContext();
 
+  const userByUsernameQuery = useRewardLoginUserByUsername(userLogged?.data?.username, fieldsLoginUsers);
+
+  const refetchUserByUsername = userByUsernameQuery.refetch;
+
+  const [customerportalPermissions, setCustomerportalPermissions] = useState([]);
+
+  useEffect(() => {
+    const perms = userByUsernameQuery.data?.customerportalPermissions || [];
+    setCustomerportalPermissions(perms);
+  }, [userByUsernameQuery.data]);
+
   const rewardHook = useRewardStoreProductSelectionBuyByUsername(
     userLogged?.data?.username,
     fieldsRewardStoreProductSelectionBuys
@@ -116,6 +129,12 @@ export function DashboardLayout({ sx, children, header, data }) {
     [loadedPurchases]
   );
 
+  // useEffect(() => {
+  //   if (refetchUserByUsername) {
+  //     refetchUserByUsername();
+  //   }
+  // }, [refetchUserByUsername]);
+
   useEffect(() => {
     refetchUsers?.();
     setPendingUsers(loadedPendingClients);
@@ -137,41 +156,81 @@ export function DashboardLayout({ sx, children, header, data }) {
   }, [roleName]);
 
   useEffect(() => {
-  const url = !isClient(roleName)
-    ? wsEndpoints.rewardPoints.storeProductSelectionBuy.all
-    : wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
+    const url = !isClient(roleName)
+      ? wsEndpoints.rewardPoints.storeProductSelectionBuy.all
+      : wsEndpoints.rewardPoints.storeProductSelectionBuy.byUsername(userLogged?.data?.username);
 
-  const socket = new WebSocket(url);
+    const socket = new WebSocket(url);
 
-  let refetchTimer = null;
-  const safeRefetch = () => {
-    if (refetchTimer) return;
-    refetchTimer = setTimeout(() => {
-      refetchTimer = null;
-      refetchPurchases?.().catch((err) => console.error('Error fetching purchases data:', err));
-    }, 250); // throttle 250ms
-  };
+    let refetchTimer = null;
+    const safeRefetch = () => {
+      if (refetchTimer) return;
+      refetchTimer = setTimeout(() => {
+        refetchTimer = null;
+        refetchPurchases?.().catch((err) => console.error('Error fetching purchases data:', err));
+      }, 250); // throttle 250ms
+    };
 
-  socket.onerror = (e) => {
-    console.error('WebSocket error:', e);
-  };
+    socket.onerror = (e) => {
+      console.error('WebSocket error:', e);
+    };
 
-  socket.onmessage = (event) => {
-    try {
-      const message = JSON.parse(event.data);
-      if (['created', 'updated', 'deleted'].includes(message?.type)) {
-        safeRefetch();
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (['created', 'updated', 'deleted'].includes(message?.type)) {
+          safeRefetch();
+        }
+      } catch (e) {
+        console.error('Invalid WS payload:', e);
       }
-    } catch (e) {
-      console.error('Invalid WS payload:', e);
-    }
-  };
+    };
 
-  return () => {
-    try { socket.close(); } catch (e) { console.error('Error closing WebSocket:', e); }
-    if (refetchTimer) { clearTimeout(refetchTimer); refetchTimer = null; }
-  };
-}, [userLogged?.data?.username, roleName, refetchPurchases]);
+    return () => {
+      try { socket.close(); } catch (e) { console.error('Error closing WebSocket:', e); }
+      if (refetchTimer) { clearTimeout(refetchTimer); refetchTimer = null; }
+    };
+  }, [userLogged?.data?.username, roleName, refetchPurchases]);
+
+
+
+  useEffect(() => {
+    const url = wsEndpoints.users.byUsername(userLogged?.data?.username);
+    const socket = new WebSocket(url);
+    let refetchTimer = null;
+
+    const safeRefetch = () => {
+      if (refetchTimer) return;
+      refetchTimer = setTimeout(() => {
+        refetchTimer = null;
+        refetchUserByUsername?.().catch((err) => console.error('Error fetching user data:', err));
+      }, 250); // throttle 250ms
+    };
+
+    socket.onerror = (e) => {
+      console.error('WebSocket error:', e);
+    };
+
+    socket.onmessage = (event) => {
+      console.log('WS message received for user data:', event.data);
+      try {
+        const allData = JSON.parse(event.data);
+        const message = allData?.message || allData; 
+        console.log('Parsed WS message for user data:', message);
+        if (['created', 'updated', 'deleted'].includes(message?.type)) {
+          safeRefetch();
+        }
+      } catch (e) {
+        console.error('Invalid WS payload:', e);
+      }
+    };
+
+    return () => {
+      try { socket.close(); } catch (e) { console.error('Error closing WebSocket:', e); }
+      if (refetchTimer) { clearTimeout(refetchTimer); refetchTimer = null; }
+    };
+  }, [userLogged?.data?.username, refetchUserByUsername]);
+
 
   const newPurchases = useMemo(
     () => {
@@ -195,7 +254,16 @@ export function DashboardLayout({ sx, children, header, data }) {
     [purchases]
   );
 
-  const navData = data?.nav ?? dashboardNavData(pendingUsers, newPurchases, oldPurchases, isNavMini);
+  const navData = useMemo(() => (
+    data?.nav ?? dashboardNavData({
+      userLogged,
+      customerportalPermissions,
+      loadedPendingClients: pendingUsers,
+      newPurchases,
+      oldPurchases,
+      isNavMini
+    })
+  ), [data?.nav, userLogged, customerportalPermissions, pendingUsers, newPurchases, oldPurchases, isNavMini]);
 
   return (
     <>

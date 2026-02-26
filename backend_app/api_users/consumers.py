@@ -1,5 +1,12 @@
 from channels.generic.websocket import AsyncWebsocketConsumer, AsyncJsonWebsocketConsumer
 import json
+import re
+
+def _safe_group_username(username: str) -> str:
+    u = (username or "").strip().lower()
+    u = re.sub(r"[^a-z0-9_\-\.]", "_", u)
+    return u[:80]
+
 
 ##########################################################################
 # SystemPermission
@@ -72,6 +79,24 @@ class UserConsumer(AsyncWebsocketConsumer):
         pass
 
     async def user_update(self, event):
+        await self.send(text_data=json.dumps(event["message"]))
+        
+
+class UserByUsernameConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        username = self.scope["url_route"]["kwargs"].get("username", "")
+        self.group_name = f"user_by_username.{_safe_group_username(username)}"
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        pass
+
+    async def user_by_username_update(self, event):
         await self.send(text_data=json.dumps(event["message"]))
         
         

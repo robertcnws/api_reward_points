@@ -74,432 +74,433 @@ const layoutContent = (
 );
 
 
-export const dashboardRoutes = (user) => [
-  {
-    path: 'dashboard',
-    element: CONFIG.auth.skip ? <OverviewAnalyticsPage /> : <AuthGuard>{layoutContent}</AuthGuard>,
-    children: [
-      {
-        element: <OverviewAnalyticsPage />,
-        index: true
-      },
-      {
-        path: 'analytics',
-        element: <OverviewAnalyticsPage />
-      },
-      {
-        path: 'faqs-tutorial',
-        element: <FAQTutorialListView />
-      },
-      {
-        path: 'user/profile',
-        element: <UserProfilePage />
-      },
-      {
-        path: 'sales-order/:id/details',
-        element: <SalesOrderDetailsPage />
-      },
-      ...isClient(user?.user_role?.name) ? [
+export function dashboardRoutes({ user }) {
+  return [
+    {
+      path: 'dashboard',
+      element: CONFIG.auth.skip ? <OverviewAnalyticsPage /> : <AuthGuard>{layoutContent}</AuthGuard>,
+      children: [
         {
-          path: 'purchase',
-          element: <PurchaseListPage />
+          element: <OverviewAnalyticsPage />,
+          index: true
         },
         {
-          path: 'invoice',
-          element: <InvoicesListPage />
+          path: 'analytics',
+          element: <OverviewAnalyticsPage />
         },
         {
-          path: 'sales-order',
-          element: <SalesOrdersListPage />
+          path: 'faqs-tutorial',
+          element: <FAQTutorialListView />
         },
-
-      ] : [],
-      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
-        [
-          {
-            path: 'config/role',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <UserRoleDefaultListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <UserRoleDefaultListPage /> : <Page403 />
-              },
-              {
-                path: 'new',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <UserRoleDefaultCreatePage /> : <Page403 />
-              },
-              {
-                path: ':id/edit',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <UserRoleDefaultCreatePage /> : <Page403 />
-              },
-            ],
-          },
-          {
-            path: 'config/functionality',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <FunctionalityListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <FunctionalityListPage /> : <Page403 />
-              },
-              {
-                path: 'new',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <FunctionalityCreatePage /> : <Page403 />
-              },
-              {
-                path: ':id/edit',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <FunctionalityCreatePage /> : <Page403 />
-              },
-            ],
-          },
-          {
-            path: 'config/permission',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <PermissionListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <PermissionListPage /> : <Page403 />
-              },
-              {
-                path: 'new',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <PermissionCreatePage /> : <Page403 />
-              },
-              {
-                path: ':id/edit',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <PermissionCreatePage /> : <Page403 />
-              },
-            ],
-          },
-          {
-            path: 'config/points-settings',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <PointsSettingsListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <PointsSettingsListPage /> : <Page403 />
-              },
-              {
-                path: 'new',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <PointsSettingsCreatePage /> : <Page403 />
-              },
-              {
-                path: ':id/edit',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.superadmin
-                ) ? <PointsSettingsCreatePage /> : <Page403 />
-              },
-            ],
-          },
-        ] : [],
-      {
-        path: 'config/store-product',
-        children: [
-          {
-            element: (
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
-            ) ? <StoreProductPage /> : <Page403 />,
-            index: true
-          },
-          {
-            path: 'list',
-            element: (
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
-            ) ? <StoreProductPage /> : <Page403 />
-          },
-          ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
-            {
-              path: 'new',
-              element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductCreatePage /> : <Page403 />
-            },
-          ] : [],
-          ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
-            {
-              path: ':id/edit',
-              element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductEditPage /> : <Page403 />
-            },
-          ] : [],
-          {
-            path: ':id/details',
-            element: (
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
-              listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
-            ) ? <StoreProductDetailsPage /> : <Page403 />,
-          }
-
-        ],
-      },
-      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
-        [
-          {
-            path: 'client',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <UserClientListPage /> : <Page403 />
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <UserClientListPage /> : <Page403 />
-              },
-            ]
-          },
-          {
-            path: 'user',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <UserListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <UserListPage /> : <Page403 />
-              },
-              {
-                path: 'pending',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <UserPendingListPage /> : <Page403 />
-              },
-              {
-                path: 'new',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.administrator
-                ) ? <UserCreatePage /> : <Page403 />
-              },
-            ],
-          },
-        ] : [],
-      ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
-        [
+        {
+          path: 'user/profile',
+          element: <UserProfilePage />
+        },
+        {
+          path: 'sales-order/:id/details',
+          element: <SalesOrderDetailsPage />
+        },
+        ...isClient(user?.user_role?.name) ? [
           {
             path: 'purchase',
-            children: [
-              {
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <PurchaseListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <PurchaseListPage /> : <Page403 />
-              },
-              {
-                path: 'checkout',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <PurchaseCheckoutPage /> : <Page403 />
-              },
-              {
-                path: 'client/:id',
-                element: listRolesAndSubroles(
-                  user?.user_role?.name
-                ).includes(
-                  CONFIG.roles.officeStaff
-                ) ? <PurchaseOverviewClientView /> : <Page403 />
-              },
-            ],
+            element: <PurchaseListPage />
           },
-        ] : [],
-      ...(user && (
-        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-        user?.customerportal_permissions?.map(permission => permission.key).includes(
-          CONFIG.permissions.customerportal.canSeeItemsInStock
-        )
-      )) ?
-        [
           {
-            path: 'stock',
-            children: [
-              {
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInStock
-                  )) ? <ItemgroupPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInStock
-                  )) ? <ItemgroupPage /> : <Page403 />,
-              },
-            ],
+            path: 'invoice',
+            element: <InvoicesListPage />
           },
-        ] : [],
-      ...(user && (
-        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-        user?.customerportal_permissions?.map(permission => permission.key).includes(
-          CONFIG.permissions.customerportal.canSeeItemsInQuote
-        )
-      )) ?
-        [
           {
-            path: 'quote',
-            children: [
-              {
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInQuote
-                  )) ? <QuotesListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInQuote
-                  )) ? <QuotesListPage /> : <Page403 />,
-              },
-              {
-                path: ':id/details',
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInQuote
-                  )) ? <QuotesDetailsPage /> : <Page403 />,
-              },
-            ],
+            path: 'sales-order',
+            element: <SalesOrdersListPage />
           },
-        ] : [],
-        ...(user && (
-        (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-        user?.customerportal_permissions?.map(permission => permission.key).includes(
-          CONFIG.permissions.customerportal.canSeeItemsInOrders
-        )
-      )) ?
-        [
-          {
-            path: 'order',
-            children: [
-              {
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInOrders
-                  )) ? <OrdersListPage /> : <Page403 />,
-                index: true
-              },
-              {
-                path: 'list',
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInOrders
-                  )) ? <OrdersListPage /> : <Page403 />,
-              },
-              {
-                path: ':id/details',
-                element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
-                  user?.customerportal_permissions?.map(permission => permission.key).includes(
-                    CONFIG.permissions.customerportal.canSeeItemsInOrders
-                  )) ? <OrderDetailsPage /> : <Page403 />,
-              },
-            ],
-          },
-        ] : [],
-    ]
-  },
-];
 
+        ] : [],
+        ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator)) ?
+          [
+            {
+              path: 'config/role',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <UserRoleDefaultListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <UserRoleDefaultListPage /> : <Page403 />
+                },
+                {
+                  path: 'new',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+                },
+                {
+                  path: ':id/edit',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <UserRoleDefaultCreatePage /> : <Page403 />
+                },
+              ],
+            },
+            {
+              path: 'config/functionality',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <FunctionalityListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <FunctionalityListPage /> : <Page403 />
+                },
+                {
+                  path: 'new',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <FunctionalityCreatePage /> : <Page403 />
+                },
+                {
+                  path: ':id/edit',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <FunctionalityCreatePage /> : <Page403 />
+                },
+              ],
+            },
+            {
+              path: 'config/permission',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <PermissionListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <PermissionListPage /> : <Page403 />
+                },
+                {
+                  path: 'new',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <PermissionCreatePage /> : <Page403 />
+                },
+                {
+                  path: ':id/edit',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <PermissionCreatePage /> : <Page403 />
+                },
+              ],
+            },
+            {
+              path: 'config/points-settings',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <PointsSettingsListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <PointsSettingsListPage /> : <Page403 />
+                },
+                {
+                  path: 'new',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <PointsSettingsCreatePage /> : <Page403 />
+                },
+                {
+                  path: ':id/edit',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.superadmin
+                  ) ? <PointsSettingsCreatePage /> : <Page403 />
+                },
+              ],
+            },
+          ] : [],
+        {
+          path: 'config/store-product',
+          children: [
+            {
+              element: (
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+              ) ? <StoreProductPage /> : <Page403 />,
+              index: true
+            },
+            {
+              path: 'list',
+              element: (
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+              ) ? <StoreProductPage /> : <Page403 />
+            },
+            ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
+              {
+                path: 'new',
+                element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductCreatePage /> : <Page403 />
+              },
+            ] : [],
+            ...listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? [
+              {
+                path: ':id/edit',
+                element: listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.administrator) ? <StoreProductEditPage /> : <Page403 />
+              },
+            ] : [],
+            {
+              path: ':id/details',
+              element: (
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.client) ||
+                listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)
+              ) ? <StoreProductDetailsPage /> : <Page403 />,
+            }
+
+          ],
+        },
+        ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
+          [
+            {
+              path: 'client',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <UserClientListPage /> : <Page403 />
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <UserClientListPage /> : <Page403 />
+                },
+              ]
+            },
+            {
+              path: 'user',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <UserListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <UserListPage /> : <Page403 />
+                },
+                {
+                  path: 'pending',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <UserPendingListPage /> : <Page403 />
+                },
+                {
+                  path: 'new',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.administrator
+                  ) ? <UserCreatePage /> : <Page403 />
+                },
+              ],
+            },
+          ] : [],
+        ...(user && listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ?
+          [
+            {
+              path: 'purchase',
+              children: [
+                {
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <PurchaseListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <PurchaseListPage /> : <Page403 />
+                },
+                {
+                  path: 'checkout',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <PurchaseCheckoutPage /> : <Page403 />
+                },
+                {
+                  path: 'client/:id',
+                  element: listRolesAndSubroles(
+                    user?.user_role?.name
+                  ).includes(
+                    CONFIG.roles.officeStaff
+                  ) ? <PurchaseOverviewClientView /> : <Page403 />
+                },
+              ],
+            },
+          ] : [],
+        ...(user && (
+          (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+          user?.customerportal_permissions?.map(permission => permission.key).includes(
+            CONFIG.permissions.customerportal.canSeeItemsInStock
+          )
+        )) ?
+          [
+            {
+              path: 'stock',
+              children: [
+                {
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInStock
+                    )) ? <ItemgroupPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInStock
+                    )) ? <ItemgroupPage /> : <Page403 />,
+                },
+              ],
+            },
+          ] : [],
+        ...(user && (
+          (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+          user?.customerportal_permissions?.map(permission => permission.key).includes(
+            CONFIG.permissions.customerportal.canSeeItemsInQuote
+          )
+        )) ?
+          [
+            {
+              path: 'quote',
+              children: [
+                {
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInQuote
+                    )) ? <QuotesListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInQuote
+                    )) ? <QuotesListPage /> : <Page403 />,
+                },
+                {
+                  path: ':id/details',
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInQuote
+                    )) ? <QuotesDetailsPage /> : <Page403 />,
+                },
+              ],
+            },
+          ] : [],
+        ...(user && (
+          (listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+          user?.customerportal_permissions?.map(permission => permission.key).includes(
+            CONFIG.permissions.customerportal.canSeeItemsInOrders
+          )
+        )) ?
+          [
+            {
+              path: 'order',
+              children: [
+                {
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInOrders
+                    )) ? <OrdersListPage /> : <Page403 />,
+                  index: true
+                },
+                {
+                  path: 'list',
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInOrders
+                    )) ? <OrdersListPage /> : <Page403 />,
+                },
+                {
+                  path: ':id/details',
+                  element: ((listRolesAndSubroles(user?.user_role?.name).includes(CONFIG.roles.officeStaff)) ||
+                    user?.customerportal_permissions?.map(permission => permission.key).includes(
+                      CONFIG.permissions.customerportal.canSeeItemsInOrders
+                    )) ? <OrderDetailsPage /> : <Page403 />,
+                },
+              ],
+            },
+          ] : [],
+      ]
+    },
+  ];
+}
