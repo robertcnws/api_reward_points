@@ -75,11 +75,11 @@ export function Router() {
       };
   
       socket.onmessage = (event) => {
-        console.log('WS message received for user data:', event.data);
+        // console.log('WS message received for user data:', event.data);
         try {
           const allData = JSON.parse(event.data);
           const message = allData?.message || allData; 
-          console.log('Parsed WS message for user data:', message);
+          // console.log('Parsed WS message for user data:', message);
           if (['created', 'updated', 'deleted'].includes(message?.type)) {
             safeRefetch();
           }
